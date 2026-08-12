@@ -1,549 +1,166 @@
---// 💥 RIMURU HUB
+--// 💥🎵 RIMURU HUB
 --// Sound ID Library
 
 local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
+local UserInputService = game:GetService("UserInputService")
 
 local Player = Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
 
---==================================================
--- SOUND DATABASE
---==================================================
-
+-- SOUNDS
 local Sounds = {
-    {"Coin Parry", "81202220081219"},
-    {"Coin", "136124980150792"},
-
-    {"Naginata Hit1", "94107281648467"},
-    {"Naginata Hit2", "103563218704266"},
-    {"Naginata Hit3", "103563218704266"},
-
-    {"Gun Fire", "5735280081"},
-    {"Gun Hit", "3932141920"},
-    {"Gun Break", "1358442317"},
-
-    {"Dash 1", "92870369637296"},
-    {"Dash 2", "133205097862880"},
-
-    {"M1 Hit 1", "92660735965001"},
-    {"M1 Hit 2", "103376351068703"},
-    {"M1 Hit 3", "122604454724442"},
-    {"M1 Hit 4", "108932851477523"},
-    {"M1 Down", "73223862105514"},
-    {"M1 Up", "124704505278190"},
-
-    {"Bankai Toshiro Hitsugaya", "886883353"},
-
-    {"Onslaught Hit 2", "92242615253671"},
-    {"Onslaught Hit 3", "115238316257902"},
-    {"Onslaught Hit 4", "83252903812674"},
-    {"Onslaught Hit 5", "118008236689924"},
-    {"Onslaught Hit 6", "137296633918555"},
-    {"Onslaught Hit 7", "79492597332929"},
-    {"Onslaught Hit 8", "102503367678078"},
-    {"Onslaught Last Hit", "129425371797564"},
-    {"Onslaught Air Hit", "92646954276141"},
-
-    {"Lethal Wound Hit", "112190329411296"},
-    {"Fight Hit", "102530149417103"},
-    {"Fight Success Hit", "95100057721788"},
-    {"Fight Miss Hit", "92658796918459"},
-
-    {"Special Hit", "77456429238350"},
-    {"Cursed Remedy Hit", "83588770043956"},
-    {"Seven Souls Hit", "127769542531541"},
-
-    {"Festering Strikes Swing 1", "93286266865153"},
-    {"Festering Strikes Swing 2", "104907904159399"},
-    {"Festering Strikes Swing 3", "106311045947290"},
-
-    {"Festering Punch Swing 1", "88980176364383"},
-    {"Festering Punch Swing 2", "81109554460735"},
-    {"Festering Punch Swing 3", "99060595035893"},
-
-    {"Festering Strikes Hit 1", "116242006916525"},
-    {"Festering Strikes Hit 2", "98493239356787"}
+    {Name = "Coin Parry", ID = "81202220081219"},
+    {Name = "Coin", ID = "136124980150792"},
+    {Name = "Naginata Hit", ID = "94107281648467"},
+    {Name = "Gun Fire", ID = "5735280081"},
+    {Name = "Gun Hit", ID = "3932141920"},
+    {Name = "Dash", ID = "92870369637296"},
+    {Name = "M1 Hit", ID = "92660735965001"},
+    {Name = "M1 Down", ID = "73223862105514"},
 }
 
---==================================================
--- REMOVE OLD VERSION
---==================================================
+-- SETTINGS
+local Colors = {
+    Green = Color3.fromRGB(60,220,120),
+    Red = Color3.fromRGB(235,65,65),
+    White = Color3.fromRGB(235,235,235),
+    Blue = Color3.fromRGB(65,130,255),
+    Cyan = Color3.fromRGB(40,220,220),
+    Neon = Color3.fromRGB(170,60,255),
+}
 
-pcall(function()
-    local Old = PlayerGui:FindFirstChild("RimuruHub")
+local CurrentColor = Colors.Cyan
+local BG = 0.08
+local RGB = false
 
-    if Old then
-        Old:Destroy()
-    end
-end)
-
---==================================================
 -- GUI
---==================================================
-
-local Gui = Instance.new("ScreenGui")
+local Gui = Instance.new("ScreenGui", Player:WaitForChild("PlayerGui"))
 Gui.Name = "RimuruHub"
-Gui.ResetOnSpawn = false
-Gui.IgnoreGuiInset = true
-Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
--- Coloca o hub acima do HUD normal do jogo
-Gui.DisplayOrder = 999999
+local Main = Instance.new("Frame", Gui)
+Main.Size = UDim2.new(0,720,0,450)
+Main.Position = UDim2.new(0.5,-360,0.5,-225)
+Main.BackgroundColor3 = Color3.fromRGB(18,18,23)
+Main.BackgroundTransparency = BG
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0,14)
 
-Gui.Parent = PlayerGui
+local Stroke = Instance.new("UIStroke", Main)
+Stroke.Color = CurrentColor
+Stroke.Thickness = 1.5
 
---==================================================
--- LOGO
---==================================================
-
-local LogoButton = Instance.new("ImageButton")
-LogoButton.Name = "RimuruLogo"
-LogoButton.Size = UDim2.new(0, 55, 0, 55)
-LogoButton.Position = UDim2.new(0, 20, 0.5, -27)
-
-LogoButton.BackgroundColor3 = Color3.fromRGB(8, 22, 48)
-LogoButton.BorderSizePixel = 0
-
--- RIMURU
-LogoButton.Image = "rbxassetid://6691708227"
-
-LogoButton.ScaleType = Enum.ScaleType.Fit
-LogoButton.AutoButtonColor = false
-LogoButton.ZIndex = 1000
-LogoButton.Parent = Gui
-
-local LogoCorner = Instance.new("UICorner")
-LogoCorner.CornerRadius = UDim.new(0, 14)
-LogoCorner.Parent = LogoButton
-
-local LogoStroke = Instance.new("UIStroke")
-LogoStroke.Color = Color3.fromRGB(55, 120, 255)
-LogoStroke.Thickness = 2
-LogoStroke.Parent = LogoButton
-
---==================================================
--- LOGO DRAG
---==================================================
-
-local LogoDragging = false
-local LogoMoved = false
-local LogoDragStart
-local LogoStartPosition
-
-LogoButton.InputBegan:Connect(function(Input)
-
-    if Input.UserInputType == Enum.UserInputType.MouseButton1
-    or Input.UserInputType == Enum.UserInputType.Touch then
-
-        LogoDragging = true
-        LogoMoved = false
-
-        LogoDragStart = Input.Position
-        LogoStartPosition = LogoButton.Position
-
+-- DRAG
+local drag, start, pos
+Main.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+        drag = true
+        start = i.Position
+        pos = Main.Position
     end
-
 end)
 
-UIS.InputChanged:Connect(function(Input)
-
-    if not LogoDragging then
-        return
+UserInputService.InputChanged:Connect(function(i)
+    if drag and i.UserInputType == Enum.UserInputType.MouseMovement then
+        local d = i.Position - start
+        Main.Position = UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
     end
-
-    if Input.UserInputType == Enum.UserInputType.MouseMovement
-    or Input.UserInputType == Enum.UserInputType.Touch then
-
-        local Delta = Input.Position - LogoDragStart
-
-        if math.abs(Delta.X) > 5 or math.abs(Delta.Y) > 5 then
-            LogoMoved = true
-        end
-
-        LogoButton.Position = UDim2.new(
-            LogoStartPosition.X.Scale,
-            LogoStartPosition.X.Offset + Delta.X,
-
-            LogoStartPosition.Y.Scale,
-            LogoStartPosition.Y.Offset + Delta.Y
-        )
-
-    end
-
 end)
 
-UIS.InputEnded:Connect(function(Input)
-
-    if Input.UserInputType == Enum.UserInputType.MouseButton1
-    or Input.UserInputType == Enum.UserInputType.Touch then
-
-        LogoDragging = false
-
+UserInputService.InputEnded:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+        drag = false
     end
-
 end)
 
---==================================================
--- MAIN MENU
---==================================================
-
-local Main = Instance.new("Frame")
-Main.Name = "Main"
-
-Main.Size = UDim2.new(0, 430, 0, 360)
-Main.Position = UDim2.new(0.5, -215, 0.5, -180)
-
-Main.BackgroundColor3 = Color3.fromRGB(15, 18, 28)
-Main.BorderSizePixel = 0
-
-Main.Visible = false
-Main.ZIndex = 500
-Main.Parent = Gui
-
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 12)
-MainCorner.Parent = Main
-
-local MainStroke = Instance.new("UIStroke")
-MainStroke.Color = Color3.fromRGB(55, 120, 255)
-MainStroke.Thickness = 1.5
-MainStroke.Parent = Main
-
---==================================================
--- MAIN DRAG
---==================================================
-
-local Dragging = false
-local DragStart
-local StartPosition
-
-Main.InputBegan:Connect(function(Input)
-
-    if Input.UserInputType == Enum.UserInputType.MouseButton1
-    or Input.UserInputType == Enum.UserInputType.Touch then
-
-        Dragging = true
-        DragStart = Input.Position
-        StartPosition = Main.Position
-
-    end
-
-end)
-
-UIS.InputChanged:Connect(function(Input)
-
-    if not Dragging then
-        return
-    end
-
-    if Input.UserInputType == Enum.UserInputType.MouseMovement
-    or Input.UserInputType == Enum.UserInputType.Touch then
-
-        local Delta = Input.Position - DragStart
-
-        Main.Position = UDim2.new(
-            StartPosition.X.Scale,
-            StartPosition.X.Offset + Delta.X,
-
-            StartPosition.Y.Scale,
-            StartPosition.Y.Offset + Delta.Y
-        )
-
-    end
-
-end)
-
-UIS.InputEnded:Connect(function(Input)
-
-    if Input.UserInputType == Enum.UserInputType.MouseButton1
-    or Input.UserInputType == Enum.UserInputType.Touch then
-
-        Dragging = false
-
-    end
-
-end)
-
---==================================================
 -- HEADER
---==================================================
-
-local Header = Instance.new("Frame")
-Header.Size = UDim2.new(1, 0, 0, 58)
+local Header = Instance.new("Frame", Main)
+Header.Size = UDim2.new(1,0,0,60)
 Header.BackgroundTransparency = 1
-Header.ZIndex = 501
-Header.Parent = Main
 
-local HeaderLogo = Instance.new("ImageLabel")
-HeaderLogo.Size = UDim2.new(0, 40, 0, 40)
-HeaderLogo.Position = UDim2.new(0, 10, 0, 8)
-HeaderLogo.BackgroundTransparency = 1
-
--- MESMA LOGO DO BOTÃO
-HeaderLogo.Image = "rbxassetid://6691708227"
-
-HeaderLogo.ScaleType = Enum.ScaleType.Fit
-HeaderLogo.ZIndex = 502
-HeaderLogo.Parent = Header
-
-local Title = Instance.new("TextLabel")
-Title.Position = UDim2.new(0, 60, 0, 7)
-Title.Size = UDim2.new(1, -105, 0, 25)
-Title.BackgroundTransparency = 1
+local Title = Instance.new("TextLabel", Header)
 Title.Text = "Rimuru Hub"
-Title.TextColor3 = Color3.fromRGB(240, 243, 250)
-Title.TextSize = 19
+Title.Size = UDim2.new(0,300,0,25)
+Title.Position = UDim2.new(0,80,0,8)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(245,245,245)
 Title.Font = Enum.Font.GothamBold
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.ZIndex = 502
-Title.Parent = Header
+Title.TextSize = 20
 
-local Subtitle = Instance.new("TextLabel")
-Subtitle.Position = UDim2.new(0, 61, 0, 31)
-Subtitle.Size = UDim2.new(1, -75, 0, 18)
-Subtitle.BackgroundTransparency = 1
-Subtitle.Text = "Sound IDs"
-Subtitle.TextColor3 = Color3.fromRGB(130, 140, 160)
-Subtitle.TextSize = 11
-Subtitle.Font = Enum.Font.Gotham
-Subtitle.TextXAlignment = Enum.TextXAlignment.Left
-Subtitle.ZIndex = 502
-Subtitle.Parent = Header
+-- SIDEBAR
+local Side = Instance.new("Frame", Main)
+Side.Size = UDim2.new(0,160,1,-70)
+Side.Position = UDim2.new(0,10,0,65)
+Side.BackgroundColor3 = Color3.fromRGB(14,14,19)
+Instance.new("UICorner", Side).CornerRadius = UDim.new(0,10)
 
---==================================================
--- CLOSE
---==================================================
+local function Btn(t)
+    local b = Instance.new("TextButton", Side)
+    b.Size = UDim2.new(1,0,0,40)
+    b.Text = t
+    b.BackgroundColor3 = Color3.fromRGB(25,25,31)
+    b.TextColor3 = Color3.fromRGB(180,180,190)
+    b.Font = Enum.Font.Gotham
+    b.TextSize = 13
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
+    return b
+end
 
-local Close = Instance.new("TextButton")
-Close.Size = UDim2.new(0, 30, 0, 30)
-Close.Position = UDim2.new(1, -38, 0, 14)
+local SoundsBtn = Btn("🔊 Sounds")
+local ConfigBtn = Btn("⚙️ Config")
 
-Close.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
-Close.BorderSizePixel = 0
+-- CONTENT
+local Content = Instance.new("Frame", Main)
+Content.Size = UDim2.new(1,-180,1,-70)
+Content.Position = UDim2.new(0,175,0,65)
+Content.BackgroundTransparency = 1
 
-Close.Text = "X"
-Close.TextColor3 = Color3.fromRGB(230, 230, 235)
-Close.TextSize = 12
-Close.Font = Enum.Font.GothamBold
-
-Close.AutoButtonColor = false
-Close.ZIndex = 503
-Close.Parent = Header
-
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 7)
-CloseCorner.Parent = Close
-
---==================================================
--- SCROLL
---==================================================
-
-local Scroll = Instance.new("ScrollingFrame")
-Scroll.Name = "SoundList"
-
-Scroll.Position = UDim2.new(0, 10, 0, 65)
-Scroll.Size = UDim2.new(1, -20, 1, -75)
-
+local Scroll = Instance.new("ScrollingFrame", Content)
+Scroll.Size = UDim2.new(1,0,1,0)
 Scroll.BackgroundTransparency = 1
-Scroll.BorderSizePixel = 0
-
 Scroll.ScrollBarThickness = 5
-Scroll.ScrollBarImageColor3 = Color3.fromRGB(55, 120, 255)
-
-Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Scroll.ScrollingDirection = Enum.ScrollingDirection.Y
 
-Scroll.ZIndex = 501
-Scroll.Parent = Main
+local Layout = Instance.new("UIListLayout", Scroll)
+Layout.Padding = UDim.new(0,6)
 
-local Padding = Instance.new("UIPadding")
-Padding.PaddingBottom = UDim.new(0, 6)
-Padding.Parent = Scroll
-
-local Layout = Instance.new("UIListLayout")
-Layout.Padding = UDim.new(0, 5)
-Layout.SortOrder = Enum.SortOrder.LayoutOrder
-Layout.Parent = Scroll
-
---==================================================
--- COPY FUNCTION
---==================================================
-
-local function Copy(ID)
-
-    if setclipboard then
-
-        local Success = pcall(function()
-            setclipboard(ID)
-        end)
-
-        if Success then
-            return true
-        end
-
-    end
-
-    if toclipboard then
-
-        local Success = pcall(function()
-            toclipboard(ID)
-        end)
-
-        if Success then
-            return true
-        end
-
-    end
-
-    return false
-end
-
---==================================================
 -- SOUND CARDS
---==================================================
+local function Card(s)
+    local f = Instance.new("Frame", Scroll)
+    f.Size = UDim2.new(1,0,0,50)
+    f.BackgroundColor3 = Color3.fromRGB(25,25,31)
 
-for Index, Data in ipairs(Sounds) do
+    local t = Instance.new("TextLabel", f)
+    t.Text = s.Name.." - "..s.ID
+    t.Size = UDim2.new(1,-80,1,0)
+    t.BackgroundTransparency = 1
+    t.TextColor3 = Color3.fromRGB(230,230,235)
+    t.Font = Enum.Font.Gotham
+    t.TextSize = 12
+    t.TextXAlignment = Enum.TextXAlignment.Left
 
-    local Name = Data[1]
-    local ID = Data[2]
+    local c = Instance.new("TextButton", f)
+    c.Text = "Copy"
+    c.Size = UDim2.new(0,70,0,30)
+    c.Position = UDim2.new(1,-75,0.5,-15)
+    c.BackgroundColor3 = CurrentColor
+    c.TextColor3 = Color3.new(1,1,1)
+    c.Font = Enum.Font.GothamBold
+    c.TextSize = 12
 
-    local Card = Instance.new("Frame")
-    Card.Name = "Sound_" .. Index
-
-    Card.Size = UDim2.new(1, -5, 0, 48)
-
-    Card.BackgroundColor3 = Color3.fromRGB(24, 28, 40)
-    Card.BorderSizePixel = 0
-
-    Card.LayoutOrder = Index
-    Card.ZIndex = 502
-    Card.Parent = Scroll
-
-    local CardCorner = Instance.new("UICorner")
-    CardCorner.CornerRadius = UDim.new(0, 8)
-    CardCorner.Parent = Card
-
-    -- NAME
-
-    local NameLabel = Instance.new("TextLabel")
-
-    NameLabel.Position = UDim2.new(0, 12, 0, 5)
-    NameLabel.Size = UDim2.new(0, 175, 0, 18)
-
-    NameLabel.BackgroundTransparency = 1
-
-    NameLabel.Text = Name
-    NameLabel.TextColor3 = Color3.fromRGB(235, 238, 245)
-
-    NameLabel.TextSize = 12
-    NameLabel.Font = Enum.Font.GothamMedium
-
-    NameLabel.TextXAlignment = Enum.TextXAlignment.Left
-    NameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-
-    NameLabel.ZIndex = 503
-    NameLabel.Parent = Card
-
-    -- ID
-
-    local IDLabel = Instance.new("TextLabel")
-
-    IDLabel.Position = UDim2.new(0, 12, 0, 25)
-    IDLabel.Size = UDim2.new(0, 175, 0, 16)
-
-    IDLabel.BackgroundTransparency = 1
-
-    IDLabel.Text = ID
-    IDLabel.TextColor3 = Color3.fromRGB(135, 145, 165)
-
-    IDLabel.TextSize = 10
-    IDLabel.Font = Enum.Font.Code
-
-    IDLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-    IDLabel.ZIndex = 503
-    IDLabel.Parent = Card
-
-    -- COPY
-
-    local CopyButton = Instance.new("TextButton")
-
-    CopyButton.Size = UDim2.new(0, 55, 0, 28)
-    CopyButton.Position = UDim2.new(0, 195, 0.5, -14)
-
-    CopyButton.BackgroundColor3 = Color3.fromRGB(55, 120, 255)
-    CopyButton.BorderSizePixel = 0
-
-    CopyButton.Text = "Copy"
-    CopyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-    CopyButton.TextSize = 10
-    CopyButton.Font = Enum.Font.GothamBold
-
-    CopyButton.AutoButtonColor = false
-
-    CopyButton.ZIndex = 504
-    CopyButton.Parent = Card
-
-    local CopyCorner = Instance.new("UICorner")
-    CopyCorner.CornerRadius = UDim.new(0, 6)
-    CopyCorner.Parent = CopyButton
-
-    CopyButton.MouseButton1Click:Connect(function()
-
-        if Copy(ID) then
-
-            CopyButton.Text = "Copied!"
-
-            task.delay(0.8, function()
-
-                if CopyButton.Parent then
-                    CopyButton.Text = "Copy"
-                end
-
-            end)
-
-        else
-
-            CopyButton.Text = "N/A"
-
-            task.delay(0.8, function()
-
-                if CopyButton.Parent then
-                    CopyButton.Text = "Copy"
-                end
-
-            end)
-
-        end
-
+    c.MouseButton1Click:Connect(function()
+        if setclipboard then setclipboard(s.ID) end
+        c.Text = "Copied"
+        task.wait(0.7)
+        c.Text = "Copy"
     end)
-
 end
 
---==================================================
--- OPEN / CLOSE
---==================================================
+for _,v in ipairs(Sounds) do Card(v) end
 
-LogoButton.MouseButton1Click:Connect(function()
+-- PAGE SWITCH
+local function Show()
+    Scroll.Visible = true
+end
 
-    if LogoMoved then
-        LogoMoved = false
-        return
-    end
+SoundsBtn.MouseButton1Click:Connect(Show)
+ConfigBtn.MouseButton1Click:Connect(Show)
 
-    Main.Visible = true
-    LogoButton.Visible = false
-
-end)
-
-Close.MouseButton1Click:Connect(function()
-
-    Main.Visible = false
-    LogoButton.Visible = true
-
-end)
-
-print("💥 Rimuru Hub carregado.")
+Show()
