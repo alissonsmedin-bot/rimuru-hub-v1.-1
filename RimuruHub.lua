@@ -87,20 +87,27 @@ Gui.Name = "RimuruHub"
 Gui.ResetOnSpawn = false
 Gui.IgnoreGuiInset = true
 Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+-- Coloca o hub acima do HUD normal do jogo
 Gui.DisplayOrder = 999999
+
 Gui.Parent = PlayerGui
 
 --==================================================
--- LOGO BUTTON
+-- LOGO
 --==================================================
 
 local LogoButton = Instance.new("ImageButton")
 LogoButton.Name = "RimuruLogo"
 LogoButton.Size = UDim2.new(0, 55, 0, 55)
 LogoButton.Position = UDim2.new(0, 20, 0.5, -27)
+
 LogoButton.BackgroundColor3 = Color3.fromRGB(8, 22, 48)
 LogoButton.BorderSizePixel = 0
-LogoButton.Image = "rbxassetid://123610980286500"
+
+-- RIMURU
+LogoButton.Image = "rbxassetid://6691708227"
+
 LogoButton.ScaleType = Enum.ScaleType.Fit
 LogoButton.AutoButtonColor = false
 LogoButton.ZIndex = 1000
@@ -131,6 +138,7 @@ LogoButton.InputBegan:Connect(function(Input)
 
         LogoDragging = true
         LogoMoved = false
+
         LogoDragStart = Input.Position
         LogoStartPosition = LogoButton.Position
 
@@ -182,10 +190,13 @@ end)
 
 local Main = Instance.new("Frame")
 Main.Name = "Main"
+
 Main.Size = UDim2.new(0, 430, 0, 360)
 Main.Position = UDim2.new(0.5, -215, 0.5, -180)
+
 Main.BackgroundColor3 = Color3.fromRGB(15, 18, 28)
 Main.BorderSizePixel = 0
+
 Main.Visible = false
 Main.ZIndex = 500
 Main.Parent = Gui
@@ -268,7 +279,10 @@ local HeaderLogo = Instance.new("ImageLabel")
 HeaderLogo.Size = UDim2.new(0, 40, 0, 40)
 HeaderLogo.Position = UDim2.new(0, 10, 0, 8)
 HeaderLogo.BackgroundTransparency = 1
-HeaderLogo.Image = "rbxassetid://123610980286500"
+
+-- MESMA LOGO DO BOTÃO
+HeaderLogo.Image = "rbxassetid://6691708227"
+
 HeaderLogo.ScaleType = Enum.ScaleType.Fit
 HeaderLogo.ZIndex = 502
 HeaderLogo.Parent = Header
@@ -298,18 +312,21 @@ Subtitle.ZIndex = 502
 Subtitle.Parent = Header
 
 --==================================================
--- CLOSE BUTTON
+-- CLOSE
 --==================================================
 
 local Close = Instance.new("TextButton")
 Close.Size = UDim2.new(0, 30, 0, 30)
 Close.Position = UDim2.new(1, -38, 0, 14)
+
 Close.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
 Close.BorderSizePixel = 0
+
 Close.Text = "X"
 Close.TextColor3 = Color3.fromRGB(230, 230, 235)
 Close.TextSize = 12
 Close.Font = Enum.Font.GothamBold
+
 Close.AutoButtonColor = false
 Close.ZIndex = 503
 Close.Parent = Header
@@ -319,20 +336,25 @@ CloseCorner.CornerRadius = UDim.new(0, 7)
 CloseCorner.Parent = Close
 
 --==================================================
--- SCROLLING FRAME
+-- SCROLL
 --==================================================
 
 local Scroll = Instance.new("ScrollingFrame")
 Scroll.Name = "SoundList"
+
 Scroll.Position = UDim2.new(0, 10, 0, 65)
 Scroll.Size = UDim2.new(1, -20, 1, -75)
+
 Scroll.BackgroundTransparency = 1
 Scroll.BorderSizePixel = 0
+
 Scroll.ScrollBarThickness = 5
 Scroll.ScrollBarImageColor3 = Color3.fromRGB(55, 120, 255)
+
 Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 Scroll.ScrollingDirection = Enum.ScrollingDirection.Y
+
 Scroll.ZIndex = 501
 Scroll.Parent = Main
 
@@ -379,7 +401,7 @@ local function Copy(ID)
 end
 
 --==================================================
--- CREATE SOUND CARDS
+-- SOUND CARDS
 --==================================================
 
 for Index, Data in ipairs(Sounds) do
@@ -389,9 +411,12 @@ for Index, Data in ipairs(Sounds) do
 
     local Card = Instance.new("Frame")
     Card.Name = "Sound_" .. Index
+
     Card.Size = UDim2.new(1, -5, 0, 48)
+
     Card.BackgroundColor3 = Color3.fromRGB(24, 28, 40)
     Card.BorderSizePixel = 0
+
     Card.LayoutOrder = Index
     Card.ZIndex = 502
     Card.Parent = Scroll
@@ -400,40 +425,65 @@ for Index, Data in ipairs(Sounds) do
     CardCorner.CornerRadius = UDim.new(0, 8)
     CardCorner.Parent = Card
 
+    -- NAME
+
     local NameLabel = Instance.new("TextLabel")
+
     NameLabel.Position = UDim2.new(0, 12, 0, 5)
     NameLabel.Size = UDim2.new(0, 175, 0, 18)
+
     NameLabel.BackgroundTransparency = 1
+
     NameLabel.Text = Name
     NameLabel.TextColor3 = Color3.fromRGB(235, 238, 245)
+
     NameLabel.TextSize = 12
     NameLabel.Font = Enum.Font.GothamMedium
+
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+
     NameLabel.ZIndex = 503
     NameLabel.Parent = Card
 
+    -- ID
+
     local IDLabel = Instance.new("TextLabel")
+
     IDLabel.Position = UDim2.new(0, 12, 0, 25)
     IDLabel.Size = UDim2.new(0, 175, 0, 16)
+
     IDLabel.BackgroundTransparency = 1
+
     IDLabel.Text = ID
     IDLabel.TextColor3 = Color3.fromRGB(135, 145, 165)
+
     IDLabel.TextSize = 10
     IDLabel.Font = Enum.Font.Code
+
     IDLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    IDLabel.ZIndex = 503
     IDLabel.Parent = Card
 
+    -- COPY
+
     local CopyButton = Instance.new("TextButton")
+
     CopyButton.Size = UDim2.new(0, 55, 0, 28)
     CopyButton.Position = UDim2.new(0, 195, 0.5, -14)
+
     CopyButton.BackgroundColor3 = Color3.fromRGB(55, 120, 255)
     CopyButton.BorderSizePixel = 0
+
     CopyButton.Text = "Copy"
     CopyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
     CopyButton.TextSize = 10
     CopyButton.Font = Enum.Font.GothamBold
+
     CopyButton.AutoButtonColor = false
+
     CopyButton.ZIndex = 504
     CopyButton.Parent = Card
 
