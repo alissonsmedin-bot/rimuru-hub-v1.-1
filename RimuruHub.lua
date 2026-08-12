@@ -711,4 +711,213 @@ TransparencyPanel.BackgroundColor3 = Color3.fromRGB(23, 26, 37)
 TransparencyPanel.BorderSizePixel = 0
 TransparencyPanel.Parent = ConfigPage
 
-local TransparencyCorn
+loc
+--==================================================
+-- TRANSPARENCY PANEL - CONTINUAÇÃO
+--==================================================
+
+local TransparencyCorner = Instance.new("UICorner")
+TransparencyCorner.CornerRadius = UDim.new(0, 10)
+TransparencyCorner.Parent = TransparencyPanel
+
+local TransparencyTitle = Instance.new("TextLabel")
+TransparencyTitle.Position = UDim2.new(0, 14, 0, 11)
+TransparencyTitle.Size = UDim2.new(0.7, 0, 0, 22)
+TransparencyTitle.BackgroundTransparency = 1
+TransparencyTitle.Text = "Transparência do fundo"
+TransparencyTitle.TextColor3 = Color3.fromRGB(235, 235, 240)
+TransparencyTitle.TextSize = 13
+TransparencyTitle.Font = Enum.Font.GothamBold
+TransparencyTitle.TextXAlignment = Enum.TextXAlignment.Left
+TransparencyTitle.Parent = TransparencyPanel
+
+local TransparencyValue = Instance.new("TextLabel")
+TransparencyValue.Position = UDim2.new(1, -70, 0, 11)
+TransparencyValue.Size = UDim2.new(0, 55, 0, 22)
+TransparencyValue.BackgroundTransparency = 1
+TransparencyValue.Text = "8%"
+TransparencyValue.TextColor3 = CurrentColor
+TransparencyValue.TextSize = 12
+TransparencyValue.Font = Enum.Font.GothamBold
+TransparencyValue.TextXAlignment = Enum.TextXAlignment.Right
+TransparencyValue.Parent = TransparencyPanel
+
+local SliderBack = Instance.new("Frame")
+SliderBack.Position = UDim2.new(0, 15, 0, 57)
+SliderBack.Size = UDim2.new(1, -30, 0, 7)
+SliderBack.BackgroundColor3 = Color3.fromRGB(50, 54, 65)
+SliderBack.BorderSizePixel = 0
+SliderBack.Parent = TransparencyPanel
+
+local SliderCorner = Instance.new("UICorner")
+SliderCorner.CornerRadius = UDim.new(1, 0)
+SliderCorner.Parent = SliderBack
+
+local SliderButton = Instance.new("TextButton")
+SliderButton.Size = UDim2.new(0, 15, 0, 15)
+SliderButton.Position = UDim2.new(BackgroundTransparency, -7, 0.5, -7)
+SliderButton.BackgroundColor3 = CurrentColor
+SliderButton.BorderSizePixel = 0
+SliderButton.Text = ""
+SliderButton.AutoButtonColor = false
+SliderButton.Parent = SliderBack
+
+local SliderButtonCorner = Instance.new("UICorner")
+SliderButtonCorner.CornerRadius = UDim.new(1, 0)
+SliderButtonCorner.Parent = SliderButton
+
+--==================================================
+-- TRANSPARENCY SLIDER
+--==================================================
+
+local SliderDragging = false
+
+local function UpdateTransparencyFromInput(Input)
+
+    local RelativeX =
+        (Input.Position.X - SliderBack.AbsolutePosition.X)
+        / SliderBack.AbsoluteSize.X
+
+    RelativeX = math.clamp(RelativeX, 0, 1)
+
+    BackgroundTransparency = RelativeX
+
+    Main.BackgroundTransparency = RelativeX
+
+    SliderButton.Position =
+        UDim2.new(RelativeX, -7, 0.5, -7)
+
+    TransparencyValue.Text =
+        tostring(math.floor(RelativeX * 100)) .. "%"
+end
+
+SliderButton.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        SliderDragging = true
+        UpdateTransparencyFromInput(Input)
+
+    end
+end)
+
+SliderBack.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        SliderDragging = true
+        UpdateTransparencyFromInput(Input)
+
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(Input)
+
+    if not SliderDragging then
+        return
+    end
+
+    if Input.UserInputType == Enum.UserInputType.MouseMovement
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        UpdateTransparencyFromInput(Input)
+
+    end
+
+end)
+
+UserInputService.InputEnded:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        SliderDragging = false
+
+    end
+
+end)
+
+--==================================================
+-- PAGE SWITCHING
+--==================================================
+
+local function SetButtonActive(Button, Active)
+
+    if Active then
+
+        Button.BackgroundColor3 = CurrentColor
+        Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+    else
+
+        Button.BackgroundColor3 = Color3.fromRGB(24, 27, 38)
+        Button.TextColor3 = Color3.fromRGB(180, 185, 200)
+
+    end
+
+end
+
+local function ShowSounds()
+
+    SoundsPage.Visible = true
+    ConfigPage.Visible = false
+
+    SetButtonActive(SoundsButton, true)
+    SetButtonActive(ConfigButton, false)
+
+end
+
+local function ShowConfig()
+
+    SoundsPage.Visible = false
+    ConfigPage.Visible = true
+
+    SetButtonActive(SoundsButton, false)
+    SetButtonActive(ConfigButton, true)
+
+end
+
+SoundsButton.MouseButton1Click:Connect(ShowSounds)
+ConfigButton.MouseButton1Click:Connect(ShowConfig)
+
+ShowSounds()
+
+--==================================================
+-- RGB LOOP
+--==================================================
+
+task.spawn(function()
+
+    local Hue = 0
+
+    while ScreenGui.Parent do
+
+        task.wait(0.03)
+
+        if RGBEnabled then
+
+            Hue = Hue + 0.003
+
+            if Hue >= 1 then
+                Hue = 0
+            end
+
+            local RGBColor = Color3.fromHSV(Hue, 0.9, 1)
+
+            UpdateTheme(RGBColor)
+
+            RGBButton.BackgroundColor3 = RGBColor
+
+        end
+
+    end
+
+end)
+
+--==================================================
+-- FINISHED
+--==================================================
+
+print("Rimuru Hub carregado com sucesso.")
