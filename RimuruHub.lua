@@ -1,5 +1,5 @@
 --// 💥 RIMURU HUB
---// Simple Sound ID Library
+--// Sound ID Library
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
@@ -8,20 +8,24 @@ local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
 --==================================================
--- SOUNDS
+-- SOUND IDS
 --==================================================
 
 local Sounds = {
     {"Coin Parry", "81202220081219"},
     {"Coin", "136124980150792"},
+
     {"Naginata Hit1", "94107281648467"},
     {"Naginata Hit2", "103563218704266"},
     {"Naginata Hit3", "103563218704266"},
+
     {"Gun Fire", "5735280081"},
     {"Gun Hit", "3932141920"},
     {"Gun Break", "1358442317"},
+
     {"Dash 1", "92870369637296"},
     {"Dash 2", "133205097862880"},
+
     {"M1 Hit 1", "92660735965001"},
     {"M1 Hit 2", "103376351068703"},
     {"M1 Hit 3", "122604454724442"},
@@ -52,33 +56,35 @@ Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 Gui.Parent = PlayerGui
 
 --==================================================
--- OPEN BUTTON
+-- LOGO BUTTON
 --==================================================
 
-local OpenButton = Instance.new("ImageButton")
-OpenButton.Name = "OpenButton"
-OpenButton.Size = UDim2.new(0, 52, 0, 52)
-OpenButton.Position = UDim2.new(0, 20, 0.5, -26)
-OpenButton.BackgroundColor3 = Color3.fromRGB(8, 22, 48)
-OpenButton.BorderSizePixel = 0
-OpenButton.Image = "rbxassetid://964321896585"
-OpenButton.ScaleType = Enum.ScaleType.Fit
-OpenButton.Parent = Gui
+local LogoButton = Instance.new("ImageButton")
+LogoButton.Name = "RimuruLogo"
+LogoButton.Size = UDim2.new(0, 55, 0, 55)
+LogoButton.Position = UDim2.new(0, 20, 0.5, -27)
+LogoButton.BackgroundColor3 = Color3.fromRGB(8, 22, 48)
+LogoButton.BorderSizePixel = 0
+LogoButton.Image = "rbxassetid://73553711023299"
+LogoButton.ScaleType = Enum.ScaleType.Fit
+LogoButton.AutoButtonColor = false
+LogoButton.Parent = Gui
 
-local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(0, 13)
-OpenCorner.Parent = OpenButton
+local LogoCorner = Instance.new("UICorner")
+LogoCorner.CornerRadius = UDim.new(0, 14)
+LogoCorner.Parent = LogoButton
 
-local OpenStroke = Instance.new("UIStroke")
-OpenStroke.Color = Color3.fromRGB(55, 120, 255)
-OpenStroke.Thickness = 2
-OpenStroke.Parent = OpenButton
+local LogoStroke = Instance.new("UIStroke")
+LogoStroke.Color = Color3.fromRGB(55, 120, 255)
+LogoStroke.Thickness = 2
+LogoStroke.Parent = LogoButton
 
 --==================================================
--- MAIN
+-- MAIN MENU
 --==================================================
 
 local Main = Instance.new("Frame")
+Main.Name = "Main"
 Main.Size = UDim2.new(0, 430, 0, 360)
 Main.Position = UDim2.new(0.5, -215, 0.5, -180)
 Main.BackgroundColor3 = Color3.fromRGB(15, 18, 28)
@@ -101,7 +107,7 @@ MainStroke.Parent = Main
 
 local Dragging = false
 local DragStart
-local StartPos
+local StartPosition
 
 Main.InputBegan:Connect(function(Input)
 
@@ -110,7 +116,7 @@ Main.InputBegan:Connect(function(Input)
 
         Dragging = true
         DragStart = Input.Position
-        StartPos = Main.Position
+        StartPosition = Main.Position
 
     end
 
@@ -128,10 +134,10 @@ UIS.InputChanged:Connect(function(Input)
         local Delta = Input.Position - DragStart
 
         Main.Position = UDim2.new(
-            StartPos.X.Scale,
-            StartPos.X.Offset + Delta.X,
-            StartPos.Y.Scale,
-            StartPos.Y.Offset + Delta.Y
+            StartPosition.X.Scale,
+            StartPosition.X.Offset + Delta.X,
+            StartPosition.Y.Scale,
+            StartPosition.Y.Offset + Delta.Y
         )
 
     end
@@ -158,28 +164,16 @@ Header.Size = UDim2.new(1, 0, 0, 58)
 Header.BackgroundTransparency = 1
 Header.Parent = Main
 
--- LOGO
-local Logo = Instance.new("ImageLabel")
-Logo.Size = UDim2.new(0, 42, 0, 42)
-Logo.Position = UDim2.new(0, 10, 0, 8)
-Logo.BackgroundColor3 = Color3.fromRGB(8, 22, 48)
-Logo.BorderSizePixel = 0
-Logo.Image = "rbxassetid://964321896585"
-Logo.ScaleType = Enum.ScaleType.Fit
-Logo.Parent = Header
+local HeaderLogo = Instance.new("ImageLabel")
+HeaderLogo.Size = UDim2.new(0, 40, 0, 40)
+HeaderLogo.Position = UDim2.new(0, 10, 0, 8)
+HeaderLogo.BackgroundTransparency = 1
+HeaderLogo.Image = "rbxassetid://73553711023299"
+HeaderLogo.ScaleType = Enum.ScaleType.Fit
+HeaderLogo.Parent = Header
 
-local LogoCorner = Instance.new("UICorner")
-LogoCorner.CornerRadius = UDim.new(0, 10)
-LogoCorner.Parent = Logo
-
-local LogoStroke = Instance.new("UIStroke")
-LogoStroke.Color = Color3.fromRGB(55, 120, 255)
-LogoStroke.Thickness = 1.5
-LogoStroke.Parent = Logo
-
--- TITLE
 local Title = Instance.new("TextLabel")
-Title.Position = UDim2.new(0, 62, 0, 8)
+Title.Position = UDim2.new(0, 60, 0, 7)
 Title.Size = UDim2.new(1, -105, 0, 25)
 Title.BackgroundTransparency = 1
 Title.Text = "Rimuru Hub"
@@ -189,18 +183,21 @@ Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = Header
 
-local SubTitle = Instance.new("TextLabel")
-SubTitle.Position = UDim2.new(0, 63, 0, 32)
-SubTitle.Size = UDim2.new(1, -75, 0, 18)
-SubTitle.BackgroundTransparency = 1
-SubTitle.Text = "Sound IDs"
-SubTitle.TextColor3 = Color3.fromRGB(130, 140, 160)
-SubTitle.TextSize = 11
-SubTitle.Font = Enum.Font.Gotham
-SubTitle.TextXAlignment = Enum.TextXAlignment.Left
-SubTitle.Parent = Header
+local Subtitle = Instance.new("TextLabel")
+Subtitle.Position = UDim2.new(0, 61, 0, 31)
+Subtitle.Size = UDim2.new(1, -75, 0, 18)
+Subtitle.BackgroundTransparency = 1
+Subtitle.Text = "Sound IDs"
+Subtitle.TextColor3 = Color3.fromRGB(130, 140, 160)
+Subtitle.TextSize = 11
+Subtitle.Font = Enum.Font.Gotham
+Subtitle.TextXAlignment = Enum.TextXAlignment.Left
+Subtitle.Parent = Header
 
+--==================================================
 -- CLOSE
+--==================================================
+
 local Close = Instance.new("TextButton")
 Close.Size = UDim2.new(0, 30, 0, 30)
 Close.Position = UDim2.new(1, -38, 0, 14)
@@ -226,7 +223,7 @@ Scroll.Position = UDim2.new(0, 10, 0, 65)
 Scroll.Size = UDim2.new(1, -20, 1, -75)
 Scroll.BackgroundTransparency = 1
 Scroll.BorderSizePixel = 0
-Scroll.ScrollBarThickness = 4
+Scroll.ScrollBarThickness = 5
 Scroll.ScrollBarImageColor3 = Color3.fromRGB(55, 120, 255)
 Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -234,7 +231,7 @@ Scroll.ScrollingDirection = Enum.ScrollingDirection.Y
 Scroll.Parent = Main
 
 local Padding = Instance.new("UIPadding")
-Padding.PaddingBottom = UDim.new(0, 5)
+Padding.PaddingBottom = UDim.new(0, 6)
 Padding.Parent = Scroll
 
 local Layout = Instance.new("UIListLayout")
@@ -249,41 +246,47 @@ Layout.Parent = Scroll
 local function Copy(ID)
 
     if setclipboard then
-        pcall(function()
+        local Success = pcall(function()
             setclipboard(ID)
         end)
-        return true
+
+        if Success then
+            return true
+        end
     end
 
     if toclipboard then
-        pcall(function()
+        local Success = pcall(function()
             toclipboard(ID)
         end)
-        return true
+
+        if Success then
+            return true
+        end
     end
 
     return false
 end
 
 --==================================================
--- SOUND ITEMS
+-- SOUND CARDS
 --==================================================
 
-for Index, Sound in ipairs(Sounds) do
+for Index, Data in ipairs(Sounds) do
 
-    local Name = Sound[1]
-    local ID = Sound[2]
+    local Name = Data[1]
+    local ID = Data[2]
 
-    local Item = Instance.new("Frame")
-    Item.Size = UDim2.new(1, -5, 0, 48)
-    Item.BackgroundColor3 = Color3.fromRGB(24, 28, 40)
-    Item.BorderSizePixel = 0
-    Item.LayoutOrder = Index
-    Item.Parent = Scroll
+    local Card = Instance.new("Frame")
+    Card.Size = UDim2.new(1, -5, 0, 48)
+    Card.BackgroundColor3 = Color3.fromRGB(24, 28, 40)
+    Card.BorderSizePixel = 0
+    Card.LayoutOrder = Index
+    Card.Parent = Scroll
 
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 8)
-    Corner.Parent = Item
+    local CardCorner = Instance.new("UICorner")
+    CardCorner.CornerRadius = UDim.new(0, 8)
+    CardCorner.Parent = Card
 
     local NameLabel = Instance.new("TextLabel")
     NameLabel.Position = UDim2.new(0, 12, 0, 5)
@@ -295,22 +298,22 @@ for Index, Sound in ipairs(Sounds) do
     NameLabel.Font = Enum.Font.GothamMedium
     NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     NameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    NameLabel.Parent = Item
+    NameLabel.Parent = Card
 
     local IDLabel = Instance.new("TextLabel")
-    IDLabel.Position = UDim2.new(0, 12, 0, 24)
-    IDLabel.Size = UDim2.new(0, 170, 0, 17)
+    IDLabel.Position = UDim2.new(0, 12, 0, 25)
+    IDLabel.Size = UDim2.new(0, 170, 0, 16)
     IDLabel.BackgroundTransparency = 1
     IDLabel.Text = ID
     IDLabel.TextColor3 = Color3.fromRGB(135, 145, 165)
     IDLabel.TextSize = 10
     IDLabel.Font = Enum.Font.Code
     IDLabel.TextXAlignment = Enum.TextXAlignment.Left
-    IDLabel.Parent = Item
+    IDLabel.Parent = Card
 
     local CopyButton = Instance.new("TextButton")
     CopyButton.Size = UDim2.new(0, 55, 0, 28)
-    CopyButton.Position = UDim2.new(0, 188, 0.5, -14)
+    CopyButton.Position = UDim2.new(0, 190, 0.5, -14)
     CopyButton.BackgroundColor3 = Color3.fromRGB(55, 120, 255)
     CopyButton.BorderSizePixel = 0
     CopyButton.Text = "Copy"
@@ -318,7 +321,7 @@ for Index, Sound in ipairs(Sounds) do
     CopyButton.TextSize = 10
     CopyButton.Font = Enum.Font.GothamBold
     CopyButton.AutoButtonColor = false
-    CopyButton.Parent = Item
+    CopyButton.Parent = Card
 
     local CopyCorner = Instance.new("UICorner")
     CopyCorner.CornerRadius = UDim.new(0, 6)
@@ -327,13 +330,17 @@ for Index, Sound in ipairs(Sounds) do
     CopyButton.MouseButton1Click:Connect(function()
 
         if Copy(ID) then
+
             CopyButton.Text = "Copied!"
 
             task.delay(0.8, function()
+
                 if CopyButton.Parent then
                     CopyButton.Text = "Copy"
                 end
+
             end)
+
         end
 
     end)
@@ -344,14 +351,18 @@ end
 -- OPEN / CLOSE
 --==================================================
 
-OpenButton.MouseButton1Click:Connect(function()
+LogoButton.MouseButton1Click:Connect(function()
+
     Main.Visible = true
-    OpenButton.Visible = false
+    LogoButton.Visible = false
+
 end)
 
 Close.MouseButton1Click:Connect(function()
+
     Main.Visible = false
-    OpenButton.Visible = true
+    LogoButton.Visible = true
+
 end)
 
 print("Rimuru Hub carregado.")
