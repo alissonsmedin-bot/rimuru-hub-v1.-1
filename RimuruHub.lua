@@ -14,18 +14,14 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local Sounds = {
     {"Coin Parry", "81202220081219"},
     {"Coin", "136124980150792"},
-
     {"Naginata Hit1", "94107281648467"},
     {"Naginata Hit2", "103563218704266"},
     {"Naginata Hit3", "103563218704266"},
-
     {"Gun Fire", "5735280081"},
     {"Gun Hit", "3932141920"},
     {"Gun Break", "1358442317"},
-
     {"Dash 1", "92870369637296"},
     {"Dash 2", "133205097862880"},
-
     {"M1 Hit 1", "92660735965001"},
     {"M1 Hit 2", "103376351068703"},
     {"M1 Hit 3", "122604454724442"},
@@ -35,7 +31,7 @@ local Sounds = {
 }
 
 --==================================================
--- REMOVE OLD GUI
+-- REMOVE OLD
 --==================================================
 
 local Old = PlayerGui:FindFirstChild("RimuruHub")
@@ -51,7 +47,32 @@ end
 local Gui = Instance.new("ScreenGui")
 Gui.Name = "RimuruHub"
 Gui.ResetOnSpawn = false
+Gui.IgnoreGuiInset = true
+Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 Gui.Parent = PlayerGui
+
+--==================================================
+-- OPEN BUTTON
+--==================================================
+
+local OpenButton = Instance.new("ImageButton")
+OpenButton.Name = "OpenButton"
+OpenButton.Size = UDim2.new(0, 52, 0, 52)
+OpenButton.Position = UDim2.new(0, 20, 0.5, -26)
+OpenButton.BackgroundColor3 = Color3.fromRGB(8, 22, 48)
+OpenButton.BorderSizePixel = 0
+OpenButton.Image = "rbxassetid://964321896585"
+OpenButton.ScaleType = Enum.ScaleType.Fit
+OpenButton.Parent = Gui
+
+local OpenCorner = Instance.new("UICorner")
+OpenCorner.CornerRadius = UDim.new(0, 13)
+OpenCorner.Parent = OpenButton
+
+local OpenStroke = Instance.new("UIStroke")
+OpenStroke.Color = Color3.fromRGB(55, 120, 255)
+OpenStroke.Thickness = 2
+OpenStroke.Parent = OpenButton
 
 --==================================================
 -- MAIN
@@ -62,6 +83,7 @@ Main.Size = UDim2.new(0, 430, 0, 360)
 Main.Position = UDim2.new(0.5, -215, 0.5, -180)
 Main.BackgroundColor3 = Color3.fromRGB(15, 18, 28)
 Main.BorderSizePixel = 0
+Main.Visible = false
 Main.Parent = Gui
 
 local MainCorner = Instance.new("UICorner")
@@ -81,20 +103,14 @@ local Dragging = false
 local DragStart
 local StartPos
 
-local function BeginDrag(Input)
-
-    Dragging = true
-    DragStart = Input.Position
-    StartPos = Main.Position
-
-end
-
 Main.InputBegan:Connect(function(Input)
 
     if Input.UserInputType == Enum.UserInputType.MouseButton1
     or Input.UserInputType == Enum.UserInputType.Touch then
 
-        BeginDrag(Input)
+        Dragging = true
+        DragStart = Input.Position
+        StartPos = Main.Position
 
     end
 
@@ -142,12 +158,11 @@ Header.Size = UDim2.new(1, 0, 0, 58)
 Header.BackgroundTransparency = 1
 Header.Parent = Main
 
--- Logo
+-- LOGO
 local Logo = Instance.new("ImageLabel")
 Logo.Size = UDim2.new(0, 42, 0, 42)
 Logo.Position = UDim2.new(0, 10, 0, 8)
 Logo.BackgroundColor3 = Color3.fromRGB(8, 22, 48)
-Logo.BackgroundTransparency = 0
 Logo.BorderSizePixel = 0
 Logo.Image = "rbxassetid://964321896585"
 Logo.ScaleType = Enum.ScaleType.Fit
@@ -162,12 +177,10 @@ LogoStroke.Color = Color3.fromRGB(55, 120, 255)
 LogoStroke.Thickness = 1.5
 LogoStroke.Parent = Logo
 
--- Se precisar usar a textura:
--- Logo.Image = "rbxassetid://73553711023299"
-
+-- TITLE
 local Title = Instance.new("TextLabel")
 Title.Position = UDim2.new(0, 62, 0, 8)
-Title.Size = UDim2.new(1, -75, 0, 25)
+Title.Size = UDim2.new(1, -105, 0, 25)
 Title.BackgroundTransparency = 1
 Title.Text = "Rimuru Hub"
 Title.TextColor3 = Color3.fromRGB(240, 243, 250)
@@ -186,6 +199,23 @@ SubTitle.TextSize = 11
 SubTitle.Font = Enum.Font.Gotham
 SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 SubTitle.Parent = Header
+
+-- CLOSE
+local Close = Instance.new("TextButton")
+Close.Size = UDim2.new(0, 30, 0, 30)
+Close.Position = UDim2.new(1, -38, 0, 14)
+Close.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
+Close.BorderSizePixel = 0
+Close.Text = "X"
+Close.TextColor3 = Color3.fromRGB(230, 230, 235)
+Close.TextSize = 12
+Close.Font = Enum.Font.GothamBold
+Close.AutoButtonColor = false
+Close.Parent = Header
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 7)
+CloseCorner.Parent = Close
 
 --==================================================
 -- SCROLL
@@ -219,19 +249,20 @@ Layout.Parent = Scroll
 local function Copy(ID)
 
     if setclipboard then
-
-        setclipboard(ID)
+        pcall(function()
+            setclipboard(ID)
+        end)
         return true
+    end
 
-    elseif toclipboard then
-
-        toclipboard(ID)
+    if toclipboard then
+        pcall(function()
+            toclipboard(ID)
+        end)
         return true
-
     end
 
     return false
-
 end
 
 --==================================================
@@ -254,7 +285,6 @@ for Index, Sound in ipairs(Sounds) do
     Corner.CornerRadius = UDim.new(0, 8)
     Corner.Parent = Item
 
-    -- Nome
     local NameLabel = Instance.new("TextLabel")
     NameLabel.Position = UDim2.new(0, 12, 0, 5)
     NameLabel.Size = UDim2.new(0, 130, 0, 18)
@@ -267,7 +297,6 @@ for Index, Sound in ipairs(Sounds) do
     NameLabel.TextTruncate = Enum.TextTruncate.AtEnd
     NameLabel.Parent = Item
 
-    -- ID
     local IDLabel = Instance.new("TextLabel")
     IDLabel.Position = UDim2.new(0, 12, 0, 24)
     IDLabel.Size = UDim2.new(0, 170, 0, 17)
@@ -279,7 +308,6 @@ for Index, Sound in ipairs(Sounds) do
     IDLabel.TextXAlignment = Enum.TextXAlignment.Left
     IDLabel.Parent = Item
 
-    -- Copy
     local CopyButton = Instance.new("TextButton")
     CopyButton.Size = UDim2.new(0, 55, 0, 28)
     CopyButton.Position = UDim2.new(0, 188, 0.5, -14)
@@ -299,29 +327,13 @@ for Index, Sound in ipairs(Sounds) do
     CopyButton.MouseButton1Click:Connect(function()
 
         if Copy(ID) then
-
-            CopyButton.Text = "Copied"
+            CopyButton.Text = "Copied!"
 
             task.delay(0.8, function()
-
                 if CopyButton.Parent then
                     CopyButton.Text = "Copy"
                 end
-
             end)
-
-        else
-
-            CopyButton.Text = "N/A"
-
-            task.delay(0.8, function()
-
-                if CopyButton.Parent then
-                    CopyButton.Text = "Copy"
-                end
-
-            end)
-
         end
 
     end)
@@ -329,7 +341,17 @@ for Index, Sound in ipairs(Sounds) do
 end
 
 --==================================================
--- DONE
+-- OPEN / CLOSE
 --==================================================
+
+OpenButton.MouseButton1Click:Connect(function()
+    Main.Visible = true
+    OpenButton.Visible = false
+end)
+
+Close.MouseButton1Click:Connect(function()
+    Main.Visible = false
+    OpenButton.Visible = true
+end)
 
 print("Rimuru Hub carregado.")
