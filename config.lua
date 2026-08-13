@@ -1,430 +1,153 @@
 --// 💥 RIMURU HUB
---// Config
---// Interface Themes & Settings
+--// Configuration
 
 return {
 
     --==================================================
-    -- 🎨 TEMA ATUAL
-    --==================================================
-
-    -- Opções:
-    -- "Golden"
-    -- "DarkBlue"
-    -- "WhiteGold"
-    -- "RedBlack"
-    -- "Green"
-    -- "RGB"
-
-    Theme = "Golden",
-
-    --==================================================
-    -- 🎨 TEMAS
-    --==================================================
-
-    Themes = {
-
-        --==============================================
-        -- 💛 GOLDEN
-        -- Dourado neon / chique
-        --==============================================
-
-        Golden = {
-
-            Accent = {
-                R = 255,
-                G = 195,
-                B = 45
-            },
-
-            Background = {
-                R = 15,
-                G = 18,
-                B = 28
-            },
-
-            SecondaryBackground = {
-                R = 11,
-                G = 14,
-                B = 23
-            },
-
-            Card = {
-                R = 27,
-                G = 27,
-                B = 34
-            },
-
-            Text = {
-                R = 245,
-                G = 245,
-                B = 250
-            },
-
-            SubText = {
-                R = 165,
-                G = 165,
-                B = 175
-            },
-
-            Border = {
-                R = 255,
-                G = 195,
-                B = 45
-            }
-        },
-
-        --==============================================
-        -- 💙 DARK BLUE
-        -- Azul escuro + azul claro
-        --==============================================
-
-        DarkBlue = {
-
-            Accent = {
-                R = 45,
-                G = 150,
-                B = 255
-            },
-
-            Background = {
-                R = 9,
-                G = 16,
-                B = 30
-            },
-
-            SecondaryBackground = {
-                R = 7,
-                G = 12,
-                B = 24
-            },
-
-            Card = {
-                R = 18,
-                G = 30,
-                B = 50
-            },
-
-            Text = {
-                R = 240,
-                G = 245,
-                B = 255
-            },
-
-            SubText = {
-                R = 135,
-                G = 155,
-                B = 180
-            },
-
-            Border = {
-                R = 45,
-                G = 150,
-                B = 255
-            }
-        },
-
-        --==============================================
-        -- 🤍 WHITE GOLD
-        -- Branco + detalhes dourados
-        --==============================================
-
-        WhiteGold = {
-
-            Accent = {
-                R = 218,
-                G = 170,
-                B = 55
-            },
-
-            Background = {
-                R = 242,
-                G = 242,
-                B = 238
-            },
-
-            SecondaryBackground = {
-                R = 255,
-                G = 255,
-                B = 252
-            },
-
-            Card = {
-                R = 230,
-                G = 230,
-                B = 225
-            },
-
-            Text = {
-                R = 30,
-                G = 30,
-                B = 32
-            },
-
-            SubText = {
-                R = 100,
-                G = 100,
-                B = 105
-            },
-
-            Border = {
-                R = 218,
-                G = 170,
-                B = 55
-            }
-        },
-
-        --==============================================
-        -- ❤️ RED BLACK
-        --==============================================
-
-        RedBlack = {
-
-            Accent = {
-                R = 235,
-                G = 45,
-                B = 55
-            },
-
-            Background = {
-                R = 16,
-                G = 8,
-                B = 10
-            },
-
-            SecondaryBackground = {
-                R = 10,
-                G = 7,
-                B = 9
-            },
-
-            Card = {
-                R = 32,
-                G = 16,
-                B = 20
-            },
-
-            Text = {
-                R = 245,
-                G = 235,
-                B = 238
-            },
-
-            SubText = {
-                R = 160,
-                G = 130,
-                B = 135
-            },
-
-            Border = {
-                R = 235,
-                G = 45,
-                B = 55
-            }
-        },
-
-        --==============================================
-        -- 💚 GREEN
-        --==============================================
-
-        Green = {
-
-            Accent = {
-                R = 50,
-                G = 220,
-                B = 120
-            },
-
-            Background = {
-                R = 8,
-                G = 20,
-                B = 15
-            },
-
-            SecondaryBackground = {
-                R = 6,
-                G = 14,
-                B = 11
-            },
-
-            Card = {
-                R = 15,
-                G = 35,
-                B = 25
-            },
-
-            Text = {
-                R = 235,
-                G = 250,
-                B = 240
-            },
-
-            SubText = {
-                R = 125,
-                G = 165,
-                B = 140
-            },
-
-            Border = {
-                R = 50,
-                G = 220,
-                B = 120
-            }
-        },
-
-        --==============================================
-        -- 🌈 RGB
-        --==============================================
-
-        RGB = {
-
-            Accent = "RGB",
-
-            Background = {
-                R = 15,
-                G = 18,
-                B = 28
-            },
-
-            SecondaryBackground = {
-                R = 11,
-                G = 14,
-                B = 23
-            },
-
-            Card = {
-                R = 24,
-                G = 28,
-                B = 40
-            },
-
-            Text = {
-                R = 245,
-                G = 245,
-                B = 250
-            },
-
-            SubText = {
-                R = 145,
-                G = 150,
-                B = 165
-            },
-
-            Border = "RGB"
-        }
-    },
-
-    --==================================================
-    -- ⚙️ CONFIGURAÇÕES DA INTERFACE
+    -- UI
     --==================================================
 
     UI = {
 
-        -- Logo
+        -- Tema inicial
+        Theme = "Azul Escuro",
+
+        --==================================================
+        -- LOGO
+        --==================================================
+
         ShowLogo = true,
-
         LogoDraggable = true,
-
-        -- Menu
         MainMenuDraggable = true,
 
-        -- Borda da logo acompanha o Accent
-        LogoBorderUsesAccent = true,
-
-        -- Borda do menu acompanha o Accent
-        MenuBorderUsesAccent = true,
-
-        -- Botões acompanham o Accent
-        ButtonsUseAccent = true,
-
-        -- Scrollbar acompanha o Accent
-        ScrollbarUsesAccent = true,
-
         --==================================================
-        -- 📐 TAMANHO DO MENU
+        -- TEMAS
         --==================================================
 
-        Width = 600,
-        Height = 400,
+        Themes = {
 
-        MinWidth = 400,
-        MinHeight = 250,
+            -- 🔵 PADRÃO
+            ["Azul Escuro"] = {
 
-        --==================================================
-        -- ✨ APARÊNCIA
-        --==================================================
+                Accent = Color3.fromRGB(35, 145, 255),
 
-        MenuCornerRadius = 12,
+                Main = Color3.fromRGB(15, 18, 28),
+                Sidebar = Color3.fromRGB(11, 14, 23),
+                Content = Color3.fromRGB(11, 14, 23),
+                Card = Color3.fromRGB(24, 28, 40),
+                Button = Color3.fromRGB(20, 24, 35),
 
-        CardCornerRadius = 8,
+                Text = Color3.fromRGB(240, 243, 250),
+                SubText = Color3.fromRGB(130, 140, 160),
 
-        ButtonCornerRadius = 7,
+                LogoBackground = Color3.fromRGB(8, 22, 48),
 
-        LogoCornerRadius = 14,
+                Close = Color3.fromRGB(35, 40, 55)
 
-        BorderThickness = 1.5,
+            },
 
-        LogoBorderThickness = 2,
+            -- 💛 DOURADO CHIQUE
+            ["Dourado Neon"] = {
 
-        --==================================================
-        -- 🖱️ COMPORTAMENTO
-        --==================================================
+                Accent = Color3.fromRGB(255, 190, 45),
 
-        CloseWithX = true,
+                Main = Color3.fromRGB(24, 20, 10),
+                Sidebar = Color3.fromRGB(20, 17, 9),
+                Content = Color3.fromRGB(20, 17, 9),
+                Card = Color3.fromRGB(39, 32, 17),
+                Button = Color3.fromRGB(32, 27, 14),
 
-        OpenWithLogo = true,
+                Text = Color3.fromRGB(255, 248, 220),
+                SubText = Color3.fromRGB(190, 170, 120),
 
-        -- Impede a logo de desaparecer permanentemente
-        RestoreLogoOnClose = true
-    },
+                LogoBackground = Color3.fromRGB(42, 31, 7),
 
-    --==================================================
-    -- ⚙️ FUNÇÕES DA CATEGORIA "CONFIGURAÇÃO"
-    --==================================================
+                Close = Color3.fromRGB(55, 44, 18)
 
-    Settings = {
+            },
 
-        {
-            Name = "Mostrar Logo",
-            Type = "Toggle",
-            Property = "ShowLogo"
-        },
+            -- 🤍 BRANCO + DOURADO
+            ["Branco Dourado"] = {
 
-        {
-            Name = "Logo Arrastável",
-            Type = "Toggle",
-            Property = "LogoDraggable"
-        },
+                Accent = Color3.fromRGB(218, 170, 55),
 
-        {
-            Name = "Menu Arrastável",
-            Type = "Toggle",
-            Property = "MainMenuDraggable"
-        },
+                Main = Color3.fromRGB(235, 235, 232),
+                Sidebar = Color3.fromRGB(220, 220, 216),
+                Content = Color3.fromRGB(225, 225, 221),
+                Card = Color3.fromRGB(245, 245, 241),
+                Button = Color3.fromRGB(235, 235, 230),
 
-        {
-            Name = "Borda da Logo usa Tema",
-            Type = "Toggle",
-            Property = "LogoBorderUsesAccent"
-        },
+                Text = Color3.fromRGB(35, 35, 35),
+                SubText = Color3.fromRGB(100, 100, 95),
 
-        {
-            Name = "Borda do Menu usa Tema",
-            Type = "Toggle",
-            Property = "MenuBorderUsesAccent"
-        },
+                LogoBackground = Color3.fromRGB(248, 245, 230),
 
-        {
-            Name = "Botões usam Tema",
-            Type = "Toggle",
-            Property = "ButtonsUseAccent"
-        },
+                Close = Color3.fromRGB(205, 195, 170)
 
-        {
-            Name = "Scrollbar usa Tema",
-            Type = "Toggle",
-            Property = "ScrollbarUsesAccent"
+            },
+
+            -- ❤️ VERMELHO + PRETO
+            ["Vermelho"] = {
+
+                Accent = Color3.fromRGB(235, 35, 45),
+
+                Main = Color3.fromRGB(18, 10, 12),
+                Sidebar = Color3.fromRGB(13, 8, 10),
+                Content = Color3.fromRGB(13, 8, 10),
+                Card = Color3.fromRGB(35, 18, 21),
+                Button = Color3.fromRGB(29, 14, 17),
+
+                Text = Color3.fromRGB(245, 235, 237),
+                SubText = Color3.fromRGB(160, 125, 130),
+
+                LogoBackground = Color3.fromRGB(45, 8, 12),
+
+                Close = Color3.fromRGB(55, 20, 24)
+
+            },
+
+            -- 💚 VERDE
+            ["Verde"] = {
+
+                Accent = Color3.fromRGB(45, 220, 120),
+
+                Main = Color3.fromRGB(10, 20, 15),
+                Sidebar = Color3.fromRGB(7, 15, 11),
+                Content = Color3.fromRGB(7, 15, 11),
+                Card = Color3.fromRGB(17, 37, 25),
+                Button = Color3.fromRGB(13, 29, 20),
+
+                Text = Color3.fromRGB(230, 250, 238),
+                SubText = Color3.fromRGB(125, 165, 140),
+
+                LogoBackground = Color3.fromRGB(6, 40, 23),
+
+                Close = Color3.fromRGB(20, 55, 35)
+
+            },
+
+            -- 🌈 RGB
+            ["RGB"] = {
+
+                RGB = true,
+
+                Main = Color3.fromRGB(15, 18, 28),
+                Sidebar = Color3.fromRGB(11, 14, 23),
+                Content = Color3.fromRGB(11, 14, 23),
+                Card = Color3.fromRGB(24, 28, 40),
+                Button = Color3.fromRGB(20, 24, 35),
+
+                Text = Color3.fromRGB(240, 243, 250),
+                SubText = Color3.fromRGB(130, 140, 160),
+
+                LogoBackground = Color3.fromRGB(8, 22, 48),
+
+                Close = Color3.fromRGB(35, 40, 55)
+
+            }
+
         }
+
     }
 
 }
