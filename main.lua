@@ -58,8 +58,6 @@ Gui.Name = "RimuruHub"
 Gui.ResetOnSpawn = false
 Gui.IgnoreGuiInset = true
 Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-
--- Fica acima do HUD normal do jogo
 Gui.DisplayOrder = 999999
 
 Gui.Parent = PlayerGui
@@ -355,7 +353,6 @@ Close.Parent = Header
 local CloseCorner = Instance.new("UICorner")
 
 CloseCorner.CornerRadius = UDim.new(0, 7)
-
 CloseCorner.Parent = Close
 
 --==================================================
@@ -519,9 +516,7 @@ local function Copy(ID)
     if setclipboard then
 
         local Success = pcall(function()
-
             setclipboard(ID)
-
         end)
 
         if Success then
@@ -533,9 +528,7 @@ local function Copy(ID)
     if toclipboard then
 
         local Success = pcall(function()
-
             toclipboard(ID)
-
         end)
 
         if Success then
@@ -885,58 +878,154 @@ ConfigButton.MouseButton1Click:Connect(function()
     ContentTitle.Text =
         "Configuração"
 
-    --==============================================
+    --==================================================
+    -- CONFIG TOGGLE
+    --==================================================
+
+    local function CreateConfigToggle(
+        Name,
+        GetValue,
+        SetValue,
+        Order
+    )
+
+        local Button =
+            Instance.new("TextButton")
+
+        Button.Name =
+            Name
+
+        Button.Size =
+            UDim2.new(1, -5, 0, 45)
+
+        Button.BackgroundColor3 =
+            Color3.fromRGB(24, 28, 40)
+
+        Button.BorderSizePixel = 0
+
+        Button.Text =
+            Name .. ": " .. tostring(GetValue())
+
+        Button.TextColor3 =
+            Color3.fromRGB(235, 238, 245)
+
+        Button.TextSize = 12
+
+        Button.Font =
+            Enum.Font.GothamMedium
+
+        Button.TextXAlignment =
+            Enum.TextXAlignment.Left
+
+        Button.AutoButtonColor = false
+
+        Button.LayoutOrder =
+            Order
+
+        Button.ZIndex = 504
+        Button.Parent = Scroll
+
+        local Padding =
+            Instance.new("UIPadding")
+
+        Padding.PaddingLeft =
+            UDim.new(0, 12)
+
+        Padding.Parent = Button
+
+        local Corner =
+            Instance.new("UICorner")
+
+        Corner.CornerRadius =
+            UDim.new(0, 8)
+
+        Corner.Parent = Button
+
+        Button.MouseButton1Click:Connect(function()
+
+            local NewValue =
+                not GetValue()
+
+            SetValue(NewValue)
+
+            Button.Text =
+                Name .. ": " .. tostring(NewValue)
+
+        end)
+
+    end
+
+    --==================================================
     -- SHOW LOGO
-    --==============================================
+    --==================================================
 
-    local ShowLogoButton =
-        Instance.new("TextButton")
+    CreateConfigToggle(
 
-    ShowLogoButton.Size =
-        UDim2.new(1, -5, 0, 45)
+        "Mostrar Logo",
 
-    ShowLogoButton.BackgroundColor3 =
-        Color3.fromRGB(24, 28, 40)
+        function()
+            return Config.UI.ShowLogo
+        end,
 
-    ShowLogoButton.BorderSizePixel = 0
+        function(Value)
 
-    ShowLogoButton.Text =
-        "Mostrar Logo: " ..
-        tostring(Config.UI.ShowLogo)
+            Config.UI.ShowLogo =
+                Value
 
-    ShowLogoButton.TextColor3 =
-        Color3.fromRGB(235, 238, 245)
+            LogoButton.Visible =
+                Value
 
-    ShowLogoButton.TextSize = 12
+        end,
 
-    ShowLogoButton.Font =
-        Enum.Font.GothamMedium
+        1
 
-    ShowLogoButton.ZIndex = 504
-    ShowLogoButton.Parent = Scroll
+    )
 
-    local Corner =
-        Instance.new("UICorner")
+    --==================================================
+    -- LOGO DRAGGABLE
+    --==================================================
 
-    Corner.CornerRadius =
-        UDim.new(0, 8)
+    CreateConfigToggle(
 
-    Corner.Parent =
-        ShowLogoButton
+        "Logo Arrastável",
 
-    ShowLogoButton.MouseButton1Click:Connect(function()
+        function()
+            return Config.UI.LogoDraggable
+        end,
 
-        Config.UI.ShowLogo =
-            not Config.UI.ShowLogo
+        function(Value)
 
-        ShowLogoButton.Text =
-            "Mostrar Logo: " ..
-            tostring(Config.UI.ShowLogo)
+            Config.UI.LogoDraggable =
+                Value
 
-        LogoButton.Visible =
-            Config.UI.ShowLogo
+        end,
 
-    end)
+        2
+
+    )
+
+    --==================================================
+    -- MAIN MENU DRAGGABLE
+    --==================================================
+
+    CreateConfigToggle(
+
+        "Menu Arrastável",
+
+        function()
+            return Config.UI.MainMenuDraggable
+        end,
+
+        function(Value)
+
+            Config.UI.MainMenuDraggable =
+                Value
+
+        end,
+
+        3
+
+    )
 
 end)
 
@@ -994,5 +1083,9 @@ if Sounds["Principal"] then
     end
 
 end
+
+--==================================================
+-- FINAL
+--==================================================
 
 print("💥 Rimuru Hub carregado.")
