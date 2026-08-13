@@ -13,7 +13,7 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 
 local SoundsURL = "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/sound.lua"
 
-local Sounds = loadstring(game:HttpGet(https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/sound.lua))()
+local Sounds = loadstring(game:HttpGet(SoundsURL))()
 
 --==================================================
 -- REMOVE OLD VERSION
