@@ -8,12 +8,31 @@ local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
 --==================================================
--- LOAD SOUND DATABASE
+-- LOAD FILES
 --==================================================
 
-local SoundsURL = "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/sound.lua"
+local BaseURL =
+    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/"
+
+local SoundsURL = BaseURL .. "sound.lua"
+local ConfigURL = BaseURL .. "config.lua"
 
 local Sounds = loadstring(game:HttpGet(SoundsURL))()
+local Config = loadstring(game:HttpGet(ConfigURL))()
+
+--==================================================
+-- COLORS
+--==================================================
+
+local AccentColor = Color3.fromRGB(
+    Config.UI.Color.R,
+    Config.UI.Color.G,
+    Config.UI.Color.B
+)
+
+local function GetAccent()
+    return AccentColor
+end
 
 --==================================================
 -- REMOVE OLD VERSION
@@ -40,6 +59,7 @@ Gui.ResetOnSpawn = false
 Gui.IgnoreGuiInset = true
 Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
+-- Fica acima do HUD normal do jogo
 Gui.DisplayOrder = 999999
 
 Gui.Parent = PlayerGui
@@ -72,7 +92,7 @@ LogoCorner.Parent = LogoButton
 
 local LogoStroke = Instance.new("UIStroke")
 
-LogoStroke.Color = Color3.fromRGB(55, 120, 255)
+LogoStroke.Color = GetAccent()
 LogoStroke.Thickness = 2
 
 LogoStroke.Parent = LogoButton
@@ -88,6 +108,10 @@ local LogoDragStart
 local LogoStartPosition
 
 LogoButton.InputBegan:Connect(function(Input)
+
+    if not Config.UI.LogoDraggable then
+        return
+    end
 
     if Input.UserInputType == Enum.UserInputType.MouseButton1
     or Input.UserInputType == Enum.UserInputType.Touch then
@@ -151,8 +175,8 @@ local Main = Instance.new("Frame")
 
 Main.Name = "Main"
 
-Main.Size = UDim2.new(0, 430, 0, 360)
-Main.Position = UDim2.new(0.5, -215, 0.5, -180)
+Main.Size = UDim2.new(0, 600, 0, 400)
+Main.Position = UDim2.new(0.5, -300, 0.5, -200)
 
 Main.BackgroundColor3 = Color3.fromRGB(15, 18, 28)
 Main.BorderSizePixel = 0
@@ -169,7 +193,7 @@ MainCorner.Parent = Main
 
 local MainStroke = Instance.new("UIStroke")
 
-MainStroke.Color = Color3.fromRGB(55, 120, 255)
+MainStroke.Color = GetAccent()
 MainStroke.Thickness = 1.5
 
 MainStroke.Parent = Main
@@ -184,6 +208,10 @@ local DragStart
 local StartPosition
 
 Main.InputBegan:Connect(function(Input)
+
+    if not Config.UI.MainMenuDraggable then
+        return
+    end
 
     if Input.UserInputType == Enum.UserInputType.MouseButton1
     or Input.UserInputType == Enum.UserInputType.Touch then
@@ -238,6 +266,7 @@ end)
 local Header = Instance.new("Frame")
 
 Header.Size = UDim2.new(1, 0, 0, 58)
+
 Header.BackgroundTransparency = 1
 Header.ZIndex = 501
 
@@ -253,8 +282,8 @@ HeaderLogo.BackgroundTransparency = 1
 HeaderLogo.Image = "rbxassetid://6691708227"
 
 HeaderLogo.ScaleType = Enum.ScaleType.Fit
-HeaderLogo.ZIndex = 502
 
+HeaderLogo.ZIndex = 502
 HeaderLogo.Parent = Header
 
 local Title = Instance.new("TextLabel")
@@ -271,8 +300,8 @@ Title.TextSize = 19
 Title.Font = Enum.Font.GothamBold
 
 Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.ZIndex = 502
 
+Title.ZIndex = 502
 Title.Parent = Header
 
 local Subtitle = Instance.new("TextLabel")
@@ -282,15 +311,18 @@ Subtitle.Size = UDim2.new(1, -75, 0, 18)
 
 Subtitle.BackgroundTransparency = 1
 
-Subtitle.Text = "Sound IDs"
-Subtitle.TextColor3 = Color3.fromRGB(130, 140, 160)
+Subtitle.Text = "Sound Library"
+
+Subtitle.TextColor3 =
+    Color3.fromRGB(130, 140, 160)
 
 Subtitle.TextSize = 11
 Subtitle.Font = Enum.Font.Gotham
 
-Subtitle.TextXAlignment = Enum.TextXAlignment.Left
-Subtitle.ZIndex = 502
+Subtitle.TextXAlignment =
+    Enum.TextXAlignment.Left
 
+Subtitle.ZIndex = 502
 Subtitle.Parent = Header
 
 --==================================================
@@ -302,64 +334,184 @@ local Close = Instance.new("TextButton")
 Close.Size = UDim2.new(0, 30, 0, 30)
 Close.Position = UDim2.new(1, -38, 0, 14)
 
-Close.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
+Close.BackgroundColor3 =
+    Color3.fromRGB(35, 40, 55)
+
 Close.BorderSizePixel = 0
 
 Close.Text = "X"
-Close.TextColor3 = Color3.fromRGB(230, 230, 235)
+
+Close.TextColor3 =
+    Color3.fromRGB(230, 230, 235)
 
 Close.TextSize = 12
 Close.Font = Enum.Font.GothamBold
 
 Close.AutoButtonColor = false
-Close.ZIndex = 503
 
+Close.ZIndex = 503
 Close.Parent = Header
 
 local CloseCorner = Instance.new("UICorner")
 
 CloseCorner.CornerRadius = UDim.new(0, 7)
+
 CloseCorner.Parent = Close
 
 --==================================================
--- SCROLL
+-- SIDEBAR
+--==================================================
+
+local Sidebar = Instance.new("Frame")
+
+Sidebar.Name = "Sidebar"
+
+Sidebar.Position = UDim2.new(0, 10, 0, 65)
+Sidebar.Size = UDim2.new(0, 165, 1, -75)
+
+Sidebar.BackgroundColor3 =
+    Color3.fromRGB(11, 14, 23)
+
+Sidebar.BorderSizePixel = 0
+
+Sidebar.ZIndex = 502
+Sidebar.Parent = Main
+
+local SidebarCorner = Instance.new("UICorner")
+
+SidebarCorner.CornerRadius =
+    UDim.new(0, 9)
+
+SidebarCorner.Parent = Sidebar
+
+local SidebarPadding = Instance.new("UIPadding")
+
+SidebarPadding.PaddingTop =
+    UDim.new(0, 8)
+
+SidebarPadding.PaddingLeft =
+    UDim.new(0, 7)
+
+SidebarPadding.PaddingRight =
+    UDim.new(0, 7)
+
+SidebarPadding.Parent = Sidebar
+
+local SidebarLayout = Instance.new("UIListLayout")
+
+SidebarLayout.Padding =
+    UDim.new(0, 5)
+
+SidebarLayout.SortOrder =
+    Enum.SortOrder.LayoutOrder
+
+SidebarLayout.Parent = Sidebar
+
+--==================================================
+-- CONTENT
+--==================================================
+
+local Content = Instance.new("Frame")
+
+Content.Name = "Content"
+
+Content.Position = UDim2.new(0, 185, 0, 65)
+
+Content.Size = UDim2.new(1, -195, 1, -75)
+
+Content.BackgroundColor3 =
+    Color3.fromRGB(11, 14, 23)
+
+Content.BorderSizePixel = 0
+
+Content.ZIndex = 502
+Content.Parent = Main
+
+local ContentCorner = Instance.new("UICorner")
+
+ContentCorner.CornerRadius =
+    UDim.new(0, 9)
+
+ContentCorner.Parent = Content
+
+--==================================================
+-- CONTENT TITLE
+--==================================================
+
+local ContentTitle = Instance.new("TextLabel")
+
+ContentTitle.Position =
+    UDim2.new(0, 14, 0, 10)
+
+ContentTitle.Size =
+    UDim2.new(1, -28, 0, 25)
+
+ContentTitle.BackgroundTransparency = 1
+
+ContentTitle.Text = "Principal"
+
+ContentTitle.TextColor3 =
+    Color3.fromRGB(240, 243, 250)
+
+ContentTitle.TextSize = 17
+ContentTitle.Font = Enum.Font.GothamBold
+
+ContentTitle.TextXAlignment =
+    Enum.TextXAlignment.Left
+
+ContentTitle.ZIndex = 503
+ContentTitle.Parent = Content
+
+--==================================================
+-- CONTENT SCROLL
 --==================================================
 
 local Scroll = Instance.new("ScrollingFrame")
 
-Scroll.Name = "SoundList"
+Scroll.Name = "ContentScroll"
 
-Scroll.Position = UDim2.new(0, 10, 0, 65)
-Scroll.Size = UDim2.new(1, -20, 1, -75)
+Scroll.Position =
+    UDim2.new(0, 10, 0, 42)
+
+Scroll.Size =
+    UDim2.new(1, -20, 1, -52)
 
 Scroll.BackgroundTransparency = 1
 Scroll.BorderSizePixel = 0
 
 Scroll.ScrollBarThickness = 5
-Scroll.ScrollBarImageColor3 = Color3.fromRGB(55, 120, 255)
 
-Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+Scroll.ScrollBarImageColor3 =
+    GetAccent()
 
-Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Scroll.ScrollingDirection = Enum.ScrollingDirection.Y
+Scroll.AutomaticCanvasSize =
+    Enum.AutomaticSize.Y
 
-Scroll.ZIndex = 501
-Scroll.Parent = Main
+Scroll.ScrollingDirection =
+    Enum.ScrollingDirection.Y
 
-local Padding = Instance.new("UIPadding")
+Scroll.ZIndex = 503
+Scroll.Parent = Content
 
-Padding.PaddingBottom = UDim.new(0, 6)
-Padding.Parent = Scroll
+local ScrollPadding = Instance.new("UIPadding")
 
-local Layout = Instance.new("UIListLayout")
+ScrollPadding.PaddingBottom =
+    UDim.new(0, 6)
 
-Layout.Padding = UDim.new(0, 5)
-Layout.SortOrder = Enum.SortOrder.LayoutOrder
+ScrollPadding.Parent = Scroll
 
-Layout.Parent = Scroll
+local ScrollLayout = Instance.new("UIListLayout")
+
+ScrollLayout.Padding =
+    UDim.new(0, 5)
+
+ScrollLayout.SortOrder =
+    Enum.SortOrder.LayoutOrder
+
+ScrollLayout.Parent = Scroll
 
 --==================================================
--- COPY FUNCTION
+-- COPY
 --==================================================
 
 local function Copy(ID)
@@ -367,7 +519,9 @@ local function Copy(ID)
     if setclipboard then
 
         local Success = pcall(function()
+
             setclipboard(ID)
+
         end)
 
         if Success then
@@ -379,7 +533,9 @@ local function Copy(ID)
     if toclipboard then
 
         local Success = pcall(function()
+
             toclipboard(ID)
+
         end)
 
         if Success then
@@ -393,10 +549,29 @@ local function Copy(ID)
 end
 
 --==================================================
--- SOUND CARDS
+-- CLEAR CONTENT
 --==================================================
 
-for Index, Data in ipairs(Sounds) do
+local function ClearContent()
+
+    for _, Object in ipairs(Scroll:GetChildren()) do
+
+        if not Object:IsA("UIListLayout")
+        and not Object:IsA("UIPadding") then
+
+            Object:Destroy()
+
+        end
+
+    end
+
+end
+
+--==================================================
+-- SOUND CARD
+--==================================================
+
+local function CreateSoundCard(Index, Data)
 
     local Name = Data[1]
     local ID = Data[2]
@@ -405,86 +580,120 @@ for Index, Data in ipairs(Sounds) do
 
     Card.Name = "Sound_" .. Index
 
-    Card.Size = UDim2.new(1, -5, 0, 48)
+    Card.Size =
+        UDim2.new(1, -5, 0, 48)
 
-    Card.BackgroundColor3 = Color3.fromRGB(24, 28, 40)
+    Card.BackgroundColor3 =
+        Color3.fromRGB(24, 28, 40)
+
     Card.BorderSizePixel = 0
 
     Card.LayoutOrder = Index
-    Card.ZIndex = 502
 
+    Card.ZIndex = 504
     Card.Parent = Scroll
 
     local CardCorner = Instance.new("UICorner")
 
-    CardCorner.CornerRadius = UDim.new(0, 8)
+    CardCorner.CornerRadius =
+        UDim.new(0, 8)
+
     CardCorner.Parent = Card
 
     -- NAME
 
-    local NameLabel = Instance.new("TextLabel")
+    local NameLabel =
+        Instance.new("TextLabel")
 
-    NameLabel.Position = UDim2.new(0, 12, 0, 5)
-    NameLabel.Size = UDim2.new(0, 175, 0, 18)
+    NameLabel.Position =
+        UDim2.new(0, 12, 0, 5)
+
+    NameLabel.Size =
+        UDim2.new(1, -90, 0, 18)
 
     NameLabel.BackgroundTransparency = 1
 
     NameLabel.Text = Name
-    NameLabel.TextColor3 = Color3.fromRGB(235, 238, 245)
+
+    NameLabel.TextColor3 =
+        Color3.fromRGB(235, 238, 245)
 
     NameLabel.TextSize = 12
-    NameLabel.Font = Enum.Font.GothamMedium
+    NameLabel.Font =
+        Enum.Font.GothamMedium
 
-    NameLabel.TextXAlignment = Enum.TextXAlignment.Left
-    NameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    NameLabel.TextXAlignment =
+        Enum.TextXAlignment.Left
 
-    NameLabel.ZIndex = 503
+    NameLabel.TextTruncate =
+        Enum.TextTruncate.AtEnd
+
+    NameLabel.ZIndex = 505
     NameLabel.Parent = Card
 
     -- ID
 
-    local IDLabel = Instance.new("TextLabel")
+    local IDLabel =
+        Instance.new("TextLabel")
 
-    IDLabel.Position = UDim2.new(0, 12, 0, 25)
-    IDLabel.Size = UDim2.new(0, 175, 0, 16)
+    IDLabel.Position =
+        UDim2.new(0, 12, 0, 25)
+
+    IDLabel.Size =
+        UDim2.new(1, -90, 0, 16)
 
     IDLabel.BackgroundTransparency = 1
 
     IDLabel.Text = ID
-    IDLabel.TextColor3 = Color3.fromRGB(135, 145, 165)
+
+    IDLabel.TextColor3 =
+        Color3.fromRGB(135, 145, 165)
 
     IDLabel.TextSize = 10
     IDLabel.Font = Enum.Font.Code
 
-    IDLabel.TextXAlignment = Enum.TextXAlignment.Left
+    IDLabel.TextXAlignment =
+        Enum.TextXAlignment.Left
 
-    IDLabel.ZIndex = 503
+    IDLabel.ZIndex = 505
     IDLabel.Parent = Card
 
     -- COPY
 
-    local CopyButton = Instance.new("TextButton")
+    local CopyButton =
+        Instance.new("TextButton")
 
-    CopyButton.Size = UDim2.new(0, 55, 0, 28)
-    CopyButton.Position = UDim2.new(0, 195, 0.5, -14)
+    CopyButton.Size =
+        UDim2.new(0, 55, 0, 28)
 
-    CopyButton.BackgroundColor3 = Color3.fromRGB(55, 120, 255)
+    CopyButton.Position =
+        UDim2.new(1, -65, 0.5, -14)
+
+    CopyButton.BackgroundColor3 =
+        GetAccent()
+
     CopyButton.BorderSizePixel = 0
 
     CopyButton.Text = "Copy"
-    CopyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+    CopyButton.TextColor3 =
+        Color3.fromRGB(255, 255, 255)
 
     CopyButton.TextSize = 10
-    CopyButton.Font = Enum.Font.GothamBold
+    CopyButton.Font =
+        Enum.Font.GothamBold
 
     CopyButton.AutoButtonColor = false
 
-    CopyButton.ZIndex = 504
+    CopyButton.ZIndex = 506
     CopyButton.Parent = Card
 
-    local CopyCorner = Instance.new("UICorner")
+    local CopyCorner =
+        Instance.new("UICorner")
 
-    CopyCorner.CornerRadius = UDim.new(0, 6)
+    CopyCorner.CornerRadius =
+        UDim.new(0, 6)
+
     CopyCorner.Parent = CopyButton
 
     CopyButton.MouseButton1Click:Connect(function()
@@ -520,6 +729,218 @@ for Index, Data in ipairs(Sounds) do
 end
 
 --==================================================
+-- SHOW CATEGORY
+--==================================================
+
+local function ShowCategory(CategoryName)
+
+    ClearContent()
+
+    ContentTitle.Text = CategoryName
+
+    local Category =
+        Sounds[CategoryName]
+
+    if not Category then
+        return
+    end
+
+    for Index, Data in ipairs(Category) do
+
+        CreateSoundCard(
+            Index,
+            Data
+        )
+
+    end
+
+end
+
+--==================================================
+-- CATEGORY BUTTON
+--==================================================
+
+local SelectedButton = nil
+
+local function CreateCategoryButton(
+    CategoryName,
+    Order
+)
+
+    local Button =
+        Instance.new("TextButton")
+
+    Button.Name = CategoryName
+
+    Button.Size =
+        UDim2.new(1, 0, 0, 38)
+
+    Button.BackgroundColor3 =
+        Color3.fromRGB(20, 24, 35)
+
+    Button.BorderSizePixel = 0
+
+    Button.Text =
+        "📁  " .. CategoryName
+
+    Button.TextColor3 =
+        Color3.fromRGB(180, 187, 205)
+
+    Button.TextSize = 11
+
+    Button.Font =
+        Enum.Font.GothamMedium
+
+    Button.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    Button.AutoButtonColor = false
+
+    Button.LayoutOrder = Order
+
+    Button.ZIndex = 503
+    Button.Parent = Sidebar
+
+    local ButtonPadding =
+        Instance.new("UIPadding")
+
+    ButtonPadding.PaddingLeft =
+        UDim.new(0, 10)
+
+    ButtonPadding.Parent = Button
+
+    local ButtonCorner =
+        Instance.new("UICorner")
+
+    ButtonCorner.CornerRadius =
+        UDim.new(0, 7)
+
+    ButtonCorner.Parent = Button
+
+    Button.MouseButton1Click:Connect(function()
+
+        if SelectedButton then
+
+            SelectedButton.BackgroundColor3 =
+                Color3.fromRGB(20, 24, 35)
+
+            SelectedButton.TextColor3 =
+                Color3.fromRGB(180, 187, 205)
+
+        end
+
+        SelectedButton = Button
+
+        Button.BackgroundColor3 =
+            GetAccent()
+
+        Button.TextColor3 =
+            Color3.fromRGB(255, 255, 255)
+
+        ShowCategory(CategoryName)
+
+    end)
+
+    return Button
+
+end
+
+--==================================================
+-- SOUND CATEGORIES
+--==================================================
+
+local CategoryButtons = {}
+
+local CategoryIndex = 0
+
+for CategoryName in pairs(Sounds) do
+
+    CategoryIndex += 1
+
+    local Button =
+        CreateCategoryButton(
+            CategoryName,
+            CategoryIndex
+        )
+
+    CategoryButtons[CategoryName] =
+        Button
+
+end
+
+--==================================================
+-- CONFIGURATION CATEGORY
+--==================================================
+
+local ConfigButton =
+    CreateCategoryButton(
+        "Configuração",
+        CategoryIndex + 1
+    )
+
+ConfigButton.MouseButton1Click:Connect(function()
+
+    ClearContent()
+
+    ContentTitle.Text =
+        "Configuração"
+
+    --==============================================
+    -- SHOW LOGO
+    --==============================================
+
+    local ShowLogoButton =
+        Instance.new("TextButton")
+
+    ShowLogoButton.Size =
+        UDim2.new(1, -5, 0, 45)
+
+    ShowLogoButton.BackgroundColor3 =
+        Color3.fromRGB(24, 28, 40)
+
+    ShowLogoButton.BorderSizePixel = 0
+
+    ShowLogoButton.Text =
+        "Mostrar Logo: " ..
+        tostring(Config.UI.ShowLogo)
+
+    ShowLogoButton.TextColor3 =
+        Color3.fromRGB(235, 238, 245)
+
+    ShowLogoButton.TextSize = 12
+
+    ShowLogoButton.Font =
+        Enum.Font.GothamMedium
+
+    ShowLogoButton.ZIndex = 504
+    ShowLogoButton.Parent = Scroll
+
+    local Corner =
+        Instance.new("UICorner")
+
+    Corner.CornerRadius =
+        UDim.new(0, 8)
+
+    Corner.Parent =
+        ShowLogoButton
+
+    ShowLogoButton.MouseButton1Click:Connect(function()
+
+        Config.UI.ShowLogo =
+            not Config.UI.ShowLogo
+
+        ShowLogoButton.Text =
+            "Mostrar Logo: " ..
+            tostring(Config.UI.ShowLogo)
+
+        LogoButton.Visible =
+            Config.UI.ShowLogo
+
+    end)
+
+end)
+
+--==================================================
 -- OPEN / CLOSE
 --==================================================
 
@@ -533,6 +954,7 @@ LogoButton.MouseButton1Click:Connect(function()
     end
 
     Main.Visible = true
+
     LogoButton.Visible = false
 
 end)
@@ -540,8 +962,37 @@ end)
 Close.MouseButton1Click:Connect(function()
 
     Main.Visible = false
-    LogoButton.Visible = true
+
+    if Config.UI.ShowLogo then
+        LogoButton.Visible = true
+    end
 
 end)
+
+--==================================================
+-- DEFAULT CATEGORY
+--==================================================
+
+if Sounds["Principal"] then
+
+    ShowCategory("Principal")
+
+    local PrincipalButton =
+        CategoryButtons["Principal"]
+
+    if PrincipalButton then
+
+        SelectedButton =
+            PrincipalButton
+
+        PrincipalButton.BackgroundColor3 =
+            GetAccent()
+
+        PrincipalButton.TextColor3 =
+            Color3.fromRGB(255, 255, 255)
+
+    end
+
+end
 
 print("💥 Rimuru Hub carregado.")
