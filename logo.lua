@@ -98,6 +98,7 @@ function Logo:Create()
     LogoButton.ZIndex =
         1000
 
+    -- A logo continua visível mesmo com o menu aberto.
     LogoButton.Visible =
         Config.UI.ShowLogo
 
@@ -158,6 +159,8 @@ function Logo:Create()
 
     LogoButton.MouseButton1Click:Connect(function()
 
+        -- Se o clique foi usado para arrastar,
+        -- não abre/fecha o menu.
         if self.LogoMoved() then
 
             self.ResetMoved()
@@ -173,6 +176,8 @@ function Logo:Create()
             return
         end
 
+        -- A logo funciona como segundo botão
+        -- para abrir e fechar o menu.
         Main.Visible =
             not Main.Visible
 
