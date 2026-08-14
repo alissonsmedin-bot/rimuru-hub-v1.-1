@@ -1,5 +1,10 @@
 --// 💥 RIMURU HUB
 --// Main
+--// Version: Logo System + Config + Sound Library
+
+--==================================================
+-- SERVICES
+--==================================================
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
@@ -9,37 +14,234 @@ local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
 --==================================================
--- LOAD FILES
+-- BASE URL
 --==================================================
 
 local BaseURL =
     "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/"
 
-local SoundsURL = BaseURL .. "sound.lua"
-local ConfigURL = BaseURL .. "config.lua"
+local SoundsURL =
+    BaseURL .. "sound.lua"
 
-local Sounds = loadstring(game:HttpGet(SoundsURL))()
-local Config = loadstring(game:HttpGet(ConfigURL))()
+local ConfigURL =
+    BaseURL .. "config.lua"
+
+local LogoURL =
+    BaseURL .. "logo.lua"
+
+--==================================================
+-- SAFE LOAD
+--==================================================
+
+local function LoadRemote(URL, FileName)
+
+    local Success, Result =
+        pcall(function()
+
+            local Source =
+                game:HttpGet(URL)
+
+            local Function =
+                loadstring(Source)
+
+            if not Function then
+                error(
+                    "Não foi possível compilar " ..
+                    FileName
+                )
+            end
+
+            return Function()
+
+        end)
+
+    if not Success then
+
+        warn(
+            "[Rimuru Hub] Erro ao carregar " ..
+            FileName ..
+            ": " ..
+            tostring(Result)
+        )
+
+        return nil
+
+    end
+
+    return Result
+
+end
+
+--==================================================
+-- LOAD FILES
+--==================================================
+
+local Sounds =
+    LoadRemote(
+        SoundsURL,
+        "sound.lua"
+    )
+
+local Config =
+    LoadRemote(
+        ConfigURL,
+        "config.lua"
+    )
+
+local Logo =
+    LoadRemote(
+        LogoURL,
+        "logo.lua"
+    )
+
+--==================================================
+-- VALIDATE CONFIG
+--==================================================
+
+if not Config then
+
+    warn(
+        "[Rimuru Hub] config.lua não carregou."
+    )
+
+    return
+
+end
+
+if not Config.UI then
+
+    Config.UI = {}
+
+end
+
+--==================================================
+-- DEFAULT CONFIG
+--==================================================
+
+if Config.UI.ShowLogo == nil then
+    Config.UI.ShowLogo = true
+end
+
+if Config.UI.LogoDraggable == nil then
+    Config.UI.LogoDraggable = true
+end
+
+if Config.UI.MainMenuDraggable == nil then
+    Config.UI.MainMenuDraggable = true
+end
+
+if not Config.UI.Themes then
+    Config.UI.Themes = {}
+end
+
+--==================================================
+-- DEFAULT LOGO
+--==================================================
+
+if not Logo then
+
+    Logo = {}
+
+end
+
+if not Logo.Image then
+
+    Logo.Image =
+        "rbxassetid://6691708227"
+
+end
+
+if not Logo.Size then
+
+    Logo.Size =
+        UDim2.new(
+            0,
+            55,
+            0,
+            55
+        )
+
+end
+
+if not Logo.CornerRadius then
+
+    Logo.CornerRadius =
+        UDim.new(
+            0,
+            14
+        )
+
+end
+
+if not Logo.StrokeThickness then
+
+    Logo.StrokeThickness =
+        2
+
+end
+
+if not Logo.ScaleType then
+
+    Logo.ScaleType =
+        Enum.ScaleType.Fit
+
+end
 
 --==================================================
 -- THEME SYSTEM
 --==================================================
 
-local Themes = Config.UI.Themes or {}
+local Themes =
+    Config.UI.Themes
 
-local ThemeName = Config.UI.Theme or "Azul Escuro"
+local ThemeName =
+    Config.UI.Theme or "Azul Escuro"
 
 if not Themes[ThemeName] then
-    ThemeName = "Azul Escuro"
+
+    if Themes["Azul Escuro"] then
+
+        ThemeName =
+            "Azul Escuro"
+
+    else
+
+        for Name in pairs(Themes) do
+
+            ThemeName =
+                Name
+
+            break
+
+        end
+
+    end
+
 end
 
-local CurrentTheme = Themes[ThemeName]
+local CurrentTheme =
+    Themes[ThemeName]
 
-local RGBHue = 0
+if not CurrentTheme then
+
+    warn(
+        "[Rimuru Hub] Nenhum tema válido encontrado."
+    )
+
+    return
+
+end
+
+--==================================================
+-- RGB
+--==================================================
+
+local RGBHue =
+    0
 
 local function GetAccent()
 
-    if CurrentTheme and CurrentTheme.RGB then
+    if CurrentTheme.RGB then
 
         return Color3.fromHSV(
             RGBHue,
@@ -60,10 +262,14 @@ end
 pcall(function()
 
     local Old =
-        PlayerGui:FindFirstChild("RimuruHub")
+        PlayerGui:FindFirstChild(
+            "RimuruHub"
+        )
 
     if Old then
+
         Old:Destroy()
+
     end
 
 end)
@@ -94,7 +300,7 @@ Gui.Parent =
     PlayerGui
 
 --==================================================
--- LOGO
+-- LOGO BUTTON
 --==================================================
 
 local LogoButton =
@@ -104,10 +310,15 @@ LogoButton.Name =
     "RimuruLogo"
 
 LogoButton.Size =
-    UDim2.new(0, 55, 0, 55)
+    Logo.Size
 
 LogoButton.Position =
-    UDim2.new(0, 20, 0.5, -27)
+    UDim2.new(
+        0,
+        20,
+        0.5,
+        -27
+    )
 
 LogoButton.BackgroundColor3 =
     CurrentTheme.LogoBackground
@@ -116,10 +327,10 @@ LogoButton.BorderSizePixel =
     0
 
 LogoButton.Image =
-    "rbxassetid://6691708227"
+    Logo.Image
 
 LogoButton.ScaleType =
-    Enum.ScaleType.Fit
+    Logo.ScaleType
 
 LogoButton.AutoButtonColor =
     false
@@ -137,7 +348,7 @@ local LogoCorner =
     Instance.new("UICorner")
 
 LogoCorner.CornerRadius =
-    UDim.new(0, 14)
+    Logo.CornerRadius
 
 LogoCorner.Parent =
     LogoButton
@@ -149,7 +360,7 @@ LogoStroke.Color =
     GetAccent()
 
 LogoStroke.Thickness =
-    2
+    Logo.StrokeThickness
 
 LogoStroke.Parent =
     LogoButton
@@ -164,8 +375,11 @@ local LogoDragging =
 local LogoMoved =
     false
 
-local LogoDragStart
-local LogoStartPosition
+local LogoDragStart =
+    nil
+
+local LogoStartPosition =
+    nil
 
 LogoButton.InputBegan:Connect(function(Input)
 
@@ -211,8 +425,11 @@ UIS.InputChanged:Connect(function(Input)
             Input.Position -
             LogoDragStart
 
-        if math.abs(Delta.X) > 5
-        or math.abs(Delta.Y) > 5 then
+        if
+            math.abs(Delta.X) > 5
+        or
+            math.abs(Delta.Y) > 5
+        then
 
             LogoMoved =
                 true
@@ -264,10 +481,20 @@ Main.Name =
     "Main"
 
 Main.Size =
-    UDim2.new(0, 600, 0, 400)
+    UDim2.new(
+        0,
+        600,
+        0,
+        400
+    )
 
 Main.Position =
-    UDim2.new(0.5, -300, 0.5, -200)
+    UDim2.new(
+        0.5,
+        -300,
+        0.5,
+        -200
+    )
 
 Main.BackgroundColor3 =
     CurrentTheme.Main
@@ -288,7 +515,10 @@ local MainCorner =
     Instance.new("UICorner")
 
 MainCorner.CornerRadius =
-    UDim.new(0, 12)
+    UDim.new(
+        0,
+        12
+    )
 
 MainCorner.Parent =
     Main
@@ -312,8 +542,11 @@ MainStroke.Parent =
 local Dragging =
     false
 
-local DragStart
-local StartPosition
+local DragStart =
+    nil
+
+local StartPosition =
+    nil
 
 Main.InputBegan:Connect(function(Input)
 
@@ -397,8 +630,16 @@ end)
 local Header =
     Instance.new("Frame")
 
+Header.Name =
+    "Header"
+
 Header.Size =
-    UDim2.new(1, 0, 0, 58)
+    UDim2.new(
+        1,
+        0,
+        0,
+        58
+    )
 
 Header.BackgroundTransparency =
     1
@@ -409,23 +650,40 @@ Header.ZIndex =
 Header.Parent =
     Main
 
+--==================================================
+-- HEADER LOGO
+--==================================================
+
 local HeaderLogo =
     Instance.new("ImageLabel")
 
+HeaderLogo.Name =
+    "HeaderLogo"
+
 HeaderLogo.Size =
-    UDim2.new(0, 40, 0, 40)
+    UDim2.new(
+        0,
+        40,
+        0,
+        40
+    )
 
 HeaderLogo.Position =
-    UDim2.new(0, 10, 0, 8)
+    UDim2.new(
+        0,
+        10,
+        0,
+        8
+    )
 
 HeaderLogo.BackgroundTransparency =
     1
 
 HeaderLogo.Image =
-    "rbxassetid://6691708227"
+    Logo.Image
 
 HeaderLogo.ScaleType =
-    Enum.ScaleType.Fit
+    Logo.ScaleType
 
 HeaderLogo.ZIndex =
     502
@@ -433,14 +691,31 @@ HeaderLogo.ZIndex =
 HeaderLogo.Parent =
     Header
 
+--==================================================
+-- TITLE
+--==================================================
+
 local Title =
     Instance.new("TextLabel")
 
+Title.Name =
+    "Title"
+
 Title.Position =
-    UDim2.new(0, 60, 0, 7)
+    UDim2.new(
+        0,
+        60,
+        0,
+        7
+    )
 
 Title.Size =
-    UDim2.new(1, -105, 0, 25)
+    UDim2.new(
+        1,
+        -105,
+        0,
+        25
+    )
 
 Title.BackgroundTransparency =
     1
@@ -466,14 +741,31 @@ Title.ZIndex =
 Title.Parent =
     Header
 
+--==================================================
+-- SUBTITLE
+--==================================================
+
 local Subtitle =
     Instance.new("TextLabel")
 
+Subtitle.Name =
+    "Subtitle"
+
 Subtitle.Position =
-    UDim2.new(0, 61, 0, 31)
+    UDim2.new(
+        0,
+        61,
+        0,
+        31
+    )
 
 Subtitle.Size =
-    UDim2.new(1, -75, 0, 18)
+    UDim2.new(
+        1,
+        -75,
+        0,
+        18
+    )
 
 Subtitle.BackgroundTransparency =
     1
@@ -500,17 +792,30 @@ Subtitle.Parent =
     Header
 
 --==================================================
--- CLOSE
+-- CLOSE BUTTON
 --==================================================
 
 local Close =
     Instance.new("TextButton")
 
+Close.Name =
+    "Close"
+
 Close.Size =
-    UDim2.new(0, 30, 0, 30)
+    UDim2.new(
+        0,
+        30,
+        0,
+        30
+    )
 
 Close.Position =
-    UDim2.new(1, -38, 0, 14)
+    UDim2.new(
+        1,
+        -38,
+        0,
+        14
+    )
 
 Close.BackgroundColor3 =
     CurrentTheme.Close
@@ -543,7 +848,10 @@ local CloseCorner =
     Instance.new("UICorner")
 
 CloseCorner.CornerRadius =
-    UDim.new(0, 7)
+    UDim.new(
+        0,
+        7
+    )
 
 CloseCorner.Parent =
     Close
@@ -559,10 +867,20 @@ Sidebar.Name =
     "Sidebar"
 
 Sidebar.Position =
-    UDim2.new(0, 10, 0, 65)
+    UDim2.new(
+        0,
+        10,
+        0,
+        65
+    )
 
 Sidebar.Size =
-    UDim2.new(0, 165, 1, -75)
+    UDim2.new(
+        0,
+        165,
+        1,
+        -75
+    )
 
 Sidebar.BackgroundColor3 =
     CurrentTheme.Sidebar
@@ -580,7 +898,10 @@ local SidebarCorner =
     Instance.new("UICorner")
 
 SidebarCorner.CornerRadius =
-    UDim.new(0, 9)
+    UDim.new(
+        0,
+        9
+    )
 
 SidebarCorner.Parent =
     Sidebar
@@ -589,13 +910,22 @@ local SidebarPadding =
     Instance.new("UIPadding")
 
 SidebarPadding.PaddingTop =
-    UDim.new(0, 8)
+    UDim.new(
+        0,
+        8
+    )
 
 SidebarPadding.PaddingLeft =
-    UDim.new(0, 7)
+    UDim.new(
+        0,
+        7
+    )
 
 SidebarPadding.PaddingRight =
-    UDim.new(0, 7)
+    UDim.new(
+        0,
+        7
+    )
 
 SidebarPadding.Parent =
     Sidebar
@@ -604,7 +934,10 @@ local SidebarLayout =
     Instance.new("UIListLayout")
 
 SidebarLayout.Padding =
-    UDim.new(0, 5)
+    UDim.new(
+        0,
+        5
+    )
 
 SidebarLayout.SortOrder =
     Enum.SortOrder.LayoutOrder
@@ -623,10 +956,20 @@ Content.Name =
     "Content"
 
 Content.Position =
-    UDim2.new(0, 185, 0, 65)
+    UDim2.new(
+        0,
+        185,
+        0,
+        65
+    )
 
 Content.Size =
-    UDim2.new(1, -195, 1, -75)
+    UDim2.new(
+        1,
+        -195,
+        1,
+        -75
+    )
 
 Content.BackgroundColor3 =
     CurrentTheme.Content
@@ -644,7 +987,10 @@ local ContentCorner =
     Instance.new("UICorner")
 
 ContentCorner.CornerRadius =
-    UDim.new(0, 9)
+    UDim.new(
+        0,
+        9
+    )
 
 ContentCorner.Parent =
     Content
@@ -656,11 +1002,24 @@ ContentCorner.Parent =
 local ContentTitle =
     Instance.new("TextLabel")
 
+ContentTitle.Name =
+    "ContentTitle"
+
 ContentTitle.Position =
-    UDim2.new(0, 14, 0, 10)
+    UDim2.new(
+        0,
+        14,
+        0,
+        10
+    )
 
 ContentTitle.Size =
-    UDim2.new(1, -28, 0, 25)
+    UDim2.new(
+        1,
+        -28,
+        0,
+        25
+    )
 
 ContentTitle.BackgroundTransparency =
     1
@@ -697,10 +1056,20 @@ Scroll.Name =
     "ContentScroll"
 
 Scroll.Position =
-    UDim2.new(0, 10, 0, 42)
+    UDim2.new(
+        0,
+        10,
+        0,
+        42
+    )
 
 Scroll.Size =
-    UDim2.new(1, -20, 1, -52)
+    UDim2.new(
+        1,
+        -20,
+        1,
+        -52
+    )
 
 Scroll.BackgroundTransparency =
     1
@@ -720,6 +1089,14 @@ Scroll.AutomaticCanvasSize =
 Scroll.ScrollingDirection =
     Enum.ScrollingDirection.Y
 
+Scroll.CanvasSize =
+    UDim2.new(
+        0,
+        0,
+        0,
+        0
+    )
+
 Scroll.ZIndex =
     503
 
@@ -730,7 +1107,10 @@ local ScrollPadding =
     Instance.new("UIPadding")
 
 ScrollPadding.PaddingBottom =
-    UDim.new(0, 6)
+    UDim.new(
+        0,
+        6
+    )
 
 ScrollPadding.Parent =
     Scroll
@@ -739,7 +1119,10 @@ local ScrollLayout =
     Instance.new("UIListLayout")
 
 ScrollLayout.Padding =
-    UDim.new(0, 5)
+    UDim.new(
+        0,
+        5
+    )
 
 ScrollLayout.SortOrder =
     Enum.SortOrder.LayoutOrder
@@ -748,10 +1131,17 @@ ScrollLayout.Parent =
     Scroll
 
 --==================================================
--- COPY
+-- COPY SYSTEM
 --==================================================
 
 local function Copy(ID)
+
+    if not ID then
+        return false
+    end
+
+    ID =
+        tostring(ID)
 
     if setclipboard then
 
@@ -783,6 +1173,21 @@ local function Copy(ID)
 
     end
 
+    if set_clipboard then
+
+        local Success =
+            pcall(function()
+
+                set_clipboard(ID)
+
+            end)
+
+        if Success then
+            return true
+        end
+
+    end
+
     return false
 
 end
@@ -796,8 +1201,11 @@ local function ClearContent()
     for _, Object in
         ipairs(Scroll:GetChildren()) do
 
-        if not Object:IsA("UIListLayout")
-        and not Object:IsA("UIPadding") then
+        if
+            not Object:IsA("UIListLayout")
+        and
+            not Object:IsA("UIPadding")
+        then
 
             Object:Destroy()
 
@@ -808,7 +1216,7 @@ local function ClearContent()
 end
 
 --==================================================
--- CATEGORY BUTTONS
+-- CATEGORY VARIABLES
 --==================================================
 
 local SelectedButton =
@@ -826,20 +1234,36 @@ local function CreateSoundCard(
     Data
 )
 
+    if type(Data) ~= "table" then
+        return
+    end
+
     local Name =
-        Data[1]
+        tostring(
+            Data[1] or
+            "Unknown"
+        )
 
     local ID =
-        Data[2]
+        tostring(
+            Data[2] or
+            "N/A"
+        )
 
     local Card =
         Instance.new("Frame")
 
     Card.Name =
-        "Sound_" .. Index
+        "Sound_" ..
+        tostring(Index)
 
     Card.Size =
-        UDim2.new(1, -5, 0, 48)
+        UDim2.new(
+            1,
+            -5,
+            0,
+            48
+        )
 
     Card.BackgroundColor3 =
         CurrentTheme.Card
@@ -860,19 +1284,39 @@ local function CreateSoundCard(
         Instance.new("UICorner")
 
     CardCorner.CornerRadius =
-        UDim.new(0, 8)
+        UDim.new(
+            0,
+            8
+        )
 
     CardCorner.Parent =
         Card
 
+    --==================================================
+    -- NAME
+    --==================================================
+
     local NameLabel =
         Instance.new("TextLabel")
 
+    NameLabel.Name =
+        "Name"
+
     NameLabel.Position =
-        UDim2.new(0, 12, 0, 5)
+        UDim2.new(
+            0,
+            12,
+            0,
+            5
+        )
 
     NameLabel.Size =
-        UDim2.new(1, -90, 0, 18)
+        UDim2.new(
+            1,
+            -90,
+            0,
+            18
+        )
 
     NameLabel.BackgroundTransparency =
         1
@@ -901,134 +1345,171 @@ local function CreateSoundCard(
     NameLabel.Parent =
         Card
 
-    local IDLabel =
-        Instance.new("TextLabel")
+    --==================================================
+-- ID
+--==================================================
 
-    IDLabel.Position =
-        UDim2.new(0, 12, 0, 25)
+local IDLabel =
+    Instance.new("TextLabel")
 
-    IDLabel.Size =
-        UDim2.new(1, -90, 0, 16)
+IDLabel.Name =
+    "ID"
 
-    IDLabel.BackgroundTransparency =
-        1
+IDLabel.Position =
+    UDim2.new(
+        0,
+        12,
+        0,
+        25
+    )
 
-    IDLabel.Text =
-        ID
+IDLabel.Size =
+    UDim2.new(
+        1,
+        -90,
+        0,
+        16
+    )
 
-    IDLabel.TextColor3 =
-        CurrentTheme.SubText
+IDLabel.BackgroundTransparency =
+    1
 
-    IDLabel.TextSize =
-        10
+IDLabel.Text =
+    ID
 
-    IDLabel.Font =
-        Enum.Font.Code
+IDLabel.TextColor3 =
+    CurrentTheme.SubText
 
-    IDLabel.TextXAlignment =
-        Enum.TextXAlignment.Left
+IDLabel.TextSize =
+    10
 
-    IDLabel.ZIndex =
-        505
+IDLabel.Font =
+    Enum.Font.Code
 
-    IDLabel.Parent =
-        Card
+IDLabel.TextXAlignment =
+    Enum.TextXAlignment.Left
 
-    local CopyButton =
-        Instance.new("TextButton")
+IDLabel.TextTruncate =
+    Enum.TextTruncate.AtEnd
 
-    CopyButton.Name =
-        "Copy"
+IDLabel.ZIndex =
+    505
 
-    CopyButton.Size =
-        UDim2.new(0, 55, 0, 28)
+IDLabel.Parent =
+    Card
 
-    CopyButton.Position =
-        UDim2.new(1, -65, 0.5, -14)
+--==================================================
+-- COPY BUTTON
+--==================================================
 
-    CopyButton.BackgroundColor3 =
-        GetAccent()
+local CopyButton =
+    Instance.new("TextButton")
 
-    CopyButton.BorderSizePixel =
-        0
+CopyButton.Name =
+    "Copy"
 
-    CopyButton.Text =
-        "Copy"
+CopyButton.Size =
+    UDim2.new(
+        0,
+        55,
+        0,
+        28
+    )
 
-    CopyButton.TextColor3 =
-        Color3.fromRGB(
-            255,
-            255,
-            255
+CopyButton.Position =
+    UDim2.new(
+        1,
+        -65,
+        0.5,
+        -14
+    )
+
+CopyButton.BackgroundColor3 =
+    GetAccent()
+
+CopyButton.BorderSizePixel =
+    0
+
+CopyButton.Text =
+    "Copy"
+
+CopyButton.TextColor3 =
+    Color3.fromRGB(
+        255,
+        255,
+        255
+    )
+
+CopyButton.TextSize =
+    10
+
+CopyButton.Font =
+    Enum.Font.GothamBold
+
+CopyButton.AutoButtonColor =
+    false
+
+CopyButton.ZIndex =
+    506
+
+CopyButton.Parent =
+    Card
+
+local CopyCorner =
+    Instance.new("UICorner")
+
+CopyCorner.CornerRadius =
+    UDim.new(
+        0,
+        6
+    )
+
+CopyCorner.Parent =
+    CopyButton
+
+CopyButton.MouseButton1Click:Connect(function()
+
+    if Copy(ID) then
+
+        CopyButton.Text =
+            "Copied!"
+
+        task.delay(
+            0.8,
+            function()
+
+                if CopyButton.Parent then
+
+                    CopyButton.Text =
+                        "Copy"
+
+                end
+
+            end
         )
 
-    CopyButton.TextSize =
-        10
+    else
 
-    CopyButton.Font =
-        Enum.Font.GothamBold
+        CopyButton.Text =
+            "N/A"
 
-    CopyButton.AutoButtonColor =
-        false
+        task.delay(
+            0.8,
+            function()
 
-    CopyButton.ZIndex =
-        506
+                if CopyButton.Parent then
 
-    CopyButton.Parent =
-        Card
-
-    local CopyCorner =
-        Instance.new("UICorner")
-
-    CopyCorner.CornerRadius =
-        UDim.new(0, 6)
-
-    CopyCorner.Parent =
-        CopyButton
-
-    CopyButton.MouseButton1Click:Connect(function()
-
-        if Copy(ID) then
-
-            CopyButton.Text =
-                "Copied!"
-
-            task.delay(
-                0.8,
-                function()
-
-                    if CopyButton.Parent then
-
-                        CopyButton.Text =
-                            "Copy"
-
-                    end
+                    CopyButton.Text =
+                        "Copy"
 
                 end
-            )
 
-        else
+            end
+        )
 
-            CopyButton.Text =
-                "N/A"
+    end
 
-            task.delay(
-                0.8,
-                function()
-
-                    if CopyButton.Parent then
-
-                        CopyButton.Text =
-                            "Copy"
-
-                    end
-
-                end
-            )
-
-        end
-
-    end)
+end)
 
 end
 
@@ -1043,22 +1524,115 @@ local function ShowCategory(
     ClearContent()
 
     ContentTitle.Text =
-        CategoryName
+        tostring(
+            CategoryName
+        )
+
+    if not Sounds then
+        return
+    end
 
     local Category =
         Sounds[CategoryName]
 
-    if not Category then
+    if type(Category) ~= "table" then
+
+        local Empty =
+            Instance.new("TextLabel")
+
+        Empty.Name =
+            "Empty"
+
+        Empty.Size =
+            UDim2.new(
+                1,
+                -5,
+                0,
+                40
+            )
+
+        Empty.BackgroundTransparency =
+            1
+
+        Empty.Text =
+            "Nenhum som encontrado."
+
+        Empty.TextColor3 =
+            CurrentTheme.SubText
+
+        Empty.TextSize =
+            12
+
+        Empty.Font =
+            Enum.Font.Gotham
+
+        Empty.LayoutOrder =
+            1
+
+        Empty.ZIndex =
+            504
+
+        Empty.Parent =
+            Scroll
+
         return
+
     end
+
+    local Count =
+        0
 
     for Index, Data in
         ipairs(Category) do
 
+        Count += 1
+
         CreateSoundCard(
-            Index,
+            Count,
             Data
         )
+
+    end
+
+    if Count == 0 then
+
+        local Empty =
+            Instance.new("TextLabel")
+
+        Empty.Name =
+            "Empty"
+
+        Empty.Size =
+            UDim2.new(
+                1,
+                -5,
+                0,
+                40
+            )
+
+        Empty.BackgroundTransparency =
+            1
+
+        Empty.Text =
+            "Esta categoria está vazia."
+
+        Empty.TextColor3 =
+            CurrentTheme.SubText
+
+        Empty.TextSize =
+            12
+
+        Empty.Font =
+            Enum.Font.Gotham
+
+        Empty.LayoutOrder =
+            1
+
+        Empty.ZIndex =
+            504
+
+        Empty.Parent =
+            Scroll
 
     end
 
@@ -1082,10 +1656,17 @@ local function CreateCategoryButton(
         Instance.new("TextButton")
 
     Button.Name =
-        CategoryName
+        tostring(
+            CategoryName
+        )
 
     Button.Size =
-        UDim2.new(1, 0, 0, 38)
+        UDim2.new(
+            1,
+            0,
+            0,
+            38
+        )
 
     Button.BackgroundColor3 =
         CurrentTheme.Button
@@ -1094,7 +1675,10 @@ local function CreateCategoryButton(
         0
 
     Button.Text =
-        "📁  " .. CategoryName
+        "📁  " ..
+        tostring(
+            CategoryName
+        )
 
     Button.TextColor3 =
         CurrentTheme.SubText
@@ -1124,7 +1708,10 @@ local function CreateCategoryButton(
         Instance.new("UIPadding")
 
     ButtonPadding.PaddingLeft =
-        UDim.new(0, 10)
+        UDim.new(
+            0,
+            10
+        )
 
     ButtonPadding.Parent =
         Button
@@ -1133,7 +1720,10 @@ local function CreateCategoryButton(
         Instance.new("UICorner")
 
     ButtonCorner.CornerRadius =
-        UDim.new(0, 7)
+        UDim.new(
+            0,
+            7
+        )
 
     ButtonCorner.Parent =
         Button
@@ -1185,26 +1775,31 @@ end
 local CategoryIndex =
     0
 
-for CategoryName in
-    pairs(Sounds) do
+if type(Sounds) == "table" then
 
-    CategoryIndex += 1
+    for CategoryName in
+        pairs(Sounds) do
 
-    local Button =
-        CreateCategoryButton(
-            CategoryName,
-            CategoryIndex,
-            true
-        )
+        CategoryIndex += 1
 
-    CategoryButtons[
-        CategoryName
-    ] = Button
+        local Button =
+            CreateCategoryButton(
+                CategoryName,
+                CategoryIndex,
+                true
+            )
+
+        CategoryButtons[
+            CategoryName
+        ] =
+            Button
+
+    end
 
 end
 
 --==================================================
--- CONFIGURATION
+-- CONFIGURATION BUTTON
 --==================================================
 
 local ConfigButton =
@@ -1220,7 +1815,382 @@ CategoryButtons[
     ConfigButton
 
 --==================================================
--- APPLY THEME
+-- CONFIGURATION PAGE
+--==================================================
+
+local function CreateConfigToggle(
+    Name,
+    GetValue,
+    SetValue,
+    Order
+)
+
+    local Button =
+        Instance.new("TextButton")
+
+    Button.Name =
+        Name
+
+    Button.Size =
+        UDim2.new(
+            1,
+            -5,
+            0,
+            45
+        )
+
+    Button.BackgroundColor3 =
+        CurrentTheme.Card
+
+    Button.BorderSizePixel =
+        0
+
+    Button.Text =
+        Name ..
+        ": " ..
+        tostring(
+            GetValue()
+        )
+
+    Button.TextColor3 =
+        CurrentTheme.Text
+
+    Button.TextSize =
+        12
+
+    Button.Font =
+        Enum.Font.GothamMedium
+
+    Button.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    Button.AutoButtonColor =
+        false
+
+    Button.LayoutOrder =
+        Order
+
+    Button.ZIndex =
+        504
+
+    Button.Parent =
+        Scroll
+
+    local Padding =
+        Instance.new("UIPadding")
+
+    Padding.PaddingLeft =
+        UDim.new(
+            0,
+            12
+        )
+
+    Padding.Parent =
+        Button
+
+    local Corner =
+        Instance.new("UICorner")
+
+    Corner.CornerRadius =
+        UDim.new(
+            0,
+            8
+        )
+
+    Corner.Parent =
+        Button
+
+    Button.MouseButton1Click:Connect(function()
+
+        local Current =
+            GetValue()
+
+        local NewValue =
+            not Current
+
+        SetValue(
+            NewValue
+        )
+
+        Button.Text =
+            Name ..
+            ": " ..
+            tostring(
+                NewValue
+            )
+
+    end)
+
+    return Button
+
+end
+
+local function ShowConfig()
+
+    ClearContent()
+
+    ContentTitle.Text =
+        "Configuração"
+
+    --==================================================
+    -- THEME SELECTOR
+    --==================================================
+
+    local ThemeNames =
+        {}
+
+    for Name in pairs(Themes) do
+
+        table.insert(
+            ThemeNames,
+            Name
+        )
+
+    end
+
+    table.sort(
+        ThemeNames
+    )
+
+    if #ThemeNames > 0 then
+
+        local ThemeIndex =
+            1
+
+        for Index, Name in
+            ipairs(ThemeNames) do
+
+            if Name ==
+                ThemeName then
+
+                ThemeIndex =
+                    Index
+
+                break
+
+            end
+
+        end
+
+        local ThemeButton =
+            Instance.new("TextButton")
+
+        ThemeButton.Name =
+            "Tema"
+
+        ThemeButton.Size =
+            UDim2.new(
+                1,
+                -5,
+                0,
+                45
+            )
+
+        ThemeButton.BackgroundColor3 =
+            CurrentTheme.Card
+
+        ThemeButton.BorderSizePixel =
+            0
+
+        ThemeButton.Text =
+            "Tema: " ..
+            ThemeName
+
+        ThemeButton.TextColor3 =
+            CurrentTheme.Text
+
+        ThemeButton.TextSize =
+            12
+
+        ThemeButton.Font =
+            Enum.Font.GothamMedium
+
+        ThemeButton.TextXAlignment =
+            Enum.TextXAlignment.Left
+
+        ThemeButton.AutoButtonColor =
+            false
+
+        ThemeButton.LayoutOrder =
+            0
+
+        ThemeButton.ZIndex =
+            504
+
+        ThemeButton.Parent =
+            Scroll
+
+        local ThemePadding =
+            Instance.new("UIPadding")
+
+        ThemePadding.PaddingLeft =
+            UDim.new(
+                0,
+                12
+            )
+
+        ThemePadding.Parent =
+            ThemeButton
+
+        local ThemeCorner =
+            Instance.new("UICorner")
+
+        ThemeCorner.CornerRadius =
+            UDim.new(
+                0,
+                8
+            )
+
+        ThemeCorner.Parent =
+            ThemeButton
+
+        ThemeButton.MouseButton1Click:Connect(function()
+
+            ThemeIndex += 1
+
+            if ThemeIndex >
+                #ThemeNames then
+
+                ThemeIndex =
+                    1
+
+            end
+
+            ThemeName =
+                ThemeNames[
+                    ThemeIndex
+                ]
+
+            CurrentTheme =
+                Themes[
+                    ThemeName
+                ]
+
+            Config.UI.Theme =
+                ThemeName
+
+            ThemeButton.Text =
+                "Tema: " ..
+                ThemeName
+
+            ApplyTheme()
+
+        end)
+
+    end
+
+    --==================================================
+    -- SHOW LOGO
+    --==================================================
+
+    CreateConfigToggle(
+
+        "Mostrar Logo",
+
+        function()
+
+            return Config.UI.ShowLogo
+
+        end,
+
+        function(Value)
+
+            Config.UI.ShowLogo =
+                Value
+
+            LogoButton.Visible =
+                Value
+
+        end,
+
+        1
+
+    )
+
+    --==================================================
+    -- LOGO DRAGGABLE
+    --==================================================
+
+    CreateConfigToggle(
+
+        "Logo Arrastável",
+
+        function()
+
+            return Config.UI.LogoDraggable
+
+        end,
+
+        function(Value)
+
+            Config.UI.LogoDraggable =
+                Value
+
+        end,
+
+        2
+
+    )
+
+    --==================================================
+    -- MAIN MENU DRAGGABLE
+    --==================================================
+
+    CreateConfigToggle(
+
+        "Menu Arrastável",
+
+        function()
+
+            return Config.UI.MainMenuDraggable
+
+        end,
+
+        function(Value)
+
+            Config.UI.MainMenuDraggable =
+                Value
+
+        end,
+
+        3
+
+    )
+
+end
+
+ConfigButton.MouseButton1Click:Connect(function()
+
+    if SelectedButton
+    and SelectedButton ~= ConfigButton then
+
+        SelectedButton.BackgroundColor3 =
+            CurrentTheme.Button
+
+        SelectedButton.TextColor3 =
+            CurrentTheme.SubText
+
+    end
+
+    SelectedButton =
+        ConfigButton
+
+    ConfigButton.BackgroundColor3 =
+        GetAccent()
+
+    ConfigButton.TextColor3 =
+        Color3.fromRGB(
+            255,
+            255,
+            255
+    )
+
+    ShowConfig()
+
+end)
+
+--==================================================
+-- THEME SYSTEM
 --==================================================
 
 local function ApplyTheme()
@@ -1302,7 +2272,8 @@ local function ApplyTheme()
 
         elseif Object:IsA("TextLabel") then
 
-            if Object.Font ==
+            if Object.Name == "ID"
+            or Object.Font ==
                 Enum.Font.Code then
 
                 Object.TextColor3 =
@@ -1336,14 +2307,6 @@ local function ApplyTheme()
                         255
                     )
 
-            else
-
-                Object.BackgroundColor3 =
-                    CurrentTheme.Card
-
-                Object.TextColor3 =
-                    CurrentTheme.Text
-
             end
 
         end
@@ -1351,346 +2314,6 @@ local function ApplyTheme()
     end
 
 end
-
---==================================================
--- CONFIGURATION MENU
---==================================================
-
-ConfigButton.MouseButton1Click:Connect(function()
-
-    if SelectedButton
-    and SelectedButton ~= ConfigButton then
-
-        SelectedButton.BackgroundColor3 =
-            CurrentTheme.Button
-
-        SelectedButton.TextColor3 =
-            CurrentTheme.SubText
-
-    end
-
-    SelectedButton =
-        ConfigButton
-
-    ConfigButton.BackgroundColor3 =
-        GetAccent()
-
-    ConfigButton.TextColor3 =
-        Color3.fromRGB(
-            255,
-            255,
-            255
-        )
-
-    ClearContent()
-
-    ContentTitle.Text =
-        "Configuração"
-
-    --==================================================
-    -- CONFIG TOGGLE
-    --==================================================
-
-    local function CreateConfigToggle(
-        Name,
-        GetValue,
-        SetValue,
-        Order
-    )
-
-        local Button =
-            Instance.new("TextButton")
-
-        Button.Name =
-            Name
-
-        Button.Size =
-            UDim2.new(1, -5, 0, 45)
-
-        Button.BackgroundColor3 =
-            CurrentTheme.Card
-
-        Button.BorderSizePixel =
-            0
-
-        Button.Text =
-            Name ..
-            ": " ..
-            tostring(
-                GetValue()
-            )
-
-        Button.TextColor3 =
-            CurrentTheme.Text
-
-        Button.TextSize =
-            12
-
-        Button.Font =
-            Enum.Font.GothamMedium
-
-        Button.TextXAlignment =
-            Enum.TextXAlignment.Left
-
-        Button.AutoButtonColor =
-            false
-
-        Button.LayoutOrder =
-            Order
-
-        Button.ZIndex =
-            504
-
-        Button.Parent =
-            Scroll
-
-        local Padding =
-            Instance.new("UIPadding")
-
-        Padding.PaddingLeft =
-            UDim.new(0, 12)
-
-        Padding.Parent =
-            Button
-
-        local Corner =
-            Instance.new("UICorner")
-
-        Corner.CornerRadius =
-            UDim.new(0, 8)
-
-        Corner.Parent =
-            Button
-
-        Button.MouseButton1Click:Connect(function()
-
-            local NewValue =
-                not GetValue()
-
-            SetValue(
-                NewValue
-            )
-
-            Button.Text =
-                Name ..
-                ": " ..
-                tostring(
-                    NewValue
-                )
-
-        end)
-
-    end
-
-    --==================================================
-    -- THEME SELECTOR
-    --==================================================
-
-    local ThemeNames =
-        {}
-
-    for Name in pairs(Themes) do
-
-        table.insert(
-            ThemeNames,
-            Name
-        )
-
-    end
-
-    table.sort(
-        ThemeNames
-    )
-
-    local ThemeIndex =
-        1
-
-    for Index, Name in
-        ipairs(ThemeNames) do
-
-        if Name ==
-            ThemeName then
-
-            ThemeIndex =
-                Index
-
-            break
-
-        end
-
-    end
-
-    local ThemeButton =
-        Instance.new("TextButton")
-
-    ThemeButton.Name =
-        "Tema"
-
-    ThemeButton.Size =
-        UDim2.new(1, -5, 0, 45)
-
-    ThemeButton.BackgroundColor3 =
-        CurrentTheme.Card
-
-    ThemeButton.BorderSizePixel =
-        0
-
-    ThemeButton.Text =
-        "Tema: " ..
-        ThemeName
-
-    ThemeButton.TextColor3 =
-        CurrentTheme.Text
-
-    ThemeButton.TextSize =
-        12
-
-    ThemeButton.Font =
-        Enum.Font.GothamMedium
-
-    ThemeButton.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    ThemeButton.AutoButtonColor =
-        false
-
-    ThemeButton.LayoutOrder =
-        0
-
-    ThemeButton.ZIndex =
-        504
-
-    ThemeButton.Parent =
-        Scroll
-
-    local ThemePadding =
-        Instance.new("UIPadding")
-
-    ThemePadding.PaddingLeft =
-        UDim.new(0, 12)
-
-    ThemePadding.Parent =
-        ThemeButton
-
-    local ThemeCorner =
-        Instance.new("UICorner")
-
-    ThemeCorner.CornerRadius =
-        UDim.new(0, 8)
-
-    ThemeCorner.Parent =
-        ThemeButton
-
-    ThemeButton.MouseButton1Click:Connect(function()
-
-        if #ThemeNames == 0 then
-            return
-        end
-
-        ThemeIndex += 1
-
-        if ThemeIndex >
-            #ThemeNames then
-
-            ThemeIndex =
-                1
-
-        end
-
-        ThemeName =
-            ThemeNames[
-                ThemeIndex
-            ]
-
-        CurrentTheme =
-            Themes[
-                ThemeName
-            ]
-
-        Config.UI.Theme =
-            ThemeName
-
-        ThemeButton.Text =
-            "Tema: " ..
-            ThemeName
-
-        ApplyTheme()
-
-    end)
-
-    --==================================================
-    -- SHOW LOGO
-    --==================================================
-
-    CreateConfigToggle(
-
-        "Mostrar Logo",
-
-        function()
-            return Config.UI.ShowLogo
-        end,
-
-        function(Value)
-
-            Config.UI.ShowLogo =
-                Value
-
-            LogoButton.Visible =
-                Value
-
-        end,
-
-        1
-
-    )
-
-    --==================================================
-    -- LOGO DRAGGABLE
-    --==================================================
-
-    CreateConfigToggle(
-
-        "Logo Arrastável",
-
-        function()
-            return Config.UI.LogoDraggable
-        end,
-
-        function(Value)
-
-            Config.UI.LogoDraggable =
-                Value
-
-        end,
-
-        2
-
-    )
-
-    --==================================================
-    -- MAIN MENU DRAGGABLE
-    --==================================================
-
-    CreateConfigToggle(
-
-        "Menu Arrastável",
-
-        function()
-            return Config.UI.MainMenuDraggable
-        end,
-
-        function(Value)
-
-            Config.UI.MainMenuDraggable =
-                Value
-
-        end,
-
-        3
-
-    )
-
-end)
 
 --==================================================
 -- OPEN / CLOSE
@@ -1733,31 +2356,66 @@ end)
 -- DEFAULT CATEGORY
 --==================================================
 
-if Sounds["Principal"] then
+if type(Sounds) == "table" then
 
-    ShowCategory(
-        "Principal"
-    )
+    if Sounds["Principal"] then
 
-    local PrincipalButton =
-        CategoryButtons[
+        ShowCategory(
             "Principal"
-        ]
+        )
 
-    if PrincipalButton then
+        local PrincipalButton =
+            CategoryButtons[
+                "Principal"
+            ]
 
-        SelectedButton =
-            PrincipalButton
+        if PrincipalButton then
 
-        PrincipalButton.BackgroundColor3 =
-            GetAccent()
+            SelectedButton =
+                PrincipalButton
 
-        PrincipalButton.TextColor3 =
-            Color3.fromRGB(
-                255,
-                255,
-                255
-            )
+            PrincipalButton.BackgroundColor3 =
+                GetAccent()
+
+            PrincipalButton.TextColor3 =
+                Color3.fromRGB(
+                    255,
+                    255,
+                    255
+                )
+
+        end
+
+    else
+
+        for CategoryName, Button in
+            pairs(CategoryButtons) do
+
+            if CategoryName ~=
+                "Configuração" then
+
+                SelectedButton =
+                    Button
+
+                Button.BackgroundColor3 =
+                    GetAccent()
+
+                Button.TextColor3 =
+                    Color3.fromRGB(
+                        255,
+                        255,
+                        255
+                    )
+
+                ShowCategory(
+                    CategoryName
+                )
+
+                break
+
+            end
+
+        end
 
     end
 
@@ -1783,7 +2441,8 @@ RunService.RenderStepped:Connect(function()
         return
     end
 
-    RGBHue += 0.0025
+    RGBHue +=
+        0.0025
 
     if RGBHue >= 1 then
         RGBHue = 0
@@ -1837,6 +2496,10 @@ RunService.RenderStepped:Connect(function()
 
 end)
 
+--==================================================
+-- FINAL
+--==================================================
+
 print(
-    "💥 Rimuru Hub carregado."
-)
+    "💥 Rimuru Hub carregado com sucesso!"
+            )
