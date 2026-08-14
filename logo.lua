@@ -12,7 +12,8 @@ local Logo = {}
 
 function Logo:Init(Context)
 
-    self.Context = Context
+    self.Context =
+        Context
 
     self.Player =
         Context.Player
@@ -27,6 +28,9 @@ function Logo:Init(Context)
 
     self.Theme =
         Context.Theme
+
+    self.UI =
+        Context.UI
 
     self.Gui =
         Context.UI.Gui
@@ -147,6 +151,32 @@ function Logo:Create()
     --==================================================
 
     self:SetupDrag()
+
+    --==================================================
+    -- OPEN / CLOSE MENU
+    --==================================================
+
+    LogoButton.MouseButton1Click:Connect(function()
+
+        if self.LogoMoved() then
+
+            self.ResetMoved()
+
+            return
+
+        end
+
+        local Main =
+            self.UI.Main
+
+        if not Main then
+            return
+        end
+
+        Main.Visible =
+            not Main.Visible
+
+    end)
 
 end
 
