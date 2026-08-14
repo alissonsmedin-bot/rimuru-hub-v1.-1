@@ -937,6 +937,9 @@ local function CreateSoundCard(
     local CopyButton =
         Instance.new("TextButton")
 
+    CopyButton.Name =
+        "Copy"
+
     CopyButton.Size =
         UDim2.new(0, 55, 0, 28)
 
@@ -995,8 +998,10 @@ local function CreateSoundCard(
                 function()
 
                     if CopyButton.Parent then
+
                         CopyButton.Text =
                             "Copy"
+
                     end
 
                 end
@@ -1012,8 +1017,10 @@ local function CreateSoundCard(
                 function()
 
                     if CopyButton.Parent then
+
                         CopyButton.Text =
                             "Copy"
+
                     end
 
                 end
@@ -1063,8 +1070,13 @@ end
 
 local function CreateCategoryButton(
     CategoryName,
-    Order
+    Order,
+    ShowSoundCategory
 )
+
+    if ShowSoundCategory == nil then
+        ShowSoundCategory = true
+    end
 
     local Button =
         Instance.new("TextButton")
@@ -1128,7 +1140,8 @@ local function CreateCategoryButton(
 
     Button.MouseButton1Click:Connect(function()
 
-        if SelectedButton then
+        if SelectedButton
+        and SelectedButton ~= Button then
 
             SelectedButton.BackgroundColor3 =
                 CurrentTheme.Button
@@ -1151,9 +1164,13 @@ local function CreateCategoryButton(
                 255
             )
 
-        ShowCategory(
-            CategoryName
-        )
+        if ShowSoundCategory then
+
+            ShowCategory(
+                CategoryName
+            )
+
+        end
 
     end)
 
@@ -1176,7 +1193,8 @@ for CategoryName in
     local Button =
         CreateCategoryButton(
             CategoryName,
-            CategoryIndex
+            CategoryIndex,
+            true
         )
 
     CategoryButtons[
@@ -1184,6 +1202,22 @@ for CategoryName in
     ] = Button
 
 end
+
+--==================================================
+-- CONFIGURATION
+--==================================================
+
+local ConfigButton =
+    CreateCategoryButton(
+        "Configuração",
+        CategoryIndex + 1,
+        false
+    )
+
+CategoryButtons[
+    "Configuração"
+] =
+    ConfigButton
 
 --==================================================
 -- APPLY THEME
@@ -1237,7 +1271,7 @@ local function ApplyTheme()
         if Button == SelectedButton then
 
             Button.BackgroundColor3 =
-                cent()
+                GetAccent()
 
             Button.TextColor3 =
                 Color3.fromRGB(
@@ -1302,6 +1336,14 @@ local function ApplyTheme()
                         255
                     )
 
+            else
+
+                Object.BackgroundColor3 =
+                    CurrentTheme.Card
+
+                Object.TextColor3 =
+                    CurrentTheme.Text
+
             end
 
         end
@@ -1311,18 +1353,13 @@ local function ApplyTheme()
 end
 
 --==================================================
--- CONFIGURATION
+-- CONFIGURATION MENU
 --==================================================
-
-local ConfigButton =
-    CreateCategoryButton(
-        "Configuração",
-        CategoryIndex + 1
-    )
 
 ConfigButton.MouseButton1Click:Connect(function()
 
-    if SelectedButton then
+    if SelectedButton
+    and SelectedButton ~= ConfigButton then
 
         SelectedButton.BackgroundColor3 =
             CurrentTheme.Button
@@ -1545,6 +1582,10 @@ ConfigButton.MouseButton1Click:Connect(function()
         ThemeButton
 
     ThemeButton.MouseButton1Click:Connect(function()
+
+        if #ThemeNames == 0 then
+            return
+        end
 
         ThemeIndex += 1
 
