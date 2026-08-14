@@ -234,11 +234,6 @@ function Logo:SetupDrag()
                     LogoStartPosition.Y.Scale,
 
                     LogoStartPosition.Y.Offset +
-                    Delta.Y,
-
-                    LogoStartPosition.Y.Scale,
-
-                    LogoStartPosition.Y.Offset +
                     Delta.Y
 
                 )
