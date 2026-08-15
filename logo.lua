@@ -1,6 +1,7 @@
 --// 💥 RIMURU HUB
 --// Logo System
 --// GITHUB + LOCAL ASSET VERSION
+--// PNG TRANSPARENTE
 --// Sem ImageId do Roblox
 
 local Players = game:GetService("Players")
@@ -14,17 +15,23 @@ local Logo = {}
 
 local LOGO_SIZE = 55
 
--- Arquivo local
+--==================================================
+-- ARQUIVOS LOCAIS
+--==================================================
+
 local LOCAL_LOGO_PATHS = {
-    "images (1).jpeg",
-    "assets/images (1).jpeg",
-    "RimuruHub/images (1).jpeg",
-    "RimuruHub/assets/images (1).jpeg",
+    "1000086171-removebg-preview.png",
+    "assets/1000086171-removebg-preview.png",
+    "RimuruHub/1000086171-removebg-preview.png",
+    "RimuruHub/assets/1000086171-removebg-preview.png",
 }
 
--- Logo no GitHub
+--==================================================
+-- LOGO NO GITHUB
+--==================================================
+
 local GITHUB_LOGO_URL =
-    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/786002b52df0bbe38e3ecf4bdfa91a2a5079b7f7/images%20(1).jpeg"
+    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000086171-removebg-preview.png"
 
 --==================================================
 -- INIT
@@ -118,7 +125,7 @@ function Logo:GetLocalAsset()
             and Asset ~= "" then
 
                 print(
-                    "[Rimuru Hub] Logo local encontrada: "
+                    "[Rimuru Hub] Logo PNG local encontrada: "
                     .. Path
                 )
 
@@ -145,11 +152,14 @@ function Logo:GetGitHubAsset()
     -- Procura pelas APIs HTTP mais comuns
     if type(request) == "function" then
         RequestFunction = request
+
     elseif type(http_request) == "function" then
         RequestFunction = http_request
+
     elseif type(syn) == "table"
     and type(syn.request) == "function" then
         RequestFunction = syn.request
+
     elseif type(http) == "table"
     and type(http.request) == "function" then
         RequestFunction = http.request
@@ -177,7 +187,7 @@ function Logo:GetGitHubAsset()
     if not Success or not Response then
 
         warn(
-            "[Rimuru Hub] Falha ao acessar a logo do GitHub."
+            "[Rimuru Hub] Falha ao acessar a logo PNG do GitHub."
         )
 
         return nil
@@ -211,13 +221,16 @@ function Logo:GetGitHubAsset()
     end
 
     --==================================================
-    -- TENTA SALVAR COMO ARQUIVO LOCAL
+    -- SALVA COMO PNG LOCAL
     --==================================================
 
     if type(writefile) == "function" then
 
+        -- IMPORTANTE:
+        -- Mantemos .png para preservar transparência.
+
         local TempPath =
-            "rimuru_hub_logo.jpeg"
+            "rimuru_hub_logo.png"
 
         local WriteSuccess =
             pcall(
@@ -232,6 +245,7 @@ function Logo:GetGitHubAsset()
 
             if type(getcustomasset) == "function" then
                 AssetFunction = getcustomasset
+
             elseif type(getsynasset) == "function" then
                 AssetFunction = getsynasset
             end
@@ -249,7 +263,7 @@ function Logo:GetGitHubAsset()
                 and Asset ~= "" then
 
                     print(
-                        "[Rimuru Hub] Logo carregada pelo GitHub."
+                        "[Rimuru Hub] Logo PNG carregada pelo GitHub."
                     )
 
                     return Asset
@@ -264,7 +278,7 @@ function Logo:GetGitHubAsset()
 
     warn(
         "[Rimuru Hub] O Delta conseguiu acessar o GitHub,"
-        .. " mas não conseguiu transformar a imagem em asset."
+        .. " mas não conseguiu transformar a PNG em asset."
     )
 
     return nil
@@ -396,6 +410,7 @@ function Logo:Create()
     LogoButton.ImageTransparency =
         1
 
+    -- Mantém a proporção da logo
     LogoButton.ScaleType =
         Enum.ScaleType.Fit
 
