@@ -201,8 +201,8 @@ function Search:Create()
         UDim2.new(
             0,
             12,
-            0,
-            10
+            1,
+            5
         )
 
     ResultLabel.Size =
