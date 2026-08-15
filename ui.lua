@@ -1,5 +1,6 @@
 --// 💥 RIMURU HUB
 --// UI System
+--// FIX: Drag system sem Main.InputBegan
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
@@ -12,22 +13,30 @@ local UI = {}
 
 function UI:Init(Context)
 
-    self.Context =
-        Context
+    self.Context = Context or {}
 
     self.Player =
-        Context.Player
+        self.Context.Player
         or Players.LocalPlayer
 
+    if not self.Player then
+        return
+    end
+
     self.PlayerGui =
-        Context.PlayerGui
+        self.Context.PlayerGui
         or self.Player:WaitForChild("PlayerGui")
 
     self.Config =
-        Context.Config
+        self.Context.Config
 
     self.Theme =
-        Context.Theme
+        self.Context.Theme
+
+    if not self.Theme then
+        warn("[Rimuru Hub] Theme não encontrado.")
+        return
+    end
 
     self:Create()
 
@@ -42,9 +51,7 @@ function UI:RemoveOld()
     pcall(function()
 
         local Old =
-            self.PlayerGui:FindFirstChild(
-                "RimuruHub"
-            )
+            self.PlayerGui:FindFirstChild("RimuruHub")
 
         if Old then
             Old:Destroy()
@@ -64,6 +71,16 @@ function UI:Create()
 
     local CurrentTheme =
         self.Theme:GetCurrent()
+
+    if not CurrentTheme then
+
+        warn(
+            "[Rimuru Hub] Não foi possível obter o tema atual."
+        )
+
+        return
+
+    end
 
     --==================================================
     -- SCREEN GUI
@@ -216,7 +233,7 @@ function UI:Create()
         Instance.new("ImageLabel")
 
     HeaderLogo.Name =
-        "HeaderLogo"
+        "Logo"
 
     HeaderLogo.Size =
         UDim2.new(
@@ -430,9 +447,13 @@ function UI:Create()
     -- CLOSE FUNCTION
     --==================================================
 
-    Close.MouseButton1Click:Connect(function()
+    pcall(function()
 
-        self:SetVisible(false)
+        Close.Activated:Connect(function()
+
+            self:SetVisible(false)
+
+        end)
 
     end)
 
@@ -717,6 +738,40 @@ function UI:Create()
 end
 
 --==================================================
+-- CHECK IF POINT IS INSIDE MAIN
+--==================================================
+
+function UI:IsPointInsideMain(Position)
+
+    if not self.Main then
+        return false
+    end
+
+    local Main =
+        self.Main
+
+    local AbsolutePosition =
+        Main.AbsolutePosition
+
+    local AbsoluteSize =
+        Main.AbsoluteSize
+
+    return
+        Position.X >= AbsolutePosition.X
+        and
+        Position.X <=
+            AbsolutePosition.X +
+            AbsoluteSize.X
+        and
+        Position.Y >= AbsolutePosition.Y
+        and
+        Position.Y <=
+            AbsolutePosition.Y +
+            AbsoluteSize.Y
+
+end
+
+--==================================================
 -- MAIN DRAG
 --==================================================
 
@@ -725,8 +780,32 @@ function UI:SetupDrag()
     local Main =
         self.Main
 
+    if not Main then
+        return
+    end
+
     local Config =
         self.Config
+
+    local CanDrag =
+        true
+
+    pcall(function()
+
+        if Config
+        and Config.UI
+        and Config.UI.MainMenuDraggable ~= nil then
+
+            CanDrag =
+                Config.UI.MainMenuDraggable
+
+        end
+
+    end)
+
+    if not CanDrag then
+        return
+    end
 
     local Dragging =
         false
@@ -737,88 +816,88 @@ function UI:SetupDrag()
     local StartPosition =
         nil
 
-    local ActiveInput =
-        nil
-
     --==================================================
     -- INPUT BEGAN
     --==================================================
 
-    UIS.InputBegan:Connect(function(Input, GameProcessed)
+    self.DragInputBegan =
+        UIS.InputBegan:Connect(function(Input, GameProcessed)
 
-        if GameProcessed then
-            return
-        end
+            if GameProcessed then
+                return
+            end
 
-        if not Config
-            or not Config.UI
-            or not Config.UI.MainMenuDraggable then
+            if not self.Main then
+                return
+            end
 
-            return
+            if not self.Main.Visible then
+                return
+            end
 
-        end
+            local InputType =
+                Input.UserInputType
 
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseButton1
+            local IsMouse =
+                InputType ==
+                Enum.UserInputType.MouseButton1
 
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
+            local IsTouch =
+                InputType ==
+                Enum.UserInputType.Touch
 
-            -- Só inicia o drag se o input estiver
-            -- dentro da área principal.
+            if not IsMouse
+            and not IsTouch then
+                return
+            end
 
-            local MousePosition =
+            local Position =
                 Input.Position
 
-            local MainPosition =
-                Main.AbsolutePosition
-
-            local MainSize =
-                Main.AbsoluteSize
-
-            local InsideMain =
-                MousePosition.X >= MainPosition.X
-                and MousePosition.X <=
-                    MainPosition.X + MainSize.X
-                and MousePosition.Y >= MainPosition.Y
-                and MousePosition.Y <=
-                    MainPosition.Y + MainSize.Y
-
-            if not InsideMain then
+            if not self:IsPointInsideMain(Position) then
                 return
             end
 
             Dragging =
                 true
 
-            ActiveInput =
-                Input
-
             DragStart =
-                Input.Position
+                Position
 
             StartPosition =
                 Main.Position
 
-        end
-
-    end)
+        end)
 
     --==================================================
     -- INPUT CHANGED
     --==================================================
 
-    UIS.InputChanged:Connect(function(Input)
+    self.DragInputChanged =
+        UIS.InputChanged:Connect(function(Input)
 
-        if not Dragging then
-            return
-        end
+            if not Dragging then
+                return
+            end
 
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseMovement
+            local InputType =
+                Input.UserInputType
 
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
+            if InputType ~=
+                Enum.UserInputType.MouseMovement
+            and InputType ~=
+                Enum.UserInputType.Touch then
+
+                return
+
+            end
+
+            if not DragStart
+            or not StartPosition then
+
+                return
+
+            end
 
             local Delta =
                 Input.Position -
@@ -839,41 +918,36 @@ function UI:SetupDrag()
 
                 )
 
-        end
-
-    end)
+        end)
 
     --==================================================
     -- INPUT ENDED
     --==================================================
 
-    UIS.InputEnded:Connect(function(Input)
+    self.DragInputEnded =
+        UIS.InputEnded:Connect(function(Input)
 
-        if not Dragging then
-            return
-        end
+            local InputType =
+                Input.UserInputType
 
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseButton1
+            if InputType ==
+                Enum.UserInputType.MouseButton1
 
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
+            or InputType ==
+                Enum.UserInputType.Touch then
 
-            Dragging =
-                false
+                Dragging =
+                    false
 
-            ActiveInput =
-                nil
+                DragStart =
+                    nil
 
-            DragStart =
-                nil
+                StartPosition =
+                    nil
 
-            StartPosition =
-                nil
+            end
 
-        end
-
-    end)
+        end)
 
 end
 
@@ -883,14 +957,33 @@ end
 
 function UI:SetVisible(Value)
 
-    if self.Main then
-
-        self.Main.Visible =
-            Value
-
+    if not self.Main then
+        return
     end
 
+    self.Main.Visible =
+        Value
+
 end
+
+--==================================================
+-- TOGGLE
+--==================================================
+
+function UI:Toggle()
+
+    if not self.Main then
+        return
+    end
+
+    self.Main.Visible =
+        not self.Main.Visible
+
+end
+
+--==================================================
+-- IS VISIBLE
+--==================================================
 
 function UI:IsVisible()
 
@@ -912,8 +1005,20 @@ function UI:ApplyTheme()
         return
     end
 
+    if not self.Theme then
+        return
+    end
+
     local CurrentTheme =
         self.Theme:GetCurrent()
+
+    if not CurrentTheme then
+        return
+    end
+
+    --==================================================
+    -- MAIN
+    --==================================================
 
     self.Main.BackgroundColor3 =
         CurrentTheme.Main
@@ -925,6 +1030,10 @@ function UI:ApplyTheme()
 
     end
 
+    --==================================================
+    -- SIDEBAR
+    --==================================================
+
     if self.Sidebar then
 
         self.Sidebar.BackgroundColor3 =
@@ -932,12 +1041,20 @@ function UI:ApplyTheme()
 
     end
 
+    --==================================================
+    -- CONTENT
+    --==================================================
+
     if self.Content then
 
         self.Content.BackgroundColor3 =
             CurrentTheme.Content
 
     end
+
+    --==================================================
+    -- TEXT
+    --==================================================
 
     if self.Title then
 
@@ -960,6 +1077,10 @@ function UI:ApplyTheme()
 
     end
 
+    --==================================================
+    -- CLOSE
+    --==================================================
+
     if self.Close then
 
         self.Close.BackgroundColor3 =
@@ -970,6 +1091,10 @@ function UI:ApplyTheme()
 
     end
 
+    --==================================================
+    -- SCROLL
+    --==================================================
+
     if self.Scroll then
 
         self.Scroll.ScrollBarImageColor3 =
@@ -978,5 +1103,58 @@ function UI:ApplyTheme()
     end
 
 end
+
+--==================================================
+-- DESTROY
+--==================================================
+
+function UI:Destroy()
+
+    pcall(function()
+
+        if self.DragInputBegan then
+            self.DragInputBegan:Disconnect()
+        end
+
+        if self.DragInputChanged then
+            self.DragInputChanged:Disconnect()
+        end
+
+        if self.DragInputEnded then
+            self.DragInputEnded:Disconnect()
+        end
+
+    end)
+
+    self.DragInputBegan = nil
+    self.DragInputChanged = nil
+    self.DragInputEnded = nil
+
+    pcall(function()
+
+        if self.Gui then
+            self.Gui:Destroy()
+        end
+
+    end)
+
+    self.Gui = nil
+    self.Main = nil
+    self.Header = nil
+    self.HeaderLogo = nil
+    self.Title = nil
+    self.Subtitle = nil
+    self.Close = nil
+    self.Sidebar = nil
+    self.Content = nil
+    self.ContentTitle = nil
+    self.Scroll = nil
+    self.MainStroke = nil
+
+end
+
+--==================================================
+-- RETURN
+--==================================================
 
 return UI
