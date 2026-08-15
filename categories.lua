@@ -18,9 +18,12 @@ local CategoryIcons = {
     ["Heian Sukuna Sounds"] =
         "👹",
 
+    ["Gojo"] =
+        "🔵",
+
     ["Configuração"] =
         "⚙️"
-
+    
 }
 
 --==================================================
