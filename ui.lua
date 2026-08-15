@@ -138,86 +138,6 @@ function UI:Create()
         Main
 
     --==================================================
-    -- 🖼️ THEME BACKGROUND
-    --==================================================
-
-    local ThemeBackground =
-        Instance.new("ImageLabel")
-
-    ThemeBackground.Name =
-        "ThemeBackground"
-
-    ThemeBackground.Size =
-        UDim2.new(
-            1,
-            0,
-            1,
-            0
-        )
-
-    ThemeBackground.Position =
-        UDim2.new(
-            0,
-            0,
-            0,
-            0
-        )
-
-    ThemeBackground.BackgroundTransparency =
-        1
-
-    ThemeBackground.BorderSizePixel =
-        0
-
-    -- Lê a imagem diretamente do tema.
-    ThemeBackground.Image =
-        CurrentTheme.BackgroundImage
-        or ""
-
-    -- Lê a transparência diretamente do tema.
-    ThemeBackground.ImageTransparency =
-        CurrentTheme.BackgroundTransparency
-        or 0.78
-
-    ThemeBackground.ScaleType =
-        Enum.ScaleType.Crop
-
-    -- Apenas visual.
-    -- Não captura cliques/toques.
-    ThemeBackground.Active =
-        false
-
-    ThemeBackground.Selectable =
-        false
-
-    -- Mesmo nível do Main para ficar atrás
-    -- dos elementos criados posteriormente.
-    ThemeBackground.ZIndex =
-        500
-
-    ThemeBackground.Parent =
-        Main
-
-    self.BackgroundImage =
-        ThemeBackground
-
-    --==================================================
-    -- BACKGROUND CORNER
-    --==================================================
-
-    local BackgroundCorner =
-        Instance.new("UICorner")
-
-    BackgroundCorner.CornerRadius =
-        UDim.new(
-            0,
-            12
-        )
-
-    BackgroundCorner.Parent =
-        ThemeBackground
-
-    --==================================================
     -- MAIN CORNER
     --==================================================
 
@@ -265,6 +185,9 @@ function UI:Create()
     local Header =
         Instance.new("Frame")
 
+    Header.Name =
+        "Header"
+
     Header.Size =
         UDim2.new(
             1,
@@ -291,6 +214,9 @@ function UI:Create()
 
     local HeaderLogo =
         Instance.new("ImageLabel")
+
+    HeaderLogo.Name =
+        "HeaderLogo"
 
     HeaderLogo.Size =
         UDim2.new(
@@ -332,6 +258,9 @@ function UI:Create()
 
     local Title =
         Instance.new("TextLabel")
+
+    Title.Name =
+        "Title"
 
     Title.Position =
         UDim2.new(
@@ -383,6 +312,9 @@ function UI:Create()
     local Subtitle =
         Instance.new("TextLabel")
 
+    Subtitle.Name =
+        "Subtitle"
+
     Subtitle.Position =
         UDim2.new(
             0,
@@ -432,6 +364,9 @@ function UI:Create()
 
     local Close =
         Instance.new("TextButton")
+
+    Close.Name =
+        "Close"
 
     Close.Size =
         UDim2.new(
@@ -490,6 +425,16 @@ function UI:Create()
 
     self.Close =
         Close
+
+    --==================================================
+    -- CLOSE FUNCTION
+    --==================================================
+
+    Close.MouseButton1Click:Connect(function()
+
+        self:SetVisible(false)
+
+    end)
 
     --==================================================
     -- SIDEBAR
@@ -643,6 +588,9 @@ function UI:Create()
     local ContentTitle =
         Instance.new("TextLabel")
 
+    ContentTitle.Name =
+        "ContentTitle"
+
     ContentTitle.Position =
         UDim2.new(
             0,
@@ -783,16 +731,31 @@ function UI:SetupDrag()
     local Dragging =
         false
 
-    local DragStart
+    local DragStart =
+        nil
 
-    local StartPosition
+    local StartPosition =
+        nil
 
-    Main.InputBegan = Main.InputBegan
+    local ActiveInput =
+        nil
 
-    Main.InputBegan:Connect(function(Input)
+    --==================================================
+    -- INPUT BEGAN
+    --==================================================
 
-        if not Config.UI.MainMenuDraggable then
+    UIS.InputBegan:Connect(function(Input, GameProcessed)
+
+        if GameProcessed then
             return
+        end
+
+        if not Config
+            or not Config.UI
+            or not Config.UI.MainMenuDraggable then
+
+            return
+
         end
 
         if Input.UserInputType ==
@@ -801,8 +764,35 @@ function UI:SetupDrag()
         or Input.UserInputType ==
             Enum.UserInputType.Touch then
 
+            -- Só inicia o drag se o input estiver
+            -- dentro da área principal.
+
+            local MousePosition =
+                Input.Position
+
+            local MainPosition =
+                Main.AbsolutePosition
+
+            local MainSize =
+                Main.AbsoluteSize
+
+            local InsideMain =
+                MousePosition.X >= MainPosition.X
+                and MousePosition.X <=
+                    MainPosition.X + MainSize.X
+                and MousePosition.Y >= MainPosition.Y
+                and MousePosition.Y <=
+                    MainPosition.Y + MainSize.Y
+
+            if not InsideMain then
+                return
+            end
+
             Dragging =
                 true
+
+            ActiveInput =
+                Input
 
             DragStart =
                 Input.Position
@@ -813,6 +803,10 @@ function UI:SetupDrag()
         end
 
     end)
+
+    --==================================================
+    -- INPUT CHANGED
+    --==================================================
 
     UIS.InputChanged:Connect(function(Input)
 
@@ -849,7 +843,15 @@ function UI:SetupDrag()
 
     end)
 
+    --==================================================
+    -- INPUT ENDED
+    --==================================================
+
     UIS.InputEnded:Connect(function(Input)
+
+        if not Dragging then
+            return
+        end
 
         if Input.UserInputType ==
             Enum.UserInputType.MouseButton1
@@ -859,6 +861,15 @@ function UI:SetupDrag()
 
             Dragging =
                 false
+
+            ActiveInput =
+                nil
+
+            DragStart =
+                nil
+
+            StartPosition =
+                nil
 
         end
 
@@ -907,67 +918,62 @@ function UI:ApplyTheme()
     self.Main.BackgroundColor3 =
         CurrentTheme.Main
 
-    self.MainStroke.Color =
-        self.Theme:GetAccent()
+    if self.MainStroke then
 
-    self.Sidebar.BackgroundColor3 =
-        CurrentTheme.Sidebar
+        self.MainStroke.Color =
+            self.Theme:GetAccent()
 
-    self.Content.BackgroundColor3 =
-        CurrentTheme.Content
+    end
 
-    self.Title.TextColor3 =
-        CurrentTheme.Text
+    if self.Sidebar then
 
-    self.Subtitle.TextColor3 =
-        CurrentTheme.SubText
+        self.Sidebar.BackgroundColor3 =
+            CurrentTheme.Sidebar
 
-    self.ContentTitle.TextColor3 =
-        CurrentTheme.Text
+    end
 
-    self.Close.BackgroundColor3 =
-        CurrentTheme.Close
+    if self.Content then
 
-    self.Close.TextColor3 =
-        CurrentTheme.Text
+        self.Content.BackgroundColor3 =
+            CurrentTheme.Content
 
-    self.Scroll.ScrollBarImageColor3 =
-        self.Theme:GetAccent()
+    end
 
-    --==================================================
-    -- 🖼️ UPDATE THEME BACKGROUND
-    --==================================================
+    if self.Title then
 
-    if self.BackgroundImage then
+        self.Title.TextColor3 =
+            CurrentTheme.Text
 
-        local Image =
-            CurrentTheme.BackgroundImage
+    end
 
-        local Transparency =
-            CurrentTheme.BackgroundTransparency
+    if self.Subtitle then
 
-        if Image
-        and Image ~= "" then
+        self.Subtitle.TextColor3 =
+            CurrentTheme.SubText
 
-            self.BackgroundImage.Image =
-                Image
+    end
 
-            self.BackgroundImage.ImageTransparency =
-                Transparency
-                or 0.78
+    if self.ContentTitle then
 
-            self.BackgroundImage.Visible =
-                true
+        self.ContentTitle.TextColor3 =
+            CurrentTheme.Text
 
-        else
+    end
 
-            self.BackgroundImage.Image =
-                ""
+    if self.Close then
 
-            self.BackgroundImage.Visible =
-                false
+        self.Close.BackgroundColor3 =
+            CurrentTheme.Close
 
-        end
+        self.Close.TextColor3 =
+            CurrentTheme.Text
+
+    end
+
+    if self.Scroll then
+
+        self.Scroll.ScrollBarImageColor3 =
+            self.Theme:GetAccent()
 
     end
 
