@@ -122,6 +122,13 @@ function UI:Create()
     Main.BackgroundColor3 =
         CurrentTheme.Main
 
+    --==================================================
+    -- 🖼️ BACKGROUND TRANSPARENCY
+    --==================================================
+
+    Main.BackgroundTransparency =
+        0.18
+
     Main.BorderSizePixel =
         0
 
@@ -136,6 +143,85 @@ function UI:Create()
 
     self.Main =
         Main
+
+    --==================================================
+    -- 🖼️ THEME BACKGROUND
+    --==================================================
+
+    local ThemeBackground =
+        Instance.new("ImageLabel")
+
+    ThemeBackground.Name =
+        "ThemeBackground"
+
+    ThemeBackground.Size =
+        UDim2.new(
+            1,
+            0,
+            1,
+            0
+        )
+
+    ThemeBackground.Position =
+        UDim2.new(
+            0,
+            0,
+            0,
+            0
+        )
+
+    ThemeBackground.BackgroundTransparency =
+        1
+
+    ThemeBackground.BorderSizePixel =
+        0
+
+    ThemeBackground.Image =
+        CurrentTheme.BackgroundImage
+        or ""
+
+    ThemeBackground.ImageTransparency =
+        self.Theme:GetBackgroundTransparency()
+
+    ThemeBackground.ScaleType =
+        Enum.ScaleType.Crop
+
+    --==================================================
+    -- IMPORTANT
+    -- The image is visual only.
+    -- It cannot block buttons.
+    --==================================================
+
+    ThemeBackground.Active =
+        false
+
+    ThemeBackground.Selectable =
+        false
+
+    ThemeBackground.ZIndex =
+        500
+
+    ThemeBackground.Parent =
+        Main
+
+    self.BackgroundImage =
+        ThemeBackground
+
+    --==================================================
+    -- BACKGROUND CORNER
+    --==================================================
+
+    local BackgroundCorner =
+        Instance.new("UICorner")
+
+    BackgroundCorner.CornerRadius =
+        UDim.new(
+            0,
+            12
+        )
+
+    BackgroundCorner.Parent =
+        ThemeBackground
 
     --==================================================
     -- MAIN CORNER
@@ -707,80 +793,86 @@ function UI:SetupDrag()
 
     local StartPosition
 
-    Main.InputBegan:Connect(function(Input)
+    Main.InputBegan:Connect(
+        function(Input)
 
-        if not Config.UI.MainMenuDraggable then
-            return
-        end
+            if not Config.UI.MainMenuDraggable then
+                return
+            end
 
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseButton1
+            if Input.UserInputType ==
+                Enum.UserInputType.MouseButton1
 
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
+            or Input.UserInputType ==
+                Enum.UserInputType.Touch then
 
-            Dragging =
-                true
+                Dragging =
+                    true
 
-            DragStart =
-                Input.Position
+                DragStart =
+                    Input.Position
 
-            StartPosition =
-                Main.Position
+                StartPosition =
+                    Main.Position
 
-        end
-
-    end)
-
-    UIS.InputChanged:Connect(function(Input)
-
-        if not Dragging then
-            return
-        end
-
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseMovement
-
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
-
-            local Delta =
-                Input.Position -
-                DragStart
-
-            Main.Position =
-                UDim2.new(
-
-                    StartPosition.X.Scale,
-
-                    StartPosition.X.Offset +
-                    Delta.X,
-
-                    StartPosition.Y.Scale,
-
-                    StartPosition.Y.Offset +
-                    Delta.Y
-
-                )
+            end
 
         end
+    )
 
-    end)
+    UIS.InputChanged:Connect(
+        function(Input)
 
-    UIS.InputEnded:Connect(function(Input)
+            if not Dragging then
+                return
+            end
 
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseButton1
+            if Input.UserInputType ==
+                Enum.UserInputType.MouseMovement
 
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
+            or Input.UserInputType ==
+                Enum.UserInputType.Touch then
 
-            Dragging =
-                false
+                local Delta =
+                    Input.Position -
+                    DragStart
+
+                Main.Position =
+                    UDim2.new(
+
+                        StartPosition.X.Scale,
+
+                        StartPosition.X.Offset +
+                        Delta.X,
+
+                        StartPosition.Y.Scale,
+
+                        StartPosition.Y.Offset +
+                        Delta.Y
+
+                    )
+
+            end
 
         end
+    )
 
-    end)
+    UIS.InputEnded:Connect(
+        function(Input)
+
+            if Input.UserInputType ==
+                Enum.UserInputType.MouseButton1
+
+            or Input.UserInputType ==
+                Enum.UserInputType.Touch then
+
+                Dragging =
+                    false
+
+            end
+
+        end
+    )
 
 end
 
@@ -810,6 +902,65 @@ function UI:IsVisible()
 end
 
 --==================================================
+-- 🖼️ UPDATE THEME BACKGROUND
+--==================================================
+
+function UI:UpdateBackground()
+
+    if not self.BackgroundImage then
+        return
+    end
+
+    local Background
+
+    local Success =
+        pcall(
+            function()
+
+                Background =
+                    self.Theme:GetBackgroundSettings()
+
+            end
+        )
+
+    if not Success
+    or not Background then
+
+        self.BackgroundImage.Image =
+            ""
+
+        self.BackgroundImage.Visible =
+            false
+
+        return
+
+    end
+
+    if Background.Image
+    and Background.Image ~= "" then
+
+        self.BackgroundImage.Image =
+            Background.Image
+
+        self.BackgroundImage.ImageTransparency =
+            Background.Transparency
+
+        self.BackgroundImage.Visible =
+            true
+
+    else
+
+        self.BackgroundImage.Image =
+            ""
+
+        self.BackgroundImage.Visible =
+            false
+
+    end
+
+end
+
+--==================================================
 -- APPLY THEME
 --==================================================
 
@@ -822,26 +973,64 @@ function UI:ApplyTheme()
     local CurrentTheme =
         self.Theme:GetCurrent()
 
+    --==================================================
+    -- MAIN
+    --==================================================
+
     self.Main.BackgroundColor3 =
         CurrentTheme.Main
+
+    -- Keep the color layer slightly transparent
+    -- so themed backgrounds can be visible.
+
+    self.Main.BackgroundTransparency =
+        0.18
+
+    --==================================================
+    -- MAIN STROKE
+    --==================================================
 
     self.MainStroke.Color =
         self.Theme:GetAccent()
 
+    --==================================================
+    -- SIDEBAR
+    --==================================================
+
     self.Sidebar.BackgroundColor3 =
         CurrentTheme.Sidebar
+
+    --==================================================
+    -- CONTENT
+    --==================================================
 
     self.Content.BackgroundColor3 =
         CurrentTheme.Content
 
+    --==================================================
+    -- TITLE
+    --==================================================
+
     self.Title.TextColor3 =
         CurrentTheme.Text
+
+    --==================================================
+    -- SUBTITLE
+    --==================================================
 
     self.Subtitle.TextColor3 =
         CurrentTheme.SubText
 
+    --==================================================
+    -- CONTENT TITLE
+    --==================================================
+
     self.ContentTitle.TextColor3 =
         CurrentTheme.Text
+
+    --==================================================
+    -- CLOSE
+    --==================================================
 
     self.Close.BackgroundColor3 =
         CurrentTheme.Close
@@ -849,9 +1038,74 @@ function UI:ApplyTheme()
     self.Close.TextColor3 =
         CurrentTheme.Text
 
+    --==================================================
+    -- SCROLLBAR
+    --==================================================
+
     self.Scroll.ScrollBarImageColor3 =
         self.Theme:GetAccent()
 
+    --==================================================
+    -- 🖼️ BACKGROUND
+    --==================================================
+
+    self:UpdateBackground()
+
 end
+
+--==================================================
+-- SET BACKGROUND TRANSPARENCY
+--==================================================
+
+function UI:SetBackgroundTransparency(
+    Value
+)
+
+    if not self.BackgroundImage then
+        return
+    end
+
+    Value =
+        tonumber(
+            Value
+        )
+
+    if not Value then
+        return
+    end
+
+    Value =
+        math.clamp(
+            Value,
+            0,
+            1
+        )
+
+    self.BackgroundImage.ImageTransparency =
+        Value
+
+    if self.Theme.SetBackgroundTransparency then
+
+        self.Theme:SetBackgroundTransparency(
+            Value
+        )
+
+    end
+
+end
+
+--==================================================
+-- GET BACKGROUND IMAGE
+--==================================================
+
+function UI:GetBackgroundImage()
+
+    return self.BackgroundImage
+
+end
+
+--==================================================
+-- RETURN
+--==================================================
 
 return UI
