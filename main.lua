@@ -116,6 +116,13 @@ local RGB =
     Load("RGB.lua")
 
 --==================================================
+-- ⭐ LOAD FAVORITES
+--==================================================
+
+local Favorites =
+    Load("favorites.lua")
+
+--==================================================
 -- VERIFY MODULES
 --==================================================
 
@@ -148,6 +155,10 @@ if not Settings then
 end
 
 if not RGB then
+    return
+end
+
+if not Favorites then
     return
 end
 
@@ -191,7 +202,11 @@ local Context = {
         Settings,
 
     RGB =
-        RGB
+        RGB,
+
+    -- ⭐ FAVORITES
+    Favorites =
+        Favorites
 
 }
 
