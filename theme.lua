@@ -1,8 +1,257 @@
 --// 🎨 RIMURU HUB
 --// Theme System
---// Reworked Theme Core
+--// Theme Core
+--// Compatible with Config + UI + Settings + RGB
 
 local Theme = {}
+
+--==================================================
+-- DEFAULT THEMES
+--==================================================
+
+local DefaultThemes = {
+
+    ["Rimuru Dark"] = {
+
+        Main =
+            Color3.fromRGB(
+                15,
+                17,
+                22
+            ),
+
+        Sidebar =
+            Color3.fromRGB(
+                18,
+                21,
+                28
+            ),
+
+        Content =
+            Color3.fromRGB(
+                20,
+                23,
+                30
+            ),
+
+        Card =
+            Color3.fromRGB(
+                28,
+                32,
+                40
+            ),
+
+        Button =
+            Color3.fromRGB(
+                35,
+                40,
+                50
+            ),
+
+        Text =
+            Color3.fromRGB(
+                240,
+                245,
+                255
+            ),
+
+        SubText =
+            Color3.fromRGB(
+                160,
+                170,
+                185
+            ),
+
+        Accent =
+            Color3.fromRGB(
+                80,
+                170,
+                255
+            ),
+
+        LogoBackground =
+            Color3.fromRGB(
+                25,
+                30,
+                40
+            ),
+
+        Close =
+            Color3.fromRGB(
+                150,
+                45,
+                55
+            ),
+
+        BackgroundTransparency =
+            0.78,
+
+        RGB =
+            false,
+
+    },
+
+    ["Slime"] = {
+
+        Main =
+            Color3.fromRGB(
+                12,
+                25,
+                23
+            ),
+
+        Sidebar =
+            Color3.fromRGB(
+                15,
+                35,
+                31
+            ),
+
+        Content =
+            Color3.fromRGB(
+                17,
+                42,
+                36
+            ),
+
+        Card =
+            Color3.fromRGB(
+                25,
+                55,
+                47
+            ),
+
+        Button =
+            Color3.fromRGB(
+                30,
+                70,
+                58
+            ),
+
+        Text =
+            Color3.fromRGB(
+                235,
+                255,
+                245
+            ),
+
+        SubText =
+            Color3.fromRGB(
+                155,
+                195,
+                175
+            ),
+
+        Accent =
+            Color3.fromRGB(
+                75,
+                220,
+                145
+            ),
+
+        LogoBackground =
+            Color3.fromRGB(
+                20,
+                55,
+                45
+            ),
+
+        Close =
+            Color3.fromRGB(
+                150,
+                55,
+                65
+            ),
+
+        BackgroundTransparency =
+            0.78,
+
+        RGB =
+            false,
+
+    },
+
+    ["RGB"] = {
+
+        Main =
+            Color3.fromRGB(
+                15,
+                15,
+                20
+            ),
+
+        Sidebar =
+            Color3.fromRGB(
+                20,
+                20,
+                27
+            ),
+
+        Content =
+            Color3.fromRGB(
+                23,
+                23,
+                30
+            ),
+
+        Card =
+            Color3.fromRGB(
+                30,
+                30,
+                40
+            ),
+
+        Button =
+            Color3.fromRGB(
+                38,
+                38,
+                50
+            ),
+
+        Text =
+            Color3.fromRGB(
+                245,
+                245,
+                255
+            ),
+
+        SubText =
+            Color3.fromRGB(
+                165,
+                165,
+                180
+            ),
+
+        Accent =
+            Color3.fromRGB(
+                255,
+                0,
+                255
+            ),
+
+        LogoBackground =
+            Color3.fromRGB(
+                25,
+                25,
+                35
+            ),
+
+        Close =
+            Color3.fromRGB(
+                160,
+                45,
+                60
+            ),
+
+        BackgroundTransparency =
+            0.78,
+
+        RGB =
+            true,
+
+    },
+
+}
 
 --==================================================
 -- INIT
@@ -11,26 +260,86 @@ local Theme = {}
 function Theme:Init(Context)
 
     self.Context =
-        Context
+        Context or {}
 
     self.Config =
-        Context.Config
+        self.Context.Config
 
     --==================================================
     -- THEMES
     --==================================================
 
     self.Themes =
-        self.Config.UI.Themes
-        or {}
+        DefaultThemes
 
     --==================================================
-    -- DEFAULT THEME
+    -- CUSTOM THEMES FROM CONFIG
+    --==================================================
+
+    if self.Config then
+
+        local ConfigThemes
+
+        if type(
+            self.Config.Get
+        ) == "function" then
+
+            ConfigThemes =
+                self.Config:Get(
+                    "Theme",
+                    "Themes"
+                )
+
+        end
+
+        if type(ConfigThemes) == "table" then
+
+            for Name, Data in
+                pairs(
+                    ConfigThemes
+                ) do
+
+                if type(Data) == "table" then
+
+                    self.Themes[Name] =
+                        Data
+
+                end
+
+            end
+
+        end
+
+    end
+
+    --==================================================
+    -- DEFAULT NAME
     --==================================================
 
     self.Name =
-        self.Config.UI.Theme
-        or "Rimuru Dark"
+        "Rimuru Dark"
+
+    if self.Config then
+
+        if type(
+            self.Config.GetSelectedTheme
+        ) == "function" then
+
+            local SavedTheme =
+                self.Config:
+                    GetSelectedTheme()
+
+            if type(SavedTheme) == "string"
+            and self.Themes[SavedTheme] then
+
+                self.Name =
+                    SavedTheme
+
+            end
+
+        end
+
+    end
 
     --==================================================
     -- FALLBACK
@@ -38,30 +347,15 @@ function Theme:Init(Context)
 
     if not self.Themes[self.Name] then
 
-        if self.Themes["Rimuru Dark"] then
+        for ThemeName in
+            pairs(
+                self.Themes
+            ) do
 
             self.Name =
-                "Rimuru Dark"
+                ThemeName
 
-        else
-
-            local FirstTheme
-
-            for ThemeName in
-                pairs(
-                    self.Themes
-                ) do
-
-                FirstTheme =
-                    ThemeName
-
-                break
-
-            end
-
-            self.Name =
-                FirstTheme
-                or "Rimuru Dark"
+            break
 
         end
 
@@ -72,7 +366,9 @@ function Theme:Init(Context)
     --==================================================
 
     self.Current =
-        self.Themes[self.Name]
+        self.Themes[
+            self.Name
+        ]
 
     --==================================================
     -- RGB
@@ -80,6 +376,9 @@ function Theme:Init(Context)
 
     self.RGBHue =
         0
+
+    self.RGBEnabled =
+        false
 
     --==================================================
     -- BACKGROUND
@@ -97,16 +396,14 @@ end
 function Theme:GetAccent()
 
     if not self.Current then
+
         return Color3.fromRGB(
             80,
             170,
             255
         )
-    end
 
-    --==================================================
-    -- RGB THEME
-    --==================================================
+    end
 
     if self.Current.RGB then
 
@@ -117,10 +414,6 @@ function Theme:GetAccent()
         )
 
     end
-
-    --==================================================
-    -- NORMAL ACCENT
-    --==================================================
 
     return self.Current.Accent
         or Color3.fromRGB(
@@ -147,10 +440,41 @@ function Theme:SetTheme(
         Name
 
     self.Current =
-        self.Themes[Name]
+        self.Themes[
+            Name
+        ]
 
-    self.Config.UI.Theme =
-        Name
+    --==================================================
+    -- SAVE CONFIG
+    --==================================================
+
+    if self.Config then
+
+        if type(
+            self.Config.SetSelectedTheme
+        ) == "function" then
+
+            self.Config:
+                SetSelectedTheme(
+                    Name
+                )
+
+        elseif type(
+            self.Config.Set
+        ) == "function" then
+
+            self.Config:Set(
+                "Theme",
+                "Selected",
+                Name
+            )
+
+        end
+
+    end
+
+    self.RGBHue =
+        0
 
     return true
 
@@ -176,7 +500,8 @@ end
 
 function Theme:HasBackgroundImage()
 
-    return self:GetBackgroundImage()
+    return
+        self:GetBackgroundImage()
         ~= nil
 
 end
@@ -188,33 +513,48 @@ end
 function Theme:GetBackgroundTransparency()
 
     --==================================================
-    -- USER CONFIGURATION
+    -- CONFIG
     --==================================================
 
-    if self.Config
-    and self.Config.UI
-    and self.Config.UI.BackgroundTransparency
-    ~= nil then
+    if self.Config then
 
-        return self.Config.UI.BackgroundTransparency
+        if type(
+            self.Config.GetBackgroundTransparency
+        ) == "function" then
+
+            local Value =
+                self.Config:
+                    GetBackgroundTransparency()
+
+            if type(Value) == "number" then
+
+                return math.clamp(
+                    Value,
+                    0,
+                    1
+                )
+
+            end
+
+        end
 
     end
 
     --==================================================
-    -- THEME DEFAULT
+    -- THEME
     --==================================================
 
     if self.Current
     and self.Current.BackgroundTransparency
     ~= nil then
 
-        return self.Current.BackgroundTransparency
+        return math.clamp(
+            self.Current.BackgroundTransparency,
+            0,
+            1
+        )
 
     end
-
-    --==================================================
-    -- DEFAULT
-    --==================================================
 
     return 0.78
 
@@ -237,8 +577,6 @@ function Theme:SetBackgroundTransparency(
         return false
     end
 
-    -- Clamp between 0 and 1
-
     Value =
         math.clamp(
             Value,
@@ -246,53 +584,48 @@ function Theme:SetBackgroundTransparency(
             1
         )
 
-    --==================================================
-    -- CONFIG
-    --==================================================
-
-    self.Config.UI.BackgroundTransparency =
-        Value
-
     self.BackgroundTransparency =
         Value
+
+    if self.Config then
+
+        if type(
+            self.Config.SetBackgroundTransparency
+        ) == "function" then
+
+            self.Config:
+                SetBackgroundTransparency(
+                    Value
+                )
+
+        end
+
+    end
 
     return true
 
 end
 
 --==================================================
--- GET THEME BACKGROUND
+-- GET BACKGROUND SETTINGS
 --==================================================
 
 function Theme:GetBackgroundSettings()
 
-    if not self.Current then
-
-        return {
-
-            Image = nil,
-
-            Transparency =
-                self:GetBackgroundTransparency()
-
-        }
-
-    end
-
     return {
 
         Image =
-            self.Current.BackgroundImage,
+            self:GetBackgroundImage(),
 
         Transparency =
-            self:GetBackgroundTransparency()
+            self:GetBackgroundTransparency(),
 
     }
 
 end
 
 --==================================================
--- RGB
+-- UPDATE RGB
 --==================================================
 
 function Theme:UpdateRGB()
@@ -337,7 +670,8 @@ function Theme:IsRGB()
         return false
     end
 
-    return self.Current.RGB == true
+    return
+        self.Current.RGB == true
 
 end
 
@@ -429,7 +763,115 @@ function Theme:GetThemeNames()
 end
 
 --==================================================
+-- SET COLOR
+--==================================================
+
+function Theme:SetColor(
+    Name,
+    Color
+)
+
+    if not self.Current then
+        return false
+    end
+
+    if typeof(Color) ~= "Color3" then
+        return false
+    end
+
+    if self.Current[Name] == nil then
+        return false
+    end
+
+    self.Current[Name] =
+        Color
+
+    return true
+
+end
+
+--==================================================
+-- GET COLOR
+--==================================================
+
+function Theme:GetColor(
+    Name
+)
+
+    if not self.Current then
+        return nil
+    end
+
+    return self.Current[Name]
+
+end
+
+--==================================================
+-- RESET CURRENT THEME
+--==================================================
+
+function Theme:ResetCurrent()
+
+    if not self.Themes[self.Name] then
+        return false
+    end
+
+    local Default =
+        DefaultThemes[
+            self.Name
+        ]
+
+    if not Default then
+        return false
+    end
+
+    self.Current = {}
+
+    for Key, Value in
+        pairs(
+            Default
+        ) do
+
+        self.Current[Key] =
+            Value
+
+    end
+
+    self.Themes[self.Name] =
+        self.Current
+
+    return true
+
+end
+
+--==================================================
 -- EXPORT
+--==================================================
+
+function Theme:Export()
+
+    local Data = {}
+
+    if not self.Current then
+        return Data
+    end
+
+    for Key, Value in
+        pairs(
+            self.Current
+        ) do
+
+        Data[Key] =
+            Value
+
+    end
+
+    return Data
+
+end
+
+--==================================================
+-- RETURN
 --==================================================
 
 return Theme
