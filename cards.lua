@@ -28,12 +28,11 @@ function Cards:Init(Context)
     self.Scroll =
         self.UI.Scroll
 
-    --==================================================
-    -- ⭐ FAVORITES
-    --==================================================
-
     self.Favorites =
         Context.Favorites
+
+    self.Categories =
+        Context.Categories
 
 end
 
@@ -48,7 +47,9 @@ function Cards:Copy(ID)
         local Success =
             pcall(function()
 
-                setclipboard(ID)
+                setclipboard(
+                    tostring(ID)
+                )
 
             end)
 
@@ -63,7 +64,9 @@ function Cards:Copy(ID)
         local Success =
             pcall(function()
 
-                toclipboard(ID)
+                toclipboard(
+                    tostring(ID)
+                )
 
             end)
 
@@ -90,7 +93,9 @@ function Cards:IsFavorite(ID)
     local Success, Result =
         pcall(function()
 
-            return self.Favorites:IsFavorite(ID)
+            return self.Favorites:IsFavorite(
+                tostring(ID)
+            )
 
         end)
 
@@ -115,7 +120,9 @@ function Cards:ToggleFavorite(ID)
     local Success, Result =
         pcall(function()
 
-            return self.Favorites:Toggle(ID)
+            return self.Favorites:Toggle(
+                tostring(ID)
+            )
 
         end)
 
@@ -128,6 +135,108 @@ function Cards:ToggleFavorite(ID)
 end
 
 --==================================================
+-- ⭐ UPDATE FAVORITE SYSTEM
+--==================================================
+
+function Cards:RefreshFavorites()
+
+    if not self.Categories then
+        return
+    end
+
+    -- Update sidebar counter
+
+    if self.Categories.UpdateFavorites then
+
+        pcall(function()
+
+            self.Categories:UpdateFavorites()
+
+        end)
+
+    elseif self.Categories.UpdateFavoritesButton then
+
+        pcall(function()
+
+            self.Categories:UpdateFavoritesButton()
+
+        end)
+
+    end
+
+end
+
+--==================================================
+-- ⭐ HANDLE FAVORITE CLICK
+--==================================================
+
+function Cards:HandleFavorite(
+    ID,
+    UpdateButton
+)
+
+    local IsFavorite =
+        self:ToggleFavorite(ID)
+
+    -- Update button immediately
+
+    if UpdateButton then
+
+        if IsFavorite then
+
+            UpdateButton.Text =
+                "⭐"
+
+        else
+
+            UpdateButton.Text =
+                "☆"
+
+        end
+
+    end
+
+    -- Update category/favorites counter
+
+    self:RefreshFavorites()
+
+    --==================================================
+    -- IF CURRENT CATEGORY IS FAVORITES
+    --==================================================
+
+    if self.Categories then
+
+        local CurrentCategory
+
+        pcall(function()
+
+            CurrentCategory =
+                self.Categories:GetCurrentCategory()
+
+        end)
+
+        if CurrentCategory ==
+            "Favoritos" then
+
+            task.defer(function()
+
+                pcall(function()
+
+                    self.Categories:ShowFavorites()
+
+                end)
+
+            end)
+
+        end
+
+    end
+
+    return IsFavorite
+
+end
+
+--==================================================
 -- CREATE SOUND CARD
 --==================================================
 
@@ -136,24 +245,45 @@ function Cards:CreateSoundCard(
     Data
 )
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+    --==================================================
+    -- VALIDATION
+    --==================================================
+
+    if not Data then
+        return nil
+    end
 
     local Name =
-        Data[1]
+        tostring(
+            Data[1] or
+            "Unknown"
+        )
 
     local ID =
-        Data[2]
+        tostring(
+            Data[2] or
+            ""
+        )
+
+    --==================================================
+    -- THEME
+    --==================================================
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
 
     --==================================================
     -- CARD
     --==================================================
 
     local Card =
-        Instance.new("Frame")
+        Instance.new(
+            "Frame"
+        )
 
     Card.Name =
-        "Sound_" .. Index
+        "Sound_" ..
+        tostring(Index)
 
     Card.Size =
         UDim2.new(
@@ -183,7 +313,9 @@ function Cards:CreateSoundCard(
     --==================================================
 
     local CardCorner =
-        Instance.new("UICorner")
+        Instance.new(
+            "UICorner"
+        )
 
     CardCorner.CornerRadius =
         UDim.new(
@@ -195,11 +327,16 @@ function Cards:CreateSoundCard(
         Card
 
     --==================================================
-    -- NAME
+    -- SOUND NAME
     --==================================================
 
     local NameLabel =
-        Instance.new("TextLabel")
+        Instance.new(
+            "TextLabel"
+        )
+
+    NameLabel.Name =
+        "Name"
 
     NameLabel.Position =
         UDim2.new(
@@ -245,11 +382,16 @@ function Cards:CreateSoundCard(
         Card
 
     --==================================================
-    -- ID
+    -- SOUND ID
     --==================================================
 
     local IDLabel =
-        Instance.new("TextLabel")
+        Instance.new(
+            "TextLabel"
+        )
+
+    IDLabel.Name =
+        "ID"
 
     IDLabel.Position =
         UDim2.new(
@@ -285,6 +427,9 @@ function Cards:CreateSoundCard(
     IDLabel.TextXAlignment =
         Enum.TextXAlignment.Left
 
+    IDLabel.TextTruncate =
+        Enum.TextTruncate.AtEnd
+
     IDLabel.ZIndex =
         505
 
@@ -296,7 +441,9 @@ function Cards:CreateSoundCard(
     --==================================================
 
     local FavoriteButton =
-        Instance.new("TextButton")
+        Instance.new(
+            "TextButton"
+        )
 
     FavoriteButton.Name =
         "Favorite"
@@ -304,17 +451,17 @@ function Cards:CreateSoundCard(
     FavoriteButton.Size =
         UDim2.new(
             0,
-            28,
+            30,
             0,
-            28
+            30
         )
 
     FavoriteButton.Position =
         UDim2.new(
             1,
-            -100,
+            -102,
             0.5,
-            -14
+            -15
         )
 
     FavoriteButton.BackgroundTransparency =
@@ -339,15 +486,12 @@ function Cards:CreateSoundCard(
         Card
 
     --==================================================
-    -- ⭐ FAVORITE UPDATE
+    -- ⭐ INITIAL STATE
     --==================================================
 
     local function UpdateFavoriteButton()
 
-        local IsFavorite =
-            self:IsFavorite(ID)
-
-        if IsFavorite then
+        if self:IsFavorite(ID) then
 
             FavoriteButton.Text =
                 "⭐"
@@ -364,23 +508,28 @@ function Cards:CreateSoundCard(
     UpdateFavoriteButton()
 
     --==================================================
-    -- ⭐ FAVORITE EVENT
+    -- ⭐ FAVORITE CLICK
     --==================================================
 
-    FavoriteButton.MouseButton1Click:Connect(function()
+    FavoriteButton.MouseButton1Click:Connect(
+        function()
 
-        self:ToggleFavorite(ID)
+            self:HandleFavorite(
+                ID,
+                FavoriteButton
+            )
 
-        UpdateFavoriteButton()
-
-    end)
+        end
+    )
 
     --==================================================
     -- COPY BUTTON
     --==================================================
 
     local CopyButton =
-        Instance.new("TextButton")
+        Instance.new(
+            "TextButton"
+        )
 
     CopyButton.Name =
         "Copy"
@@ -437,7 +586,9 @@ function Cards:CreateSoundCard(
     --==================================================
 
     local CopyCorner =
-        Instance.new("UICorner")
+        Instance.new(
+            "UICorner"
+        )
 
     CopyCorner.CornerRadius =
         UDim.new(
@@ -449,58 +600,184 @@ function Cards:CreateSoundCard(
         CopyButton
 
     --==================================================
-    -- COPY EVENT
+    -- COPY CLICK
     --==================================================
 
-    CopyButton.MouseButton1Click:Connect(function()
+    CopyButton.MouseButton1Click:Connect(
+        function()
 
-        if self:Copy(ID) then
+            if self:Copy(ID) then
 
-            CopyButton.Text =
-                "Copied!"
+                CopyButton.Text =
+                    "Copied!"
 
-            task.delay(
-                0.8,
-                function()
+                task.delay(
+                    0.8,
+                    function()
 
-                    if CopyButton.Parent then
+                        if CopyButton
+                        and CopyButton.Parent then
 
-                        CopyButton.Text =
-                            "Copy"
+                            CopyButton.Text =
+                                "Copy"
 
-                    end
-
-                end
-            )
-
-        else
-
-            CopyButton.Text =
-                "N/A"
-
-            task.delay(
-                0.8,
-                function()
-
-                    if CopyButton.Parent then
-
-                        CopyButton.Text =
-                            "Copy"
+                        end
 
                     end
+                )
 
-                end
-            )
+            else
+
+                CopyButton.Text =
+                    "N/A"
+
+                task.delay(
+                    0.8,
+                    function()
+
+                        if CopyButton
+                        and CopyButton.Parent then
+
+                            CopyButton.Text =
+                                "Copy"
+
+                        end
+
+                    end
+                )
+
+            end
 
         end
-
-    end)
+    )
 
     --==================================================
-    -- RETURN CARD
+    -- RETURN
     --==================================================
 
     return Card
+
+end
+
+--==================================================
+-- REFRESH ALL FAVORITE BUTTONS
+--==================================================
+
+function Cards:RefreshFavoriteButtons()
+
+    if not self.Scroll then
+        return
+    end
+
+    for _, Object in
+        ipairs(
+            self.Scroll:GetChildren()
+        ) do
+
+        if Object:IsA("Frame") then
+
+            local FavoriteButton =
+                Object:FindFirstChild(
+                    "Favorite"
+                )
+
+            local IDLabel =
+                Object:FindFirstChild(
+                    "ID"
+                )
+
+            if FavoriteButton
+            and IDLabel then
+
+                local ID =
+                    tostring(
+                        IDLabel.Text
+                    )
+
+                if self:IsFavorite(ID) then
+
+                    FavoriteButton.Text =
+                        "⭐"
+
+                else
+
+                    FavoriteButton.Text =
+                        "☆"
+
+                end
+
+            end
+
+        end
+
+    end
+
+end
+
+--==================================================
+-- APPLY THEME
+--==================================================
+
+function Cards:ApplyTheme()
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    if not self.Scroll then
+        return
+    end
+
+    for _, Object in
+        ipairs(
+            self.Scroll:GetChildren()
+        ) do
+
+        if Object:IsA("Frame") then
+
+            Object.BackgroundColor3 =
+                CurrentTheme.Card
+
+            local NameLabel =
+                Object:FindFirstChild(
+                    "Name"
+                )
+
+            local IDLabel =
+                Object:FindFirstChild(
+                    "ID"
+                )
+
+            local CopyButton =
+                Object:FindFirstChild(
+                    "Copy"
+                )
+
+            if NameLabel then
+
+                NameLabel.TextColor3 =
+                    CurrentTheme.Text
+
+            end
+
+            if IDLabel then
+
+                IDLabel.TextColor3 =
+                    CurrentTheme.SubText
+
+            end
+
+            if CopyButton then
+
+                CopyButton.BackgroundColor3 =
+                    self.Theme:GetAccent()
+
+            end
+
+        end
+
+    end
+
+    self:RefreshFavoriteButtons()
 
 end
 
