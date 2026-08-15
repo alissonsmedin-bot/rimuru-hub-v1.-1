@@ -122,13 +122,6 @@ function UI:Create()
     Main.BackgroundColor3 =
         CurrentTheme.Main
 
-    --==================================================
-    -- 🖼️ BACKGROUND TRANSPARENCY
-    --==================================================
-
-    Main.BackgroundTransparency =
-        0.18
-
     Main.BorderSizePixel =
         0
 
@@ -186,11 +179,8 @@ function UI:Create()
     ThemeBackground.ScaleType =
         Enum.ScaleType.Crop
 
-    --==================================================
-    -- IMPORTANT
-    -- The image is visual only.
-    -- It cannot block buttons.
-    --==================================================
+    -- Apenas visual.
+    -- Não bloqueia os botões.
 
     ThemeBackground.Active =
         false
@@ -902,65 +892,6 @@ function UI:IsVisible()
 end
 
 --==================================================
--- 🖼️ UPDATE THEME BACKGROUND
---==================================================
-
-function UI:UpdateBackground()
-
-    if not self.BackgroundImage then
-        return
-    end
-
-    local Background
-
-    local Success =
-        pcall(
-            function()
-
-                Background =
-                    self.Theme:GetBackgroundSettings()
-
-            end
-        )
-
-    if not Success
-    or not Background then
-
-        self.BackgroundImage.Image =
-            ""
-
-        self.BackgroundImage.Visible =
-            false
-
-        return
-
-    end
-
-    if Background.Image
-    and Background.Image ~= "" then
-
-        self.BackgroundImage.Image =
-            Background.Image
-
-        self.BackgroundImage.ImageTransparency =
-            Background.Transparency
-
-        self.BackgroundImage.Visible =
-            true
-
-    else
-
-        self.BackgroundImage.Image =
-            ""
-
-        self.BackgroundImage.Visible =
-            false
-
-    end
-
-end
-
---==================================================
 -- APPLY THEME
 --==================================================
 
@@ -973,64 +904,26 @@ function UI:ApplyTheme()
     local CurrentTheme =
         self.Theme:GetCurrent()
 
-    --==================================================
-    -- MAIN
-    --==================================================
-
     self.Main.BackgroundColor3 =
         CurrentTheme.Main
-
-    -- Keep the color layer slightly transparent
-    -- so themed backgrounds can be visible.
-
-    self.Main.BackgroundTransparency =
-        0.18
-
-    --==================================================
-    -- MAIN STROKE
-    --==================================================
 
     self.MainStroke.Color =
         self.Theme:GetAccent()
 
-    --==================================================
-    -- SIDEBAR
-    --==================================================
-
     self.Sidebar.BackgroundColor3 =
         CurrentTheme.Sidebar
-
-    --==================================================
-    -- CONTENT
-    --==================================================
 
     self.Content.BackgroundColor3 =
         CurrentTheme.Content
 
-    --==================================================
-    -- TITLE
-    --==================================================
-
     self.Title.TextColor3 =
         CurrentTheme.Text
-
-    --==================================================
-    -- SUBTITLE
-    --==================================================
 
     self.Subtitle.TextColor3 =
         CurrentTheme.SubText
 
-    --==================================================
-    -- CONTENT TITLE
-    --==================================================
-
     self.ContentTitle.TextColor3 =
         CurrentTheme.Text
-
-    --==================================================
-    -- CLOSE
-    --==================================================
 
     self.Close.BackgroundColor3 =
         CurrentTheme.Close
@@ -1038,74 +931,43 @@ function UI:ApplyTheme()
     self.Close.TextColor3 =
         CurrentTheme.Text
 
-    --==================================================
-    -- SCROLLBAR
-    --==================================================
-
     self.Scroll.ScrollBarImageColor3 =
         self.Theme:GetAccent()
 
     --==================================================
-    -- 🖼️ BACKGROUND
+    -- 🖼️ UPDATE THEME BACKGROUND
     --==================================================
 
-    self:UpdateBackground()
+    if self.BackgroundImage then
 
-end
+        local Background =
+            self.Theme:GetBackgroundSettings()
 
---==================================================
--- SET BACKGROUND TRANSPARENCY
---==================================================
+        if Background
+        and Background.Image
+        and Background.Image ~= "" then
 
-function UI:SetBackgroundTransparency(
-    Value
-)
+            self.BackgroundImage.Image =
+                Background.Image
 
-    if not self.BackgroundImage then
-        return
-    end
+            self.BackgroundImage.ImageTransparency =
+                Background.Transparency
 
-    Value =
-        tonumber(
-            Value
-        )
+            self.BackgroundImage.Visible =
+                true
 
-    if not Value then
-        return
-    end
+        else
 
-    Value =
-        math.clamp(
-            Value,
-            0,
-            1
-        )
+            self.BackgroundImage.Image =
+                ""
 
-    self.BackgroundImage.ImageTransparency =
-        Value
+            self.BackgroundImage.Visible =
+                false
 
-    if self.Theme.SetBackgroundTransparency then
-
-        self.Theme:SetBackgroundTransparency(
-            Value
-        )
+        end
 
     end
 
 end
-
---==================================================
--- GET BACKGROUND IMAGE
---==================================================
-
-function UI:GetBackgroundImage()
-
-    return self.BackgroundImage
-
-end
-
---==================================================
--- RETURN
---==================================================
 
 return UI
