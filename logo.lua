@@ -1,8 +1,7 @@
 --// 💥 RIMURU HUB
 --// Logo System
---// LOCAL IMAGE VERSION
+--// GITHUB + LOCAL ASSET VERSION
 --// Sem ImageId do Roblox
---// Usa arquivo local + getcustomasset()
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
@@ -10,19 +9,22 @@ local UIS = game:GetService("UserInputService")
 local Logo = {}
 
 --==================================================
--- CONFIGURAÇÃO DA LOGO
+-- CONFIG
 --==================================================
 
 local LOGO_SIZE = 55
 
--- Caminhos possíveis.
--- O sistema testa na ordem.
-local LOGO_PATHS = {
-    "assets/logo.png",
-    "RimuruHub/assets/logo.png",
-    "RimuruHub/logo.png",
-    "logo.png"
+-- Arquivo local
+local LOCAL_LOGO_PATHS = {
+    "images (1).jpeg",
+    "assets/images (1).jpeg",
+    "RimuruHub/images (1).jpeg",
+    "RimuruHub/assets/images (1).jpeg",
 }
+
+-- Logo no GitHub
+local GITHUB_LOGO_URL =
+    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/786002b52df0bbe38e3ecf4bdfa91a2a5079b7f7/images%20(1).jpeg"
 
 --==================================================
 -- INIT
@@ -30,8 +32,7 @@ local LOGO_PATHS = {
 
 function Logo:Init(Context)
 
-    self.Context =
-        Context or {}
+    self.Context = Context or {}
 
     self.Player =
         self.Context.Player
@@ -55,20 +56,12 @@ function Logo:Init(Context)
         self.Context.UI
 
     if not self.UI then
-
-        warn(
-            "[Rimuru Hub] UI não encontrado."
-        )
-
+        warn("[Rimuru Hub] UI não encontrado.")
         return
     end
 
     if not self.UI.Gui then
-
-        warn(
-            "[Rimuru Hub] ScreenGui não encontrado."
-        )
-
+        warn("[Rimuru Hub] ScreenGui não encontrado.")
         return
     end
 
@@ -80,63 +73,34 @@ function Logo:Init(Context)
 end
 
 --==================================================
--- GET LOCAL ASSET
+-- LOCAL ASSET
 --==================================================
 
 function Logo:GetLocalAsset()
 
-    --==============================================
-    -- GETCUSTOMASSET
-    --==============================================
+    local AssetFunction = nil
 
-    local CustomAsset =
-        getcustomasset
-
-    --==============================================
-    -- FALLBACK
-    --==============================================
-
-    if type(CustomAsset) ~= "function" then
-
-        if type(getsynasset) == "function" then
-
-            CustomAsset =
-                getsynasset
-
-        end
-
+    if type(getcustomasset) == "function" then
+        AssetFunction = getcustomasset
+    elseif type(getsynasset) == "function" then
+        AssetFunction = getsynasset
     end
 
-    if type(CustomAsset) ~= "function" then
-
-        warn(
-            "[Rimuru Hub] getcustomasset/getsynasset não encontrado."
-        )
-
+    if not AssetFunction then
         return nil
     end
 
-    --==============================================
-    -- TESTA OS CAMINHOS
-    --==============================================
-
-    for _, Path in ipairs(LOGO_PATHS) do
+    for _, Path in ipairs(LOCAL_LOGO_PATHS) do
 
         local Exists = true
 
-        -- Se isfile existir, verifica primeiro.
         if type(isfile) == "function" then
 
             local Success, Result =
-                pcall(
-                    isfile,
-                    Path
-                )
+                pcall(isfile, Path)
 
             if not Success or not Result then
-
                 Exists = false
-
             end
 
         end
@@ -145,21 +109,153 @@ function Logo:GetLocalAsset()
 
             local Success, Asset =
                 pcall(
-                    CustomAsset,
+                    AssetFunction,
                     Path
                 )
 
             if Success
-            and Asset
             and type(Asset) == "string"
             and Asset ~= "" then
 
                 print(
-                    "[Rimuru Hub] Logo encontrada: "
+                    "[Rimuru Hub] Logo local encontrada: "
                     .. Path
                 )
 
                 return Asset
+
+            end
+
+        end
+
+    end
+
+    return nil
+
+end
+
+--==================================================
+-- GITHUB ASSET
+--==================================================
+
+function Logo:GetGitHubAsset()
+
+    local RequestFunction = nil
+
+    -- Procura pelas APIs HTTP mais comuns
+    if type(request) == "function" then
+        RequestFunction = request
+    elseif type(http_request) == "function" then
+        RequestFunction = http_request
+    elseif type(syn) == "table"
+    and type(syn.request) == "function" then
+        RequestFunction = syn.request
+    elseif type(http) == "table"
+    and type(http.request) == "function" then
+        RequestFunction = http.request
+    end
+
+    if not RequestFunction then
+
+        warn(
+            "[Rimuru Hub] Nenhuma API de request encontrada."
+        )
+
+        return nil
+
+    end
+
+    local Success, Response =
+        pcall(
+            RequestFunction,
+            {
+                Url = GITHUB_LOGO_URL,
+                Method = "GET"
+            }
+        )
+
+    if not Success or not Response then
+
+        warn(
+            "[Rimuru Hub] Falha ao acessar a logo do GitHub."
+        )
+
+        return nil
+
+    end
+
+    if Response.StatusCode
+    and Response.StatusCode ~= 200 then
+
+        warn(
+            "[Rimuru Hub] GitHub retornou HTTP "
+            .. tostring(Response.StatusCode)
+        )
+
+        return nil
+
+    end
+
+    local Body =
+        Response.Body
+
+    if type(Body) ~= "string"
+    or #Body == 0 then
+
+        warn(
+            "[Rimuru Hub] GitHub retornou dados vazios."
+        )
+
+        return nil
+
+    end
+
+    --==================================================
+    -- TENTA SALVAR COMO ARQUIVO LOCAL
+    --==================================================
+
+    if type(writefile) == "function" then
+
+        local TempPath =
+            "rimuru_hub_logo.jpeg"
+
+        local WriteSuccess =
+            pcall(
+                writefile,
+                TempPath,
+                Body
+            )
+
+        if WriteSuccess then
+
+            local AssetFunction = nil
+
+            if type(getcustomasset) == "function" then
+                AssetFunction = getcustomasset
+            elseif type(getsynasset) == "function" then
+                AssetFunction = getsynasset
+            end
+
+            if AssetFunction then
+
+                local AssetSuccess, Asset =
+                    pcall(
+                        AssetFunction,
+                        TempPath
+                    )
+
+                if AssetSuccess
+                and type(Asset) == "string"
+                and Asset ~= "" then
+
+                    print(
+                        "[Rimuru Hub] Logo carregada pelo GitHub."
+                    )
+
+                    return Asset
+
+                end
+
             end
 
         end
@@ -167,7 +263,8 @@ function Logo:GetLocalAsset()
     end
 
     warn(
-        "[Rimuru Hub] Não foi possível encontrar assets/logo.png."
+        "[Rimuru Hub] O Delta conseguiu acessar o GitHub,"
+        .. " mas não conseguiu transformar a imagem em asset."
     )
 
     return nil
@@ -175,7 +272,73 @@ function Logo:GetLocalAsset()
 end
 
 --==================================================
--- CREATE LOGO
+-- LOAD LOGO
+--==================================================
+
+function Logo:LoadImage()
+
+    if not self.Button then
+        return false
+    end
+
+    --==================================================
+    -- 1. LOCAL
+    --==================================================
+
+    local Asset =
+        self:GetLocalAsset()
+
+    if Asset then
+
+        self.Button.Image =
+            Asset
+
+        self.Button.ImageTransparency =
+            0
+
+        return true
+
+    end
+
+    --==================================================
+    -- 2. GITHUB
+    --==================================================
+
+    Asset =
+        self:GetGitHubAsset()
+
+    if Asset then
+
+        self.Button.Image =
+            Asset
+
+        self.Button.ImageTransparency =
+            0
+
+        return true
+
+    end
+
+    --==================================================
+    -- FALHA
+    --==================================================
+
+    self.Button.Image =
+        ""
+
+    self.Button.ImageTransparency =
+        1
+
+    warn(
+        "[Rimuru Hub] Não foi possível carregar a logo."
+    )
+
+    return false
+
+end
+
+--==================================================
+-- CREATE
 --==================================================
 
 function Logo:Create()
@@ -184,25 +347,19 @@ function Logo:Create()
         return
     end
 
-    local Config =
-        self.Config or {}
-
-    local Theme =
-        self.Theme
-
-    if not Theme then
+    if not self.Theme then
         return
     end
 
     local CurrentTheme =
-        Theme:GetCurrent()
+        self.Theme:GetCurrent()
 
     if not CurrentTheme then
         return
     end
 
     --==================================================
-    -- LOGO BUTTON
+    -- BUTTON
     --==================================================
 
     local LogoButton =
@@ -233,21 +390,14 @@ function Logo:Create()
     LogoButton.BorderSizePixel =
         0
 
-    --==================================================
-    -- LOCAL IMAGE
-    --==================================================
-
     LogoButton.Image =
         ""
 
     LogoButton.ImageTransparency =
-        0
+        1
 
     LogoButton.ScaleType =
         Enum.ScaleType.Fit
-
-    LogoButton.ResampleMode =
-        Enum.ResamplerMode.Default
 
     LogoButton.AutoButtonColor =
         false
@@ -256,7 +406,7 @@ function Logo:Create()
         1000
 
     --==================================================
-    -- CONFIG VISIBILITY
+    -- VISIBILITY
     --==================================================
 
     local ShowLogo =
@@ -264,11 +414,12 @@ function Logo:Create()
 
     pcall(function()
 
-        if Config.UI
-        and Config.UI.ShowLogo ~= nil then
+        if self.Config
+        and self.Config.UI
+        and self.Config.UI.ShowLogo ~= nil then
 
             ShowLogo =
-                Config.UI.ShowLogo
+                self.Config.UI.ShowLogo
 
         end
 
@@ -284,49 +435,51 @@ function Logo:Create()
     -- CORNER
     --==================================================
 
-    local LogoCorner =
+    local Corner =
         Instance.new("UICorner")
 
-    LogoCorner.CornerRadius =
+    Corner.CornerRadius =
         UDim.new(
             0,
             14
         )
 
-    LogoCorner.Parent =
+    Corner.Parent =
         LogoButton
 
     --==================================================
     -- STROKE
     --==================================================
 
-    local LogoStroke =
+    local Stroke =
         Instance.new("UIStroke")
 
-    LogoStroke.Color =
-        Theme:GetAccent()
+    Stroke.Color =
+        self.Theme:GetAccent()
 
-    LogoStroke.Thickness =
+    Stroke.Thickness =
         2
 
-    LogoStroke.Parent =
+    Stroke.Parent =
         LogoButton
 
     --==================================================
-    -- SAVE REFERENCES
+    -- REFERENCES
     --==================================================
 
     self.Button =
         LogoButton
 
     self.Stroke =
-        LogoStroke
+        Stroke
 
     --==================================================
-    -- LOAD LOCAL LOGO
+    -- LOAD IMAGE
     --==================================================
 
-    self:LoadImage()
+    task.spawn(function()
+        self:LoadImage()
+    end)
 
     --==================================================
     -- DRAG
@@ -338,9 +491,8 @@ function Logo:Create()
     -- OPEN / CLOSE
     --==================================================
 
-    pcall(function()
-
-        LogoButton.Activated:Connect(function()
+    LogoButton.Activated:Connect(
+        function()
 
             if self.LogoMoved
             and self.LogoMoved() then
@@ -361,111 +513,38 @@ function Logo:Create()
             Main.Visible =
                 not Main.Visible
 
-        end)
-
-    end)
-
-end
-
---==================================================
--- LOAD IMAGE
---==================================================
-
-function Logo:LoadImage()
-
-    if not self.Button then
-        return
-    end
-
-    local Asset =
-        self:GetLocalAsset()
-
-    if not Asset then
-
-        self.Button.Image =
-            ""
-
-        self.Button.ImageTransparency =
-            1
-
-        warn(
-            "[Rimuru Hub] Logo local não carregada."
-        )
-
-        warn(
-            "[Rimuru Hub] Coloque o arquivo em: assets/logo.png"
-        )
-
-        return false
-
-    end
-
-    local Success =
-        pcall(function()
-
-            self.Button.Image =
-                Asset
-
-            self.Button.ImageTransparency =
-                0
-
-            self.Button.ScaleType =
-                Enum.ScaleType.Fit
-
-        end)
-
-    if not Success then
-
-        warn(
-            "[Rimuru Hub] Erro ao aplicar a logo local."
-        )
-
-        return false
-
-    end
-
-    print(
-        "[Rimuru Hub] Logo local carregada com sucesso."
+        end
     )
 
-    return true
-
 end
 
 --==================================================
--- DRAG SYSTEM
+-- DRAG
 --==================================================
 
 function Logo:SetupDrag()
 
-    local LogoButton =
+    local Button =
         self.Button
 
-    if not LogoButton then
+    if not Button then
         return
     end
 
-    local Config =
-        self.Config or {}
-
-    local LogoDragging =
+    local Dragging =
         false
 
-    local LogoMoved =
+    local Moved =
         false
 
-    local LogoDragStart =
+    local DragStart =
         nil
 
-    local LogoStartPosition =
+    local StartPosition =
         nil
-
-    --==================================================
-    -- BUTTON INPUT
-    --==================================================
 
     self.LogoInputBegan =
-        LogoButton.InputBegan:Connect(
+        Button.InputBegan:Connect(
             function(Input)
 
                 local CanDrag =
@@ -473,11 +552,12 @@ function Logo:SetupDrag()
 
                 pcall(function()
 
-                    if Config.UI
-                    and Config.UI.LogoDraggable ~= nil then
+                    if self.Config
+                    and self.Config.UI
+                    and self.Config.UI.LogoDraggable ~= nil then
 
                         CanDrag =
-                            Config.UI.LogoDraggable
+                            self.Config.UI.LogoDraggable
 
                     end
 
@@ -492,36 +572,31 @@ function Logo:SetupDrag()
 
                 if InputType ==
                     Enum.UserInputType.MouseButton1
-
                 or InputType ==
                     Enum.UserInputType.Touch then
 
-                    LogoDragging =
+                    Dragging =
                         true
 
-                    LogoMoved =
+                    Moved =
                         false
 
-                    LogoDragStart =
+                    DragStart =
                         Input.Position
 
-                    LogoStartPosition =
-                        LogoButton.Position
+                    StartPosition =
+                        Button.Position
 
                 end
 
             end
         )
 
-    --==================================================
-    -- INPUT CHANGED
-    --==================================================
-
     self.LogoInputChanged =
         UIS.InputChanged:Connect(
             function(Input)
 
-                if not LogoDragging then
+                if not Dragging then
                     return
                 end
 
@@ -530,7 +605,6 @@ function Logo:SetupDrag()
 
                 if InputType ~=
                     Enum.UserInputType.MouseMovement
-
                 and InputType ~=
                     Enum.UserInputType.Touch then
 
@@ -538,46 +612,33 @@ function Logo:SetupDrag()
 
                 end
 
-                if not LogoDragStart
-                or not LogoStartPosition then
-
+                if not DragStart
+                or not StartPosition then
                     return
-
                 end
 
                 local Delta =
                     Input.Position -
-                    LogoDragStart
+                    DragStart
 
                 if math.abs(Delta.X) > 5
                 or math.abs(Delta.Y) > 5 then
 
-                    LogoMoved =
+                    Moved =
                         true
 
                 end
 
-                LogoButton.Position =
+                Button.Position =
                     UDim2.new(
-
-                        LogoStartPosition.X.Scale,
-
-                        LogoStartPosition.X.Offset
-                        + Delta.X,
-
-                        LogoStartPosition.Y.Scale,
-
-                        LogoStartPosition.Y.Offset
-                        + Delta.Y
-
+                        StartPosition.X.Scale,
+                        StartPosition.X.Offset + Delta.X,
+                        StartPosition.Y.Scale,
+                        StartPosition.Y.Offset + Delta.Y
                     )
 
             end
         )
-
-    --==================================================
-    -- INPUT ENDED
-    --==================================================
 
     self.LogoInputEnded =
         UIS.InputEnded:Connect(
@@ -588,17 +649,16 @@ function Logo:SetupDrag()
 
                 if InputType ==
                     Enum.UserInputType.MouseButton1
-
                 or InputType ==
                     Enum.UserInputType.Touch then
 
-                    LogoDragging =
+                    Dragging =
                         false
 
-                    LogoDragStart =
+                    DragStart =
                         nil
 
-                    LogoStartPosition =
+                    StartPosition =
                         nil
 
                 end
@@ -606,23 +666,14 @@ function Logo:SetupDrag()
             end
         )
 
-    --==================================================
-    -- MOVED STATE
-    --==================================================
-
     self.LogoMoved =
         function()
-
-            return LogoMoved
-
+            return Moved
         end
 
     self.ResetMoved =
         function()
-
-            LogoMoved =
-                false
-
+            Moved = false
         end
 
 end
@@ -633,18 +684,12 @@ end
 
 function Logo:SetVisible(Value)
 
-    if not self.Button then
-        return
+    if self.Button then
+        self.Button.Visible =
+            Value
     end
 
-    self.Button.Visible =
-        Value
-
 end
-
---==================================================
--- IS VISIBLE
---==================================================
 
 function Logo:IsVisible()
 
@@ -661,13 +706,11 @@ end
 --==================================================
 
 function Logo:GetButton()
-
     return self.Button
-
 end
 
 --==================================================
--- APPLY THEME
+-- THEME
 --==================================================
 
 function Logo:ApplyTheme()
@@ -687,16 +730,8 @@ function Logo:ApplyTheme()
         return
     end
 
-    --==================================================
-    -- BACKGROUND
-    --==================================================
-
     self.Button.BackgroundColor3 =
         CurrentTheme.LogoBackground
-
-    --==================================================
-    -- STROKE
-    --==================================================
 
     if self.Stroke then
 
@@ -713,51 +748,32 @@ end
 
 function Logo:Destroy()
 
-    --==================================================
-    -- DISCONNECT EVENTS
-    --==================================================
-
     pcall(function()
 
         if self.LogoInputBegan then
-
             self.LogoInputBegan:Disconnect()
-
         end
 
         if self.LogoInputChanged then
-
             self.LogoInputChanged:Disconnect()
-
         end
 
         if self.LogoInputEnded then
-
             self.LogoInputEnded:Disconnect()
-
         end
 
     end)
-
-    --==================================================
-    -- REMOVE BUTTON
-    --==================================================
 
     pcall(function()
 
         if self.Button then
-
             self.Button:Destroy()
-
         end
 
     end)
 
-    self.Button =
-        nil
-
-    self.Stroke =
-        nil
+    self.Button = nil
+    self.Stroke = nil
 
 end
 
