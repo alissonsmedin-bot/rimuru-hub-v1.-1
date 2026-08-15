@@ -24,15 +24,44 @@ function Search:Init(Context)
     self.Cards =
         Context.Cards
 
+    self.Theme =
+        Context.Theme
+
     self.Active =
         false
+
+    self.Query =
+        ""
+
+    self.Results =
+        {}
+
+    self.SortMode =
+        "A-Z"
 
     self:Create()
 
 end
 
 --==================================================
--- CREATE SEARCH BAR
+-- THEME
+--==================================================
+
+function Search:GetTheme()
+
+    if self.Theme
+    and self.Theme.GetCurrent then
+
+        return self.Theme:GetCurrent()
+
+    end
+
+    return {}
+
+end
+
+--==================================================
+-- CREATE
 --==================================================
 
 function Search:Create()
@@ -71,22 +100,22 @@ function Search:Create()
         )
 
     SearchBox.BackgroundColor3 =
-        self.UI:GetTheme().Card
+        self:GetTheme().Card
 
     SearchBox.BorderSizePixel =
         0
+
+    SearchBox.Text =
+        ""
 
     SearchBox.PlaceholderText =
         "🔎  Pesquisar sons..."
 
     SearchBox.PlaceholderColor3 =
-        self.UI:GetTheme().SubText
-
-    SearchBox.Text =
-        ""
+        self:GetTheme().SubText
 
     SearchBox.TextColor3 =
-        self.UI:GetTheme().Text
+        self:GetTheme().Text
 
     SearchBox.TextSize =
         12
@@ -145,11 +174,64 @@ function Search:Create()
         SearchBox
 
     --==================================================
+    -- RESULT COUNTER
+    --==================================================
+
+    local ResultLabel =
+        Instance.new("TextLabel")
+
+    ResultLabel.Name =
+        "ResultCount"
+
+    ResultLabel.Position =
+        UDim2.new(
+            0,
+            12,
+            0,
+            52
+        )
+
+    ResultLabel.Size =
+        UDim2.new(
+            1,
+            -24,
+            0,
+            20
+        )
+
+    ResultLabel.BackgroundTransparency =
+        1
+
+    ResultLabel.Text =
+        ""
+
+    ResultLabel.TextColor3 =
+        self:GetTheme().SubText
+
+    ResultLabel.TextSize =
+        10
+
+    ResultLabel.Font =
+        Enum.Font.Gotham
+
+    ResultLabel.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    ResultLabel.ZIndex =
+        510
+
+    ResultLabel.Parent =
+        Content
+
+    --==================================================
     -- SAVE
     --==================================================
 
     self.Box =
         SearchBox
+
+    self.ResultLabel =
+        ResultLabel
 
     --==================================================
     -- SEARCH EVENT
@@ -168,37 +250,18 @@ function Search:Create()
 end
 
 --==================================================
--- SEARCH
+-- COLLECT RESULTS
 --==================================================
 
-function Search:Search(Query)
+function Search:Collect(Query)
+
+    local Results =
+        {}
 
     Query =
         string.lower(
             tostring(Query or "")
         )
-
-    -- Campo vazio
-    if Query == "" then
-
-        self:ClearSearch()
-
-        return
-
-    end
-
-    self.Active =
-        true
-
-    -- Limpa os resultados atuais
-    self.Cards:Clear()
-
-    local Found =
-        0
-
-    --==================================================
-    -- SEARCH ALL CATEGORIES
-    --==================================================
 
     for CategoryName, Category in
         pairs(self.Sounds) do
@@ -228,17 +291,13 @@ function Search:Search(Query)
                         ID
                     )
 
-                --==================================================
-                -- MATCH
-                --==================================================
-
-                if string.find(
+                if Query == ""
+                or string.find(
                     LowerName,
                     Query,
                     1,
                     true
                 )
-
                 or string.find(
                     LowerID,
                     Query,
@@ -246,13 +305,20 @@ function Search:Search(Query)
                     true
                 ) then
 
-                    Found += 1
-
-                    self.Cards:Create(
-                        Found,
+                    table.insert(
+                        Results,
                         {
-                            Name,
-                            ID
+                            Name =
+                                Name,
+
+                            ID =
+                                ID,
+
+                            Category =
+                                CategoryName,
+
+                            Index =
+                                Index
                         }
                     )
 
@@ -264,14 +330,76 @@ function Search:Search(Query)
 
     end
 
-    --==================================================
-    -- NO RESULTS
-    --==================================================
+    return Results
 
-    if Found == 0 then
+end
 
-        self:ShowNoResults(
-            Query
+--==================================================
+-- SORT
+--==================================================
+
+function Search:Sort(Results)
+
+    if self.SortMode == "A-Z" then
+
+        table.sort(
+            Results,
+            function(A, B)
+
+                return string.lower(
+                    A.Name
+                ) <
+                string.lower(
+                    B.Name
+                )
+
+            end
+        )
+
+    elseif self.SortMode == "Z-A" then
+
+        table.sort(
+            Results,
+            function(A, B)
+
+                return string.lower(
+                    A.Name
+                ) >
+                string.lower(
+                    B.Name
+                )
+
+            end
+        )
+
+    elseif self.SortMode == "ID ↑" then
+
+        table.sort(
+            Results,
+            function(A, B)
+
+                return tonumber(A.ID)
+                    or 0
+                    <
+                    tonumber(B.ID)
+                    or 0
+
+            end
+        )
+
+    elseif self.SortMode == "ID ↓" then
+
+        table.sort(
+            Results,
+            function(A, B)
+
+                return tonumber(A.ID)
+                    or 0
+                    >
+                    tonumber(B.ID)
+                    or 0
+
+            end
         )
 
     end
@@ -279,15 +407,169 @@ function Search:Search(Query)
 end
 
 --==================================================
--- CLEAR SEARCH
+-- CLEAR CARDS
 --==================================================
 
-function Search:ClearSearch()
+function Search:ClearCards()
+
+    local Scroll =
+        self.UI.Scroll
+
+    if not Scroll then
+        return
+    end
+
+    for _, Object in
+        ipairs(
+            Scroll:GetChildren()
+        ) do
+
+        if not Object:IsA(
+            "UIListLayout"
+        )
+        and not Object:IsA(
+            "UIPadding"
+        ) then
+
+            Object:Destroy()
+
+        end
+
+    end
+
+end
+
+--==================================================
+-- CREATE RESULT CARD
+--==================================================
+
+function Search:CreateResult(
+    Index,
+    Result
+)
+
+    if self.Cards
+    and self.Cards.CreateSoundCard then
+
+        self.Cards:CreateSoundCard(
+            Index,
+            {
+                Result.Name,
+                Result.ID
+            }
+        )
+
+    end
+
+end
+
+--==================================================
+-- SEARCH
+--==================================================
+
+function Search:Search(Query)
+
+    Query =
+        tostring(
+            Query or ""
+        )
+
+    self.Query =
+        Query
+
+    --==================================================
+    -- EMPTY
+    --==================================================
+
+    if Query == "" then
+
+        self.Active =
+            false
+
+        self.Results =
+            {}
+
+        if self.ResultLabel then
+
+            self.ResultLabel.Text =
+                ""
+
+        end
+
+        return
+
+    end
 
     self.Active =
-        false
+        true
 
-    self.Cards:Clear()
+    --==================================================
+    -- COLLECT
+    --==================================================
+
+    local Results =
+        self:Collect(
+            Query
+        )
+
+    --==================================================
+    -- SORT
+    --==================================================
+
+    self:Sort(
+        Results
+    )
+
+    self.Results =
+        Results
+
+    --==================================================
+    -- CLEAR
+    --==================================================
+
+    self:ClearCards()
+
+    --==================================================
+    -- COUNT
+    --==================================================
+
+    if self.ResultLabel then
+
+        self.ResultLabel.Text =
+            tostring(
+                #Results
+            ) ..
+            " resultado(s)"
+
+    end
+
+    --==================================================
+    -- NO RESULTS
+    --==================================================
+
+    if #Results == 0 then
+
+        self:ShowNoResults(
+            Query
+        )
+
+        return
+
+    end
+
+    --==================================================
+    -- RESULTS
+    --==================================================
+
+    for Index, Result in
+        ipairs(Results) do
+
+        self:CreateResult(
+            Index,
+            Result
+        )
+
+    end
 
 end
 
@@ -315,7 +597,7 @@ function Search:ShowNoResults(Query)
             1,
             -5,
             0,
-            45
+            50
         )
 
     Label.BackgroundTransparency =
@@ -327,7 +609,7 @@ function Search:ShowNoResults(Query)
         '"'
 
     Label.TextColor3 =
-        self.UI:GetTheme().SubText
+        self:GetTheme().SubText
 
     Label.TextSize =
         12
@@ -344,14 +626,50 @@ function Search:ShowNoResults(Query)
 end
 
 --==================================================
+-- SORT MODE
+--==================================================
+
+function Search:SetSortMode(
+    Mode
+)
+
+    self.SortMode =
+        Mode
+
+    if self.Active then
+
+        self:Search(
+            self.Query
+        )
+
+    end
+
+end
+
+function Search:GetSortMode()
+
+    return self.SortMode
+
+end
+
+--==================================================
 -- VISIBILITY
 --==================================================
 
-function Search:SetVisible(Value)
+function Search:SetVisible(
+    Value
+)
 
     if self.Box then
 
         self.Box.Visible =
+            Value
+
+    end
+
+    if self.ResultLabel then
+
+        self.ResultLabel.Visible =
             Value
 
     end
