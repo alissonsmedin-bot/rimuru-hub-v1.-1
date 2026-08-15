@@ -169,25 +169,29 @@ function UI:Create()
     ThemeBackground.BorderSizePixel =
         0
 
+    -- Lê a imagem diretamente do tema.
     ThemeBackground.Image =
         CurrentTheme.BackgroundImage
         or ""
 
+    -- Lê a transparência diretamente do tema.
     ThemeBackground.ImageTransparency =
-        self.Theme:GetBackgroundTransparency()
+        CurrentTheme.BackgroundTransparency
+        or 0.78
 
     ThemeBackground.ScaleType =
         Enum.ScaleType.Crop
 
     -- Apenas visual.
-    -- Não bloqueia os botões.
-
+    -- Não captura cliques/toques.
     ThemeBackground.Active =
         false
 
     ThemeBackground.Selectable =
         false
 
+    -- Mesmo nível do Main para ficar atrás
+    -- dos elementos criados posteriormente.
     ThemeBackground.ZIndex =
         500
 
@@ -783,86 +787,82 @@ function UI:SetupDrag()
 
     local StartPosition
 
-    Main.InputBegan:Connect(
-        function(Input)
+    Main.InputBegan = Main.InputBegan
 
-            if not Config.UI.MainMenuDraggable then
-                return
-            end
+    Main.InputBegan:Connect(function(Input)
 
-            if Input.UserInputType ==
-                Enum.UserInputType.MouseButton1
+        if not Config.UI.MainMenuDraggable then
+            return
+        end
 
-            or Input.UserInputType ==
-                Enum.UserInputType.Touch then
+        if Input.UserInputType ==
+            Enum.UserInputType.MouseButton1
 
-                Dragging =
-                    true
+        or Input.UserInputType ==
+            Enum.UserInputType.Touch then
 
-                DragStart =
-                    Input.Position
+            Dragging =
+                true
 
-                StartPosition =
-                    Main.Position
+            DragStart =
+                Input.Position
 
-            end
+            StartPosition =
+                Main.Position
 
         end
-    )
 
-    UIS.InputChanged:Connect(
-        function(Input)
+    end)
 
-            if not Dragging then
-                return
-            end
+    UIS.InputChanged:Connect(function(Input)
 
-            if Input.UserInputType ==
-                Enum.UserInputType.MouseMovement
+        if not Dragging then
+            return
+        end
 
-            or Input.UserInputType ==
-                Enum.UserInputType.Touch then
+        if Input.UserInputType ==
+            Enum.UserInputType.MouseMovement
 
-                local Delta =
-                    Input.Position -
-                    DragStart
+        or Input.UserInputType ==
+            Enum.UserInputType.Touch then
 
-                Main.Position =
-                    UDim2.new(
+            local Delta =
+                Input.Position -
+                DragStart
 
-                        StartPosition.X.Scale,
+            Main.Position =
+                UDim2.new(
 
-                        StartPosition.X.Offset +
-                        Delta.X,
+                    StartPosition.X.Scale,
 
-                        StartPosition.Y.Scale,
+                    StartPosition.X.Offset +
+                    Delta.X,
 
-                        StartPosition.Y.Offset +
-                        Delta.Y
+                    StartPosition.Y.Scale,
 
-                    )
+                    StartPosition.Y.Offset +
+                    Delta.Y
 
-            end
+                )
 
         end
-    )
 
-    UIS.InputEnded:Connect(
-        function(Input)
+    end)
 
-            if Input.UserInputType ==
-                Enum.UserInputType.MouseButton1
+    UIS.InputEnded:Connect(function(Input)
 
-            or Input.UserInputType ==
-                Enum.UserInputType.Touch then
+        if Input.UserInputType ==
+            Enum.UserInputType.MouseButton1
 
-                Dragging =
-                    false
+        or Input.UserInputType ==
+            Enum.UserInputType.Touch then
 
-            end
+            Dragging =
+                false
 
         end
-    )
+
+    end)
 
 end
 
@@ -940,18 +940,21 @@ function UI:ApplyTheme()
 
     if self.BackgroundImage then
 
-        local Background =
-            self.Theme:GetBackgroundSettings()
+        local Image =
+            CurrentTheme.BackgroundImage
 
-        if Background
-        and Background.Image
-        and Background.Image ~= "" then
+        local Transparency =
+            CurrentTheme.BackgroundTransparency
+
+        if Image
+        and Image ~= "" then
 
             self.BackgroundImage.Image =
-                Background.Image
+                Image
 
             self.BackgroundImage.ImageTransparency =
-                Background.Transparency
+                Transparency
+                or 0.78
 
             self.BackgroundImage.Visible =
                 true
