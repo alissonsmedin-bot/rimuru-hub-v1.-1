@@ -32,8 +32,8 @@ return {
                 Accent = Color3.fromRGB(35, 145, 255),
 
                 Main = Color3.fromRGB(15, 18, 28),
-                Sidebar = Color3.fromRGB(11, 14, 23),
-                Content = Color3.fromRGB(11, 14, 23),
+                Sidebar = Color3.fromRGB(11, 14, 25),
+                Content = Color3.fromRGB(11, 15, 26),
                 Card = Color3.fromRGB(24, 28, 40),
                 Button = Color3.fromRGB(20, 24, 35),
 
