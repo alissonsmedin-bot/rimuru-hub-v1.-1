@@ -1,7 +1,9 @@
 --// 🎨 RIMURU HUB
 --// Theme System
 --// Theme Core
+--// REWORKED
 --// Compatible with Config + UI + Settings + RGB
+--// Runtime Color Editing + Background Transparency
 
 local Theme = {}
 
@@ -254,6 +256,40 @@ local DefaultThemes = {
 }
 
 --==================================================
+-- CLONE TABLE
+--==================================================
+
+local function CloneTable(Source)
+
+    local Result = {}
+
+    if type(Source) ~= "table" then
+        return Result
+    end
+
+    for Key, Value in pairs(Source) do
+
+        if type(Value) == "table" then
+
+            Result[Key] =
+                CloneTable(
+                    Value
+                )
+
+        else
+
+            Result[Key] =
+                Value
+
+        end
+
+    end
+
+    return Result
+
+end
+
+--==================================================
 -- INIT
 --==================================================
 
@@ -266,11 +302,18 @@ function Theme:Init(Context)
         self.Context.Config
 
     --==================================================
-    -- THEMES
+    -- CLONE DEFAULT THEMES
     --==================================================
 
-    self.Themes =
-        DefaultThemes
+    self.Themes = {}
+
+    for Name, Data in
+        pairs(DefaultThemes) do
+
+        self.Themes[Name] =
+            CloneTable(Data)
+
+    end
 
     --==================================================
     -- CUSTOM THEMES FROM CONFIG
@@ -295,14 +338,12 @@ function Theme:Init(Context)
         if type(ConfigThemes) == "table" then
 
             for Name, Data in
-                pairs(
-                    ConfigThemes
-                ) do
+                pairs(ConfigThemes) do
 
                 if type(Data) == "table" then
 
                     self.Themes[Name] =
-                        Data
+                        CloneTable(Data)
 
                 end
 
@@ -348,9 +389,7 @@ function Theme:Init(Context)
     if not self.Themes[self.Name] then
 
         for ThemeName in
-            pairs(
-                self.Themes
-            ) do
+            pairs(self.Themes) do
 
             self.Name =
                 ThemeName
@@ -385,7 +424,7 @@ function Theme:Init(Context)
     --==================================================
 
     self.BackgroundTransparency =
-        0.78
+        self:GetBackgroundTransparency()
 
 end
 
@@ -444,6 +483,9 @@ function Theme:SetTheme(
             Name
         ]
 
+    self.RGBHue =
+        0
+
     --==================================================
     -- SAVE CONFIG
     --==================================================
@@ -473,8 +515,8 @@ function Theme:SetTheme(
 
     end
 
-    self.RGBHue =
-        0
+    self.BackgroundTransparency =
+        self:GetBackgroundTransparency()
 
     return true
 
@@ -522,11 +564,19 @@ function Theme:GetBackgroundTransparency()
             self.Config.GetBackgroundTransparency
         ) == "function" then
 
-            local Value =
-                self.Config:
-                    GetBackgroundTransparency()
+            local Success,
+                Value =
+                pcall(
+                    function()
 
-            if type(Value) == "number" then
+                        return self.Config:
+                            GetBackgroundTransparency()
+
+                    end
+                )
+
+            if Success
+            and type(Value) == "number" then
 
                 return math.clamp(
                     Value,
@@ -550,6 +600,22 @@ function Theme:GetBackgroundTransparency()
 
         return math.clamp(
             self.Current.BackgroundTransparency,
+            0,
+            1
+        )
+
+    end
+
+    --==================================================
+    -- INTERNAL
+    --==================================================
+
+    if type(
+        self.BackgroundTransparency
+    ) == "number" then
+
+        return math.clamp(
+            self.BackgroundTransparency,
             0,
             1
         )
@@ -587,16 +653,29 @@ function Theme:SetBackgroundTransparency(
     self.BackgroundTransparency =
         Value
 
+    if self.Current then
+
+        self.Current.BackgroundTransparency =
+            Value
+
+    end
+
     if self.Config then
 
         if type(
             self.Config.SetBackgroundTransparency
         ) == "function" then
 
-            self.Config:
-                SetBackgroundTransparency(
-                    Value
-                )
+            pcall(
+                function()
+
+                    self.Config:
+                        SetBackgroundTransparency(
+                            Value
+                        )
+
+                end
+            )
 
         end
 
@@ -649,13 +728,9 @@ function Theme:UpdateRGB()
     end
 
     return Color3.fromHSV(
-
         self.RGBHue,
-
         0.9,
-
         1
-
     )
 
 end
@@ -743,9 +818,7 @@ function Theme:GetThemeNames()
         {}
 
     for Name in
-        pairs(
-            self.Themes
-        ) do
+        pairs(self.Themes) do
 
         table.insert(
             Names,
@@ -779,7 +852,26 @@ function Theme:SetColor(
         return false
     end
 
-    if self.Current[Name] == nil then
+    --==================================================
+    -- ONLY ALLOWED COLOR VALUES
+    --==================================================
+
+    local Allowed = {
+
+        Main = true,
+        Sidebar = true,
+        Content = true,
+        Card = true,
+        Button = true,
+        Text = true,
+        SubText = true,
+        Accent = true,
+        LogoBackground = true,
+        Close = true,
+
+    }
+
+    if not Allowed[Name] then
         return false
     end
 
@@ -802,7 +894,15 @@ function Theme:GetColor(
         return nil
     end
 
-    return self.Current[Name]
+    if Name == "Accent" then
+
+        return self:GetAccent()
+
+    end
+
+    return self.Current[
+        Name
+    ]
 
 end
 
@@ -812,7 +912,7 @@ end
 
 function Theme:ResetCurrent()
 
-    if not self.Themes[self.Name] then
+    if not self.Name then
         return false
     end
 
@@ -825,20 +925,22 @@ function Theme:ResetCurrent()
         return false
     end
 
-    self.Current = {}
-
-    for Key, Value in
-        pairs(
+    self.Current =
+        CloneTable(
             Default
-        ) do
+        )
 
-        self.Current[Key] =
-            Value
-
-    end
-
-    self.Themes[self.Name] =
+    self.Themes[
+        self.Name
+    ] =
         self.Current
+
+    self.RGBHue =
+        0
+
+    self.BackgroundTransparency =
+        self.Current.BackgroundTransparency
+        or 0.78
 
     return true
 
@@ -850,7 +952,8 @@ end
 
 function Theme:Export()
 
-    local Data = {}
+    local Data =
+        {}
 
     if not self.Current then
         return Data
