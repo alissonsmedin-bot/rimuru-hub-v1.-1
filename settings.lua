@@ -1,8 +1,8 @@
 --// 💥 RIMURU HUB
 --// Settings System
---// REWORKED SETTINGS
---// Theme Selector + Color Panel + Scroll
---// Transparência + Animações + RGB + UI Size
+--// SIDE COLOR/THEME PANEL
+--// Scroll + Theme Selector + Color Editor
+--// Responsive + External Panel
 
 local Settings = {}
 
@@ -39,6 +39,9 @@ function Settings:Init(Context)
     self.ColorPanel =
         nil
 
+    self.ColorPanelOpen =
+        false
+
 end
 
 --==================================================
@@ -52,7 +55,9 @@ function Settings:ClearContent()
     end
 
     for _, Object in
-        ipairs(self.Scroll:GetChildren()) do
+        ipairs(
+            self.Scroll:GetChildren()
+        ) do
 
         if not Object:IsA("UIListLayout")
         and not Object:IsA("UIPadding") then
@@ -69,7 +74,10 @@ end
 -- CREATE CORNER
 --==================================================
 
-function Settings:AddCorner(Object, Radius)
+function Settings:AddCorner(
+    Object,
+    Radius
+)
 
     local Corner =
         Instance.new("UICorner")
@@ -88,7 +96,7 @@ function Settings:AddCorner(Object, Radius)
 end
 
 --==================================================
--- CREATE LABEL
+-- CREATE SECTION LABEL
 --==================================================
 
 function Settings:CreateSectionLabel(
@@ -103,7 +111,8 @@ function Settings:CreateSectionLabel(
         Instance.new("TextLabel")
 
     Label.Name =
-        "Section_" .. Text
+        "Section_" ..
+        Text
 
     Label.Size =
         UDim2.new(
@@ -174,6 +183,9 @@ function Settings:CreateToggle(
 
     Button.BackgroundColor3 =
         Theme.Card
+
+    Button.BackgroundTransparency =
+        0.15
 
     Button.BorderSizePixel =
         0
@@ -281,6 +293,9 @@ function Settings:CreateButton(
     Button.BackgroundColor3 =
         Theme.Card
 
+    Button.BackgroundTransparency =
+        0.15
+
     Button.BorderSizePixel =
         0
 
@@ -332,7 +347,11 @@ function Settings:CreateButton(
         function()
 
             if Callback then
-                Callback(Button)
+
+                Callback(
+                    Button
+                )
+
             end
 
         end
@@ -343,85 +362,217 @@ function Settings:CreateButton(
 end
 
 --==================================================
--- CREATE THEME LIST
+-- CREATE THEME BUTTON
 --==================================================
 
-function Settings:CreateThemeSelector()
+function Settings:CreateThemeButton()
 
     local Theme =
         self.Theme:GetCurrent()
 
-    local Themes =
-        self.Theme:GetThemes()
+    local Button =
+        Instance.new("TextButton")
 
-    local ThemeNames =
-        self.Theme:GetThemeNames()
+    Button.Name =
+        "ColorThemeButton"
 
-    local Container =
-        Instance.new("Frame")
-
-    Container.Name =
-        "ThemeSelector"
-
-    Container.Size =
+    Button.Size =
         UDim2.new(
             1,
             -5,
             0,
-            170
+            45
         )
 
-    Container.BackgroundColor3 =
+    Button.BackgroundColor3 =
         Theme.Card
 
-    Container.BorderSizePixel =
+    Button.BackgroundTransparency =
+        0.15
+
+    Button.BorderSizePixel =
         0
 
-    Container.LayoutOrder =
-        1
+    Button.Text =
+        "🎨  Cores / Tema"
 
-    Container.ZIndex =
+    Button.TextColor3 =
+        Theme.Text
+
+    Button.TextSize =
+        12
+
+    Button.Font =
+        Enum.Font.GothamBold
+
+    Button.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    Button.AutoButtonColor =
+        false
+
+    Button.LayoutOrder =
+        0
+
+    Button.ZIndex =
         504
 
-    Container.Parent =
+    Button.Parent =
         self.Scroll
 
+    local Padding =
+        Instance.new("UIPadding")
+
+    Padding.PaddingLeft =
+        UDim.new(
+            0,
+            12
+        )
+
+    Padding.Parent =
+        Button
+
     self:AddCorner(
-        Container,
+        Button,
         8
     )
+
+    Button.MouseButton1Click:Connect(
+        function()
+
+            self:ToggleColorPanel()
+
+        end
+    )
+
+    self.ThemeButton =
+        Button
+
+    return Button
+
+end
+
+--==================================================
+-- CREATE SIDE PANEL
+--==================================================
+
+function Settings:CreateColorPanel()
+
+    if self.ColorPanel then
+
+        self.ColorPanel:Destroy()
+
+        self.ColorPanel =
+            nil
+
+    end
+
+    if not self.UI
+    or not self.UI.Main then
+
+        return
+
+    end
+
+    local Main =
+        self.UI.Main
+
+    local Theme =
+        self.Theme:GetCurrent()
+
+    --==================================================
+    -- PANEL
+    --==================================================
+
+    local Panel =
+        Instance.new("Frame")
+
+    Panel.Name =
+        "RimuruColorThemePanel"
+
+    Panel.Size =
+        UDim2.new(
+            0,
+            250,
+            0,
+            330
+        )
+
+    Panel.BackgroundColor3 =
+        Theme.Main
+
+    Panel.BackgroundTransparency =
+        0.05
+
+    Panel.BorderSizePixel =
+        0
+
+    Panel.ZIndex =
+        1000
+
+    Panel.Visible =
+        false
+
+    Panel.Parent =
+        self.UI.Gui
+
+    self:AddCorner(
+        Panel,
+        12
+    )
+
+    local Stroke =
+        Instance.new("UIStroke")
+
+    Stroke.Color =
+        self.Theme:GetAccent()
+
+    Stroke.Thickness =
+        1.5
+
+    Stroke.Parent =
+        Panel
+
+    self.ColorPanelStroke =
+        Stroke
+
+    --==================================================
+    -- TITLE
+    --==================================================
 
     local Title =
         Instance.new("TextLabel")
 
-    Title.Size =
-        UDim2.new(
-            1,
-            -20,
-            0,
-            28
-        )
+    Title.Name =
+        "Title"
 
     Title.Position =
         UDim2.new(
             0,
-            10,
+            12,
             0,
-            5
+            8
+        )
+
+    Title.Size =
+        UDim2.new(
+            1,
+            -45,
+            0,
+            25
         )
 
     Title.BackgroundTransparency =
         1
 
     Title.Text =
-        "Tema: " ..
-        self.Theme:GetName()
+        "🎨  Cores / Tema"
 
     Title.TextColor3 =
         Theme.Text
 
     Title.TextSize =
-        12
+        14
 
     Title.Font =
         Enum.Font.GothamBold
@@ -430,56 +581,151 @@ function Settings:CreateThemeSelector()
         Enum.TextXAlignment.Left
 
     Title.ZIndex =
-        505
+        1001
 
     Title.Parent =
-        Container
+        Panel
 
-    local ThemeScroll =
+    self.ColorPanelTitle =
+        Title
+
+    --==================================================
+    -- CLOSE
+    --==================================================
+
+    local Close =
+        Instance.new("TextButton")
+
+    Close.Name =
+        "Close"
+
+    Close.Size =
+        UDim2.new(
+            0,
+            26,
+            0,
+            26
+        )
+
+    Close.Position =
+        UDim2.new(
+            1,
+            -34,
+            0,
+            8
+        )
+
+    Close.BackgroundColor3 =
+        Theme.Close
+
+    Close.BorderSizePixel =
+        0
+
+    Close.Text =
+        "×"
+
+    Close.TextColor3 =
+        Theme.Text
+
+    Close.TextSize =
+        16
+
+    Close.Font =
+        Enum.Font.GothamBold
+
+    Close.AutoButtonColor =
+        false
+
+    Close.ZIndex =
+        1002
+
+    Close.Parent =
+        Panel
+
+    self:AddCorner(
+        Close,
+        6
+    )
+
+    Close.MouseButton1Click:Connect(
+        function()
+
+            self:SetColorPanelVisible(
+                false
+            )
+
+        end
+    )
+
+    --==================================================
+    -- SCROLL
+    --==================================================
+
+    local Scroll =
         Instance.new("ScrollingFrame")
 
-    ThemeScroll.Name =
-        "ThemeScroll"
+    Scroll.Name =
+        "ThemeColorScroll"
 
-    ThemeScroll.Position =
+    Scroll.Position =
         UDim2.new(
             0,
             8,
             0,
-            35
+            42
         )
 
-    ThemeScroll.Size =
+    Scroll.Size =
         UDim2.new(
             1,
             -16,
             1,
-            -42
+            -50
         )
 
-    ThemeScroll.BackgroundTransparency =
+    Scroll.BackgroundTransparency =
         1
 
-    ThemeScroll.BorderSizePixel =
+    Scroll.BorderSizePixel =
         0
 
-    ThemeScroll.ScrollBarThickness =
-        4
+    Scroll.ScrollBarThickness =
+        5
 
-    ThemeScroll.ScrollBarImageColor3 =
+    Scroll.ScrollBarImageColor3 =
         self.Theme:GetAccent()
 
-    ThemeScroll.ScrollingDirection =
+    Scroll.ScrollingDirection =
         Enum.ScrollingDirection.Y
 
-    ThemeScroll.AutomaticCanvasSize =
+    Scroll.AutomaticCanvasSize =
         Enum.AutomaticSize.Y
 
-    ThemeScroll.ZIndex =
-        505
+    Scroll.CanvasSize =
+        UDim2.new(
+            0,
+            0,
+            0,
+            0
+        )
 
-    ThemeScroll.Parent =
-        Container
+    Scroll.ZIndex =
+        1001
+
+    Scroll.Parent =
+        Panel
+
+    local Padding =
+        Instance.new("UIPadding")
+
+    Padding.PaddingBottom =
+        UDim.new(
+            0,
+            8
+        )
+
+    Padding.Parent =
+        Scroll
 
     local Layout =
         Instance.new("UIListLayout")
@@ -487,14 +733,112 @@ function Settings:CreateThemeSelector()
     Layout.Padding =
         UDim.new(
             0,
-            4
+            5
         )
 
-    Layout.Parent =
-        ThemeScroll
+    Layout.SortOrder =
+        Enum.SortOrder.LayoutOrder
 
-    for _, ThemeName in
-        ipairs(ThemeNames) do
+    Layout.Parent =
+        Scroll
+
+    self.ColorPanel =
+        Panel
+
+    self.ColorScroll =
+        Scroll
+
+    --==================================================
+    -- BUILD PANEL
+    --==================================================
+
+    self:BuildColorPanel()
+
+end
+
+--==================================================
+-- BUILD COLOR PANEL
+--==================================================
+
+function Settings:BuildColorPanel()
+
+    if not self.ColorScroll then
+        return
+    end
+
+    for _, Object in
+        ipairs(
+            self.ColorScroll:GetChildren()
+        ) do
+
+        if not Object:IsA("UIListLayout")
+        and not Object:IsA("UIPadding") then
+
+            Object:Destroy()
+
+        end
+
+    end
+
+    local Theme =
+        self.Theme:GetCurrent()
+
+    --==================================================
+    -- THEME SECTION
+    --==================================================
+
+    local ThemeLabel =
+        Instance.new("TextLabel")
+
+    ThemeLabel.Size =
+        UDim2.new(
+            1,
+            -8,
+            0,
+            24
+        )
+
+    ThemeLabel.BackgroundTransparency =
+        1
+
+    ThemeLabel.Text =
+        "TEMAS"
+
+    ThemeLabel.TextColor3 =
+        Theme.Text
+
+    ThemeLabel.TextSize =
+        10
+
+    ThemeLabel.Font =
+        Enum.Font.GothamBold
+
+    ThemeLabel.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    ThemeLabel.LayoutOrder =
+        1
+
+    ThemeLabel.ZIndex =
+        1002
+
+    ThemeLabel.Parent =
+        self.ColorScroll
+
+    --==================================================
+    -- THEME LIST
+    --==================================================
+
+    local ThemeNames =
+        self.Theme:GetThemeNames()
+
+    local Themes =
+        self.Theme:GetThemes()
+
+    for Index, ThemeName in
+        ipairs(
+            ThemeNames
+        ) do
 
         local ThemeData =
             Themes[ThemeName]
@@ -503,19 +847,23 @@ function Settings:CreateThemeSelector()
             Instance.new("TextButton")
 
         Button.Name =
+            "Theme_" ..
             ThemeName
 
         Button.Size =
             UDim2.new(
                 1,
-                -5,
+                -8,
                 0,
-                32
+                34
             )
 
         Button.BackgroundColor3 =
             ThemeData.Card
             or Theme.Card
+
+        Button.BackgroundTransparency =
+            0.10
 
         Button.BorderSizePixel =
             0
@@ -529,7 +877,7 @@ function Settings:CreateThemeSelector()
             or Theme.Text
 
         Button.TextSize =
-            11
+            10
 
         Button.Font =
             Enum.Font.GothamMedium
@@ -540,22 +888,22 @@ function Settings:CreateThemeSelector()
         Button.AutoButtonColor =
             false
 
+        Button.LayoutOrder =
+            10 + Index
+
         Button.ZIndex =
-            506
+            1002
 
         Button.Parent =
-            ThemeScroll
+            self.ColorScroll
 
         self:AddCorner(
             Button,
-            6
+            7
         )
 
         local Accent =
             Instance.new("Frame")
-
-        Accent.Name =
-            "Accent"
 
         Accent.Size =
             UDim2.new(
@@ -575,13 +923,13 @@ function Settings:CreateThemeSelector()
 
         Accent.BackgroundColor3 =
             ThemeData.Accent
-            or Theme:GetAccent()
+            or self.Theme:GetAccent()
 
         Accent.BorderSizePixel =
             0
 
         Accent.ZIndex =
-            507
+            1003
 
         Accent.Parent =
             Button
@@ -594,21 +942,219 @@ function Settings:CreateThemeSelector()
         Button.MouseButton1Click:Connect(
             function()
 
-                if not self.Theme:SetTheme(
+                if self.Theme:SetTheme(
                     ThemeName
                 ) then
 
-                    return
+                    self:ApplyTheme()
+
+                    self:BuildColorPanel()
 
                 end
 
-                self:ApplyTheme()
+            end
+        )
 
-                Title.Text =
-                    "Tema: " ..
-                    self.Theme:GetName()
+    end
 
-                self:RefreshColorPanel()
+    --==================================================
+    -- COLOR SECTION
+    --==================================================
+
+    local ColorLabel =
+        Instance.new("TextLabel")
+
+    ColorLabel.Size =
+        UDim2.new(
+            1,
+            -8,
+            0,
+            24
+        )
+
+    ColorLabel.BackgroundTransparency =
+        1
+
+    ColorLabel.Text =
+        "CORES"
+
+    ColorLabel.TextColor3 =
+        Theme.Text
+
+    ColorLabel.TextSize =
+        10
+
+    ColorLabel.Font =
+        Enum.Font.GothamBold
+
+    ColorLabel.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    ColorLabel.LayoutOrder =
+        100
+
+    ColorLabel.ZIndex =
+        1002
+
+    ColorLabel.Parent =
+        self.ColorScroll
+
+    --==================================================
+    -- COLOR ROWS
+    --==================================================
+
+    for Index, Name in
+        ipairs(
+            self:GetColorNames()
+        ) do
+
+        self:CreateColorRow(
+            Name,
+            self.ColorScroll,
+            100 + Index
+        )
+
+    end
+
+end
+
+--==================================================
+-- TOGGLE PANEL
+--==================================================
+
+function Settings:ToggleColorPanel()
+
+    self:SetColorPanelVisible(
+        not self.ColorPanelOpen
+    )
+
+end
+
+--==================================================
+-- PANEL POSITION
+--==================================================
+
+function Settings:UpdateColorPanelPosition()
+
+    if not self.ColorPanel
+    or not self.UI
+    or not self.UI.Main then
+
+        return
+
+    end
+
+    local Main =
+        self.UI.Main
+
+    local Panel =
+        self.ColorPanel
+
+    local MainPosition =
+        Main.AbsolutePosition
+
+    local MainSize =
+        Main.AbsoluteSize
+
+    local Viewport =
+        workspace.CurrentCamera
+        and workspace.CurrentCamera.ViewportSize
+
+    if not Viewport then
+        return
+    end
+
+    local Gap =
+        8
+
+    local PanelWidth =
+        Panel.AbsoluteSize.X
+
+    local PanelHeight =
+        Panel.AbsoluteSize.Y
+
+    local X =
+        MainPosition.X +
+        MainSize.X +
+        Gap
+
+    local Y =
+        MainPosition.Y
+
+    --==================================================
+    -- RIGHT SIDE CHECK
+    --==================================================
+
+    if X + PanelWidth >
+        Viewport.X then
+
+        X =
+            MainPosition.X -
+            PanelWidth -
+            Gap
+
+    end
+
+    --==================================================
+    -- VERTICAL CHECK
+    --==================================================
+
+    if Y + PanelHeight >
+        Viewport.Y then
+
+        Y =
+            Viewport.Y -
+            PanelHeight -
+            8
+
+    end
+
+    if Y < 8 then
+        Y = 8
+    end
+
+    Panel.Position =
+        UDim2.new(
+            0,
+            math.floor(X),
+            0,
+            math.floor(Y)
+        )
+
+end
+
+--==================================================
+-- SET PANEL VISIBLE
+--==================================================
+
+function Settings:SetColorPanelVisible(
+    Value
+)
+
+    if not self.ColorPanel then
+
+        self:CreateColorPanel()
+
+    end
+
+    if not self.ColorPanel then
+        return
+    end
+
+    self.ColorPanelOpen =
+        Value == true
+
+    self.ColorPanel.Visible =
+        self.ColorPanelOpen
+
+    if self.ColorPanelOpen then
+
+        self:BuildColorPanel()
+
+        task.defer(
+            function()
+
+                self:UpdateColorPanelPosition()
 
             end
         )
@@ -618,12 +1164,12 @@ function Settings:CreateThemeSelector()
 end
 
 --==================================================
--- COLOR NAMES
+-- GET COLOR NAMES
 --==================================================
 
 function Settings:GetColorNames()
 
-    local Names = {
+    return {
 
         "Accent",
         "Main",
@@ -638,17 +1184,18 @@ function Settings:GetColorNames()
 
     }
 
-    return Names
-
 end
 
 --==================================================
 -- COLOR TO RGB
 --==================================================
 
-function Settings:ColorToRGB(Color)
+function Settings:ColorToRGB(
+    Color
+)
 
-    if typeof(Color) ~= "Color3" then
+    if typeof(Color) ~=
+        "Color3" then
 
         return 0, 0, 0
 
@@ -684,19 +1231,23 @@ function Settings:CreateColorRow(
         Instance.new("TextButton")
 
     Row.Name =
-        "Color_" .. Name
+        "Color_" ..
+        Name
 
     Row.Size =
         UDim2.new(
             1,
             -8,
             0,
-            40
-        )
+            38
+    )
 
     Row.BackgroundColor3 =
         CurrentTheme.Button
         or CurrentTheme.Card
+
+    Row.BackgroundTransparency =
+        0.10
 
     Row.BorderSizePixel =
         0
@@ -711,7 +1262,7 @@ function Settings:CreateColorRow(
         Order or 0
 
     Row.ZIndex =
-        507
+        1002
 
     Row.Parent =
         Parent
@@ -721,29 +1272,33 @@ function Settings:CreateColorRow(
         7
     )
 
-    local ColorPreview =
+    --==================================================
+    -- COLOR PREVIEW
+    --==================================================
+
+    local Preview =
         Instance.new("Frame")
 
-    ColorPreview.Name =
+    Preview.Name =
         "Preview"
 
-    ColorPreview.Size =
+    Preview.Size =
         UDim2.new(
             0,
-            26,
+            24,
             0,
-            26
+            24
         )
 
-    ColorPreview.Position =
+    Preview.Position =
         UDim2.new(
             0,
-            8,
+            7,
             0.5,
-            -13
+            -12
         )
 
-    ColorPreview.BackgroundColor3 =
+    Preview.BackgroundColor3 =
         CurrentTheme[Name]
         or Color3.fromRGB(
             255,
@@ -751,36 +1306,43 @@ function Settings:CreateColorRow(
             255
         )
 
-    ColorPreview.BorderSizePixel =
+    Preview.BorderSizePixel =
         0
 
-    ColorPreview.ZIndex =
-        508
+    Preview.ZIndex =
+        1003
 
-    ColorPreview.Parent =
+    Preview.Parent =
         Row
 
     self:AddCorner(
-        ColorPreview,
+        Preview,
         6
     )
+
+    --==================================================
+    -- COLOR NAME
+    --==================================================
 
     local Label =
         Instance.new("TextLabel")
 
-    Label.Size =
-        UDim2.new(
-            1,
-            -120,
-            1,
-            0
-        )
+    Label.Name =
+        "Name"
 
     Label.Position =
         UDim2.new(
             0,
-            45,
+            40,
             0,
+            0
+        )
+
+    Label.Size =
+        UDim2.new(
+            1,
+            -115,
+            1,
             0
         )
 
@@ -794,7 +1356,7 @@ function Settings:CreateColorRow(
         CurrentTheme.Text
 
     Label.TextSize =
-        11
+        10
 
     Label.Font =
         Enum.Font.GothamMedium
@@ -803,42 +1365,46 @@ function Settings:CreateColorRow(
         Enum.TextXAlignment.Left
 
     Label.ZIndex =
-        508
+        1003
 
     Label.Parent =
         Row
+
+    --==================================================
+    -- RGB VALUE
+    --==================================================
 
     local R, G, B =
         self:ColorToRGB(
             CurrentTheme[Name]
         )
 
-    local RGBLabel =
+    local RGB =
         Instance.new("TextLabel")
 
-    RGBLabel.Name =
+    RGB.Name =
         "RGB"
 
-    RGBLabel.Size =
+    RGB.Size =
         UDim2.new(
             0,
-            70,
+            65,
             1,
             0
         )
 
-    RGBLabel.Position =
+    RGB.Position =
         UDim2.new(
             1,
-            -78,
+            -72,
             0,
             0
         )
 
-    RGBLabel.BackgroundTransparency =
+    RGB.BackgroundTransparency =
         1
 
-    RGBLabel.Text =
+    RGB.Text =
         string.format(
             "%d,%d,%d",
             R,
@@ -846,23 +1412,27 @@ function Settings:CreateColorRow(
             B
         )
 
-    RGBLabel.TextColor3 =
+    RGB.TextColor3 =
         CurrentTheme.SubText
 
-    RGBLabel.TextSize =
-        9
+    RGB.TextSize =
+        8
 
-    RGBLabel.Font =
+    RGB.Font =
         Enum.Font.Code
 
-    RGBLabel.TextXAlignment =
+    RGB.TextXAlignment =
         Enum.TextXAlignment.Right
 
-    RGBLabel.ZIndex =
-        508
+    RGB.ZIndex =
+        1003
 
-    RGBLabel.Parent =
+    RGB.Parent =
         Row
+
+    --==================================================
+    -- CLICK
+    --==================================================
 
     Row.MouseButton1Click:Connect(
         function()
@@ -879,232 +1449,12 @@ function Settings:CreateColorRow(
 end
 
 --==================================================
--- CREATE COLOR PANEL
---==================================================
-
-function Settings:CreateColorPanel()
-
-    if self.ColorPanel then
-
-        self.ColorPanel:Destroy()
-
-        self.ColorPanel =
-            nil
-
-    end
-
-    local Theme =
-        self.Theme:GetCurrent()
-
-    local Panel =
-        Instance.new("Frame")
-
-    Panel.Name =
-        "ColorPanel"
-
-    Panel.Size =
-        UDim2.new(
-            1,
-            -5,
-            0,
-            260
-        )
-
-    Panel.BackgroundColor3 =
-        Theme.Card
-
-    Panel.BorderSizePixel =
-        0
-
-    Panel.LayoutOrder =
-        2
-
-    Panel.ZIndex =
-        504
-
-    Panel.Parent =
-        self.Scroll
-
-    self:AddCorner(
-        Panel,
-        8
-    )
-
-    local Title =
-        Instance.new("TextLabel")
-
-    Title.Size =
-        UDim2.new(
-            1,
-            -20,
-            0,
-            30
-        )
-
-    Title.Position =
-        UDim2.new(
-            0,
-            10,
-            0,
-            4
-        )
-
-    Title.BackgroundTransparency =
-        1
-
-    Title.Text =
-        "🎨 Cores do Tema"
-
-    Title.TextColor3 =
-        Theme.Text
-
-    Title.TextSize =
-        12
-
-    Title.Font =
-        Enum.Font.GothamBold
-
-    Title.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    Title.ZIndex =
-        505
-
-    Title.Parent =
-        Panel
-
-    local Hint =
-        Instance.new("TextLabel")
-
-    Hint.Size =
-        UDim2.new(
-            1,
-            -20,
-            0,
-            20
-        )
-
-    Hint.Position =
-        UDim2.new(
-            0,
-            10,
-            0,
-            28
-        )
-
-    Hint.BackgroundTransparency =
-        1
-
-    Hint.Text =
-        "Clique em uma cor para editar"
-
-    Hint.TextColor3 =
-        Theme.SubText
-
-    Hint.TextSize =
-        9
-
-    Hint.Font =
-        Enum.Font.Gotham
-
-    Hint.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    Hint.ZIndex =
-        505
-
-    Hint.Parent =
-        Panel
-
-    local ColorScroll =
-        Instance.new("ScrollingFrame")
-
-    ColorScroll.Name =
-        "ColorScroll"
-
-    ColorScroll.Position =
-        UDim2.new(
-            0,
-            8,
-            0,
-            52
-        )
-
-    ColorScroll.Size =
-        UDim2.new(
-            1,
-            -16,
-            1,
-            -60
-        )
-
-    ColorScroll.BackgroundTransparency =
-        1
-
-    ColorScroll.BorderSizePixel =
-        0
-
-    ColorScroll.ScrollBarThickness =
-        4
-
-    ColorScroll.ScrollBarImageColor3 =
-        self.Theme:GetAccent()
-
-    ColorScroll.AutomaticCanvasSize =
-        Enum.AutomaticSize.Y
-
-    ColorScroll.ScrollingDirection =
-        Enum.ScrollingDirection.Y
-
-    ColorScroll.ZIndex =
-        505
-
-    ColorScroll.Parent =
-        Panel
-
-    local Layout =
-        Instance.new("UIListLayout")
-
-    Layout.Padding =
-        UDim.new(
-            0,
-            4
-        )
-
-    Layout.SortOrder =
-        Enum.SortOrder.LayoutOrder
-
-    Layout.Parent =
-        ColorScroll
-
-    for Index, Name in
-        ipairs(
-            self:GetColorNames()
-        ) do
-
-        self:CreateColorRow(
-            Name,
-            ColorScroll,
-            Index
-        )
-
-    end
-
-    self.ColorPanel =
-        Panel
-
-end
-
---==================================================
 -- OPEN COLOR EDITOR
 --==================================================
 
 function Settings:OpenColorEditor(
     Name
 )
-
-    local CurrentTheme =
-        self.Theme:GetCurrent()
 
     local Existing =
         self.ColorEditor
@@ -1118,6 +1468,21 @@ function Settings:OpenColorEditor(
 
     end
 
+    local Main =
+        self.UI
+        and self.UI.Main
+
+    if not Main then
+        return
+    end
+
+    local Theme =
+        self.Theme:GetCurrent()
+
+    --==================================================
+    -- EDITOR
+    --==================================================
+
     local Editor =
         Instance.new("Frame")
 
@@ -1127,30 +1492,33 @@ function Settings:OpenColorEditor(
     Editor.Size =
         UDim2.new(
             0,
-            250,
+            235,
             0,
-            180
+            175
         )
 
     Editor.Position =
         UDim2.new(
             1,
-            -260,
+            -245,
             0,
             70
         )
 
     Editor.BackgroundColor3 =
-        CurrentTheme.Card
+        Theme.Card
+
+    Editor.BackgroundTransparency =
+        0.03
 
     Editor.BorderSizePixel =
         0
 
     Editor.ZIndex =
-        900
+        1100
 
     Editor.Parent =
-        self.UI.Main
+        Main
 
     self:AddCorner(
         Editor,
@@ -1169,6 +1537,10 @@ function Settings:OpenColorEditor(
     Stroke.Parent =
         Editor
 
+    --==================================================
+    -- TITLE
+    --==================================================
+
     local Title =
         Instance.new("TextLabel")
 
@@ -1177,7 +1549,7 @@ function Settings:OpenColorEditor(
             1,
             -20,
             0,
-            30
+            28
         )
 
     Title.Position =
@@ -1185,7 +1557,7 @@ function Settings:OpenColorEditor(
             0,
             10,
             0,
-            5
+            6
         )
 
     Title.BackgroundTransparency =
@@ -1196,7 +1568,7 @@ function Settings:OpenColorEditor(
         Name
 
     Title.TextColor3 =
-        CurrentTheme.Text
+        Theme.Text
 
     Title.TextSize =
         12
@@ -1208,10 +1580,14 @@ function Settings:OpenColorEditor(
         Enum.TextXAlignment.Left
 
     Title.ZIndex =
-        901
+        1101
 
     Title.Parent =
         Editor
+
+    --==================================================
+    -- INFO
+    --==================================================
 
     local Info =
         Instance.new("TextLabel")
@@ -1221,7 +1597,7 @@ function Settings:OpenColorEditor(
             1,
             -20,
             0,
-            45
+            35
         )
 
     Info.Position =
@@ -1229,18 +1605,17 @@ function Settings:OpenColorEditor(
             0,
             10,
             0,
-            38
+            34
         )
 
     Info.BackgroundTransparency =
         1
 
     Info.Text =
-        "A edição de cores é aplicada\n"
-        .. "ao tema durante esta execução."
+        "Use RGB para alterar esta cor."
 
     Info.TextColor3 =
-        CurrentTheme.SubText
+        Theme.SubText
 
     Info.TextSize =
         9
@@ -1252,13 +1627,17 @@ function Settings:OpenColorEditor(
         Enum.TextXAlignment.Left
 
     Info.ZIndex =
-        901
+        1101
 
     Info.Parent =
         Editor
 
+    --==================================================
+    -- RGB BOX
+    --==================================================
+
     local CurrentColor =
-        CurrentTheme[Name]
+        Theme[Name]
 
     if typeof(CurrentColor) ~=
         "Color3" then
@@ -1277,160 +1656,77 @@ function Settings:OpenColorEditor(
             CurrentColor
         )
 
-    local Value =
-        Instance.new("TextLabel")
-
-    Value.Size =
-        UDim2.new(
-            1,
-            -20,
-            0,
-            25
-        )
-
-    Value.Position =
-        UDim2.new(
-            0,
-            10,
-            0,
-            88
-        )
-
-        Value.Size =
-        UDim2.new(
-            1,
-            -20,
-            0,
-            25
-        )
-
-    Value.Position =
-        UDim2.new(
-            0,
-            10,
-            0,
-            88
-        )
-
-    Value.BackgroundTransparency =
-        1
-
-    Value.Text =
-        string.format(
-            "RGB: %d, %d, %d",
-            R,
-            G,
-            B
-        )
-
-    Value.TextColor3 =
-        CurrentTheme.Text
-
-    Value.TextSize =
-        11
-
-    Value.Font =
-        Enum.Font.Code
-
-    Value.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    Value.ZIndex =
-        901
-
-    Value.Parent =
-        Editor
-
-    --==================================================
-    -- RGB INPUT
-    --==================================================
-
-    local Input =
+    local RGBBox =
         Instance.new("TextBox")
 
-    Input.Name =
+    RGBBox.Name =
         "RGBInput"
 
-    Input.Size =
+    RGBBox.Size =
         UDim2.new(
             1,
             -20,
             0,
-            32
+            35
         )
 
-    Input.Position =
+    RGBBox.Position =
         UDim2.new(
             0,
             10,
             0,
-            118
+            75
         )
 
-    Input.BackgroundColor3 =
-        CurrentTheme.Button
-        or CurrentTheme.Card
+    RGBBox.BackgroundColor3 =
+        Theme.Button
+        or Theme.Card
 
-    Input.BorderSizePixel =
+    RGBBox.BackgroundTransparency =
+        0.10
+
+    RGBBox.BorderSizePixel =
         0
 
-    Input.Text =
+    RGBBox.Text =
         string.format(
-            "%d,%d,%d",
+            "%d, %d, %d",
             R,
             G,
             B
         )
 
-    Input.PlaceholderText =
-        "R,G,B"
+    RGBBox.PlaceholderText =
+        "R, G, B"
 
-    Input.TextColor3 =
-        CurrentTheme.Text
+    RGBBox.TextColor3 =
+        Theme.Text
 
-    Input.PlaceholderColor3 =
-        CurrentTheme.SubText
+    RGBBox.PlaceholderColor3 =
+        Theme.SubText
 
-    Input.TextSize =
-        11
+    RGBBox.TextSize =
+        10
 
-    Input.Font =
+    RGBBox.Font =
         Enum.Font.Code
 
-    Input.ClearTextOnFocus =
+    RGBBox.ClearTextOnFocus =
         false
 
-    Input.ZIndex =
-        901
+    RGBBox.ZIndex =
+        1101
 
-    Input.Parent =
+    RGBBox.Parent =
         Editor
 
     self:AddCorner(
-        Input,
+        RGBBox,
         7
     )
 
-    local InputPadding =
-        Instance.new("UIPadding")
-
-    InputPadding.PaddingLeft =
-        UDim.new(
-            0,
-            8
-        )
-
-    InputPadding.PaddingRight =
-        UDim.new(
-            0,
-            8
-        )
-
-    InputPadding.Parent =
-        Input
-
     --==================================================
-    -- APPLY BUTTON
+    -- APPLY
     --==================================================
 
     local Apply =
@@ -1442,9 +1738,9 @@ function Settings:OpenColorEditor(
     Apply.Size =
         UDim2.new(
             0,
-            105,
+            100,
             0,
-            28
+            32
         )
 
     Apply.Position =
@@ -1452,7 +1748,7 @@ function Settings:OpenColorEditor(
             0,
             10,
             1,
-            -38
+            -42
         )
 
     Apply.BackgroundColor3 =
@@ -1465,10 +1761,10 @@ function Settings:OpenColorEditor(
         "Aplicar"
 
     Apply.TextColor3 =
-        Color3.fromRGB(
-            255,
-            255,
-            255
+        Color3.new(
+            1,
+            1,
+            1
         )
 
     Apply.TextSize =
@@ -1481,7 +1777,7 @@ function Settings:OpenColorEditor(
         false
 
     Apply.ZIndex =
-        902
+        1101
 
     Apply.Parent =
         Editor
@@ -1492,195 +1788,160 @@ function Settings:OpenColorEditor(
     )
 
     --==================================================
-    -- CLOSE BUTTON
+    -- CANCEL
     --==================================================
 
-    local Close =
+    local Cancel =
         Instance.new("TextButton")
 
-    Close.Name =
-        "Close"
+    Cancel.Name =
+        "Cancel"
 
-    Close.Size =
+    Cancel.Size =
         UDim2.new(
             0,
-            105,
+            100,
             0,
-            28
+            32
         )
 
-    Close.Position =
+    Cancel.Position =
         UDim2.new(
             1,
-            -115,
+            -110,
             1,
-            -38
+            -42
         )
 
-    Close.BackgroundColor3 =
-        CurrentTheme.Button
-        or CurrentTheme.Card
+    Cancel.BackgroundColor3 =
+        Theme.Close
 
-    Close.BorderSizePixel =
+    Cancel.BorderSizePixel =
         0
 
-    Close.Text =
-        "Cancelar"
+    Cancel.Text =
+        "Fechar"
 
-    Close.TextColor3 =
-        CurrentTheme.Text
+    Cancel.TextColor3 =
+        Theme.Text
 
-    Close.TextSize =
+    Cancel.TextSize =
         10
 
-    Close.Font =
-        Enum.Font.GothamMedium
+    Cancel.Font =
+        Enum.Font.GothamBold
 
-    Close.AutoButtonColor =
+    Cancel.AutoButtonColor =
         false
 
-    Close.ZIndex =
-        902
+    Cancel.ZIndex =
+        1101
 
-    Close.Parent =
+    Cancel.Parent =
         Editor
 
     self:AddCorner(
-        Close,
+        Cancel,
         7
     )
 
     --==================================================
-    -- APPLY COLOR
+    -- APPLY FUNCTION
     --==================================================
 
     Apply.MouseButton1Click:Connect(
         function()
 
             local Text =
-                Input.Text or ""
+                RGBBox.Text
 
-            local R2,
-                G2,
-                B2 =
-                Text:match(
-                    "^%s*(%d+)%s*,%s*(%d+)%s*,%s*(%d+)%s*$"
+            local Values = {}
+
+            for Number in
+                string.gmatch(
+                    Text,
+                    "%d+"
+                ) do
+
+                table.insert(
+                    Values,
+                    tonumber(Number)
                 )
 
-            R2 =
-                tonumber(R2)
+            end
 
-            G2 =
-                tonumber(G2)
+            if #Values < 3 then
 
-            B2 =
-                tonumber(B2)
-
-            if not R2
-            or not G2
-            or not B2 then
-
-                Input.Text =
-                    string.format(
-                        "%d,%d,%d",
-                        R,
-                        G,
-                        B
-                    )
+                warn(
+                    "[Rimuru Hub] RGB inválido. Use R, G, B."
+                )
 
                 return
 
             end
 
-            R2 =
-                math.clamp(
-                    R2,
-                    0,
-                    255
-                )
-
-            G2 =
-                math.clamp(
-                    G2,
-                    0,
-                    255
-                )
-
-            B2 =
-                math.clamp(
-                    B2,
-                    0,
-                    255
-                )
-
             local NewColor =
                 Color3.fromRGB(
-                    R2,
-                    G2,
-                    B2
+                    math.clamp(
+                        Values[1],
+                        0,
+                        255
+                    ),
+                    math.clamp(
+                        Values[2],
+                        0,
+                        255
+                    ),
+                    math.clamp(
+                        Values[3],
+                        0,
+                        255
+                    )
                 )
 
-            --==================================================
-            -- ALTERA O TEMA ATUAL
-            --==================================================
+            if self.Theme.SetColor then
 
-            CurrentTheme[Name] =
-                NewColor
+                pcall(
+                    function()
 
-            --==================================================
-            -- ATUALIZA UI
-            --==================================================
+                        self.Theme:SetColor(
+                            Name,
+                            NewColor
+                        )
+
+                    end
+                )
+
+            else
+
+                Theme[Name] =
+                    NewColor
+
+            end
 
             self:ApplyTheme()
 
-            --==================================================
-            -- ATUALIZA EDITOR
-            --==================================================
+            self:BuildColorPanel()
 
-            Value.Text =
-                string.format(
-                    "RGB: %d, %d, %d",
-                    R2,
-                    G2,
-                    B2
-                )
+            Editor:Destroy()
 
-            --==================================================
-            -- ATUALIZA INPUT
-            --==================================================
-
-            Input.Text =
-                string.format(
-                    "%d,%d,%d",
-                    R2,
-                    G2,
-                    B2
-                )
-
-            --==================================================
-            -- ATUALIZA PAINEL
-            --==================================================
-
-            self:RefreshColorPanel()
+            self.ColorEditor =
+                nil
 
         end
     )
 
     --==================================================
-    -- CLOSE
+    -- CLOSE EDITOR
     --==================================================
 
-    Close.MouseButton1Click:Connect(
+    Cancel.MouseButton1Click:Connect(
         function()
 
-            if self.ColorEditor then
+            Editor:Destroy()
 
-                self.ColorEditor:Destroy()
-
-                self.ColorEditor =
-                    nil
-
-            end
+            self.ColorEditor =
+                nil
 
         end
     )
@@ -1691,269 +1952,282 @@ function Settings:OpenColorEditor(
 end
 
 --==================================================
--- REFRESH COLOR PANEL
+-- APPLY THEME
 --==================================================
 
-function Settings:RefreshColorPanel()
+function Settings:ApplyTheme()
 
-    if not self.ColorPanel then
+    if not self.UI then
         return
     end
 
-    local Parent =
-        self.ColorPanel
+    local Theme =
+        self.Theme:GetCurrent()
 
-    local ColorScroll =
-        Parent:FindFirstChild(
-            "ColorScroll"
-        )
-
-    if not ColorScroll then
+    if not Theme then
         return
     end
 
-    for _, Object in
-        ipairs(
-            ColorScroll:GetChildren()
-        ) do
+    --==================================================
+    -- MAIN
+    --==================================================
 
-        if not Object:IsA("UIListLayout") then
+    if self.UI.Main then
 
-            Object:Destroy()
-
-        end
+        self.UI.Main.BackgroundColor3 =
+            Theme.Main
 
     end
 
-    for Index, Name in
-        ipairs(
-            self:GetColorNames()
-        ) do
+    if self.UI.MainStroke then
 
-        self:CreateColorRow(
-            Name,
-            ColorScroll,
-            Index
-        )
+        self.UI.MainStroke.Color =
+            self.Theme:GetAccent()
+
+    end
+
+    --==================================================
+    -- BACKGROUND
+    --==================================================
+
+    if self.UI.BackgroundImage then
+
+        self.UI.BackgroundImage.ImageTransparency =
+            self.UI:GetBackgroundTransparency()
+
+    end
+
+    --==================================================
+    -- SIDEBAR
+    --==================================================
+
+    if self.UI.Sidebar then
+
+        self.UI.Sidebar.BackgroundColor3 =
+            Theme.Sidebar
+
+        self.UI.Sidebar.BackgroundTransparency =
+            0.15
+
+    end
+
+    --==================================================
+    -- CONTENT
+    --==================================================
+
+    if self.UI.Content then
+
+        self.UI.Content.BackgroundColor3 =
+            Theme.Content
+
+        self.UI.Content.BackgroundTransparency =
+            0.15
+
+    end
+
+    --==================================================
+    -- TITLE
+    --==================================================
+
+    if self.UI.Title then
+
+        self.UI.Title.TextColor3 =
+            Theme.Text
+
+    end
+
+    if self.UI.Subtitle then
+
+        self.UI.Subtitle.TextColor3 =
+            Theme.SubText
+
+    end
+
+    if self.UI.ContentTitle then
+
+        self.UI.ContentTitle.TextColor3 =
+            Theme.Text
+
+    end
+
+    --==================================================
+    -- HEADER LOGO
+    --==================================================
+
+    if self.UI.HeaderLogo then
+
+        self.UI.HeaderLogo.BackgroundTransparency =
+            1
+
+    end
+
+    --==================================================
+    -- COLOR PANEL
+    --==================================================
+
+    if self.ColorPanel then
+
+        self.ColorPanel.BackgroundColor3 =
+            Theme.Main
+
+    end
+
+    if self.ColorPanelStroke then
+
+        self.ColorPanelStroke.Color =
+            self.Theme:GetAccent()
+
+    end
+
+    if self.ColorPanelTitle then
+
+        self.ColorPanelTitle.TextColor3 =
+            Theme.Text
+
+    end
+
+    --==================================================
+    -- REFRESH
+    --==================================================
+
+    if self.ColorPanelOpen then
+
+        self:BuildColorPanel()
 
     end
 
 end
 
 --==================================================
--- SHOW SETTINGS
+-- UPDATE POSITION LOOP
 --==================================================
 
-function Settings:Show()
+function Settings:StartPanelPositionUpdater()
+
+    if self.PanelPositionConnection then
+        return
+    end
+
+    self.PanelPositionConnection =
+        game:GetService("RunService").RenderStepped:Connect(
+            function()
+
+                if self.ColorPanelOpen then
+
+                    self:UpdateColorPanelPosition()
+
+                end
+
+            end
+        )
+
+end
+
+--==================================================
+-- BUILD SETTINGS
+--==================================================
+
+function Settings:Build()
 
     self:ClearContent()
 
+    if self.ColorPanel then
+
+        self.ColorPanel.Visible =
+            false
+
+        self.ColorPanelOpen =
+            false
+
+    end
+
     self.ContentTitle.Text =
-        "Configuração"
+        "Configurações"
 
     --==================================================
-    -- THEME
+    -- UI
     --==================================================
 
-    self:CreateThemeSelector()
-
-    --==================================================
-    -- LOGO
-    --==================================================
-
-    self:CreateToggle(
-
-        "Mostrar Logo",
-
-        function()
-
-            return self.Config.UI.ShowLogo
-
-        end,
-
-        function(Value)
-
-            self.Config.UI.ShowLogo =
-                Value
-
-            if self.Logo then
-
-                self.Logo:SetVisible(
-                    Value
-                )
-
-            end
-
-        end,
-
+    self:CreateSectionLabel(
+        "INTERFACE",
         1
-
     )
 
-    --==================================================
-    -- LOGO DRAGGABLE
-    --==================================================
-
     self:CreateToggle(
-
-        "Logo Arrastável",
-
-        function()
-
-            return self.Config.UI.LogoDraggable
-
-        end,
-
-        function(Value)
-
-            self.Config.UI.LogoDraggable =
-                Value
-
-        end,
-
-        2
-
-    )
-
-    --==================================================
-    -- MAIN MENU DRAGGABLE
-    --==================================================
-
-    self:CreateToggle(
-
         "Menu Arrastável",
-
         function()
 
             return self.Config.UI.MainMenuDraggable
 
         end,
-
         function(Value)
 
             self.Config.UI.MainMenuDraggable =
                 Value
 
         end,
-
-        3
-
+        2
     )
 
-end
+    self:CreateToggle(
+        "Animações",
+        function()
 
---==================================================
--- APPLY THEME
---==================================================
+            return self.Config.UI.Animations
 
-function Settings:ApplyTheme()
+        end,
+        function(Value)
 
-    if self.UI then
+            self.Config.UI.Animations =
+                Value
 
-        self.UI:ApplyTheme()
+        end,
+        3
+    )
 
-    end
+    self:CreateButton(
+        "ResetUI",
+        "↻  Resetar posição da interface",
+        4,
+        function()
 
-    if self.Logo then
+            if self.UI.Main then
 
-        self.Logo:ApplyTheme()
-
-    end
-
-    if self.Categories then
-
-        self.Categories:ApplyTheme()
-
-    end
-
-    if not self.Scroll then
-        return
-    end
-
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    if not CurrentTheme then
-        return
-    end
-
-    for _, Object in
-        ipairs(
-            self.Scroll:GetDescendants()
-        ) do
-
-        if Object:IsA("Frame") then
-
-            Object.BackgroundColor3 =
-                CurrentTheme.Card
-
-        elseif Object:IsA("TextLabel") then
-
-            Object.TextColor3 =
-                CurrentTheme.Text
-
-        elseif Object:IsA("TextButton") then
-
-            if Object.Name ==
-                "Copy"
-            or Object.Text ==
-                "Copy"
-            or Object.Text ==
-                "Copied!"
-            or Object.Text ==
-                "N/A" then
-
-                Object.BackgroundColor3 =
-                    self.Theme:GetAccent()
-
-                Object.TextColor3 =
-                    Color3.fromRGB(
-                        255,
-                        255,
-                        255
+                self.UI.Main.Position =
+                    UDim2.new(
+                        0.5,
+                        -300,
+                        0.5,
+                        -200
                     )
-
-            else
-
-                Object.BackgroundColor3 =
-                    CurrentTheme.Card
-
-                Object.TextColor3 =
-                    CurrentTheme.Text
 
             end
 
-        elseif Object:IsA("ScrollingFrame") then
-
-            Object.ScrollBarImageColor3 =
-                self.Theme:GetAccent()
-
         end
+    )
+
+    --==================================================
+    -- THEME
+    --==================================================
+
+    self:CreateSectionLabel(
+        "APARÊNCIA",
+        10
+    )
+
+    self:CreateThemeButton()
+
+    --==================================================
+    -- PANEL
+    --==================================================
+
+    if not self.ColorPanel then
+
+        self:CreateColorPanel()
 
     end
 
-    --==================================================
-    -- COLOR EDITOR
-    --==================================================
-
-    if self.ColorEditor then
-
-        local Editor =
-            self.ColorEditor
-
-        local EditorStroke =
-            Editor:FindFirstChildOfClass(
-                "UIStroke"
-            )
-
-        if EditorStroke then
-
-            EditorStroke.Color =
-                self.Theme:GetAccent()
-
-        end
-
-    end
+    self:StartPanelPositionUpdater()
 
 end
 
