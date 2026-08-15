@@ -228,6 +228,14 @@ Cards:Init(
 )
 
 --==================================================
+-- CATEGORIES
+--==================================================
+
+Categories:Init(
+    Context
+)
+
+--==================================================
 -- SEARCH
 --==================================================
 
@@ -236,13 +244,6 @@ Search:Init(
 )
 
 Search:Connect()
---==================================================
--- CATEGORIES
---==================================================
-
-Categories:Init(
-    Context
-)
 
 --==================================================
 -- SETTINGS
@@ -301,9 +302,6 @@ if UI.Close then
             false
         )
 
-        -- A logo continua disponível
-        -- enquanto a UI estiver fechada.
-
         if Config.UI.ShowLogo then
 
             Logo:SetVisible(
@@ -339,6 +337,7 @@ Logo:ApplyTheme()
 Categories:ApplyTheme()
 
 Search:ApplyTheme()
+
 --==================================================
 -- LOADED
 --==================================================
