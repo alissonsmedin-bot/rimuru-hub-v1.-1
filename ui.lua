@@ -12,24 +12,24 @@ local UI = {}
 
 function UI:Init(Context)
 
-self.Context =  
-    Context  
+    self.Context =
+        Context
 
-self.Player =  
-    Context.Player  
-    or Players.LocalPlayer  
+    self.Player =
+        Context.Player
+        or Players.LocalPlayer
 
-self.PlayerGui =  
-    Context.PlayerGui  
-    or self.Player:WaitForChild("PlayerGui")  
+    self.PlayerGui =
+        Context.PlayerGui
+        or self.Player:WaitForChild("PlayerGui")
 
-self.Config =  
-    Context.Config  
+    self.Config =
+        Context.Config
 
-self.Theme =  
-    Context.Theme  
+    self.Theme =
+        Context.Theme
 
-self:Create()
+    self:Create()
 
 end
 
@@ -39,18 +39,18 @@ end
 
 function UI:RemoveOld()
 
-pcall(function()  
+    pcall(function()
 
-    local Old =  
-        self.PlayerGui:FindFirstChild(  
-            "RimuruHub"  
-        )  
+        local Old =
+            self.PlayerGui:FindFirstChild(
+                "RimuruHub"
+            )
 
-    if Old then  
-        Old:Destroy()  
-    end  
+        if Old then
+            Old:Destroy()
+        end
 
-end)
+    end)
 
 end
 
@@ -60,631 +60,711 @@ end
 
 function UI:Create()
 
-self:RemoveOld()  
+    self:RemoveOld()
 
-local CurrentTheme =  
-    self.Theme:GetCurrent()  
+    local CurrentTheme =
+        self.Theme:GetCurrent()
 
---==================================================  
--- SCREEN GUI  
---==================================================  
+    --==================================================
+    -- SCREEN GUI
+    --==================================================
 
-local Gui =  
-    Instance.new("ScreenGui")  
+    local Gui =
+        Instance.new("ScreenGui")
 
-Gui.Name =  
-    "RimuruHub"  
+    Gui.Name =
+        "RimuruHub"
 
-Gui.ResetOnSpawn =  
-    false  
+    Gui.ResetOnSpawn =
+        false
 
-Gui.IgnoreGuiInset =  
-    true  
+    Gui.IgnoreGuiInset =
+        true
 
-Gui.ZIndexBehavior =  
-    Enum.ZIndexBehavior.Global  
+    Gui.ZIndexBehavior =
+        Enum.ZIndexBehavior.Global
 
-Gui.DisplayOrder =  
-    999999  
+    Gui.DisplayOrder =
+        999999
 
-Gui.Parent =  
-    self.PlayerGui  
+    Gui.Parent =
+        self.PlayerGui
 
-self.Gui =  
-    Gui  
+    self.Gui =
+        Gui
 
---==================================================  
--- MAIN  
---==================================================  
+    --==================================================
+    -- MAIN
+    --==================================================
 
-local Main =  
-    Instance.new("Frame")  
+    local Main =
+        Instance.new("Frame")
 
-Main.Name =  
-    "Main"  
+    Main.Name =
+        "Main"
 
-Main.Size =  
-    UDim2.new(  
-        0,  
-        600,  
-        0,  
-        400  
-    )  
+    Main.Size =
+        UDim2.new(
+            0,
+            600,
+            0,
+            400
+        )
 
-Main.Position =  
-    UDim2.new(  
-        0.5,  
-        -300,  
-        0.5,  
-        -200  
-    )  
+    Main.Position =
+        UDim2.new(
+            0.5,
+            -300,
+            0.5,
+            -200
+        )
 
-Main.BackgroundColor3 =  
-    CurrentTheme.Main  
+    Main.BackgroundColor3 =
+        CurrentTheme.Main
 
-Main.BorderSizePixel =  
-    0  
+    Main.BorderSizePixel =
+        0
 
-Main.Visible =  
-    false  
+    Main.Visible =
+        false
 
-Main.ZIndex =  
-    500  
+    Main.ZIndex =
+        500
 
-Main.Parent =  
-    Gui  
+    Main.Parent =
+        Gui
 
-self.Main =  
-    Main  
+    self.Main =
+        Main
 
---==================================================  
--- MAIN CORNER  
---==================================================  
+    --==================================================
+    -- 🖼️ THEME BACKGROUND
+    --==================================================
 
-local MainCorner =  
-    Instance.new("UICorner")  
+    local ThemeBackground =
+        Instance.new("ImageLabel")
 
-MainCorner.CornerRadius =  
-    UDim.new(  
-        0,  
-        12  
-    )  
+    ThemeBackground.Name =
+        "ThemeBackground"
 
-MainCorner.Parent =  
-    Main  
+    ThemeBackground.Size =
+        UDim2.new(
+            1,
+            0,
+            1,
+            0
+        )
 
---==================================================  
--- MAIN STROKE  
---==================================================  
+    ThemeBackground.Position =
+        UDim2.new(
+            0,
+            0,
+            0,
+            0
+        )
 
-local MainStroke =  
-    Instance.new("UIStroke")  
+    ThemeBackground.BackgroundTransparency =
+        1
 
-MainStroke.Color =  
-    self.Theme:GetAccent()  
+    ThemeBackground.BorderSizePixel =
+        0
 
-MainStroke.Thickness =  
-    1.5  
-
-MainStroke.Parent =  
-    Main  
-
-self.MainStroke =  
-    MainStroke  
-
---==================================================  
--- MAIN DRAG  
---==================================================  
+    -- Lê a imagem diretamente do tema.
+    ThemeBackground.Image =
+        CurrentTheme.BackgroundImage
+        or ""
 
-self:SetupDrag()  
-
---==================================================  
--- HEADER  
---==================================================  
+    -- Lê a transparência diretamente do tema.
+    ThemeBackground.ImageTransparency =
+        CurrentTheme.BackgroundTransparency
+        or 0.78
 
-local Header =  
-    Instance.new("Frame")  
+    ThemeBackground.ScaleType =
+        Enum.ScaleType.Crop
 
-Header.Size =  
-    UDim2.new(  
-        1,  
-        0,  
-        0,  
-        58  
-    )  
+    -- Apenas visual.
+    -- Não captura cliques/toques.
+    ThemeBackground.Active =
+        false
 
-Header.BackgroundTransparency =  
-    1  
+    ThemeBackground.Selectable =
+        false
 
-Header.ZIndex =  
-    501  
+    -- Mesmo nível do Main para ficar atrás
+    -- dos elementos criados posteriormente.
+    ThemeBackground.ZIndex =
+        500
 
-Header.Parent =  
-    Main  
+    ThemeBackground.Parent =
+        Main
 
-self.Header =  
-    Header  
+    self.BackgroundImage =
+        ThemeBackground
 
---==================================================  
--- HEADER LOGO  
---==================================================  
+    --==================================================
+    -- BACKGROUND CORNER
+    --==================================================
 
-local HeaderLogo =  
-    Instance.new("ImageLabel")  
+    local BackgroundCorner =
+        Instance.new("UICorner")
 
-HeaderLogo.Size =  
-    UDim2.new(  
-        0,  
-        40,  
-        0,  
-        40  
-    )  
+    BackgroundCorner.CornerRadius =
+        UDim.new(
+            0,
+            12
+        )
 
-HeaderLogo.Position =  
-    UDim2.new(  
-        0,  
-        10,  
-        0,  
-        8  
-    )  
+    BackgroundCorner.Parent =
+        ThemeBackground
 
-HeaderLogo.BackgroundTransparency =  
-    1  
+    --==================================================
+    -- MAIN CORNER
+    --==================================================
 
-HeaderLogo.Image =  
-    "rbxassetid://6691708227"  
+    local MainCorner =
+        Instance.new("UICorner")
 
-HeaderLogo.ScaleType =  
-    Enum.ScaleType.Fit  
+    MainCorner.CornerRadius =
+        UDim.new(
+            0,
+            12
+        )
 
-HeaderLogo.ZIndex =  
-    502  
+    MainCorner.Parent =
+        Main
 
-HeaderLogo.Parent =  
-    Header  
+    --==================================================
+    -- MAIN STROKE
+    --==================================================
 
-self.HeaderLogo =  
-    HeaderLogo  
+    local MainStroke =
+        Instance.new("UIStroke")
 
---==================================================  
--- TITLE  
---==================================================  
+    MainStroke.Color =
+        self.Theme:GetAccent()
 
-local Title =  
-    Instance.new("TextLabel")  
+    MainStroke.Thickness =
+        1.5
 
-Title.Position =  
-    UDim2.new(  
-        0,  
-        60,  
-        0,  
-        7  
-    )  
+    MainStroke.Parent =
+        Main
 
-Title.Size =  
-    UDim2.new(  
-        1,  
-        -105,  
-        0,  
-        25  
-    )  
+    self.MainStroke =
+        MainStroke
 
-Title.BackgroundTransparency =  
-    1  
+    --==================================================
+    -- MAIN DRAG
+    --==================================================
 
-Title.Text =  
-    "Rimuru Hub"  
+    self:SetupDrag()
 
-Title.TextColor3 =  
-    CurrentTheme.Text  
+    --==================================================
+    -- HEADER
+    --==================================================
 
-Title.TextSize =  
-    19  
+    local Header =
+        Instance.new("Frame")
 
-Title.Font =  
-    Enum.Font.GothamBold  
+    Header.Size =
+        UDim2.new(
+            1,
+            0,
+            0,
+            58
+        )
 
-Title.TextXAlignment =  
-    Enum.TextXAlignment.Left  
+    Header.BackgroundTransparency =
+        1
 
-Title.ZIndex =  
-    502  
+    Header.ZIndex =
+        501
 
-Title.Parent =  
-    Header  
+    Header.Parent =
+        Main
 
-self.Title =  
-    Title  
+    self.Header =
+        Header
 
---==================================================  
--- SUBTITLE  
---==================================================  
+    --==================================================
+    -- HEADER LOGO
+    --==================================================
 
-local Subtitle =  
-    Instance.new("TextLabel")  
+    local HeaderLogo =
+        Instance.new("ImageLabel")
 
-Subtitle.Position =  
-    UDim2.new(  
-        0,  
-        61,  
-        0,  
-        31  
-    )  
+    HeaderLogo.Size =
+        UDim2.new(
+            0,
+            40,
+            0,
+            40
+        )
 
-Subtitle.Size =  
-    UDim2.new(  
-        1,  
-        -75,  
-        0,  
-        18  
-    )  
+    HeaderLogo.Position =
+        UDim2.new(
+            0,
+            10,
+            0,
+            8
+        )
 
-Subtitle.BackgroundTransparency =  
-    1  
+    HeaderLogo.BackgroundTransparency =
+        1
 
-Subtitle.Text =  
-    "Sound Library"  
+    HeaderLogo.Image =
+        "rbxassetid://6691708227"
 
-Subtitle.TextColor3 =  
-    CurrentTheme.SubText  
+    HeaderLogo.ScaleType =
+        Enum.ScaleType.Fit
 
-Subtitle.TextSize =  
-    11  
+    HeaderLogo.ZIndex =
+        502
 
-Subtitle.Font =  
-    Enum.Font.Gotham  
+    HeaderLogo.Parent =
+        Header
 
-Subtitle.TextXAlignment =  
-    Enum.TextXAlignment.Left  
+    self.HeaderLogo =
+        HeaderLogo
 
-Subtitle.ZIndex =  
-    502  
+    --==================================================
+    -- TITLE
+    --==================================================
 
-Subtitle.Parent =  
-    Header  
+    local Title =
+        Instance.new("TextLabel")
 
-self.Subtitle =  
-    Subtitle  
+    Title.Position =
+        UDim2.new(
+            0,
+            60,
+            0,
+            7
+        )
 
---==================================================  
--- CLOSE  
---==================================================  
+    Title.Size =
+        UDim2.new(
+            1,
+            -105,
+            0,
+            25
+        )
 
-local Close =  
-    Instance.new("TextButton")  
+    Title.BackgroundTransparency =
+        1
 
-Close.Size =  
-    UDim2.new(  
-        0,  
-        30,  
-        0,  
-        30  
-    )  
+    Title.Text =
+        "Rimuru Hub"
 
-Close.Position =  
-    UDim2.new(  
-        1,  
-        -38,  
-        0,  
-        14  
-    )  
+    Title.TextColor3 =
+        CurrentTheme.Text
 
-Close.BackgroundColor3 =  
-    CurrentTheme.Close  
+    Title.TextSize =
+        19
 
-Close.BorderSizePixel =  
-    0  
+    Title.Font =
+        Enum.Font.GothamBold
 
-Close.Text =  
-    "X"  
+    Title.TextXAlignment =
+        Enum.TextXAlignment.Left
 
-Close.TextColor3 =  
-    CurrentTheme.Text  
+    Title.ZIndex =
+        502
 
-Close.TextSize =  
-    12  
+    Title.Parent =
+        Header
 
-Close.Font =  
-    Enum.Font.GothamBold  
+    self.Title =
+        Title
 
-Close.AutoButtonColor =  
-    false  
+    --==================================================
+    -- SUBTITLE
+    --==================================================
 
-Close.ZIndex =  
-    503  
+    local Subtitle =
+        Instance.new("TextLabel")
 
-Close.Parent =  
-    Header  
+    Subtitle.Position =
+        UDim2.new(
+            0,
+            61,
+            0,
+            31
+        )
 
-local CloseCorner =  
-    Instance.new("UICorner")  
+    Subtitle.Size =
+        UDim2.new(
+            1,
+            -75,
+            0,
+            18
+        )
 
-CloseCorner.CornerRadius =  
-    UDim.new(  
-        0,  
-        7  
-    )  
+    Subtitle.BackgroundTransparency =
+        1
 
-CloseCorner.Parent =  
-    Close  
+    Subtitle.Text =
+        "Sound Library"
 
-self.Close =  
-    Close  
+    Subtitle.TextColor3 =
+        CurrentTheme.SubText
 
---==================================================  
--- SIDEBAR  
---==================================================  
+    Subtitle.TextSize =
+        11
 
-local Sidebar =  
-    Instance.new("Frame")  
+    Subtitle.Font =
+        Enum.Font.Gotham
 
-Sidebar.Name =  
-    "Sidebar"  
+    Subtitle.TextXAlignment =
+        Enum.TextXAlignment.Left
 
-Sidebar.Position =  
-    UDim2.new(  
-        0,  
-        10,  
-        0,  
-        65  
-    )  
+    Subtitle.ZIndex =
+        502
 
-Sidebar.Size =  
-    UDim2.new(  
-        0,  
-        165,  
-        1,  
-        -75  
-    )  
+    Subtitle.Parent =
+        Header
 
-Sidebar.BackgroundColor3 =  
-    CurrentTheme.Sidebar  
+    self.Subtitle =
+        Subtitle
 
-Sidebar.BorderSizePixel =  
-    0  
+    --==================================================
+    -- CLOSE
+    --==================================================
 
-Sidebar.ZIndex =  
-    502  
+    local Close =
+        Instance.new("TextButton")
 
-Sidebar.Parent =  
-    Main  
+    Close.Size =
+        UDim2.new(
+            0,
+            30,
+            0,
+            30
+        )
 
-local SidebarCorner =  
-    Instance.new("UICorner")  
+    Close.Position =
+        UDim2.new(
+            1,
+            -38,
+            0,
+            14
+        )
 
-SidebarCorner.CornerRadius =  
-    UDim.new(  
-        0,  
-        9  
-    )  
+    Close.BackgroundColor3 =
+        CurrentTheme.Close
 
-SidebarCorner.Parent =  
-    Sidebar  
+    Close.BorderSizePixel =
+        0
 
-local SidebarPadding =  
-    Instance.new("UIPadding")  
+    Close.Text =
+        "X"
 
-SidebarPadding.PaddingTop =  
-    UDim.new(  
-        0,  
-        8  
-    )  
+    Close.TextColor3 =
+        CurrentTheme.Text
 
-SidebarPadding.PaddingLeft =  
-    UDim.new(  
-        0,  
-        7  
-    )  
+    Close.TextSize =
+        12
 
-SidebarPadding.PaddingRight =  
-    UDim.new(  
-        0,  
-        7  
-    )  
-
-SidebarPadding.Parent =  
-    Sidebar  
+    Close.Font =
+        Enum.Font.GothamBold
 
-local SidebarLayout =  
-    Instance.new("UIListLayout")  
+    Close.AutoButtonColor =
+        false
 
-SidebarLayout.Padding =  
-    UDim.new(  
-        0,  
-        5  
-    )  
+    Close.ZIndex =
+        503
 
-SidebarLayout.SortOrder =  
-    Enum.SortOrder.LayoutOrder  
+    Close.Parent =
+        Header
 
-SidebarLayout.Parent =  
-    Sidebar  
+    local CloseCorner =
+        Instance.new("UICorner")
 
-self.Sidebar =  
-    Sidebar  
+    CloseCorner.CornerRadius =
+        UDim.new(
+            0,
+            7
+        )
 
---==================================================  
--- CONTENT  
---==================================================  
+    CloseCorner.Parent =
+        Close
 
-local Content =  
-    Instance.new("Frame")  
+    self.Close =
+        Close
 
-Content.Name =  
-    "Content"  
+    --==================================================
+    -- SIDEBAR
+    --==================================================
 
-Content.Position =  
-    UDim2.new(  
-        0,  
-        185,  
-        0,  
-        65  
-    )  
+    local Sidebar =
+        Instance.new("Frame")
 
-Content.Size =  
-    UDim2.new(  
-        1,  
-        -195,  
-        1,  
-        -75  
-    )  
+    Sidebar.Name =
+        "Sidebar"
 
-Content.BackgroundColor3 =  
-    CurrentTheme.Content  
+    Sidebar.Position =
+        UDim2.new(
+            0,
+            10,
+            0,
+            65
+        )
 
-Content.BorderSizePixel =  
-    0  
+    Sidebar.Size =
+        UDim2.new(
+            0,
+            165,
+            1,
+            -75
+        )
 
-Content.ZIndex =  
-    502  
+    Sidebar.BackgroundColor3 =
+        CurrentTheme.Sidebar
 
-Content.Parent =  
-    Main  
+    Sidebar.BorderSizePixel =
+        0
 
-local ContentCorner =  
-    Instance.new("UICorner")  
+    Sidebar.ZIndex =
+        502
 
-ContentCorner.CornerRadius =  
-    UDim.new(  
-        0,  
-        9  
-    )  
+    Sidebar.Parent =
+        Main
 
-ContentCorner.Parent =  
-    Content  
+    local SidebarCorner =
+        Instance.new("UICorner")
 
-self.Content =  
-    Content  
+    SidebarCorner.CornerRadius =
+        UDim.new(
+            0,
+            9
+        )
 
---==================================================  
--- CONTENT TITLE  
---==================================================  
+    SidebarCorner.Parent =
+        Sidebar
 
-local ContentTitle =  
-    Instance.new("TextLabel")  
+    local SidebarPadding =
+        Instance.new("UIPadding")
 
-ContentTitle.Position =  
-    UDim2.new(  
-        0,  
-        14,  
-        0,  
-        10  
-    )  
+    SidebarPadding.PaddingTop =
+        UDim.new(
+            0,
+            8
+        )
 
-ContentTitle.Size =  
-    UDim2.new(  
-        1,  
-        -28,  
-        0,  
-        25  
-    )  
+    SidebarPadding.PaddingLeft =
+        UDim.new(
+            0,
+            7
+        )
 
-ContentTitle.BackgroundTransparency =  
-    1  
+    SidebarPadding.PaddingRight =
+        UDim.new(
+            0,
+            7
+        )
 
-ContentTitle.Text =  
-    "Principal"  
+    SidebarPadding.Parent =
+        Sidebar
 
-ContentTitle.TextColor3 =  
-    CurrentTheme.Text  
+    local SidebarLayout =
+        Instance.new("UIListLayout")
 
-ContentTitle.TextSize =  
-    17  
+    SidebarLayout.Padding =
+        UDim.new(
+            0,
+            5
+        )
 
-ContentTitle.Font =  
-    Enum.Font.GothamBold  
+    SidebarLayout.SortOrder =
+        Enum.SortOrder.LayoutOrder
 
-ContentTitle.TextXAlignment =  
-    Enum.TextXAlignment.Left  
+    SidebarLayout.Parent =
+        Sidebar
 
-ContentTitle.ZIndex =  
-    503  
+    self.Sidebar =
+        Sidebar
 
-ContentTitle.Parent =  
-    Content  
+    --==================================================
+    -- CONTENT
+    --==================================================
 
-self.ContentTitle =  
-    ContentTitle  
+    local Content =
+        Instance.new("Frame")
 
---==================================================  
--- CONTENT SCROLL  
---==================================================  
+    Content.Name =
+        "Content"
 
-local Scroll =  
-    Instance.new("ScrollingFrame")  
+    Content.Position =
+        UDim2.new(
+            0,
+            185,
+            0,
+            65
+        )
 
-Scroll.Name =  
-    "ContentScroll"  
+    Content.Size =
+        UDim2.new(
+            1,
+            -195,
+            1,
+            -75
+        )
 
-Scroll.Position =  
-    UDim2.new(  
-        0,  
-        10,  
-        0,  
-        42  
-    )  
+    Content.BackgroundColor3 =
+        CurrentTheme.Content
 
-Scroll.Size =  
-    UDim2.new(  
-        1,  
-        -20,  
-        1,  
-        -52  
-    )  
+    Content.BorderSizePixel =
+        0
 
-Scroll.BackgroundTransparency =  
-    1  
+    Content.ZIndex =
+        502
 
-Scroll.BorderSizePixel =  
-    0  
+    Content.Parent =
+        Main
 
-Scroll.ScrollBarThickness =  
-    5  
+    local ContentCorner =
+        Instance.new("UICorner")
 
-Scroll.ScrollBarImageColor3 =  
-    self.Theme:GetAccent()  
+    ContentCorner.CornerRadius =
+        UDim.new(
+            0,
+            9
+        )
 
-Scroll.AutomaticCanvasSize =  
-    Enum.AutomaticSize.Y  
+    ContentCorner.Parent =
+        Content
 
-Scroll.ScrollingDirection =  
-    Enum.ScrollingDirection.Y  
+    self.Content =
+        Content
 
-Scroll.ZIndex =  
-    503  
+    --==================================================
+    -- CONTENT TITLE
+    --==================================================
 
-Scroll.Parent =  
-    Content  
+    local ContentTitle =
+        Instance.new("TextLabel")
 
-local ScrollPadding =  
-    Instance.new("UIPadding")  
+    ContentTitle.Position =
+        UDim2.new(
+            0,
+            14,
+            0,
+            10
+        )
 
-ScrollPadding.PaddingBottom =  
-    UDim.new(  
-        0,  
-        6  
-    )  
+    ContentTitle.Size =
+        UDim2.new(
+            1,
+            -28,
+            0,
+            25
+        )
 
-ScrollPadding.Parent =  
-    Scroll  
+    ContentTitle.BackgroundTransparency =
+        1
 
-local ScrollLayout =  
-    Instance.new("UIListLayout")  
+    ContentTitle.Text =
+        "Principal"
 
-ScrollLayout.Padding =  
-    UDim.new(  
-        0,  
-        5  
-    )  
+    ContentTitle.TextColor3 =
+        CurrentTheme.Text
 
-ScrollLayout.SortOrder =  
-    Enum.SortOrder.LayoutOrder  
+    ContentTitle.TextSize =
+        17
 
-ScrollLayout.Parent =  
-    Scroll  
+    ContentTitle.Font =
+        Enum.Font.GothamBold
 
-self.Scroll =  
-    Scroll
+    ContentTitle.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    ContentTitle.ZIndex =
+        503
+
+    ContentTitle.Parent =
+        Content
+
+    self.ContentTitle =
+        ContentTitle
+
+    --==================================================
+    -- CONTENT SCROLL
+    --==================================================
+
+    local Scroll =
+        Instance.new("ScrollingFrame")
+
+    Scroll.Name =
+        "ContentScroll"
+
+    Scroll.Position =
+        UDim2.new(
+            0,
+            10,
+            0,
+            42
+        )
+
+    Scroll.Size =
+        UDim2.new(
+            1,
+            -20,
+            1,
+            -52
+        )
+
+    Scroll.BackgroundTransparency =
+        1
+
+    Scroll.BorderSizePixel =
+        0
+
+    Scroll.ScrollBarThickness =
+        5
+
+    Scroll.ScrollBarImageColor3 =
+        self.Theme:GetAccent()
+
+    Scroll.AutomaticCanvasSize =
+        Enum.AutomaticSize.Y
+
+    Scroll.ScrollingDirection =
+        Enum.ScrollingDirection.Y
+
+    Scroll.ZIndex =
+        503
+
+    Scroll.Parent =
+        Content
+
+    local ScrollPadding =
+        Instance.new("UIPadding")
+
+    ScrollPadding.PaddingBottom =
+        UDim.new(
+            0,
+            6
+        )
+
+    ScrollPadding.Parent =
+        Scroll
+
+    local ScrollLayout =
+        Instance.new("UIListLayout")
+
+    ScrollLayout.Padding =
+        UDim.new(
+            0,
+            5
+        )
+
+    ScrollLayout.SortOrder =
+        Enum.SortOrder.LayoutOrder
+
+    ScrollLayout.Parent =
+        Scroll
+
+    self.Scroll =
+        Scroll
 
 end
 
@@ -694,93 +774,95 @@ end
 
 function UI:SetupDrag()
 
-local Main =  
-    self.Main  
+    local Main =
+        self.Main
 
-local Config =  
-    self.Config  
+    local Config =
+        self.Config
 
-local Dragging =  
-    false  
+    local Dragging =
+        false
 
-local DragStart  
+    local DragStart
 
-local StartPosition  
+    local StartPosition
 
-Main.InputBegan:Connect(function(Input)  
+    Main.InputBegan = Main.InputBegan
 
-    if not Config.UI.MainMenuDraggable then  
-        return  
-    end  
+    Main.InputBegan:Connect(function(Input)
 
-    if Input.UserInputType ==  
-        Enum.UserInputType.MouseButton1  
+        if not Config.UI.MainMenuDraggable then
+            return
+        end
 
-    or Input.UserInputType ==  
-        Enum.UserInputType.Touch then  
+        if Input.UserInputType ==
+            Enum.UserInputType.MouseButton1
 
-        Dragging =  
-            true  
+        or Input.UserInputType ==
+            Enum.UserInputType.Touch then
 
-        DragStart =  
-            Input.Position  
+            Dragging =
+                true
 
-        StartPosition =  
-            Main.Position  
+            DragStart =
+                Input.Position
 
-    end  
+            StartPosition =
+                Main.Position
 
-end)  
+        end
 
-UIS.InputChanged:Connect(function(Input)  
+    end)
 
-    if not Dragging then  
-        return  
-    end  
+    UIS.InputChanged:Connect(function(Input)
 
-    if Input.UserInputType ==  
-        Enum.UserInputType.MouseMovement  
+        if not Dragging then
+            return
+        end
 
-    or Input.UserInputType ==  
-        Enum.UserInputType.Touch then  
+        if Input.UserInputType ==
+            Enum.UserInputType.MouseMovement
 
-        local Delta =  
-            Input.Position -  
-            DragStart  
+        or Input.UserInputType ==
+            Enum.UserInputType.Touch then
 
-        Main.Position =  
-            UDim2.new(  
+            local Delta =
+                Input.Position -
+                DragStart
 
-                StartPosition.X.Scale,  
+            Main.Position =
+                UDim2.new(
 
-                StartPosition.X.Offset +  
-                Delta.X,  
+                    StartPosition.X.Scale,
 
-                StartPosition.Y.Scale,  
+                    StartPosition.X.Offset +
+                    Delta.X,
 
-                StartPosition.Y.Offset +  
-                Delta.Y  
+                    StartPosition.Y.Scale,
 
-            )  
+                    StartPosition.Y.Offset +
+                    Delta.Y
 
-    end  
+                )
 
-end)  
+        end
 
-UIS.InputEnded:Connect(function(Input)  
+    end)
 
-    if Input.UserInputType ==  
-        Enum.UserInputType.MouseButton1  
+    UIS.InputEnded:Connect(function(Input)
 
-    or Input.UserInputType ==  
-        Enum.UserInputType.Touch then  
+        if Input.UserInputType ==
+            Enum.UserInputType.MouseButton1
 
-        Dragging =  
-            false  
+        or Input.UserInputType ==
+            Enum.UserInputType.Touch then
 
-    end  
+            Dragging =
+                false
 
-end)
+        end
+
+    end)
 
 end
 
@@ -790,22 +872,22 @@ end
 
 function UI:SetVisible(Value)
 
-if self.Main then  
+    if self.Main then
 
-    self.Main.Visible =  
-        Value  
+        self.Main.Visible =
+            Value
 
-end
+    end
 
 end
 
 function UI:IsVisible()
 
-if not self.Main then  
-    return false  
-end  
+    if not self.Main then
+        return false
+    end
 
-return self.Main.Visible
+    return self.Main.Visible
 
 end
 
@@ -815,42 +897,79 @@ end
 
 function UI:ApplyTheme()
 
-if not self.Main then  
-    return  
-end  
+    if not self.Main then
+        return
+    end
 
-local CurrentTheme =  
-    self.Theme:GetCurrent()  
+    local CurrentTheme =
+        self.Theme:GetCurrent()
 
-self.Main.BackgroundColor3 =  
-    CurrentTheme.Main  
+    self.Main.BackgroundColor3 =
+        CurrentTheme.Main
 
-self.MainStroke.Color =  
-    self.Theme:GetAccent()  
+    self.MainStroke.Color =
+        self.Theme:GetAccent()
 
-self.Sidebar.BackgroundColor3 =  
-    CurrentTheme.Sidebar  
+    self.Sidebar.BackgroundColor3 =
+        CurrentTheme.Sidebar
 
-self.Content.BackgroundColor3 =  
-    CurrentTheme.Content  
+    self.Content.BackgroundColor3 =
+        CurrentTheme.Content
 
-self.Title.TextColor3 =  
-    CurrentTheme.Text  
+    self.Title.TextColor3 =
+        CurrentTheme.Text
 
-self.Subtitle.TextColor3 =  
-    CurrentTheme.SubText  
+    self.Subtitle.TextColor3 =
+        CurrentTheme.SubText
 
-self.ContentTitle.TextColor3 =  
-    CurrentTheme.Text  
+    self.ContentTitle.TextColor3 =
+        CurrentTheme.Text
 
-self.Close.BackgroundColor3 =  
-    CurrentTheme.Close  
+    self.Close.BackgroundColor3 =
+        CurrentTheme.Close
 
-self.Close.TextColor3 =  
-    CurrentTheme.Text  
+    self.Close.TextColor3 =
+        CurrentTheme.Text
 
-self.Scroll.ScrollBarImageColor3 =  
-    self.Theme:GetAccent()
+    self.Scroll.ScrollBarImageColor3 =
+        self.Theme:GetAccent()
+
+    --==================================================
+    -- 🖼️ UPDATE THEME BACKGROUND
+    --==================================================
+
+    if self.BackgroundImage then
+
+        local Image =
+            CurrentTheme.BackgroundImage
+
+        local Transparency =
+            CurrentTheme.BackgroundTransparency
+
+        if Image
+        and Image ~= "" then
+
+            self.BackgroundImage.Image =
+                Image
+
+            self.BackgroundImage.ImageTransparency =
+                Transparency
+                or 0.78
+
+            self.BackgroundImage.Visible =
+                true
+
+        else
+
+            self.BackgroundImage.Image =
+                ""
+
+            self.BackgroundImage.Visible =
+                false
+
+        end
+
+    end
 
 end
 
