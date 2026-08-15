@@ -1,5 +1,6 @@
 --// 💥 RIMURU HUB
 --// Sound Cards System
+--// ⭐ Favorites Integration
 
 local Cards = {}
 
@@ -26,6 +27,13 @@ function Cards:Init(Context)
 
     self.Scroll =
         self.UI.Scroll
+
+    --==================================================
+    -- ⭐ FAVORITES
+    --==================================================
+
+    self.Favorites =
+        Context.Favorites
 
 end
 
@@ -70,6 +78,56 @@ function Cards:Copy(ID)
 end
 
 --==================================================
+-- ⭐ FAVORITE STATUS
+--==================================================
+
+function Cards:IsFavorite(ID)
+
+    if not self.Favorites then
+        return false
+    end
+
+    local Success, Result =
+        pcall(function()
+
+            return self.Favorites:IsFavorite(ID)
+
+        end)
+
+    if Success then
+        return Result == true
+    end
+
+    return false
+
+end
+
+--==================================================
+-- ⭐ TOGGLE FAVORITE
+--==================================================
+
+function Cards:ToggleFavorite(ID)
+
+    if not self.Favorites then
+        return false
+    end
+
+    local Success, Result =
+        pcall(function()
+
+            return self.Favorites:Toggle(ID)
+
+        end)
+
+    if Success then
+        return Result == true
+    end
+
+    return false
+
+end
+
+--==================================================
 -- CREATE SOUND CARD
 --==================================================
 
@@ -86,6 +144,10 @@ function Cards:CreateSoundCard(
 
     local ID =
         Data[2]
+
+    --==================================================
+    -- CARD
+    --==================================================
 
     local Card =
         Instance.new("Frame")
@@ -150,7 +212,7 @@ function Cards:CreateSoundCard(
     NameLabel.Size =
         UDim2.new(
             1,
-            -90,
+            -150,
             0,
             18
         )
@@ -200,7 +262,7 @@ function Cards:CreateSoundCard(
     IDLabel.Size =
         UDim2.new(
             1,
-            -90,
+            -150,
             0,
             16
         )
@@ -228,6 +290,90 @@ function Cards:CreateSoundCard(
 
     IDLabel.Parent =
         Card
+
+    --==================================================
+    -- ⭐ FAVORITE BUTTON
+    --==================================================
+
+    local FavoriteButton =
+        Instance.new("TextButton")
+
+    FavoriteButton.Name =
+        "Favorite"
+
+    FavoriteButton.Size =
+        UDim2.new(
+            0,
+            28,
+            0,
+            28
+        )
+
+    FavoriteButton.Position =
+        UDim2.new(
+            1,
+            -100,
+            0.5,
+            -14
+        )
+
+    FavoriteButton.BackgroundTransparency =
+        1
+
+    FavoriteButton.BorderSizePixel =
+        0
+
+    FavoriteButton.AutoButtonColor =
+        false
+
+    FavoriteButton.TextSize =
+        18
+
+    FavoriteButton.Font =
+        Enum.Font.GothamBold
+
+    FavoriteButton.ZIndex =
+        507
+
+    FavoriteButton.Parent =
+        Card
+
+    --==================================================
+    -- ⭐ FAVORITE UPDATE
+    --==================================================
+
+    local function UpdateFavoriteButton()
+
+        local IsFavorite =
+            self:IsFavorite(ID)
+
+        if IsFavorite then
+
+            FavoriteButton.Text =
+                "⭐"
+
+        else
+
+            FavoriteButton.Text =
+                "☆"
+
+        end
+
+    end
+
+    UpdateFavoriteButton()
+
+    --==================================================
+    -- ⭐ FAVORITE EVENT
+    --==================================================
+
+    FavoriteButton.MouseButton1Click:Connect(function()
+
+        self:ToggleFavorite(ID)
+
+        UpdateFavoriteButton()
+
+    end)
 
     --==================================================
     -- COPY BUTTON
@@ -350,8 +496,16 @@ function Cards:CreateSoundCard(
 
     end)
 
+    --==================================================
+    -- RETURN CARD
+    --==================================================
+
     return Card
 
 end
+
+--==================================================
+-- EXPORT
+--==================================================
 
 return Cards
