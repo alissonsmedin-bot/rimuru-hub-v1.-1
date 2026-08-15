@@ -105,7 +105,6 @@ return {
                         58
                     ),
 
-                -- 🖼️ Rimuru Background
                 BackgroundImage =
                     "rbxassetid://84334653957656",
 
@@ -190,7 +189,6 @@ return {
                         75
                     ),
 
-                -- 🖼️ Slime Rimuru Background
                 BackgroundImage =
                     "rbxassetid://18821729686",
 
@@ -821,14 +819,11 @@ return {
                         160,
                         125,
                         130
-                              160,
-                        125,
-                        130
                     ),
 
                 LogoBackground =
                     Color3.fromRGB(
-                        45,
+                            45,
                         8,
                         12
                     ),
@@ -930,4 +925,4 @@ return {
 
     }
 
-}   
+}
