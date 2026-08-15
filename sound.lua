@@ -133,7 +133,6 @@ local Categories = {
         {"Hollow Nuke Music 2", "14457960806"},
         {"Hollow Nuke Dash", "3929467229"},
         {"Hollow Nuke Summon", "4858918400"},
-        {"Hollow Nuke Max Charge", "COLOCAR_ID_AQUI"}
 
         }
 
