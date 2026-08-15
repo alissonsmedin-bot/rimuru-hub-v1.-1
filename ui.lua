@@ -1,7 +1,8 @@
 --// 💥 RIMURU HUB
 --// UI System
---// FIX: Drag system sem Main.InputBegan
---// FIX: BackgroundImage dos temas
+--// BACKGROUND SYSTEM REWORK
+--// GitHub + Local Asset
+--// Sem ImageId do Roblox para os fundos Rimuru Dark / Slime
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
@@ -9,12 +10,45 @@ local UIS = game:GetService("UserInputService")
 local UI = {}
 
 --==================================================
+-- BACKGROUND CONFIG
+--==================================================
+
+local BACKGROUND_GITHUB = {
+
+    ["Rimuru Dark"] =
+        "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/images%20%282%29.jpeg",
+
+    ["Slime"] =
+        "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/images%20%283%29.jpeg",
+
+}
+
+local BACKGROUND_LOCAL = {
+
+    ["Rimuru Dark"] = {
+        "images (2).jpeg",
+        "assets/images (2).jpeg",
+        "RimuruHub/images (2).jpeg",
+        "RimuruHub/assets/images (2).jpeg",
+    },
+
+    ["Slime"] = {
+        "images (3).jpeg",
+        "assets/images (3).jpeg",
+        "RimuruHub/images (3).jpeg",
+        "RimuruHub/assets/images (3).jpeg",
+    },
+
+}
+
+--==================================================
 -- INIT
 --==================================================
 
 function UI:Init(Context)
 
-    self.Context = Context or {}
+    self.Context =
+        Context or {}
 
     self.Player =
         self.Context.Player
@@ -57,13 +91,450 @@ function UI:RemoveOld()
     pcall(function()
 
         local Old =
-            self.PlayerGui:FindFirstChild("RimuruHub")
+            self.PlayerGui:FindFirstChild(
+                "RimuruHub"
+            )
 
         if Old then
             Old:Destroy()
         end
 
     end)
+
+end
+
+--==================================================
+-- GET ASSET FUNCTION
+--==================================================
+
+function UI:GetAssetFunction()
+
+    if type(getcustomasset) == "function" then
+
+        return getcustomasset
+
+    end
+
+    if type(getsynasset) == "function" then
+
+        return getsynasset
+
+    end
+
+    return nil
+
+end
+
+--==================================================
+-- GET REQUEST FUNCTION
+--==================================================
+
+function UI:GetRequestFunction()
+
+    if type(request) == "function" then
+
+        return request
+
+    end
+
+    if type(http_request) == "function" then
+
+        return http_request
+
+    end
+
+    if type(syn) == "table"
+    and type(syn.request) == "function" then
+
+        return syn.request
+
+    end
+
+    if type(http) == "table"
+    and type(http.request) == "function" then
+
+        return http.request
+
+    end
+
+    return nil
+
+end
+
+--==================================================
+-- LOCAL BACKGROUND
+--==================================================
+
+function UI:GetLocalBackground(Name)
+
+    local AssetFunction =
+        self:GetAssetFunction()
+
+    if not AssetFunction then
+        return nil
+    end
+
+    local Paths =
+        BACKGROUND_LOCAL[Name]
+
+    if not Paths then
+        return nil
+    end
+
+    for _, Path in ipairs(Paths) do
+
+        local Exists =
+            true
+
+        if type(isfile) == "function" then
+
+            local Success,
+                Result =
+                pcall(
+                    isfile,
+                    Path
+                )
+
+            if not Success
+            or not Result then
+
+                Exists =
+                    false
+
+            end
+
+        end
+
+        if Exists then
+
+            local Success,
+                Asset =
+                pcall(
+                    AssetFunction,
+                    Path
+                )
+
+            if Success
+            and type(Asset) == "string"
+            and Asset ~= "" then
+
+                print(
+                    "[Rimuru Hub] Fundo local encontrado: "
+                    .. Path
+                )
+
+                return Asset
+
+            end
+
+        end
+
+    end
+
+    return nil
+
+end
+
+--==================================================
+-- GITHUB BACKGROUND
+--==================================================
+
+function UI:GetGitHubBackground(Name)
+
+    local Url =
+        BACKGROUND_GITHUB[Name]
+
+    if not Url then
+        return nil
+    end
+
+    local RequestFunction =
+        self:GetRequestFunction()
+
+    if not RequestFunction then
+
+        warn(
+            "[Rimuru Hub] Nenhuma API de request encontrada."
+        )
+
+        return nil
+
+    end
+
+    local Success,
+        Response =
+        pcall(
+            RequestFunction,
+            {
+                Url = Url,
+                Method = "GET"
+            }
+        )
+
+    if not Success
+    or not Response then
+
+        warn(
+            "[Rimuru Hub] Falha ao acessar o fundo do GitHub."
+        )
+
+        return nil
+
+    end
+
+    if Response.StatusCode
+    and Response.StatusCode ~= 200 then
+
+        warn(
+            "[Rimuru Hub] GitHub retornou HTTP "
+            .. tostring(Response.StatusCode)
+        )
+
+        return nil
+
+    end
+
+    local Body =
+        Response.Body
+
+    if type(Body) ~= "string"
+    or #Body == 0 then
+
+        warn(
+            "[Rimuru Hub] GitHub retornou dados vazios."
+        )
+
+        return nil
+
+    end
+
+    local AssetFunction =
+        self:GetAssetFunction()
+
+    if not AssetFunction then
+
+        warn(
+            "[Rimuru Hub] getcustomasset/getsynasset não encontrado."
+        )
+
+        return nil
+
+    end
+
+    if type(writefile) ~= "function" then
+
+        warn(
+            "[Rimuru Hub] writefile não encontrado."
+        )
+
+        return nil
+
+    end
+
+    --==================================================
+    -- CACHE
+    --==================================================
+
+    local SafeName =
+        Name:gsub(
+            "[^%w]+",
+            "_"
+        )
+
+    local TempPath =
+        "rimuru_hub_bg_"
+        .. SafeName
+        .. ".jpeg"
+
+    --==================================================
+    -- SAVE
+    --==================================================
+
+    local WriteSuccess =
+        pcall(
+            writefile,
+            TempPath,
+            Body
+        )
+
+    if not WriteSuccess then
+
+        warn(
+            "[Rimuru Hub] Não foi possível salvar o fundo."
+        )
+
+        return nil
+
+    end
+
+    --==================================================
+    -- CONVERT TO ASSET
+    --==================================================
+
+    local AssetSuccess,
+        Asset =
+        pcall(
+            AssetFunction,
+            TempPath
+        )
+
+    if AssetSuccess
+    and type(Asset) == "string"
+    and Asset ~= "" then
+
+        print(
+            "[Rimuru Hub] Fundo carregado pelo GitHub: "
+            .. Name
+        )
+
+        return Asset
+
+    end
+
+    warn(
+        "[Rimuru Hub] Não foi possível transformar o fundo em asset."
+    )
+
+    return nil
+
+end
+
+--==================================================
+-- LOAD BACKGROUND
+--==================================================
+
+function UI:LoadBackground(Name)
+
+    if not self.BackgroundImage then
+        return false
+    end
+
+    --==================================================
+    -- 1. LOCAL
+    --==================================================
+
+    local Asset =
+        self:GetLocalBackground(Name)
+
+    if Asset then
+
+        self.BackgroundImage.Image =
+            Asset
+
+        self.BackgroundImage.ImageTransparency =
+            self:GetBackgroundTransparency()
+
+        return true
+
+    end
+
+    --==================================================
+    -- 2. GITHUB
+    --==================================================
+
+    Asset =
+        self:GetGitHubBackground(Name)
+
+    if Asset then
+
+        self.BackgroundImage.Image =
+            Asset
+
+        self.BackgroundImage.ImageTransparency =
+            self:GetBackgroundTransparency()
+
+        return true
+
+    end
+
+    --==================================================
+    -- 3. FALLBACK
+    --==================================================
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    if CurrentTheme
+    and CurrentTheme.BackgroundImage
+    and not BACKGROUND_GITHUB[Name] then
+
+        self.BackgroundImage.Image =
+            CurrentTheme.BackgroundImage
+
+        self.BackgroundImage.ImageTransparency =
+            self:GetBackgroundTransparency()
+
+        return true
+
+    end
+
+    self.BackgroundImage.Image =
+        ""
+
+    self.BackgroundImage.ImageTransparency =
+        1
+
+    warn(
+        "[Rimuru Hub] Não foi possível carregar o fundo: "
+        .. tostring(Name)
+    )
+
+    return false
+
+end
+
+--==================================================
+-- GET BACKGROUND TRANSPARENCY
+--==================================================
+
+function UI:GetBackgroundTransparency()
+
+    if self.Theme
+    and type(
+        self.Theme.GetBackgroundTransparency
+    ) == "function" then
+
+        local Success,
+            Value =
+            pcall(
+                function()
+
+                    return self.Theme:
+                        GetBackgroundTransparency()
+
+                end
+            )
+
+        if Success
+        and type(Value) == "number" then
+
+            return math.clamp(
+                Value,
+                0,
+                1
+            )
+
+        end
+
+    end
+
+    local CurrentTheme =
+        self.Theme
+        and self.Theme:GetCurrent()
+
+    if CurrentTheme
+    and CurrentTheme.BackgroundTransparency
+    ~= nil then
+
+        return math.clamp(
+            CurrentTheme.BackgroundTransparency,
+            0,
+            1
+        )
+
+    end
+
+    return 0.78
 
 end
 
@@ -228,12 +699,10 @@ function UI:Create()
         0
 
     BackgroundImage.Image =
-        CurrentTheme.BackgroundImage
-        or ""
+        ""
 
     BackgroundImage.ImageTransparency =
-        CurrentTheme.BackgroundTransparency
-        or 0.78
+        self:GetBackgroundTransparency()
 
     BackgroundImage.ScaleType =
         Enum.ScaleType.Crop
@@ -261,6 +730,20 @@ function UI:Create()
 
     self.BackgroundImage =
         BackgroundImage
+
+    --==================================================
+    -- LOAD BACKGROUND
+    --==================================================
+
+    task.spawn(
+        function()
+
+            self:LoadBackground(
+                self.Theme:GetName()
+            )
+
+        end
+    )
 
     --==================================================
     -- MAIN DRAG
@@ -449,364 +932,364 @@ function UI:Create()
         Subtitle
 
     --==================================================
-    -- CLOSE
-    --==================================================
+-- CLOSE
+--==================================================
 
-    local Close =
-        Instance.new("TextButton")
+local Close =
+    Instance.new("TextButton")
 
-    Close.Name =
-        "Close"
+Close.Name =
+    "Close"
 
-    Close.Size =
-        UDim2.new(
-            0,
-            30,
-            0,
-            30
-        )
+Close.Size =
+    UDim2.new(
+        0,
+        30,
+        0,
+        30
+    )
 
-    Close.Position =
-        UDim2.new(
-            1,
-            -38,
-            0,
-            14
-        )
+Close.Position =
+    UDim2.new(
+        1,
+        -38,
+        0,
+        14
+    )
 
-    Close.BackgroundColor3 =
-        CurrentTheme.Close
+Close.BackgroundColor3 =
+    CurrentTheme.Close
 
-    Close.BorderSizePixel =
-        0
+Close.BorderSizePixel =
+    0
 
-    Close.Text =
-        "X"
+Close.Text =
+    "X"
 
-    Close.TextColor3 =
-        CurrentTheme.Text
+Close.TextColor3 =
+    CurrentTheme.Text
 
-    Close.TextSize =
-        12
+Close.TextSize =
+    12
 
-    Close.Font =
-        Enum.Font.GothamBold
+Close.Font =
+    Enum.Font.GothamBold
 
-    Close.AutoButtonColor =
-        false
+Close.AutoButtonColor =
+    false
 
-    Close.ZIndex =
-        504
+Close.ZIndex =
+    504
 
-    Close.Parent =
-        Header
+Close.Parent =
+    Header
 
-    local CloseCorner =
-        Instance.new("UICorner")
+local CloseCorner =
+    Instance.new("UICorner")
 
-    CloseCorner.CornerRadius =
-        UDim.new(
-            0,
-            7
-        )
+CloseCorner.CornerRadius =
+    UDim.new(
+        0,
+        7
+    )
 
-    CloseCorner.Parent =
-        Close
+CloseCorner.Parent =
+    Close
 
-    self.Close =
-        Close
+self.Close =
+    Close
 
-    --==================================================
-    -- CLOSE FUNCTION
-    --==================================================
+--==================================================
+-- CLOSE FUNCTION
+--==================================================
 
-    pcall(function()
+pcall(function()
 
-        Close.Activated:Connect(function()
+    Close.Activated:Connect(function()
 
-            self:SetVisible(false)
-
-        end)
+        self:SetVisible(false)
 
     end)
 
-    --==================================================
-    -- SIDEBAR
-    --==================================================
+end)
 
-    local Sidebar =
-        Instance.new("Frame")
+--==================================================
+-- SIDEBAR
+--==================================================
 
-    Sidebar.Name =
-        "Sidebar"
+local Sidebar =
+    Instance.new("Frame")
 
-    Sidebar.Position =
-        UDim2.new(
-            0,
-            10,
-            0,
-            65
-        )
+Sidebar.Name =
+    "Sidebar"
 
-    Sidebar.Size =
-        UDim2.new(
-            0,
-            165,
-            1,
-            -75
-        )
+Sidebar.Position =
+    UDim2.new(
+        0,
+        10,
+        0,
+        65
+    )
 
-    Sidebar.BackgroundColor3 =
-        CurrentTheme.Sidebar
+Sidebar.Size =
+    UDim2.new(
+        0,
+        165,
+        1,
+        -75
+    )
 
-    Sidebar.BorderSizePixel =
-        0
+Sidebar.BackgroundColor3 =
+    CurrentTheme.Sidebar
 
-    Sidebar.ZIndex =
-        502
+Sidebar.BorderSizePixel =
+    0
 
-    Sidebar.Parent =
-        Main
+Sidebar.ZIndex =
+    502
 
-    local SidebarCorner =
-        Instance.new("UICorner")
+Sidebar.Parent =
+    Main
 
-    SidebarCorner.CornerRadius =
-        UDim.new(
-            0,
-            9
-        )
+local SidebarCorner =
+    Instance.new("UICorner")
 
-    SidebarCorner.Parent =
-        Sidebar
+SidebarCorner.CornerRadius =
+    UDim.new(
+        0,
+        9
+    )
 
-    local SidebarPadding =
-        Instance.new("UIPadding")
+SidebarCorner.Parent =
+    Sidebar
 
-    SidebarPadding.PaddingTop =
-        UDim.new(
-            0,
-            8
-        )
+local SidebarPadding =
+    Instance.new("UIPadding")
 
-    SidebarPadding.PaddingLeft =
-        UDim.new(
-            0,
-            7
-        )
+SidebarPadding.PaddingTop =
+    UDim.new(
+        0,
+        8
+    )
 
-    SidebarPadding.PaddingRight =
-        UDim.new(
-            0,
-            7
-        )
+SidebarPadding.PaddingLeft =
+    UDim.new(
+        0,
+        7
+    )
 
-    SidebarPadding.Parent =
-        Sidebar
+SidebarPadding.PaddingRight =
+    UDim.new(
+        0,
+        7
+    )
 
-    local SidebarLayout =
-        Instance.new("UIListLayout")
+SidebarPadding.Parent =
+    Sidebar
 
-    SidebarLayout.Padding =
-        UDim.new(
-            0,
-            5
-        )
+local SidebarLayout =
+    Instance.new("UIListLayout")
 
-    SidebarLayout.SortOrder =
-        Enum.SortOrder.LayoutOrder
-
-    SidebarLayout.Parent =
-        Sidebar
-
-    self.Sidebar =
-        Sidebar
-
-    --==================================================
-    -- CONTENT
-    --==================================================
-
-    local Content =
-        Instance.new("Frame")
-
-    Content.Name =
-        "Content"
-
-    Content.Position =
-        UDim2.new(
-            0,
-            185,
-            0,
-            65
-        )
-
-    Content.Size =
-        UDim2.new(
-            1,
-            -195,
-            1,
-            -75
-        )
-
-    Content.BackgroundColor3 =
-        CurrentTheme.Content
-
-    Content.BorderSizePixel =
-        0
-
-    Content.ZIndex =
-        502
-
-    Content.Parent =
-        Main
-
-    local ContentCorner =
-        Instance.new("UICorner")
-
-    ContentCorner.CornerRadius =
-        UDim.new(
-            0,
-            9
-        )
-
-    ContentCorner.Parent =
-        Content
-
-    self.Content =
-        Content
-
-    --==================================================
-    -- CONTENT TITLE
-    --==================================================
-
-    local ContentTitle =
-        Instance.new("TextLabel")
-
-    ContentTitle.Name =
-        "ContentTitle"
-
-    ContentTitle.Position =
-        UDim2.new(
-            0,
-            14,
-            0,
-            10
-        )
-
-    ContentTitle.Size =
-        UDim2.new(
-            1,
-            -28,
-            0,
-            25
-        )
-
-    ContentTitle.BackgroundTransparency =
-        1
-
-    ContentTitle.Text =
-        "Principal"
-
-    ContentTitle.TextColor3 =
-        CurrentTheme.Text
-
-    ContentTitle.TextSize =
-        17
-
-    ContentTitle.Font =
-        Enum.Font.GothamBold
-
-    ContentTitle.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    ContentTitle.ZIndex =
-        503
-
-    ContentTitle.Parent =
-        Content
-
-    self.ContentTitle =
-        ContentTitle
-
-    --==================================================
-    -- CONTENT SCROLL
-    --==================================================
-
-    local Scroll =
-        Instance.new("ScrollingFrame")
-
-    Scroll.Name =
-        "ContentScroll"
-
-    Scroll.Position =
-        UDim2.new(
-            0,
-            10,
-            0,
-            42
-        )
-
-    Scroll.Size =
-        UDim2.new(
-            1,
-            -20,
-            1,
-            -52
-        )
-
-    Scroll.BackgroundTransparency =
-        1
-
-    Scroll.BorderSizePixel =
-        0
-
-    Scroll.ScrollBarThickness =
+SidebarLayout.Padding =
+    UDim.new(
+        0,
         5
+    )
 
-    Scroll.ScrollBarImageColor3 =
-        self.Theme:GetAccent()
+SidebarLayout.SortOrder =
+    Enum.SortOrder.LayoutOrder
 
-    Scroll.AutomaticCanvasSize =
-        Enum.AutomaticSize.Y
+SidebarLayout.Parent =
+    Sidebar
 
-    Scroll.ScrollingDirection =
-        Enum.ScrollingDirection.Y
+self.Sidebar =
+    Sidebar
 
-    Scroll.ZIndex =
-        503
+--==================================================
+-- CONTENT
+--==================================================
 
-    Scroll.Parent =
-        Content
+local Content =
+    Instance.new("Frame")
 
-    local ScrollPadding =
-        Instance.new("UIPadding")
+Content.Name =
+    "Content"
 
-    ScrollPadding.PaddingBottom =
-        UDim.new(
-            0,
-            6
-        )
+Content.Position =
+    UDim2.new(
+        0,
+        185,
+        0,
+        65
+    )
 
-    ScrollPadding.Parent =
-        Scroll
+Content.Size =
+    UDim2.new(
+        1,
+        -195,
+        1,
+        -75
+    )
 
-    local ScrollLayout =
-        Instance.new("UIListLayout")
+Content.BackgroundColor3 =
+    CurrentTheme.Content
 
-    ScrollLayout.Padding =
-        UDim.new(
-            0,
-            5
-        )
+Content.BorderSizePixel =
+    0
 
-    ScrollLayout.SortOrder =
-        Enum.SortOrder.LayoutOrder
+Content.ZIndex =
+    502
 
-    ScrollLayout.Parent =
-        Scroll
+Content.Parent =
+    Main
 
-    self.Scroll =
-        Scroll
+local ContentCorner =
+    Instance.new("UICorner")
+
+ContentCorner.CornerRadius =
+    UDim.new(
+        0,
+        9
+    )
+
+ContentCorner.Parent =
+    Content
+
+self.Content =
+    Content
+
+--==================================================
+-- CONTENT TITLE
+--==================================================
+
+local ContentTitle =
+    Instance.new("TextLabel")
+
+ContentTitle.Name =
+    "ContentTitle"
+
+ContentTitle.Position =
+    UDim2.new(
+        0,
+        14,
+        0,
+        10
+    )
+
+ContentTitle.Size =
+    UDim2.new(
+        1,
+        -28,
+        0,
+        25
+    )
+
+ContentTitle.BackgroundTransparency =
+    1
+
+ContentTitle.Text =
+    "Principal"
+
+ContentTitle.TextColor3 =
+    CurrentTheme.Text
+
+ContentTitle.TextSize =
+    17
+
+ContentTitle.Font =
+    Enum.Font.GothamBold
+
+ContentTitle.TextXAlignment =
+    Enum.TextXAlignment.Left
+
+ContentTitle.ZIndex =
+    503
+
+ContentTitle.Parent =
+    Content
+
+self.ContentTitle =
+    ContentTitle
+
+--==================================================
+-- CONTENT SCROLL
+--==================================================
+
+local Scroll =
+    Instance.new("ScrollingFrame")
+
+Scroll.Name =
+    "ContentScroll"
+
+Scroll.Position =
+    UDim2.new(
+        0,
+        10,
+        0,
+        42
+    )
+
+Scroll.Size =
+    UDim2.new(
+        1,
+        -20,
+        1,
+        -52
+    )
+
+Scroll.BackgroundTransparency =
+    1
+
+Scroll.BorderSizePixel =
+    0
+
+Scroll.ScrollBarThickness =
+    5
+
+Scroll.ScrollBarImageColor3 =
+    self.Theme:GetAccent()
+
+Scroll.AutomaticCanvasSize =
+    Enum.AutomaticSize.Y
+
+Scroll.ScrollingDirection =
+    Enum.ScrollingDirection.Y
+
+Scroll.ZIndex =
+    503
+
+Scroll.Parent =
+    Content
+
+local ScrollPadding =
+    Instance.new("UIPadding")
+
+ScrollPadding.PaddingBottom =
+    UDim.new(
+        0,
+        6
+    )
+
+ScrollPadding.Parent =
+    Scroll
+
+local ScrollLayout =
+    Instance.new("UIListLayout")
+
+ScrollLayout.Padding =
+    UDim.new(
+        0,
+        5
+    )
+
+ScrollLayout.SortOrder =
+    Enum.SortOrder.LayoutOrder
+
+ScrollLayout.Parent =
+    Scroll
+
+self.Scroll =
+    Scroll
 
 end
 
@@ -894,133 +1377,146 @@ function UI:SetupDrag()
     --==================================================
 
     self.DragInputBegan =
-        UIS.InputBegan:Connect(function(Input, GameProcessed)
+        UIS.InputBegan:Connect(
+            function(
+                Input,
+                GameProcessed
+            )
 
-            if GameProcessed then
-                return
+                if GameProcessed then
+                    return
+                end
+
+                if not self.Main then
+                    return
+                end
+
+                if not self.Main.Visible then
+                    return
+                end
+
+                local InputType =
+                    Input.UserInputType
+
+                local IsMouse =
+                    InputType ==
+                    Enum.UserInputType.MouseButton1
+
+                local IsTouch =
+                    InputType ==
+                    Enum.UserInputType.Touch
+
+                if not IsMouse
+                and not IsTouch then
+                    return
+                end
+
+                local Position =
+                    Input.Position
+
+                if not self:IsPointInsideMain(
+                    Position
+                ) then
+
+                    return
+
+                end
+
+                Dragging =
+                    true
+
+                DragStart =
+                    Position
+
+                StartPosition =
+                    Main.Position
+
             end
-
-            if not self.Main then
-                return
-            end
-
-            if not self.Main.Visible then
-                return
-            end
-
-            local InputType =
-                Input.UserInputType
-
-            local IsMouse =
-                InputType ==
-                Enum.UserInputType.MouseButton1
-
-            local IsTouch =
-                InputType ==
-                Enum.UserInputType.Touch
-
-            if not IsMouse
-            and not IsTouch then
-                return
-            end
-
-            local Position =
-                Input.Position
-
-            if not self:IsPointInsideMain(Position) then
-                return
-            end
-
-            Dragging =
-                true
-
-            DragStart =
-                Position
-
-            StartPosition =
-                Main.Position
-
-        end)
+        )
 
     --==================================================
     -- INPUT CHANGED
     --==================================================
 
     self.DragInputChanged =
-        UIS.InputChanged:Connect(function(Input)
+        UIS.InputChanged:Connect(
+            function(Input)
 
-            if not Dragging then
-                return
+                if not Dragging then
+                    return
+                end
+
+                local InputType =
+                    Input.UserInputType
+
+                if InputType ~=
+                    Enum.UserInputType.MouseMovement
+                and InputType ~=
+                    Enum.UserInputType.Touch then
+
+                    return
+
+                end
+
+                if not DragStart
+                or not StartPosition then
+
+                    return
+
+                end
+
+                local Delta =
+                    Input.Position -
+                    DragStart
+
+                Main.Position =
+                    UDim2.new(
+
+                        StartPosition.X.Scale,
+
+                        StartPosition.X.Offset +
+                        Delta.X,
+
+                        StartPosition.Y.Scale,
+
+                        StartPosition.Y.Offset +
+                        Delta.Y
+
+                    )
+
             end
-
-            local InputType =
-                Input.UserInputType
-
-            if InputType ~=
-                Enum.UserInputType.MouseMovement
-            and InputType ~=
-                Enum.UserInputType.Touch then
-
-                return
-
-            end
-
-            if not DragStart
-            or not StartPosition then
-
-                return
-
-            end
-
-            local Delta =
-                Input.Position -
-                DragStart
-
-            Main.Position =
-                UDim2.new(
-
-                    StartPosition.X.Scale,
-
-                    StartPosition.X.Offset +
-                    Delta.X,
-
-                    StartPosition.Y.Scale,
-
-                    StartPosition.Y.Offset +
-                    Delta.Y
-
-                )
-
-        end)
+        )
 
     --==================================================
     -- INPUT ENDED
     --==================================================
 
     self.DragInputEnded =
-        UIS.InputEnded:Connect(function(Input)
+        UIS.InputEnded:Connect(
+            function(Input)
 
-            local InputType =
-                Input.UserInputType
+                local InputType =
+                    Input.UserInputType
 
-            if InputType ==
-                Enum.UserInputType.MouseButton1
+                if InputType ==
+                    Enum.UserInputType.MouseButton1
 
-            or InputType ==
-                Enum.UserInputType.Touch then
+                or InputType ==
+                    Enum.UserInputType.Touch then
 
-                Dragging =
-                    false
+                    Dragging =
+                        false
 
-                DragStart =
-                    nil
+                    DragStart =
+                        nil
 
-                StartPosition =
-                    nil
+                    StartPosition =
+                        nil
+
+                end
 
             end
-
-        end)
+        )
 
 end
 
@@ -1109,13 +1605,24 @@ function UI:ApplyTheme()
 
     if self.BackgroundImage then
 
-        self.BackgroundImage.Image =
-            CurrentTheme.BackgroundImage
-            or ""
-
         self.BackgroundImage.ImageTransparency =
-            CurrentTheme.BackgroundTransparency
-            or 0.78
+            self:GetBackgroundTransparency()
+
+        -- Remove imagem antiga
+        self.BackgroundImage.Image =
+            ""
+
+        -- Carrega a imagem correspondente
+        -- ao novo tema
+        task.spawn(
+            function()
+
+                self:LoadBackground(
+                    self.Theme:GetName()
+                )
+
+            end
+        )
 
     end
 
@@ -1141,8 +1648,8 @@ function UI:ApplyTheme()
 
     end
 
-        --==================================================
-    -- TEXT
+    --==================================================
+    -- TITLE
     --==================================================
 
     if self.Title then
@@ -1152,12 +1659,20 @@ function UI:ApplyTheme()
 
     end
 
+    --==================================================
+    -- SUBTITLE
+    --==================================================
+
     if self.Subtitle then
 
         self.Subtitle.TextColor3 =
             CurrentTheme.SubText
 
     end
+
+    --==================================================
+    -- CONTENT TITLE
+    --==================================================
 
     if self.ContentTitle then
 
@@ -1181,18 +1696,7 @@ function UI:ApplyTheme()
     end
 
     --==================================================
-    -- HEADER LOGO
-    --==================================================
-
-    if self.HeaderLogo then
-
-        self.HeaderLogo.ImageColor3 =
-            CurrentTheme.Text
-
-    end
-
-    --==================================================
-    -- SCROLL
+    -- SCROLLBAR
     --==================================================
 
     if self.Scroll then
@@ -1205,67 +1709,187 @@ function UI:ApplyTheme()
 end
 
 --==================================================
+-- GET MAIN
+--==================================================
+
+function UI:GetMain()
+
+    return self.Main
+
+end
+
+--==================================================
+-- GET GUI
+--==================================================
+
+function UI:GetGui()
+
+    return self.Gui
+
+end
+
+--==================================================
+-- GET SIDEBAR
+--==================================================
+
+function UI:GetSidebar()
+
+    return self.Sidebar
+
+end
+
+--==================================================
+-- GET CONTENT
+--==================================================
+
+function UI:GetContent()
+
+    return self.Content
+
+end
+
+--==================================================
+-- GET SCROLL
+--==================================================
+
+function UI:GetScroll()
+
+    return self.Scroll
+
+end
+
+--==================================================
+-- GET BACKGROUND
+--==================================================
+
+function UI:GetBackground()
+
+    return self.BackgroundImage
+
+end
+
+--==================================================
+-- SET BACKGROUND TRANSPARENCY
+--==================================================
+
+function UI:SetBackgroundTransparency(Value)
+
+    Value =
+        tonumber(Value)
+
+    if not Value then
+        return false
+    end
+
+    Value =
+        math.clamp(
+            Value,
+            0,
+            1
+        )
+
+    if self.BackgroundImage then
+
+        self.BackgroundImage.ImageTransparency =
+            Value
+
+    end
+
+    if self.Theme
+    and type(
+        self.Theme.SetBackgroundTransparency
+    ) == "function" then
+
+        self.Theme:
+            SetBackgroundTransparency(
+                Value
+            )
+
+    end
+
+    return true
+
+end
+
+--==================================================
 -- DESTROY
 --==================================================
 
 function UI:Destroy()
 
-    --==================================================
-    -- DISCONNECT DRAG
-    --==================================================
-
     pcall(function()
 
         if self.DragInputBegan then
-            self.DragInputBegan:Disconnect()
+
+            self.DragInputBegan:
+                Disconnect()
+
         end
 
         if self.DragInputChanged then
-            self.DragInputChanged:Disconnect()
+
+            self.DragInputChanged:
+                Disconnect()
+
         end
 
         if self.DragInputEnded then
-            self.DragInputEnded:Disconnect()
+
+            self.DragInputEnded:
+                Disconnect()
+
         end
 
     end)
-
-    self.DragInputBegan = nil
-    self.DragInputChanged = nil
-    self.DragInputEnded = nil
-
-    --==================================================
-    -- DESTROY GUI
-    --==================================================
 
     pcall(function()
 
         if self.Gui then
+
             self.Gui:Destroy()
+
         end
 
     end)
 
-    --==================================================
-    -- CLEAR REFERENCES
-    --==================================================
+    self.Gui =
+        nil
 
-    self.Gui = nil
-    self.Main = nil
-    self.MainStroke = nil
-    self.BackgroundImage = nil
+    self.Main =
+        nil
 
-    self.Header = nil
-    self.HeaderLogo = nil
+    self.BackgroundImage =
+        nil
 
-    self.Title = nil
-    self.Subtitle = nil
-    self.Close = nil
+    self.Header =
+        nil
 
-    self.Sidebar = nil
-    self.Content = nil
-    self.ContentTitle = nil
-    self.Scroll = nil
+    self.HeaderLogo =
+        nil
+
+    self.Title =
+        nil
+
+    self.Subtitle =
+        nil
+
+    self.Close =
+        nil
+
+    self.Sidebar =
+        nil
+
+    self.Content =
+        nil
+
+    self.ContentTitle =
+        nil
+
+    self.Scroll =
+        nil
+
+    self.MainStroke =
+        nil
 
 end
 
