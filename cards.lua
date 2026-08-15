@@ -1,6 +1,7 @@
 --// 💥 RIMURU HUB
 --// Sound Cards System
 --// ⭐ Favorites Integration
+--// 🎨 Transparent Cards + Theme Support
 
 local Cards = {}
 
@@ -11,7 +12,7 @@ local Cards = {}
 function Cards:Init(Context)
 
     self.Context =
-        Context
+        Context or {}
 
     self.Config =
         Context.Config
@@ -33,6 +34,61 @@ function Cards:Init(Context)
 
     self.Categories =
         Context.Categories
+
+end
+
+--==================================================
+-- GET CARD TRANSPARENCY
+--==================================================
+
+function Cards:GetCardTransparency()
+
+    --==================================================
+    -- CONFIG
+    --==================================================
+
+    if self.Config
+    and self.Config.UI
+    and self.Config.UI.CardTransparency
+    ~= nil then
+
+        return math.clamp(
+            tonumber(
+                self.Config.UI.CardTransparency
+            ) or 0.15,
+            0,
+            1
+        )
+
+    end
+
+    --==================================================
+    -- THEME
+    --==================================================
+
+    local CurrentTheme =
+        self.Theme
+        and self.Theme:GetCurrent()
+
+    if CurrentTheme
+    and CurrentTheme.CardTransparency
+    ~= nil then
+
+        return math.clamp(
+            tonumber(
+                CurrentTheme.CardTransparency
+            ) or 0.15,
+            0,
+            1
+        )
+
+    end
+
+    --==================================================
+    -- DEFAULT
+    --==================================================
+
+    return 0.15
 
 end
 
@@ -90,7 +146,8 @@ function Cards:IsFavorite(ID)
         return false
     end
 
-    local Success, Result =
+    local Success,
+        Result =
         pcall(function()
 
             return self.Favorites:IsFavorite(
@@ -117,7 +174,8 @@ function Cards:ToggleFavorite(ID)
         return false
     end
 
-    local Success, Result =
+    local Success,
+        Result =
         pcall(function()
 
             return self.Favorites:Toggle(
@@ -143,8 +201,6 @@ function Cards:RefreshFavorites()
     if not self.Categories then
         return
     end
-
-    -- Update sidebar counter
 
     if self.Categories.UpdateFavorites then
 
@@ -178,8 +234,6 @@ function Cards:HandleFavorite(
     local IsFavorite =
         self:ToggleFavorite(ID)
 
-    -- Update button immediately
-
     if UpdateButton then
 
         if IsFavorite then
@@ -196,13 +250,7 @@ function Cards:HandleFavorite(
 
     end
 
-    -- Update category/favorites counter
-
     self:RefreshFavorites()
-
-    --==================================================
-    -- IF CURRENT CATEGORY IS FAVORITES
-    --==================================================
 
     if self.Categories then
 
@@ -211,7 +259,8 @@ function Cards:HandleFavorite(
         pcall(function()
 
             CurrentCategory =
-                self.Categories:GetCurrentCategory()
+                self.Categories:
+                GetCurrentCategory()
 
         end)
 
@@ -222,7 +271,8 @@ function Cards:HandleFavorite(
 
                 pcall(function()
 
-                    self.Categories:ShowFavorites()
+                    self.Categories:
+                    ShowFavorites()
 
                 end)
 
@@ -245,10 +295,6 @@ function Cards:CreateSoundCard(
     Data
 )
 
-    --==================================================
-    -- VALIDATION
-    --==================================================
-
     if not Data then
         return nil
     end
@@ -264,10 +310,6 @@ function Cards:CreateSoundCard(
             Data[2] or
             ""
         )
-
-    --==================================================
-    -- THEME
-    --==================================================
 
     local CurrentTheme =
         self.Theme:GetCurrent()
@@ -295,6 +337,9 @@ function Cards:CreateSoundCard(
 
     Card.BackgroundColor3 =
         CurrentTheme.Card
+
+    Card.BackgroundTransparency =
+        self:GetCardTransparency()
 
     Card.BorderSizePixel =
         0
@@ -553,6 +598,9 @@ function Cards:CreateSoundCard(
     CopyButton.BackgroundColor3 =
         self.Theme:GetAccent()
 
+    CopyButton.BackgroundTransparency =
+        0
+
     CopyButton.BorderSizePixel =
         0
 
@@ -651,10 +699,6 @@ function Cards:CreateSoundCard(
         end
     )
 
-    --==================================================
-    -- RETURN
-    --==================================================
-
     return Card
 
 end
@@ -736,6 +780,9 @@ function Cards:ApplyTheme()
 
             Object.BackgroundColor3 =
                 CurrentTheme.Card
+
+            Object.BackgroundTransparency =
+                self:GetCardTransparency()
 
             local NameLabel =
                 Object:FindFirstChild(
