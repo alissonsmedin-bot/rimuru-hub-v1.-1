@@ -164,7 +164,7 @@ function Categories:CreateCategoryButton(
         0
 
     Button.Text =
-        "📁  " .. CategoryName
+        "🎵  " .. CategoryName
 
     Button.TextColor3 =
         CurrentTheme.SubText
