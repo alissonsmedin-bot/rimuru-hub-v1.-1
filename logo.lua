@@ -87,7 +87,7 @@ function Logo:Create()
         0
 
     LogoButton.Image =
-        "rbxassetid://6691708227"
+        "rbxassetid://988968222442"
 
     LogoButton.ScaleType =
         Enum.ScaleType.Fit
