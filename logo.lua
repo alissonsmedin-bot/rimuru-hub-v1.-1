@@ -1,123 +1,27 @@
 --// 💥 RIMURU HUB
 --// Logo System
---// DRAWING API VERSION
+--// LOCAL IMAGE VERSION
 --// Sem ImageId do Roblox
+--// Usa arquivo local + getcustomasset()
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
 local Logo = {}
 
 --==================================================
--- EMBEDDED IMAGE
+-- CONFIGURAÇÃO DA LOGO
 --==================================================
 
-local IMAGE_W = 60
-local IMAGE_H = 60
+local LOGO_SIZE = 55
 
-local PALETTE = {
-    {149,186,218},
-    {160,193,219},
-    {174,210,233},
-    {55,58,74},
-    {176,211,234},
-    {134,171,202},
-    {86,96,109},
-    {124,149,174},
-    {199,220,231},
-    {171,206,231},
-    {94,120,145},
-    {90,78,75},
-    {165,201,227},
-    {55,71,101},
-    {100,143,185},
-    {35,37,56},
-    {137,109,93},
-    {145,130,102},
-    {191,150,132},
-    {243,229,215},
-    {195,168,156},
-    {216,191,178},
-    {230,207,194},
-    {224,207,195},
-    {229,214,201},
-    {234,220,206},
-    {231,216,203},
-    {230,216,203},
-    {230,216,204},
-    {230,216,202},
-    {252,250,247},
-    {195,209,216}
-}
-
---==================================================
--- IMAGE DATA
---==================================================
--- Cada pixel = 2 caracteres.
--- 00 até 31 correspondem à PALETTE.
-
-local DATA = {
-"000001010101020003010402020202040404020401050402040404040404020406070809040404040404040404040204000310000404020405030611",
-"000101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611",
-"010101010112091305090402040404040404020405060708090402040404040404040404020304000310000404020405030611"
+-- Caminhos possíveis.
+-- O sistema testa na ordem.
+local LOGO_PATHS = {
+    "assets/logo.png",
+    "RimuruHub/assets/logo.png",
+    "RimuruHub/logo.png",
+    "logo.png"
 }
 
 --==================================================
@@ -151,12 +55,20 @@ function Logo:Init(Context)
         self.Context.UI
 
     if not self.UI then
-        warn("[Rimuru Hub] UI não encontrado.")
+
+        warn(
+            "[Rimuru Hub] UI não encontrado."
+        )
+
         return
     end
 
     if not self.UI.Gui then
-        warn("[Rimuru Hub] ScreenGui não encontrado.")
+
+        warn(
+            "[Rimuru Hub] ScreenGui não encontrado."
+        )
+
         return
     end
 
@@ -164,6 +76,101 @@ function Logo:Init(Context)
         self.UI.Gui
 
     self:Create()
+
+end
+
+--==================================================
+-- GET LOCAL ASSET
+--==================================================
+
+function Logo:GetLocalAsset()
+
+    --==============================================
+    -- GETCUSTOMASSET
+    --==============================================
+
+    local CustomAsset =
+        getcustomasset
+
+    --==============================================
+    -- FALLBACK
+    --==============================================
+
+    if type(CustomAsset) ~= "function" then
+
+        if type(getsynasset) == "function" then
+
+            CustomAsset =
+                getsynasset
+
+        end
+
+    end
+
+    if type(CustomAsset) ~= "function" then
+
+        warn(
+            "[Rimuru Hub] getcustomasset/getsynasset não encontrado."
+        )
+
+        return nil
+    end
+
+    --==============================================
+    -- TESTA OS CAMINHOS
+    --==============================================
+
+    for _, Path in ipairs(LOGO_PATHS) do
+
+        local Exists = true
+
+        -- Se isfile existir, verifica primeiro.
+        if type(isfile) == "function" then
+
+            local Success, Result =
+                pcall(
+                    isfile,
+                    Path
+                )
+
+            if not Success or not Result then
+
+                Exists = false
+
+            end
+
+        end
+
+        if Exists then
+
+            local Success, Asset =
+                pcall(
+                    CustomAsset,
+                    Path
+                )
+
+            if Success
+            and Asset
+            and type(Asset) == "string"
+            and Asset ~= "" then
+
+                print(
+                    "[Rimuru Hub] Logo encontrada: "
+                    .. Path
+                )
+
+                return Asset
+            end
+
+        end
+
+    end
+
+    warn(
+        "[Rimuru Hub] Não foi possível encontrar assets/logo.png."
+    )
+
+    return nil
 
 end
 
@@ -207,9 +214,9 @@ function Logo:Create()
     LogoButton.Size =
         UDim2.new(
             0,
-            55,
+            LOGO_SIZE,
             0,
-            55
+            LOGO_SIZE
         )
 
     LogoButton.Position =
@@ -226,21 +233,31 @@ function Logo:Create()
     LogoButton.BorderSizePixel =
         0
 
-    -- Não usamos ImageId.
+    --==================================================
+    -- LOCAL IMAGE
+    --==================================================
+
     LogoButton.Image =
         ""
 
     LogoButton.ImageTransparency =
-        1
+        0
 
     LogoButton.ScaleType =
         Enum.ScaleType.Fit
+
+    LogoButton.ResampleMode =
+        Enum.ResamplerMode.Default
 
     LogoButton.AutoButtonColor =
         false
 
     LogoButton.ZIndex =
         1000
+
+    --==================================================
+    -- CONFIG VISIBILITY
+    --==================================================
 
     local ShowLogo =
         true
@@ -306,10 +323,10 @@ function Logo:Create()
         LogoStroke
 
     --==================================================
-    -- DRAWING IMAGE
+    -- LOAD LOCAL LOGO
     --==================================================
 
-    self:CreateDrawingImage()
+    self:LoadImage()
 
     --==================================================
     -- DRAG
@@ -351,249 +368,67 @@ function Logo:Create()
 end
 
 --==================================================
--- CREATE DRAWING IMAGE
+-- LOAD IMAGE
 --==================================================
 
-function Logo:CreateDrawingImage()
+function Logo:LoadImage()
 
-    self.DrawingObjects =
-        {}
-
-    -- Alguns ambientes podem não possuir
-    -- Drawing API. Nesse caso, não quebramos o Hub.
-
-    if not Drawing then
-        warn(
-            "[Rimuru Hub] Drawing API não encontrada. Logo gráfica desativada."
-        )
+    if not self.Button then
         return
+    end
+
+    local Asset =
+        self:GetLocalAsset()
+
+    if not Asset then
+
+        self.Button.Image =
+            ""
+
+        self.Button.ImageTransparency =
+            1
+
+        warn(
+            "[Rimuru Hub] Logo local não carregada."
+        )
+
+        warn(
+            "[Rimuru Hub] Coloque o arquivo em: assets/logo.png"
+        )
+
+        return false
+
     end
 
     local Success =
         pcall(function()
 
-            local Button =
-                self.Button
+            self.Button.Image =
+                Asset
 
-            if not Button then
-                return
-            end
+            self.Button.ImageTransparency =
+                0
 
-            for y = 0, IMAGE_H - 1 do
-
-                local Row =
-                    DATA[y + 1]
-
-                if Row then
-
-                    for x = 0, IMAGE_W - 1 do
-
-                        local IndexPosition =
-                            x * 2 + 1
-
-                        local PixelIndex =
-                            tonumber(
-                                Row:sub(
-                                    IndexPosition,
-                                    IndexPosition + 1
-                                )
-                            )
-
-                        if PixelIndex then
-
-                            local Color =
-                                PALETTE[
-                                    PixelIndex + 1
-                                ]
-
-                            if Color then
-
-                                local Pixel =
-                                    Drawing.new("Square")
-
-                                Pixel.Filled =
-                                    true
-
-                                Pixel.Visible =
-                                    true
-
-                                Pixel.Transparency =
-                                    1
-
-                                Pixel.Color =
-                                    Color3.fromRGB(
-                                        Color[1],
-                                        Color[2],
-                                        Color[3]
-                                    )
-
-                                self.DrawingObjects[
-                                    #self.DrawingObjects + 1
-                                ] =
-                                    Pixel
-
-                            end
-
-                        end
-
-                    end
-
-                end
-
-            end
+            self.Button.ScaleType =
+                Enum.ScaleType.Fit
 
         end)
 
     if not Success then
 
         warn(
-            "[Rimuru Hub] Falha ao criar imagem via Drawing API."
+            "[Rimuru Hub] Erro ao aplicar a logo local."
         )
 
-        self:ClearDrawingImage()
-
-        return
+        return false
 
     end
 
-    --==================================================
-    -- UPDATE POSITION
-    --==================================================
-
-    self:UpdateDrawingPosition()
-
-    self.DrawingConnection =
-        RunService.RenderStepped:Connect(function()
-
-            if not self.Button then
-                return
-            end
-
-            if not self.Button.Parent then
-                return
-            end
-
-            self:UpdateDrawingPosition()
-
-        end)
-
-end
-
---==================================================
--- UPDATE DRAWING POSITION
---==================================================
-
-function Logo:UpdateDrawingPosition()
-
-    if not self.Button then
-        return
-    end
-
-    if not self.DrawingObjects then
-        return
-    end
-
-    local AbsolutePosition =
-        self.Button.AbsolutePosition
-
-    local AbsoluteSize =
-        self.Button.AbsoluteSize
-
-    if AbsoluteSize.X <= 0
-    or AbsoluteSize.Y <= 0 then
-        return
-    end
-
-    local PixelScaleX =
-        AbsoluteSize.X / IMAGE_W
-
-    local PixelScaleY =
-        AbsoluteSize.Y / IMAGE_H
-
-    for y = 0, IMAGE_H - 1 do
-
-        for x = 0, IMAGE_W - 1 do
-
-            local Number =
-                y * IMAGE_W + x + 1
-
-            local Pixel =
-                self.DrawingObjects[Number]
-
-            if Pixel then
-
-                Pixel.Position =
-                    Vector2.new(
-
-                        AbsolutePosition.X +
-                        x * PixelScaleX,
-
-                        AbsolutePosition.Y +
-                        y * PixelScaleY
-
-                    )
-
-                Pixel.Size =
-                    Vector2.new(
-
-                        PixelScaleX + 0.15,
-
-                        PixelScaleY + 0.15
-
-                    )
-
-                Pixel.Visible =
-                    self.Button.Visible
-
-            end
-
-        end
-
-    end
-
-end
-
---==================================================
--- CLEAR DRAWING IMAGE
---==================================================
-
-function Logo:ClearDrawingImage()
-
-    if self.DrawingConnection then
-
-        pcall(function()
-
-            self.DrawingConnection:Disconnect()
-
-        end)
-
-        self.DrawingConnection =
-            nil
-
-    end
-
-    if not self.DrawingObjects then
-        return
-    end
-
-    for _, Pixel in ipairs(
-        self.DrawingObjects
-    ) do
-
-        pcall(function()
-
-            Pixel.Visible =
-                false
-
-            Pixel:Remove()
-
-        end)
-
-    end
-
-    table.clear(
-        self.DrawingObjects
+    print(
+        "[Rimuru Hub] Logo local carregada com sucesso."
     )
+
+    return true
 
 end
 
@@ -630,140 +465,146 @@ function Logo:SetupDrag()
     --==================================================
 
     self.LogoInputBegan =
-        LogoButton.InputBegan:Connect(function(Input)
+        LogoButton.InputBegan:Connect(
+            function(Input)
 
-            local CanDrag =
-                true
+                local CanDrag =
+                    true
 
-            pcall(function()
+                pcall(function()
 
-                if Config.UI
-                and Config.UI.LogoDraggable ~= nil then
+                    if Config.UI
+                    and Config.UI.LogoDraggable ~= nil then
 
-                    CanDrag =
-                        Config.UI.LogoDraggable
+                        CanDrag =
+                            Config.UI.LogoDraggable
+
+                    end
+
+                end)
+
+                if not CanDrag then
+                    return
+                end
+
+                local InputType =
+                    Input.UserInputType
+
+                if InputType ==
+                    Enum.UserInputType.MouseButton1
+
+                or InputType ==
+                    Enum.UserInputType.Touch then
+
+                    LogoDragging =
+                        true
+
+                    LogoMoved =
+                        false
+
+                    LogoDragStart =
+                        Input.Position
+
+                    LogoStartPosition =
+                        LogoButton.Position
 
                 end
 
-            end)
-
-            if not CanDrag then
-                return
             end
-
-            local InputType =
-                Input.UserInputType
-
-            if InputType ==
-                Enum.UserInputType.MouseButton1
-
-            or InputType ==
-                Enum.UserInputType.Touch then
-
-                LogoDragging =
-                    true
-
-                LogoMoved =
-                    false
-
-                LogoDragStart =
-                    Input.Position
-
-                LogoStartPosition =
-                    LogoButton.Position
-
-            end
-
-        end)
+        )
 
     --==================================================
     -- INPUT CHANGED
     --==================================================
 
     self.LogoInputChanged =
-        UIS.InputChanged:Connect(function(Input)
+        UIS.InputChanged:Connect(
+            function(Input)
 
-            if not LogoDragging then
-                return
+                if not LogoDragging then
+                    return
+                end
+
+                local InputType =
+                    Input.UserInputType
+
+                if InputType ~=
+                    Enum.UserInputType.MouseMovement
+
+                and InputType ~=
+                    Enum.UserInputType.Touch then
+
+                    return
+
+                end
+
+                if not LogoDragStart
+                or not LogoStartPosition then
+
+                    return
+
+                end
+
+                local Delta =
+                    Input.Position -
+                    LogoDragStart
+
+                if math.abs(Delta.X) > 5
+                or math.abs(Delta.Y) > 5 then
+
+                    LogoMoved =
+                        true
+
+                end
+
+                LogoButton.Position =
+                    UDim2.new(
+
+                        LogoStartPosition.X.Scale,
+
+                        LogoStartPosition.X.Offset
+                        + Delta.X,
+
+                        LogoStartPosition.Y.Scale,
+
+                        LogoStartPosition.Y.Offset
+                        + Delta.Y
+
+                    )
+
             end
-
-            local InputType =
-                Input.UserInputType
-
-            if InputType ~=
-                Enum.UserInputType.MouseMovement
-
-            and InputType ~=
-                Enum.UserInputType.Touch then
-
-                return
-
-            end
-
-            if not LogoDragStart
-            or not LogoStartPosition then
-
-                return
-
-            end
-
-            local Delta =
-                Input.Position -
-                LogoDragStart
-
-            if math.abs(Delta.X) > 5
-            or math.abs(Delta.Y) > 5 then
-
-                LogoMoved =
-                    true
-
-            end
-
-            LogoButton.Position =
-                UDim2.new(
-
-                    LogoStartPosition.X.Scale,
-
-                    LogoStartPosition.X.Offset +
-                    Delta.X,
-
-                    LogoStartPosition.Y.Scale,
-
-                    LogoStartPosition.Y.Offset +
-                    Delta.Y
-
-                )
-
-        end)
+        )
 
     --==================================================
     -- INPUT ENDED
     --==================================================
 
     self.LogoInputEnded =
-        UIS.InputEnded:Connect(function(Input)
+        UIS.InputEnded:Connect(
+            function(Input)
 
-            local InputType =
-                Input.UserInputType
+                local InputType =
+                    Input.UserInputType
 
-            if InputType ==
-                Enum.UserInputType.MouseButton1
+                if InputType ==
+                    Enum.UserInputType.MouseButton1
 
-                        or InputType ==
-                Enum.UserInputType.Touch then
+                or InputType ==
+                    Enum.UserInputType.Touch then
 
-                LogoDragging =
-                    false
+                    LogoDragging =
+                        false
 
-                LogoDragStart =
-                    nil
+                    LogoDragStart =
+                        nil
 
-                LogoStartPosition =
-                    nil
+                    LogoStartPosition =
+                        nil
+
+                end
 
             end
-
-        end)
+        )
 
     --==================================================
     -- MOVED STATE
@@ -798,9 +639,6 @@ function Logo:SetVisible(Value)
 
     self.Button.Visible =
         Value
-
-    -- Mantém a imagem Drawing sincronizada
-    self:UpdateDrawingPosition()
 
 end
 
@@ -867,12 +705,6 @@ function Logo:ApplyTheme()
 
     end
 
-    --==================================================
-    -- DRAWING IMAGE
-    --==================================================
-
-    self:UpdateDrawingPosition()
-
 end
 
 --==================================================
@@ -881,34 +713,42 @@ end
 
 function Logo:Destroy()
 
-    -- Desconecta eventos
+    --==================================================
+    -- DISCONNECT EVENTS
+    --==================================================
 
     pcall(function()
 
         if self.LogoInputBegan then
+
             self.LogoInputBegan:Disconnect()
+
         end
 
         if self.LogoInputChanged then
+
             self.LogoInputChanged:Disconnect()
+
         end
 
         if self.LogoInputEnded then
+
             self.LogoInputEnded:Disconnect()
+
         end
 
     end)
 
-    -- Remove imagem Drawing
-
-    self:ClearDrawingImage()
-
-    -- Remove botão
+    --==================================================
+    -- REMOVE BUTTON
+    --==================================================
 
     pcall(function()
 
         if self.Button then
+
             self.Button:Destroy()
+
         end
 
     end)
