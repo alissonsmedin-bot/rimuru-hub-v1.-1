@@ -1,5 +1,6 @@
 --// 💥 RIMURU HUB
 --// Categories System
+--// ⭐ Favorites Integration
 
 local Categories = {}
 
@@ -8,6 +9,12 @@ local Categories = {}
 --==================================================
 
 local CategoryIcons = {
+
+    ["Todos"] =
+        "📚",
+
+    ["Favoritos"] =
+        "⭐",
 
     ["Outro"] =
         "🏠",
@@ -23,7 +30,7 @@ local CategoryIcons = {
 
     ["Configuração"] =
         "⚙️"
-    
+
 }
 
 --==================================================
@@ -53,6 +60,9 @@ function Categories:Init(Context)
     self.Search =
         Context.Search
 
+    self.Favorites =
+        Context.Favorites
+
     self.Sidebar =
         self.UI.Sidebar
 
@@ -68,6 +78,12 @@ function Categories:Init(Context)
     self.CategoryButtons =
         {}
 
+    self.CurrentCategory =
+        nil
+
+    self.IsVirtualCategory =
+        false
+
 end
 
 --==================================================
@@ -82,6 +98,63 @@ function Categories:GetIcon(
         CategoryName
     ]
     or "📁"
+
+end
+
+--==================================================
+-- GET FAVORITE COUNT
+--==================================================
+
+function Categories:GetFavoriteCount()
+
+    if not self.Favorites then
+        return 0
+    end
+
+    local Success, Count =
+        pcall(function()
+
+            return self.Favorites:GetCount()
+
+        end)
+
+    if Success then
+        return Count or 0
+    end
+
+    return 0
+
+end
+
+--==================================================
+-- UPDATE FAVORITES BUTTON
+--==================================================
+
+function Categories:UpdateFavoritesButton()
+
+    local Button =
+        self.CategoryButtons[
+            "Favoritos"
+        ]
+
+    if not Button then
+        return
+    end
+
+    local Count =
+        self:GetFavoriteCount()
+
+    Button.Text =
+        "⭐  Favoritos"
+
+    if Count > 0 then
+
+        Button.Text =
+            "⭐  Favoritos (" ..
+            tostring(Count) ..
+            ")"
+
+    end
 
 end
 
@@ -112,12 +185,297 @@ function Categories:ClearContent()
 end
 
 --==================================================
--- SHOW CATEGORY
+-- CREATE CARD
+--==================================================
+
+function Categories:CreateCard(
+    Index,
+    Data
+)
+
+    self.Cards:CreateSoundCard(
+
+        Index,
+
+        Data
+
+    )
+
+end
+
+--==================================================
+-- SHOW ALL SOUNDS
+--==================================================
+
+function Categories:ShowAll()
+
+    self.CurrentCategory =
+        "Todos"
+
+    self.IsVirtualCategory =
+        true
+
+    --==================================================
+    -- INFORM SEARCH SYSTEM
+    --==================================================
+
+    if self.Search
+    and self.Search.SetCategory then
+
+        self.Search:SetCategory(
+            "Todos"
+        )
+
+    end
+
+    --==================================================
+    -- CLEAR
+    --==================================================
+
+    self:ClearContent()
+
+    --==================================================
+    -- TITLE
+    --==================================================
+
+    self.ContentTitle.Text =
+        "Todos"
+
+    --==================================================
+    -- CREATE ALL CARDS
+    --==================================================
+
+    local CardIndex =
+        0
+
+    for CategoryName, Category in
+        pairs(
+            self.Sounds
+        ) do
+
+        if type(Category) ==
+            "table" then
+
+            for _, Data in
+                ipairs(Category) do
+
+                CardIndex += 1
+
+                self:CreateCard(
+
+                    CardIndex,
+
+                    Data
+
+                )
+
+            end
+
+        end
+
+    end
+
+end
+
+--==================================================
+-- SHOW FAVORITES
+--==================================================
+
+function Categories:ShowFavorites()
+
+    self.CurrentCategory =
+        "Favoritos"
+
+    self.IsVirtualCategory =
+        true
+
+    --==================================================
+    -- INFORM SEARCH SYSTEM
+    --==================================================
+
+    if self.Search
+    and self.Search.SetCategory then
+
+        self.Search:SetCategory(
+            "Favoritos"
+        )
+
+    end
+
+    --==================================================
+    -- CLEAR
+    --==================================================
+
+    self:ClearContent()
+
+    --==================================================
+    -- TITLE
+    --==================================================
+
+    self.ContentTitle.Text =
+        "Favoritos"
+
+    --==================================================
+    -- FAVORITE DATA
+    --==================================================
+
+    if not self.Favorites then
+
+        return
+
+    end
+
+    local CardIndex =
+        0
+
+    --==================================================
+    -- SEARCH ALL CATEGORIES
+    --==================================================
+
+    for CategoryName, Category in
+        pairs(
+            self.Sounds
+        ) do
+
+        if type(Category) ==
+            "table" then
+
+            for _, Data in
+                ipairs(Category) do
+
+                local ID =
+                    tostring(
+                        Data[2] or ""
+                    )
+
+                local IsFavorite =
+                    false
+
+                local Success, Result =
+                    pcall(function()
+
+                        return self.Favorites:IsFavorite(
+                            ID
+                        )
+
+                    end)
+
+                if Success then
+
+                    IsFavorite =
+                        Result == true
+
+                end
+
+                if IsFavorite then
+
+                    CardIndex += 1
+
+                    self:CreateCard(
+
+                        CardIndex,
+
+                        Data
+
+                    )
+
+                end
+
+            end
+
+        end
+
+    end
+
+    --==================================================
+    -- EMPTY FAVORITES
+    --==================================================
+
+    if CardIndex == 0 then
+
+        local EmptyLabel =
+            Instance.new(
+                "TextLabel"
+            )
+
+        EmptyLabel.Name =
+            "NoFavorites"
+
+        EmptyLabel.Size =
+            UDim2.new(
+                1,
+                -5,
+                0,
+                55
+            )
+
+        EmptyLabel.BackgroundTransparency =
+            1
+
+        EmptyLabel.Text =
+            "⭐ Nenhum favorito ainda"
+
+        EmptyLabel.TextColor3 =
+            self.Theme:GetCurrent().SubText
+
+        EmptyLabel.TextSize =
+            12
+
+        EmptyLabel.Font =
+            Enum.Font.GothamMedium
+
+        EmptyLabel.TextXAlignment =
+            Enum.TextXAlignment.Center
+
+        EmptyLabel.ZIndex =
+            504
+
+        EmptyLabel.Parent =
+            self.Scroll
+
+    end
+
+end
+
+--==================================================
+-- SHOW NORMAL CATEGORY
 --==================================================
 
 function Categories:ShowCategory(
     CategoryName
 )
+
+    --==================================================
+    -- VIRTUAL CATEGORIES
+    --==================================================
+
+    if CategoryName ==
+        "Todos" then
+
+        self:ShowAll()
+
+        return
+
+    end
+
+    if CategoryName ==
+        "Favoritos" then
+
+        self:ShowFavorites()
+
+        return
+
+    end
+
+    --==================================================
+    -- NORMAL CATEGORY
+    --==================================================
+
+    self.CurrentCategory =
+        CategoryName
+
+    self.IsVirtualCategory =
+        false
 
     --==================================================
     -- INFORM SEARCH SYSTEM
@@ -163,14 +521,50 @@ function Categories:ShowCategory(
     --==================================================
 
     for Index, Data in
-        ipairs(Category) do
+        ipairs(
+            Category
+        ) do
 
-        self.Cards:CreateSoundCard(
+        self:CreateCard(
 
             Index,
 
             Data
 
+        )
+
+    end
+
+end
+
+--==================================================
+-- REFRESH CURRENT CATEGORY
+--==================================================
+
+function Categories:RefreshCurrent()
+
+    if self.CurrentCategory ==
+        "Favoritos" then
+
+        self:ShowFavorites()
+
+        return
+
+    end
+
+    if self.CurrentCategory ==
+        "Todos" then
+
+        self:ShowAll()
+
+        return
+
+    end
+
+    if self.CurrentCategory then
+
+        self:ShowCategory(
+            self.CurrentCategory
         )
 
     end
@@ -340,14 +734,23 @@ function Categories:CreateCategoryButton(
     --==================================================
 
     Button.MouseButton1Click:Connect(
-
         function()
 
             self:SelectButton(
                 Button
             )
 
-            if ShowSoundCategory then
+            if CategoryName ==
+                "Todos" then
+
+                self:ShowAll()
+
+            elseif CategoryName ==
+                "Favoritos" then
+
+                self:ShowFavorites()
+
+            elseif ShowSoundCategory then
 
                 self:ShowCategory(
                     CategoryName
@@ -356,7 +759,6 @@ function Categories:CreateCategoryButton(
             end
 
         end
-
     )
 
     self.CategoryButtons[
@@ -376,6 +778,42 @@ function Categories:CreateCategories()
 
     local CategoryIndex =
         0
+
+    --==================================================
+    -- TODOS
+    --==================================================
+
+    CategoryIndex += 1
+
+    self:CreateCategoryButton(
+
+        "Todos",
+
+        CategoryIndex,
+
+        true
+
+    )
+
+    --==================================================
+    -- FAVORITOS
+    --==================================================
+
+    CategoryIndex += 1
+
+    self:CreateCategoryButton(
+
+        "Favoritos",
+
+        CategoryIndex,
+
+        true
+
+    )
+
+    --==================================================
+    -- NORMAL CATEGORIES
+    --==================================================
 
     for CategoryName in
         pairs(
@@ -414,6 +852,12 @@ function Categories:CreateCategories()
     self.ConfigButton =
         ConfigButton
 
+    --==================================================
+    -- UPDATE FAVORITE COUNT
+    --==================================================
+
+    self:UpdateFavoritesButton()
+
     return CategoryIndex
 
 end
@@ -427,23 +871,16 @@ function Categories:SetDefaultCategory()
     local DefaultCategory =
         nil
 
-    -- Primeiro tenta "Outros"
+    --==================================================
+    -- DEFAULT = TODOS
+    --==================================================
 
-    if self.Sounds[
-        "Outros"
+    if self.CategoryButtons[
+        "Todos"
     ] then
 
         DefaultCategory =
-            "Outros"
-
-    -- Compatibilidade com o nome antigo
-
-    elseif self.Sounds[
-        "Outro"
-    ] then
-
-        DefaultCategory =
-            "Outro"
+            "Todos"
 
     end
 
@@ -451,9 +888,7 @@ function Categories:SetDefaultCategory()
         return
     end
 
-    self:ShowCategory(
-        DefaultCategory
-    )
+    self:ShowAll()
 
     local DefaultButton =
         self.CategoryButtons[
@@ -495,6 +930,27 @@ function Categories:GetButton(
 end
 
 --==================================================
+-- GET CURRENT CATEGORY
+--==================================================
+
+function Categories:GetCurrentCategory()
+
+    return self.CurrentCategory
+
+end
+
+--==================================================
+-- IS FAVORITES
+--==================================================
+
+function Categories:IsFavorites()
+
+    return self.CurrentCategory ==
+        "Favoritos"
+
+end
+
+--==================================================
 -- APPLY THEME
 --==================================================
 
@@ -530,6 +986,25 @@ function Categories:ApplyTheme()
                 CurrentTheme.SubText
 
         end
+
+    end
+
+    self:UpdateFavoritesButton()
+
+end
+
+--==================================================
+-- UPDATE FAVORITES
+--==================================================
+
+function Categories:UpdateFavorites()
+
+    self:UpdateFavoritesButton()
+
+    if self.CurrentCategory ==
+        "Favoritos" then
+
+        self:ShowFavorites()
 
     end
 
