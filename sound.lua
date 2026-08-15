@@ -62,7 +62,80 @@ local Categories = {
         {"Festering Strikes Hit 1", "116242006916525"},
         {"Festering Strikes Hit 2", "98493239356787"}
 
-    },
+        --==================================================
+    -- GOJO
+    --==================================================
+
+    ["Gojo"] = {
+
+        {"Lapse Blue Pull ⭐", "411286671"},
+        {"Grab", "9105467029"},
+        {"Infinity", "9066732918"},
+        {"Red Wind", "6006851551"},
+        {"Red Throw", "154787303"},
+        {"Red Explode ⭐", "3059775624"},
+        {"Black Flash Hit ⭐", "12764933067"},
+
+        {"Twofold Kick Swing1", "3755637186"},
+        {"Twofold Kick Swing2", "3755636992"},
+        {"Twofold Kick Hit1", "4086172909"},
+        {"Twofold Kick Hit2", "7515452875"},
+
+        {"Teleport Windup", "9118159096"},
+        {"Glass Break", "6737581315"},
+
+        {"Hollow Purple Merge", "17018019870"},
+        {"Hollow Purple Snap", "15075475525"},
+        {"Hollow Purple Hit", "698224146"},
+        {"Hollow Nuke Explode", "7602599324"},
+
+        {"Domain Voice", "6667923288"},
+        {"Domain Base", "7260423115"},
+        {"Infinite Void", "15171602676"},
+        {"Domain Music", "16071901783"},
+        {"Domain Shatter", "6737581507"},
+
+        {"0.2 Domain Short Open", "111507747920000"},
+        {"0.2 Domain Startup", "135405966044594"},
+        {"0.2 Short Domain 2", "77956271026948"},
+        {"0.2 Boost 1", "93070893390347"},
+        {"0.2 Short Domain 3", "86891100502580"},
+        {"0.2 Slowdown", "76523688182264"},
+        {"0.2 Boost 2", "126837281119039"},
+        {"0.2 Hit 1", "130525286637724"},
+        {"0.2 Hit 2", "94234054127236"},
+        {"0.2 Hit 3", "108671308229639"},
+        {"0.2 Barrage", "127027345708590"},
+        {"0.2 Breathe", "82179939991290"},
+
+        {"Face Crush Teleport Drag", "93186173642807"},
+        {"Face Crush Drag Throw", "82926856324306"},
+
+        {"Awakening Blind Grab", "3929467888"},
+        {"Awakening Blinds Off", "4458760518"},
+        {"Awakening Fist Slam", "9066673412"},
+
+        {"Lapse Blue Max Wind", "9056932358"},
+        {"Lapse Blue Max Absorb", "4299623070"},
+        {"Lapse Blue Max Explode", "2227416952"},
+
+        {"Reversal Red Max Charge", "16828657609"},
+        {"Reversal Red Max Aim", "16773286492"},
+        {"Reversal Red Max Fire", "16828657180"},
+        {"Reversal Red Max Hit", "8595975458"},
+
+        {"Remember Music", "17284219852"},
+        {"Black Flash Finisher", "17520297840"},
+        {"Black Flash Sparks 2", "9114314398"},
+
+        {"Hollow Purple Music", "14326861262"},
+        {"Hollow Nuke Smash", "4776197442"},
+        {"Hollow Nuke Music 2", "14457960806"},
+        {"Hollow Nuke Dash", "3929467229"},
+        {"Hollow Nuke Summon", "4858918400"},
+        {"Hollow Nuke Max Charge", "COLOCAR_ID_AQUI"}
+
+        }
 
     --==================================================
     -- HEIAN SUKUNA
