@@ -201,8 +201,8 @@ function Search:Create()
         UDim2.new(
             0,
             12,
-            1,
-            5
+            0,
+            6
         )
 
     ResultLabel.Size =
@@ -210,7 +210,7 @@ function Search:Create()
             1,
             -24,
             0,
-            20
+            22
         )
 
     ResultLabel.BackgroundTransparency =
@@ -226,7 +226,7 @@ function Search:Create()
         10
 
     ResultLabel.Font =
-        Enum.Font.Gotham
+        Enum.Font.GothamMedium
 
     ResultLabel.TextXAlignment =
         Enum.TextXAlignment.Left
@@ -370,6 +370,7 @@ function Search:Collect(Query)
                     table.insert(
                         Results,
                         {
+
                             Name =
                                 Name,
 
@@ -381,6 +382,7 @@ function Search:Collect(Query)
 
                             Index =
                                 Index
+
                         }
                     )
 
@@ -462,8 +464,10 @@ function Search:CreateResult(
     self.Cards:CreateSoundCard(
         Index,
         {
+
             Result.Name,
             Result.ID
+
         }
     )
 
@@ -522,6 +526,29 @@ function Search:ShowNoResults(
 
     Label.Parent =
         Scroll
+
+end
+
+--==================================================
+-- RESULT COUNT
+--==================================================
+
+function Search:UpdateResultCount(
+    Count
+)
+
+    if not self.ResultLabel then
+        return
+    end
+
+    self.ResultLabel.Text =
+        "Resultados encontrados: " ..
+        tostring(
+            Count
+        )
+
+    self.ResultLabel.Visible =
+        true
 
 end
 
@@ -611,18 +638,9 @@ function Search:Search(Query)
     -- RESULT COUNT
     --==================================================
 
-    if self.ResultLabel then
-
-        self.ResultLabel.Visible =
-            true
-
-        self.ResultLabel.Text =
-            tostring(
-                #Results
-            ) ..
-            " resultado(s)"
-
-    end
+    self:UpdateResultCount(
+        #Results
+    )
 
     --==================================================
     -- NO RESULTS
@@ -759,5 +777,29 @@ function Search:GetBox()
     return self.Box
 
 end
+
+--==================================================
+-- GET RESULTS
+--==================================================
+
+function Search:GetResults()
+
+    return self.Results
+
+end
+
+--==================================================
+-- GET RESULT COUNT
+--==================================================
+
+function Search:GetResultCount()
+
+    return #self.Results
+
+end
+
+--==================================================
+-- EXPORT
+--==================================================
 
 return Search
