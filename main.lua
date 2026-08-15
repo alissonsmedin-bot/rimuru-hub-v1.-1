@@ -2,7 +2,7 @@
 --// MAIN SYSTEM
 --// CENTRAL MODULE LOADER
 --// Modular Architecture
---// Config + Theme + UI + Logo + Categories + Cards + Sound + Settings + RGB
+--// Config + Theme + UI + Logo + Categories + Cards + Sound + Settings + RGB + Background
 
 local RimuruHub = {}
 
@@ -90,6 +90,15 @@ RimuruHub.UI =
         "ui"
     )
 
+--==================================================
+-- BACKGROUND
+--==================================================
+
+RimuruHub.Background =
+    LoadModule(
+        "background"
+    )
+
 RimuruHub.Logo =
     LoadModule(
         "logo"
@@ -143,6 +152,9 @@ RimuruHub.Context = {
 
     UI =
         RimuruHub.UI,
+
+    Background =
+        RimuruHub.Background,
 
     Logo =
         RimuruHub.Logo,
@@ -265,7 +277,16 @@ InitModule(
 )
 
 --==================================================
--- 4. LOGO
+-- 4. BACKGROUND
+--==================================================
+
+InitModule(
+    "Background",
+    RimuruHub.Background
+)
+
+--==================================================
+-- 5. LOGO
 --==================================================
 
 InitModule(
@@ -274,7 +295,7 @@ InitModule(
 )
 
 --==================================================
--- 5. CATEGORIES
+-- 6. CATEGORIES
 --==================================================
 
 InitModule(
@@ -283,7 +304,7 @@ InitModule(
 )
 
 --==================================================
--- 6. CARDS
+-- 7. CARDS
 --==================================================
 
 InitModule(
@@ -292,7 +313,7 @@ InitModule(
 )
 
 --==================================================
--- 7. SOUND
+-- 8. SOUND
 --==================================================
 
 InitModule(
@@ -301,7 +322,7 @@ InitModule(
 )
 
 --==================================================
--- 8. SETTINGS
+-- 9. SETTINGS
 --==================================================
 
 InitModule(
@@ -310,13 +331,170 @@ InitModule(
 )
 
 --==================================================
--- 9. RGB
+-- 10. RGB
 --==================================================
 
 InitModule(
     "RGB",
     RimuruHub.RGB
 )
+
+--==================================================
+-- GET CURRENT THEME NAME
+--==================================================
+
+function RimuruHub:GetCurrentThemeName()
+
+    if not self.Theme then
+        return nil
+    end
+
+    if type(
+        self.Theme.GetCurrentThemeName
+    ) == "function" then
+
+        local Success,
+            Result =
+            pcall(
+                function()
+
+                    return self.Theme:GetCurrentThemeName()
+
+                end
+            )
+
+        if Success
+        and Result then
+
+            return Result
+
+        end
+
+    end
+
+    --==================================================
+    -- FALLBACK
+    --==================================================
+
+    if type(
+        self.Theme.GetCurrent
+    ) ~= "function"
+    or type(
+        self.Theme.GetThemes
+    ) ~= "function" then
+
+        return nil
+
+    end
+
+    local Success,
+        Current =
+        pcall(
+            function()
+
+                return self.Theme:GetCurrent()
+
+            end
+        )
+
+    if not Success
+    or not Current then
+
+        return nil
+
+    end
+
+    local SuccessThemes,
+        Themes =
+        pcall(
+            function()
+
+                return self.Theme:GetThemes()
+
+            end
+        )
+
+    if not SuccessThemes
+    or type(Themes) ~= "table" then
+
+        return nil
+
+    end
+
+    for ThemeName, ThemeData in
+        pairs(
+            Themes
+        ) do
+
+        if ThemeData == Current then
+
+            return ThemeName
+
+        end
+
+    end
+
+    return nil
+
+end
+
+--==================================================
+-- APPLY CURRENT BACKGROUND
+--==================================================
+
+function RimuruHub:ApplyCurrentBackground()
+
+    if not self.Background then
+        return false
+    end
+
+    if type(
+        self.Background.Apply
+    ) ~= "function" then
+
+        return false
+
+    end
+
+    local ThemeName =
+        self:GetCurrentThemeName()
+
+    if not ThemeName then
+
+        warn(
+            "[Rimuru Hub] Não foi possível descobrir o tema atual para o background."
+        )
+
+        return false
+
+    end
+
+    local Success,
+        Result =
+        pcall(
+            function()
+
+                return self.Background:Apply(
+                    ThemeName
+                )
+
+            end
+        )
+
+    if not Success then
+
+        warn(
+            "[Rimuru Hub] Erro ao aplicar background: "
+            .. tostring(Result)
+        )
+
+        return false
+
+    end
+
+    return Result == true
+
+end
 
 --==================================================
 -- POST INIT
@@ -461,6 +639,9 @@ function RimuruHub:GetStatus()
         UI =
             self.UI ~= nil,
 
+        Background =
+            self.Background ~= nil,
+
         Logo =
             self.Logo ~= nil,
 
@@ -500,6 +681,10 @@ print(
 )
 
 print(
+    "Background System carregado."
+)
+
+print(
     "========================================"
 )
 
@@ -513,6 +698,22 @@ task.defer(
         task.wait(
             0.15
         )
+
+        --==================================================
+        -- APPLY BACKGROUND
+        --==================================================
+
+        pcall(
+            function()
+
+                RimuruHub:ApplyCurrentBackground()
+
+            end
+        )
+
+        --==================================================
+        -- OPEN UI
+        --==================================================
 
         RimuruHub:Open()
 
