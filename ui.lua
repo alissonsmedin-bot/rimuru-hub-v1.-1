@@ -1,6 +1,7 @@
 --// 💥 RIMURU HUB
 --// UI System
 --// FIX: Drag system sem Main.InputBegan
+--// FIX: BackgroundImage dos temas
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
@@ -34,8 +35,13 @@ function UI:Init(Context)
         self.Context.Theme
 
     if not self.Theme then
-        warn("[Rimuru Hub] Theme não encontrado.")
+
+        warn(
+            "[Rimuru Hub] Theme não encontrado."
+        )
+
         return
+
     end
 
     self:Create()
@@ -190,6 +196,73 @@ function UI:Create()
         MainStroke
 
     --==================================================
+    -- BACKGROUND IMAGE
+    --==================================================
+
+    local BackgroundImage =
+        Instance.new("ImageLabel")
+
+    BackgroundImage.Name =
+        "BackgroundImage"
+
+    BackgroundImage.Size =
+        UDim2.new(
+            1,
+            0,
+            1,
+            0
+        )
+
+    BackgroundImage.Position =
+        UDim2.new(
+            0,
+            0,
+            0,
+            0
+        )
+
+    BackgroundImage.BackgroundTransparency =
+        1
+
+    BackgroundImage.BorderSizePixel =
+        0
+
+    BackgroundImage.Image =
+        CurrentTheme.BackgroundImage
+        or ""
+
+    BackgroundImage.ImageTransparency =
+        CurrentTheme.BackgroundTransparency
+        or 0.78
+
+    BackgroundImage.ScaleType =
+        Enum.ScaleType.Crop
+
+    BackgroundImage.Active =
+        false
+
+    BackgroundImage.ZIndex =
+        501
+
+    BackgroundImage.Parent =
+        Main
+
+    local BackgroundCorner =
+        Instance.new("UICorner")
+
+    BackgroundCorner.CornerRadius =
+        UDim.new(
+            0,
+            12
+        )
+
+    BackgroundCorner.Parent =
+        BackgroundImage
+
+    self.BackgroundImage =
+        BackgroundImage
+
+    --==================================================
     -- MAIN DRAG
     --==================================================
 
@@ -217,7 +290,7 @@ function UI:Create()
         1
 
     Header.ZIndex =
-        501
+        502
 
     Header.Parent =
         Main
@@ -261,7 +334,7 @@ function UI:Create()
         Enum.ScaleType.Fit
 
     HeaderLogo.ZIndex =
-        502
+        503
 
     HeaderLogo.Parent =
         Header
@@ -314,7 +387,7 @@ function UI:Create()
         Enum.TextXAlignment.Left
 
     Title.ZIndex =
-        502
+        503
 
     Title.Parent =
         Header
@@ -367,7 +440,7 @@ function UI:Create()
         Enum.TextXAlignment.Left
 
     Subtitle.ZIndex =
-        502
+        503
 
     Subtitle.Parent =
         Header
@@ -423,7 +496,7 @@ function UI:Create()
         false
 
     Close.ZIndex =
-        503
+        504
 
     Close.Parent =
         Header
@@ -1031,6 +1104,22 @@ function UI:ApplyTheme()
     end
 
     --==================================================
+    -- BACKGROUND IMAGE
+    --==================================================
+
+    if self.BackgroundImage then
+
+        self.BackgroundImage.Image =
+            CurrentTheme.BackgroundImage
+            or ""
+
+        self.BackgroundImage.ImageTransparency =
+            CurrentTheme.BackgroundTransparency
+            or 0.78
+
+    end
+
+    --==================================================
     -- SIDEBAR
     --==================================================
 
@@ -1052,7 +1141,7 @@ function UI:ApplyTheme()
 
     end
 
-    --==================================================
+        --==================================================
     -- TEXT
     --==================================================
 
@@ -1092,6 +1181,17 @@ function UI:ApplyTheme()
     end
 
     --==================================================
+    -- HEADER LOGO
+    --==================================================
+
+    if self.HeaderLogo then
+
+        self.HeaderLogo.ImageColor3 =
+            CurrentTheme.Text
+
+    end
+
+    --==================================================
     -- SCROLL
     --==================================================
 
@@ -1109,6 +1209,10 @@ end
 --==================================================
 
 function UI:Destroy()
+
+    --==================================================
+    -- DISCONNECT DRAG
+    --==================================================
 
     pcall(function()
 
@@ -1130,6 +1234,10 @@ function UI:Destroy()
     self.DragInputChanged = nil
     self.DragInputEnded = nil
 
+    --==================================================
+    -- DESTROY GUI
+    --==================================================
+
     pcall(function()
 
         if self.Gui then
@@ -1138,18 +1246,26 @@ function UI:Destroy()
 
     end)
 
+    --==================================================
+    -- CLEAR REFERENCES
+    --==================================================
+
     self.Gui = nil
     self.Main = nil
+    self.MainStroke = nil
+    self.BackgroundImage = nil
+
     self.Header = nil
     self.HeaderLogo = nil
+
     self.Title = nil
     self.Subtitle = nil
     self.Close = nil
+
     self.Sidebar = nil
     self.Content = nil
     self.ContentTitle = nil
     self.Scroll = nil
-    self.MainStroke = nil
 
 end
 
