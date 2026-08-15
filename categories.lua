@@ -12,6 +12,9 @@ local CategoryIcons = {
     ["Outro"] =
         "🏠",
 
+    ["Outros"] =
+        "🏠",
+
     ["Heian Sukuna Sounds"] =
         "👹",
 
@@ -44,6 +47,9 @@ function Categories:Init(Context)
     self.Cards =
         Context.Cards
 
+    self.Search =
+        Context.Search
+
     self.Sidebar =
         self.UI.Sidebar
 
@@ -65,10 +71,14 @@ end
 -- GET CATEGORY ICON
 --==================================================
 
-function Categories:GetIcon(CategoryName)
+function Categories:GetIcon(
+    CategoryName
+)
 
-    return CategoryIcons[CategoryName]
-        or "📁"
+    return CategoryIcons[
+        CategoryName
+    ]
+    or "📁"
 
 end
 
@@ -106,17 +116,48 @@ function Categories:ShowCategory(
     CategoryName
 )
 
+    --==================================================
+    -- INFORM SEARCH SYSTEM
+    --==================================================
+
+    if self.Search
+    and self.Search.SetCategory then
+
+        self.Search:SetCategory(
+            CategoryName
+        )
+
+    end
+
+    --==================================================
+    -- CLEAR
+    --==================================================
+
     self:ClearContent()
+
+    --==================================================
+    -- TITLE
+    --==================================================
 
     self.ContentTitle.Text =
         CategoryName
 
+    --==================================================
+    -- GET CATEGORY
+    --==================================================
+
     local Category =
-        self.Sounds[CategoryName]
+        self.Sounds[
+            CategoryName
+        ]
 
     if not Category then
         return
     end
+
+    --==================================================
+    -- CREATE CARDS
+    --==================================================
 
     for Index, Data in
         ipairs(Category) do
@@ -191,6 +232,10 @@ function Categories:CreateCategoryButton(
     local CurrentTheme =
         self.Theme:GetCurrent()
 
+    --==================================================
+    -- BUTTON
+    --==================================================
+
     local Button =
         Instance.new(
             "TextButton"
@@ -214,7 +259,7 @@ function Categories:CreateCategoryButton(
         0
 
     --==================================================
-    -- CATEGORY ICON
+    -- ICON
     --==================================================
 
     local Icon =
@@ -349,7 +394,7 @@ function Categories:CreateCategories()
     end
 
     --==================================================
-    -- CONFIGURATION BUTTON
+    -- CONFIGURATION
     --==================================================
 
     local ConfigButton =
@@ -376,27 +421,46 @@ end
 
 function Categories:SetDefaultCategory()
 
-    if not self.Sounds[
+    local DefaultCategory =
+        nil
+
+    -- Primeiro tenta "Outros"
+
+    if self.Sounds[
+        "Outros"
+    ] then
+
+        DefaultCategory =
+            "Outros"
+
+    -- Compatibilidade com o nome antigo
+
+    elseif self.Sounds[
         "Outro"
     ] then
 
-        return
+        DefaultCategory =
+            "Outro"
 
     end
 
+    if not DefaultCategory then
+        return
+    end
+
     self:ShowCategory(
-        "Outro"
+        DefaultCategory
     )
 
-    local PrincipalButton =
+    local DefaultButton =
         self.CategoryButtons[
-            "Outro"
+            DefaultCategory
         ]
 
-    if PrincipalButton then
+    if DefaultButton then
 
         self:SelectButton(
-            PrincipalButton
+            DefaultButton
         )
 
     end
@@ -450,8 +514,8 @@ function Categories:ApplyTheme()
             Button.TextColor3 =
                 Color3.fromRGB(
                     255,
-                    245,
-                    235
+                    255,
+                    255
                 )
 
         else
