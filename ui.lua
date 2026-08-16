@@ -1,11 +1,17 @@
 --// 💥 RIMURU HUB
 --// UI System
---// BACKGROUND SYSTEM REWORK
---// GitHub + Local Asset
---// Sem ImageId do Roblox para os fundos Rimuru Dark / Slime
+--// CLEAN REWORK
+--// GitHub + Local Asset Background
+--// Rimuru Dark / Slime
+--// Theme Integration
+--// Background Transparency
+--// No Roblox ImageId for Backgrounds
 
-local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
+local Players =
+    game:GetService("Players")
+
+local UIS =
+    game:GetService("UserInputService")
 
 local UI = {}
 
@@ -23,20 +29,34 @@ local BACKGROUND_GITHUB = {
 
 }
 
+--==================================================
+-- LOCAL BACKGROUND PATHS
+--==================================================
+
 local BACKGROUND_LOCAL = {
 
     ["Rimuru Dark"] = {
+
         "images (2).jpeg",
+
         "assets/images (2).jpeg",
+
         "RimuruHub/images (2).jpeg",
+
         "RimuruHub/assets/images (2).jpeg",
+
     },
 
     ["Slime"] = {
+
         "images (3).jpeg",
+
         "assets/images (3).jpeg",
+
         "RimuruHub/images (3).jpeg",
+
         "RimuruHub/assets/images (3).jpeg",
+
     },
 
 }
@@ -55,12 +75,20 @@ function UI:Init(Context)
         or Players.LocalPlayer
 
     if not self.Player then
+
+        warn(
+            "[Rimuru Hub] LocalPlayer não encontrado."
+        )
+
         return
+
     end
 
     self.PlayerGui =
         self.Context.PlayerGui
-        or self.Player:WaitForChild("PlayerGui")
+        or self.Player:WaitForChild(
+            "PlayerGui"
+        )
 
     self.Config =
         self.Context.Config
@@ -78,15 +106,28 @@ function UI:Init(Context)
 
     end
 
+    self.BackgroundImage =
+        nil
+
+    self.Gui =
+        nil
+
+    self.Main =
+        nil
+
     self:Create()
 
 end
 
 --==================================================
--- REMOVE OLD VERSION
+-- REMOVE OLD GUI
 --==================================================
 
 function UI:RemoveOld()
+
+    if not self.PlayerGui then
+        return
+    end
 
     pcall(function()
 
@@ -96,7 +137,9 @@ function UI:RemoveOld()
             )
 
         if Old then
+
             Old:Destroy()
+
         end
 
     end)
@@ -162,7 +205,7 @@ function UI:GetRequestFunction()
 end
 
 --==================================================
--- LOCAL BACKGROUND
+-- GET LOCAL BACKGROUND
 --==================================================
 
 function UI:GetLocalBackground(Name)
@@ -171,20 +214,30 @@ function UI:GetLocalBackground(Name)
         self:GetAssetFunction()
 
     if not AssetFunction then
+
         return nil
+
     end
 
     local Paths =
         BACKGROUND_LOCAL[Name]
 
     if not Paths then
+
         return nil
+
     end
 
-    for _, Path in ipairs(Paths) do
+    for _, Path in
+        ipairs(Paths)
+    do
 
         local Exists =
             true
+
+        --==================================================
+        -- CHECK FILE
+        --==================================================
 
         if type(isfile) == "function" then
 
@@ -196,7 +249,8 @@ function UI:GetLocalBackground(Name)
                 )
 
             if not Success
-            or not Result then
+            or not Result
+            then
 
                 Exists =
                     false
@@ -204,6 +258,10 @@ function UI:GetLocalBackground(Name)
             end
 
         end
+
+        --==================================================
+        -- LOAD ASSET
+        --==================================================
 
         if Exists then
 
@@ -216,7 +274,8 @@ function UI:GetLocalBackground(Name)
 
             if Success
             and type(Asset) == "string"
-            and Asset ~= "" then
+            and Asset ~= ""
+            then
 
                 print(
                     "[Rimuru Hub] Fundo local encontrado: "
@@ -236,7 +295,7 @@ function UI:GetLocalBackground(Name)
 end
 
 --==================================================
--- GITHUB BACKGROUND
+-- GET GITHUB BACKGROUND
 --==================================================
 
 function UI:GetGitHubBackground(Name)
@@ -245,7 +304,9 @@ function UI:GetGitHubBackground(Name)
         BACKGROUND_GITHUB[Name]
 
     if not Url then
+
         return nil
+
     end
 
     local RequestFunction =
@@ -261,6 +322,10 @@ function UI:GetGitHubBackground(Name)
 
     end
 
+    --==================================================
+    -- REQUEST
+    --==================================================
+
     local Success,
         Response =
         pcall(
@@ -272,33 +337,46 @@ function UI:GetGitHubBackground(Name)
         )
 
     if not Success
-    or not Response then
+    or not Response
+    then
 
         warn(
-            "[Rimuru Hub] Falha ao acessar o fundo do GitHub."
+            "[Rimuru Hub] Falha ao acessar o GitHub."
         )
 
         return nil
 
     end
 
+    --==================================================
+    -- STATUS
+    --==================================================
+
     if Response.StatusCode
-    and Response.StatusCode ~= 200 then
+    and Response.StatusCode ~= 200
+    then
 
         warn(
             "[Rimuru Hub] GitHub retornou HTTP "
-            .. tostring(Response.StatusCode)
+            .. tostring(
+                Response.StatusCode
+            )
         )
 
         return nil
 
     end
+
+    --==================================================
+    -- BODY
+    --==================================================
 
     local Body =
         Response.Body
 
     if type(Body) ~= "string"
-    or #Body == 0 then
+    or #Body == 0
+    then
 
         warn(
             "[Rimuru Hub] GitHub retornou dados vazios."
@@ -307,6 +385,10 @@ function UI:GetGitHubBackground(Name)
         return nil
 
     end
+
+    --==================================================
+    -- ASSET FUNCTION
+    --==================================================
 
     local AssetFunction =
         self:GetAssetFunction()
@@ -332,7 +414,7 @@ function UI:GetGitHubBackground(Name)
     end
 
     --==================================================
-    -- CACHE
+    -- SAFE CACHE NAME
     --==================================================
 
     local SafeName =
@@ -347,7 +429,7 @@ function UI:GetGitHubBackground(Name)
         .. ".jpeg"
 
     --==================================================
-    -- SAVE
+    -- WRITE FILE
     --==================================================
 
     local WriteSuccess =
@@ -360,7 +442,7 @@ function UI:GetGitHubBackground(Name)
     if not WriteSuccess then
 
         warn(
-            "[Rimuru Hub] Não foi possível salvar o fundo."
+            "[Rimuru Hub] Não foi possível salvar o background."
         )
 
         return nil
@@ -380,7 +462,8 @@ function UI:GetGitHubBackground(Name)
 
     if AssetSuccess
     and type(Asset) == "string"
-    and Asset ~= "" then
+    and Asset ~= ""
+    then
 
         print(
             "[Rimuru Hub] Fundo carregado pelo GitHub: "
@@ -406,15 +489,35 @@ end
 function UI:LoadBackground(Name)
 
     if not self.BackgroundImage then
+
         return false
+
     end
+
+    if not Name then
+
+        return false
+
+    end
+
+    --==================================================
+    -- CLEAR CURRENT IMAGE FIRST
+    --==================================================
+
+    self.BackgroundImage.Image =
+        ""
+
+    self.BackgroundImage.ImageTransparency =
+        1
 
     --==================================================
     -- 1. LOCAL
     --==================================================
 
     local Asset =
-        self:GetLocalBackground(Name)
+        self:GetLocalBackground(
+            Name
+        )
 
     if Asset then
 
@@ -423,6 +526,9 @@ function UI:LoadBackground(Name)
 
         self.BackgroundImage.ImageTransparency =
             self:GetBackgroundTransparency()
+
+        self.CurrentBackground =
+            Name
 
         return true
 
@@ -433,7 +539,9 @@ function UI:LoadBackground(Name)
     --==================================================
 
     Asset =
-        self:GetGitHubBackground(Name)
+        self:GetGitHubBackground(
+            Name
+        )
 
     if Asset then
 
@@ -443,20 +551,34 @@ function UI:LoadBackground(Name)
         self.BackgroundImage.ImageTransparency =
             self:GetBackgroundTransparency()
 
+        self.CurrentBackground =
+            Name
+
         return true
 
     end
 
     --==================================================
-    -- 3. FALLBACK
+    -- 3. THEME FALLBACK
     --==================================================
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+    local CurrentTheme
+
+    if self.Theme
+    and type(
+        self.Theme.GetCurrent
+    ) == "function"
+    then
+
+        CurrentTheme =
+            self.Theme:GetCurrent()
+
+    end
 
     if CurrentTheme
     and CurrentTheme.BackgroundImage
-    and not BACKGROUND_GITHUB[Name] then
+    and not BACKGROUND_GITHUB[Name]
+    then
 
         self.BackgroundImage.Image =
             CurrentTheme.BackgroundImage
@@ -464,15 +586,25 @@ function UI:LoadBackground(Name)
         self.BackgroundImage.ImageTransparency =
             self:GetBackgroundTransparency()
 
+        self.CurrentBackground =
+            Name
+
         return true
 
     end
+
+    --==================================================
+    -- NO IMAGE
+    --==================================================
 
     self.BackgroundImage.Image =
         ""
 
     self.BackgroundImage.ImageTransparency =
         1
+
+    self.CurrentBackground =
+        nil
 
     warn(
         "[Rimuru Hub] Não foi possível carregar o fundo: "
@@ -492,7 +624,8 @@ function UI:GetBackgroundTransparency()
     if self.Theme
     and type(
         self.Theme.GetBackgroundTransparency
-    ) == "function" then
+    ) == "function"
+    then
 
         local Success,
             Value =
@@ -506,7 +639,8 @@ function UI:GetBackgroundTransparency()
             )
 
         if Success
-        and type(Value) == "number" then
+        and type(Value) == "number"
+        then
 
             return math.clamp(
                 Value,
@@ -518,13 +652,27 @@ function UI:GetBackgroundTransparency()
 
     end
 
-    local CurrentTheme =
-        self.Theme
-        and self.Theme:GetCurrent()
+    --==================================================
+    -- THEME FALLBACK
+    --==================================================
+
+    local CurrentTheme
+
+    if self.Theme
+    and type(
+        self.Theme.GetCurrent
+    ) == "function"
+    then
+
+        CurrentTheme =
+            self.Theme:GetCurrent()
+
+    end
 
     if CurrentTheme
     and CurrentTheme.BackgroundTransparency
-    ~= nil then
+    ~= nil
+    then
 
         return math.clamp(
             CurrentTheme.BackgroundTransparency,
@@ -552,7 +700,7 @@ function UI:Create()
     if not CurrentTheme then
 
         warn(
-            "[Rimuru Hub] Não foi possível obter o tema atual."
+            "[Rimuru Hub] Tema atual não encontrado."
         )
 
         return
@@ -732,7 +880,7 @@ function UI:Create()
         BackgroundImage
 
     --==================================================
-    -- LOAD BACKGROUND
+    -- INITIAL BACKGROUND
     --==================================================
 
     task.spawn(
@@ -746,7 +894,7 @@ function UI:Create()
     )
 
     --==================================================
-    -- MAIN DRAG
+    -- DRAG
     --==================================================
 
     self:SetupDrag()
@@ -932,74 +1080,74 @@ function UI:Create()
         Subtitle
 
     --==================================================
--- CLOSE
---==================================================
+    -- CLOSE
+    --==================================================
 
-local Close =
-    Instance.new("TextButton")
+    local Close =
+        Instance.new("TextButton")
 
-Close.Name =
-    "Close"
+    Close.Name =
+        "Close"
 
-Close.Size =
-    UDim2.new(
-        0,
-        30,
-        0,
-        30
-    )
+    Close.Size =
+        UDim2.new(
+            0,
+            30,
+            0,
+            30
+        )
 
-Close.Position =
-    UDim2.new(
-        1,
-        -38,
-        0,
-        14
-    )
+    Close.Position =
+        UDim2.new(
+            1,
+            -38,
+            0,
+            14
+        )
 
-Close.BackgroundColor3 =
-    CurrentTheme.Close
+    Close.BackgroundColor3 =
+        CurrentTheme.Close
 
-Close.BorderSizePixel =
-    0
+    Close.BorderSizePixel =
+        0
 
-Close.Text =
-    "X"
+    Close.Text =
+        "X"
 
-Close.TextColor3 =
-    CurrentTheme.Text
+    Close.TextColor3 =
+        CurrentTheme.Text
 
-Close.TextSize =
-    12
+    Close.TextSize =
+        12
 
-Close.Font =
-    Enum.Font.GothamBold
+    Close.Font =
+        Enum.Font.GothamBold
 
-Close.AutoButtonColor =
-    false
+    Close.AutoButtonColor =
+        false
 
-Close.ZIndex =
-    504
+    Close.ZIndex =
+        504
 
-Close.Parent =
-    Header
+    Close.Parent =
+        Header
 
-local CloseCorner =
-    Instance.new("UICorner")
+    local CloseCorner =
+        Instance.new("UICorner")
 
-CloseCorner.CornerRadius =
-    UDim.new(
-        0,
-        7
-    )
+    CloseCorner.CornerRadius =
+        UDim.new(
+            0,
+            7
+        )
 
-CloseCorner.Parent =
-    Close
+    CloseCorner.Parent =
+        Close
 
-self.Close =
-    Close
+    self.Close =
+        Close
 
---==================================================
+    --==================================================
 -- CLOSE FUNCTION
 --==================================================
 
@@ -1417,9 +1565,7 @@ function UI:SetupDrag()
                 if not self:IsPointInsideMain(
                     Position
                 ) then
-
                     return
-
                 end
 
                 Dragging =
@@ -1455,14 +1601,11 @@ function UI:SetupDrag()
                     Enum.UserInputType.Touch then
 
                     return
-
                 end
 
                 if not DragStart
                 or not StartPosition then
-
                     return
-
                 end
 
                 local Delta =
@@ -1500,7 +1643,6 @@ function UI:SetupDrag()
 
                 if InputType ==
                     Enum.UserInputType.MouseButton1
-
                 or InputType ==
                     Enum.UserInputType.Touch then
 
@@ -1531,7 +1673,7 @@ function UI:SetVisible(Value)
     end
 
     self.Main.Visible =
-        Value
+        Value == true
 
 end
 
@@ -1592,6 +1734,10 @@ function UI:ApplyTheme()
     self.Main.BackgroundColor3 =
         CurrentTheme.Main
 
+    --==================================================
+    -- MAIN STROKE
+    --==================================================
+
     if self.MainStroke then
 
         self.MainStroke.Color =
@@ -1600,26 +1746,41 @@ function UI:ApplyTheme()
     end
 
     --==================================================
-    -- BACKGROUND IMAGE
+    -- BACKGROUND
     --==================================================
 
     if self.BackgroundImage then
 
-        self.BackgroundImage.ImageTransparency =
-            self:GetBackgroundTransparency()
+        local ThemeName =
+            self.Theme:GetName()
 
-        -- Remove imagem antiga
+        -- Limpa a imagem anterior
         self.BackgroundImage.Image =
             ""
 
-        -- Carrega a imagem correspondente
-        -- ao novo tema
+        self.BackgroundImage.ImageTransparency =
+            1
+
+        -- Pequeno delay para evitar
+        -- conflito entre trocas rápidas
         task.spawn(
             function()
 
-                self:LoadBackground(
-                    self.Theme:GetName()
-                )
+                local Loaded =
+                    self:LoadBackground(
+                        ThemeName
+                    )
+
+                if not Loaded
+                and self.BackgroundImage then
+
+                    self.BackgroundImage.Image =
+                        ""
+
+                    self.BackgroundImage.ImageTransparency =
+                        1
+
+                end
 
             end
         )
@@ -1772,7 +1933,9 @@ end
 -- SET BACKGROUND TRANSPARENCY
 --==================================================
 
-function UI:SetBackgroundTransparency(Value)
+function UI:SetBackgroundTransparency(
+    Value
+)
 
     Value =
         tonumber(Value)
@@ -1798,7 +1961,8 @@ function UI:SetBackgroundTransparency(Value)
     if self.Theme
     and type(
         self.Theme.SetBackgroundTransparency
-    ) == "function" then
+    ) == "function"
+    then
 
         self.Theme:
             SetBackgroundTransparency(
