@@ -1,14 +1,13 @@
 --// 💥 RIMURU HUB
 --// UI CORE
---// Modular UI Controller
---// Folder Architecture
---// Connects:
+--// REMOTE UI FOLDER LOADER
+--// Loads:
 --// Window / References / Topbar / Results
 --// Search / Events / Drag / Animation
 --// Logo / Styling / Transparency
---// SAFE CONTEXT SYSTEM
 --// Compatible with Remote Main
---// Compatible with Config + Theme + Cards + Categories + Settings + RGB
+--// Compatible with Config / Theme / Sound
+--// SAFE REMOTE ARCHITECTURE
 
 local UI = {}
 
@@ -23,17 +22,11 @@ local Player =
     Players.LocalPlayer
 
 --==================================================
--- MODULE FOLDER
+-- GITHUB
 --==================================================
 
-local ModuleFolder =
-    script.Parent
-
---==================================================
--- MODULE CACHE
---==================================================
-
-UI.Modules = {}
+local BASE_URL =
+    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/UI/"
 
 --==================================================
 -- MODULE NAMES
@@ -56,7 +49,70 @@ local MODULE_NAMES = {
 }
 
 --==================================================
--- SAFE REQUIRE
+-- MODULE CACHE
+--==================================================
+
+UI.Modules = {}
+
+--==================================================
+-- SAFE HTTP
+--==================================================
+
+local function GetRemote(
+    Name
+)
+
+    local URL =
+        BASE_URL
+        .. Name
+        .. ".lua"
+
+    local Success,
+        Result =
+        pcall(
+            function()
+
+                return game:
+                    HttpGet(
+                        URL
+                    )
+
+            end
+        )
+
+    if not Success then
+
+        warn(
+            "[Rimuru Hub] Erro HTTP UI/"
+            .. Name
+            .. ": "
+            .. tostring(Result)
+        )
+
+        return nil
+
+    end
+
+    if type(Result) ~= "string"
+    or Result == ""
+    then
+
+        warn(
+            "[Rimuru Hub] UI/"
+            .. Name
+            .. " retornou conteúdo vazio."
+        )
+
+        return nil
+
+    end
+
+    return Result
+
+end
+
+--==================================================
+-- LOAD REMOTE MODULE
 --==================================================
 
 local function LoadModule(
@@ -69,31 +125,23 @@ local function LoadModule(
 
     end
 
-    local Module =
-        ModuleFolder:FindFirstChild(
+    local Source =
+        GetRemote(
             Name
         )
 
-    if not Module then
-
-        warn(
-            "[Rimuru Hub] UI module não encontrado: "
-            .. Name
-        )
-
+    if not Source then
         return nil
-
     end
 
-    if not Module:IsA(
-        "ModuleScript"
-    )
-    then
+    local Loader =
+        loadstring
+
+    if not Loader then
 
         warn(
-            "[Rimuru Hub] "
+            "[Rimuru Hub] loadstring não disponível para UI/"
             .. Name
-            .. " não é ModuleScript."
         )
 
         return nil
@@ -101,16 +149,38 @@ local function LoadModule(
     end
 
     local Success,
-        Result =
+        Chunk =
         pcall(
-            require,
-            Module
+            Loader,
+            Source,
+            "RimuruHub_UI_" .. Name
         )
 
-    if not Success then
+    if not Success
+    or type(Chunk) ~= "function"
+    then
 
         warn(
-            "[Rimuru Hub] Erro ao carregar UI/"
+            "[Rimuru Hub] Erro de compilação UI/"
+            .. Name
+            .. ": "
+            .. tostring(Chunk)
+        )
+
+        return nil
+
+    end
+
+    local ExecuteSuccess,
+        Result =
+        pcall(
+            Chunk
+        )
+
+    if not ExecuteSuccess then
+
+        warn(
+            "[Rimuru Hub] Erro ao executar UI/"
             .. Name
             .. ": "
             .. tostring(Result)
@@ -135,12 +205,18 @@ local function LoadModule(
     UI.Modules[Name] =
         Result
 
+    print(
+        "[Rimuru Hub] UI/"
+        .. Name
+        .. " carregado."
+    )
+
     return Result
 
 end
 
 --==================================================
--- LOAD ALL MODULES
+-- LOAD ALL
 --==================================================
 
 for _, Name in
@@ -149,8 +225,9 @@ for _, Name in
     )
 do
 
-    UI.Modules[Name] =
-        LoadModule(Name)
+    LoadModule(
+        Name
+    )
 
 end
 
@@ -158,38 +235,16 @@ end
 -- DIRECT REFERENCES
 --==================================================
 
-UI.Window =
-    UI.Modules.Window
+for _, Name in
+    ipairs(
+        MODULE_NAMES
+    )
+do
 
-UI.References =
-    UI.Modules.References
+    UI[Name] =
+        UI.Modules[Name]
 
-UI.Topbar =
-    UI.Modules.Topbar
-
-UI.Results =
-    UI.Modules.Results
-
-UI.Search =
-    UI.Modules.Search
-
-UI.Events =
-    UI.Modules.Events
-
-UI.Drag =
-    UI.Modules.Drag
-
-UI.Animation =
-    UI.Modules.Animation
-
-UI.Logo =
-    UI.Modules.Logo
-
-UI.Styling =
-    UI.Modules.Styling
-
-UI.Transparency =
-    UI.Modules.Transparency
+end
 
 --==================================================
 -- CONTEXT
@@ -207,7 +262,7 @@ function UI:SetContext(
 
     if type(Context) ~= "table" then
 
-        return false
+        Context = {}
 
     end
 
@@ -221,7 +276,7 @@ function UI:SetContext(
     end
 
     --==================================================
-    -- CORE REFERENCES
+    -- CORE
     --==================================================
 
     self.Context.UI =
@@ -230,53 +285,42 @@ function UI:SetContext(
     self.Context.UIRoot =
         self
 
-    self.Context.Window =
-        self.Window
+    --==================================================
+    -- UI MODULES
+    --==================================================
 
-    self.Context.References =
-        self.References
+    for _, Name in
+        ipairs(
+            MODULE_NAMES
+        )
+    do
 
-    self.Context.Topbar =
-        self.Topbar
+        self.Context[Name] =
+            self.Modules[Name]
 
-    self.Context.Results =
-        self.Results
-
-    self.Context.Search =
-        self.Search
-
-    self.Context.Events =
-        self.Events
-
-    self.Context.Drag =
-        self.Drag
-
-    self.Context.Animation =
-        self.Animation
-
-    self.Context.Logo =
-        self.Logo
-
-    self.Context.Styling =
-        self.Styling
-
-    self.Context.Transparency =
-        self.Transparency
+    end
 
     return true
 
 end
 
 --==================================================
--- SAFE INIT MODULE
+-- SAFE INIT
 --==================================================
 
 local function InitModule(
     Name,
-    Module
+    Module,
+    Context
 )
 
     if not Module then
+
+        warn(
+            "[Rimuru Hub] UI/"
+            .. Name
+            .. " não carregado."
+        )
 
         return false
 
@@ -287,6 +331,12 @@ local function InitModule(
     ) ~= "function"
     then
 
+        print(
+            "[Rimuru Hub] UI/"
+            .. Name
+            .. " não possui Init()."
+        )
+
         return true
 
     end
@@ -296,9 +346,10 @@ local function InitModule(
         pcall(
             function()
 
-                return Module:Init(
-                    UI.Context
-                )
+                return Module:
+                    Init(
+                        Context
+                    )
 
             end
         )
@@ -306,9 +357,9 @@ local function InitModule(
     if not Success then
 
         warn(
-            "[Rimuru Hub] UI/"
+            "[Rimuru Hub] Erro ao iniciar UI/"
             .. Name
-            .. " Init error: "
+            .. ": "
             .. tostring(Result)
         )
 
@@ -316,12 +367,12 @@ local function InitModule(
 
     end
 
-    return true
+    return Result ~= false
 
 end
 
 --==================================================
--- FIND INSTANCE
+-- FIND RECURSIVE
 --==================================================
 
 local function FindRecursive(
@@ -329,23 +380,39 @@ local function FindRecursive(
     Names
 )
 
-    if not Root then
+    if not Root
+    or typeof(Root) ~= "Instance"
+    then
+
         return nil
+
     end
 
     for _, Name in
-        ipairs(Names)
+        ipairs(
+            Names
+        )
     do
 
-        local Object =
-            Root:FindFirstChild(
-                Name,
-                true
+        local Success,
+            Result =
+            pcall(
+                function()
+
+                    return Root:
+                        FindFirstChild(
+                            Name,
+                            true
+                        )
+
+                end
             )
 
-        if Object then
+        if Success
+        and Result
+        then
 
-            return Object
+            return Result
 
         end
 
@@ -361,16 +428,20 @@ end
 
 function UI:UpdateReferences()
 
-    local Main
+    local Main =
+        nil
 
     --==================================================
     -- REFERENCES MODULE
     --==================================================
 
-    if self.References then
+    local References =
+        self.Modules.References
+
+    if References then
 
         if type(
-            self.References.GetMain
+            References.GetMain
         ) == "function"
         then
 
@@ -379,7 +450,7 @@ function UI:UpdateReferences()
                 pcall(
                     function()
 
-                        return self.References:
+                        return References:
                             GetMain()
 
                     end
@@ -397,14 +468,14 @@ function UI:UpdateReferences()
         end
 
         if not Main
-        and self.References.Main
+        and References.Main
         and typeof(
-            self.References.Main
+            References.Main
         ) == "Instance"
         then
 
             Main =
-                self.References.Main
+                References.Main
 
         end
 
@@ -414,30 +485,33 @@ function UI:UpdateReferences()
     -- WINDOW MODULE
     --==================================================
 
+    local Window =
+        self.Modules.Window
+
     if not Main
-    and self.Window
+    and Window
     then
 
-        if self.Window.Main
+        if Window.Main
         and typeof(
-            self.Window.Main
+            Window.Main
         ) == "Instance"
         then
 
             Main =
-                self.Window.Main
+                Window.Main
 
-        elseif self.Window.Window
+        elseif Window.Window
         and typeof(
-            self.Window.Window
+            Window.Window
         ) == "Instance"
         then
 
             Main =
-                self.Window.Window
+                Window.Window
 
         elseif type(
-            self.Window.Get
+            Window.Get
         ) == "function"
         then
 
@@ -446,7 +520,7 @@ function UI:UpdateReferences()
                 pcall(
                     function()
 
-                        return self.Window:
+                        return Window:
                             Get()
 
                     end
@@ -484,6 +558,7 @@ function UI:UpdateReferences()
                 FindRecursive(
                     PlayerGui,
                     {
+                        "RimuruHub",
                         "Main",
                     }
                 )
@@ -496,7 +571,7 @@ function UI:UpdateReferences()
         Main
 
     --==================================================
-    -- COMMON REFERENCES
+    -- REFERENCES
     --==================================================
 
     if Main then
@@ -518,6 +593,7 @@ function UI:UpdateReferences()
                     "SoundList",
                     "Results",
                     "Content",
+                    "Items",
                 }
             )
 
@@ -525,8 +601,8 @@ function UI:UpdateReferences()
             FindRecursive(
                 Main,
                 {
-                    "Results",
                     "ResultsContainer",
+                    "Results",
                     "Content",
                 }
             )
@@ -537,14 +613,6 @@ function UI:UpdateReferences()
                 {
                     "Header",
                     "Topbar",
-                }
-            )
-
-        self.Close =
-            FindRecursive(
-                Main,
-                {
-                    "Close",
                 }
             )
 
@@ -568,65 +636,74 @@ function UI:UpdateReferences()
     end
 
     --==================================================
-    -- RESULTS MODULE
+    -- RESULTS
     --==================================================
 
-    if self.Results then
+    local Results =
+        self.Modules.Results
 
-        if self.Results.Scroll
+    if Results then
+
+        if Results.Scroll
         and typeof(
-            self.Results.Scroll
+            Results.Scroll
         ) == "Instance"
         then
 
             self.Scroll =
-                self.Results.Scroll
+                Results.Scroll
 
         end
 
-        if self.Results.Container
+        if Results.Container
         and typeof(
-            self.Results.Container
+            Results.Container
         ) == "Instance"
         then
 
             self.ResultsContainer =
-                self.Results.Container
+                Results.Container
 
         end
 
     end
 
     --==================================================
-    -- TOPBAR MODULE
+    -- TOPBAR
     --==================================================
 
-    if self.Topbar then
+    local Topbar =
+        self.Modules.Topbar
 
-        if self.Topbar.Container
+    if Topbar then
+
+        if Topbar.Container
         and typeof(
-            self.Topbar.Container
+            Topbar.Container
         ) == "Instance"
         then
 
             self.TopbarInstance =
-                self.Topbar.Container
+                Topbar.Container
 
         end
 
     end
 
-    return self.Main ~= nil
+    return Main ~= nil
 
 end
 
 --==================================================
--- INITIALIZE WINDOW
+-- CREATE WINDOW
 --==================================================
 
 function UI:CreateWindow()
 
-    if not self.Window then
+    local Window =
+        self.Modules.Window
+
+    if not Window then
 
         warn(
             "[Rimuru Hub] Window não disponível."
@@ -636,12 +713,8 @@ function UI:CreateWindow()
 
     end
 
-    --==================================================
-    -- CREATE
-    --==================================================
-
     if type(
-        self.Window.Create
+        Window.Create
     ) == "function"
     then
 
@@ -650,7 +723,7 @@ function UI:CreateWindow()
             pcall(
                 function()
 
-                    return self.Window:
+                    return Window:
                         Create(
                             self.Context
                         )
@@ -668,19 +741,16 @@ function UI:CreateWindow()
 
     end
 
-    --==================================================
-    -- INIT FALLBACK
-    --==================================================
-
     if type(
-        self.Window.Init
+        Window.Init
     ) == "function"
     then
 
         local Success =
             InitModule(
                 "Window",
-                self.Window
+                Window,
+                self.Context
             )
 
         self:UpdateReferences()
@@ -694,100 +764,43 @@ function UI:CreateWindow()
 end
 
 --==================================================
--- INITIALIZE MODULES
+-- INIT MODULES
 --==================================================
 
 function UI:InitModules()
 
-    --==================================================
-    -- REFERENCES
-    --==================================================
+    -- Window is initialized separately.
 
-    InitModule(
+    local ORDER = {
+
         "References",
-        self.References
-    )
-
-    --==================================================
-    -- TOPBAR
-    --==================================================
-
-    InitModule(
         "Topbar",
-        self.Topbar
-    )
-
-    --==================================================
-    -- RESULTS
-    --==================================================
-
-    InitModule(
         "Results",
-        self.Results
-    )
-
-    --==================================================
-    -- SEARCH
-    --==================================================
-
-    InitModule(
         "Search",
-        self.Search
-    )
-
-    --==================================================
-    -- EVENTS
-    --==================================================
-
-    InitModule(
         "Events",
-        self.Events
-    )
-
-    --==================================================
-    -- DRAG
-    --==================================================
-
-    InitModule(
         "Drag",
-        self.Drag
-    )
-
-    --==================================================
-    -- ANIMATION
-    --==================================================
-
-    InitModule(
         "Animation",
-        self.Animation
-    )
-
-    --==================================================
-    -- LOGO
-    --==================================================
-
-    InitModule(
         "Logo",
-        self.Logo
-    )
-
-    --==================================================
-    -- STYLING
-    --==================================================
-
-    InitModule(
         "Styling",
-        self.Styling
-    )
-
-    --==================================================
-    -- TRANSPARENCY
-    --==================================================
-
-    InitModule(
         "Transparency",
-        self.Transparency
-    )
+
+    }
+
+    for _, Name in
+        ipairs(
+            ORDER
+        )
+    do
+
+        InitModule(
+            Name,
+            self.Modules[Name],
+            self.Context
+        )
+
+        self:UpdateReferences()
+
+    end
 
 end
 
@@ -827,11 +840,22 @@ function UI:Init(Context)
     -- PLAYER GUI
     --==================================================
 
-    self.PlayerGui =
+    local ExistingPlayerGui =
         self.Context.PlayerGui
-        or self.Player:WaitForChild(
-            "PlayerGui"
-        )
+
+    if ExistingPlayerGui then
+
+        self.PlayerGui =
+            ExistingPlayerGui
+
+    else
+
+        self.PlayerGui =
+            self.Player:WaitForChild(
+                "PlayerGui"
+            )
+
+    end
 
     self.Context.Player =
         self.Player
@@ -855,7 +879,7 @@ function UI:Init(Context)
     end
 
     --==================================================
-    -- REFERENCES AFTER WINDOW
+    -- REFERENCES
     --==================================================
 
     self:UpdateReferences()
@@ -867,7 +891,7 @@ function UI:Init(Context)
     self:InitModules()
 
     --==================================================
-    -- UPDATE AGAIN
+    -- FINAL REFERENCES
     --==================================================
 
     self:UpdateReferences()
@@ -876,16 +900,19 @@ function UI:Init(Context)
     -- TRANSPARENCY
     --==================================================
 
-    if self.Transparency
+    local Transparency =
+        self.Modules.Transparency
+
+    if Transparency
     and type(
-        self.Transparency.Apply
+        Transparency.Apply
     ) == "function"
     then
 
         pcall(
             function()
 
-                self.Transparency:
+                Transparency:
                     Apply(
                         self.Context
                     )
@@ -899,16 +926,19 @@ function UI:Init(Context)
     -- STYLING
     --==================================================
 
-    if self.Styling
+    local Styling =
+        self.Modules.Styling
+
+    if Styling
     and type(
-        self.Styling.Apply
+        Styling.Apply
     ) == "function"
     then
 
         pcall(
             function()
 
-                self.Styling:
+                Styling:
                     Apply(
                         self.Context
                     )
@@ -919,96 +949,28 @@ function UI:Init(Context)
     end
 
     --==================================================
-    -- DEFAULT VISIBILITY
+    -- FINAL
     --==================================================
+
+    print(
+        "[Rimuru Hub] UI Folder Loader conectado."
+    )
 
     if self.Main then
 
-        -- A janela começa fechada.
-        -- O Main/Events pode controlar o toggle.
+        print(
+            "[Rimuru Hub] UI disponível."
+        )
 
-        if self.Main.Visible == nil then
+    else
 
-            self.Main.Visible =
-                false
-
-        end
+        warn(
+            "[Rimuru Hub] UI não disponível."
+        )
 
     end
-
-    print(
-        "[Rimuru Hub] UI Folder conectado."
-    )
 
     return true
-
-end
-
---==================================================
--- GET SCROLL
---==================================================
-
-function UI:GetScroll()
-
-    if self.Scroll
-    and self.Scroll.Parent
-    then
-
-        return self.Scroll
-
-    end
-
-    self:UpdateReferences()
-
-    if self.Scroll
-    and self.Scroll.Parent
-    then
-
-        return self.Scroll
-
-    end
-
-    return nil
-
-end
-
---==================================================
--- GET BACKGROUND
---==================================================
-
-function UI:GetBackground()
-
-    if self.Background
-    and self.Background.Parent
-    then
-
-        return self.Background
-
-    end
-
-    self:UpdateReferences()
-
-    return self.Background
-
-end
-
---==================================================
--- GET SIDEBAR
---==================================================
-
-function UI:GetSidebar()
-
-    if self.Sidebar
-    and self.Sidebar.Parent
-    then
-
-        return self.Sidebar
-
-    end
-
-    self:UpdateReferences()
-
-    return self.Sidebar
 
 end
 
@@ -1033,7 +995,67 @@ function UI:GetMain()
 end
 
 --==================================================
--- SET BACKGROUND TRANSPARENCY
+-- GET SCROLL
+--==================================================
+
+function UI:GetScroll()
+
+    if self.Scroll
+    and self.Scroll.Parent
+    then
+
+        return self.Scroll
+
+    end
+
+    self:UpdateReferences()
+
+    return self.Scroll
+
+end
+
+--==================================================
+-- GET SIDEBAR
+--==================================================
+
+function UI:GetSidebar()
+
+    if self.Sidebar
+    and self.Sidebar.Parent
+    then
+
+        return self.Sidebar
+
+    end
+
+    self:UpdateReferences()
+
+    return self.Sidebar
+
+end
+
+--==================================================
+-- GET BACKGROUND
+--==================================================
+
+function UI:GetBackground()
+
+    if self.Background
+    and self.Background.Parent
+    then
+
+        return self.Background
+
+    end
+
+    self:UpdateReferences()
+
+    return self.Background
+
+end
+
+--==================================================
+-- BACKGROUND TRANSPARENCY
 --==================================================
 
 function UI:SetBackgroundTransparency(
@@ -1090,14 +1112,15 @@ function UI:Open()
         self:GetMain()
 
     if not Main then
-
         return false
-
     end
 
-    if self.Animation
+    local Animation =
+        self.Modules.Animation
+
+    if Animation
     and type(
-        self.Animation.Open
+        Animation.Open
     ) == "function"
     then
 
@@ -1105,16 +1128,14 @@ function UI:Open()
             pcall(
                 function()
 
-                    self.Animation:
+                    Animation:
                         Open()
 
                 end
             )
 
         if Success then
-
             return true
-
         end
 
     end
@@ -1136,14 +1157,15 @@ function UI:Close()
         self:GetMain()
 
     if not Main then
-
         return false
-
     end
 
-    if self.Animation
+    local Animation =
+        self.Modules.Animation
+
+    if Animation
     and type(
-        self.Animation.Close
+        Animation.Close
     ) == "function"
     then
 
@@ -1151,16 +1173,17 @@ function UI:Close()
             pcall(
                 function()
 
-                    self.Animation:
+                    Animation:
+                        Close()
+
+                                    Animation:
                         Close()
 
                 end
             )
 
         if Success then
-
             return true
-
         end
 
     end
@@ -1182,13 +1205,7 @@ function UI:Toggle()
         self:GetMain()
 
     if not Main then
-
-        warn(
-            "[Rimuru Hub] Não foi possível encontrar Main para Toggle."
-        )
-
         return false
-
     end
 
     if Main.Visible then
@@ -1217,9 +1234,7 @@ function UI:IsOpen()
         self:GetMain()
 
     if not Main then
-
         return false
-
     end
 
     return Main.Visible == true
@@ -1227,25 +1242,94 @@ function UI:IsOpen()
 end
 
 --==================================================
--- APPLY THEME
+-- GET STATUS
 --==================================================
 
-function UI:ApplyTheme()
+function UI:GetStatus()
 
-    --==================================================
-    -- STYLING
-    --==================================================
+    return {
 
-    if self.Styling
+        Main =
+            self.Main ~= nil,
+
+        Window =
+            self.Modules.Window ~= nil,
+
+        References =
+            self.Modules.References ~= nil,
+
+        Topbar =
+            self.Modules.Topbar ~= nil,
+
+        Results =
+            self.Modules.Results ~= nil,
+
+        Search =
+            self.Modules.Search ~= nil,
+
+        Events =
+            self.Modules.Events ~= nil,
+
+        Drag =
+            self.Modules.Drag ~= nil,
+
+        Animation =
+            self.Modules.Animation ~= nil,
+
+        Logo =
+            self.Modules.Logo ~= nil,
+
+        Styling =
+            self.Modules.Styling ~= nil,
+
+        Transparency =
+            self.Modules.Transparency ~= nil,
+
+        Sidebar =
+            self.Sidebar ~= nil,
+
+        Scroll =
+            self.Scroll ~= nil,
+
+        Background =
+            self.Background ~= nil,
+
+    }
+
+end
+
+--==================================================
+-- IS READY
+--==================================================
+
+function UI:IsReady()
+
+    return
+        self.Main ~= nil
+
+end
+
+--==================================================
+-- REFRESH
+--==================================================
+
+function UI:Refresh()
+
+    self:UpdateReferences()
+
+    local Styling =
+        self.Modules.Styling
+
+    if Styling
     and type(
-        self.Styling.Apply
+        Styling.Apply
     ) == "function"
     then
 
         pcall(
             function()
 
-                self.Styling:
+                Styling:
                     Apply(
                         self.Context
                     )
@@ -1255,67 +1339,20 @@ function UI:ApplyTheme()
 
     end
 
-    --==================================================
-    -- TOPBAR
-    --==================================================
+    local Transparency =
+        self.Modules.Transparency
 
-    if self.Topbar
+    if Transparency
     and type(
-        self.Topbar.ApplyTheme
+        Transparency.Apply
     ) == "function"
     then
 
         pcall(
             function()
 
-                self.Topbar:
-                    ApplyTheme(
-                        self.Context
-                    )
-
-            end
-        )
-
-    end
-
-    --==================================================
-    -- RESULTS
-    --==================================================
-
-    if self.Results
-    and type(
-        self.Results.ApplyTheme
-    ) == "function"
-    then
-
-        pcall(
-            function()
-
-                self.Results:
-                    ApplyTheme(
-                        self.Context
-                    )
-
-            end
-        )
-
-    end
-
-    --==================================================
-    -- SIDEBAR
-    --==================================================
-
-    if self.Sidebar
-    and type(
-        self.Sidebar.ApplyTheme
-    ) == "function"
-    then
-
-        pcall(
-            function()
-
-                self.Sidebar:
-                    ApplyTheme(
+                Transparency:
+                    Apply(
                         self.Context
                     )
 
@@ -1329,14 +1366,17 @@ function UI:ApplyTheme()
 end
 
 --==================================================
--- APPLY TRANSPARENCY
+-- APPLY THEME
 --==================================================
 
-function UI:ApplyTransparency()
+function UI:ApplyTheme()
 
-    if self.Transparency
+    local Styling =
+        self.Modules.Styling
+
+    if Styling
     and type(
-        self.Transparency.Apply
+        Styling.Apply
     ) == "function"
     then
 
@@ -1344,7 +1384,7 @@ function UI:ApplyTransparency()
             pcall(
                 function()
 
-                    self.Transparency:
+                    Styling:
                         Apply(
                             self.Context
                         )
@@ -1361,103 +1401,6 @@ function UI:ApplyTransparency()
 end
 
 --==================================================
--- REFRESH
---==================================================
-
-function UI:Refresh()
-
-    --==================================================
-    -- REFERENCES
-    --==================================================
-
-    self:UpdateReferences()
-
-    --==================================================
-    -- STYLING
-    --==================================================
-
-    self:ApplyTheme()
-
-    --==================================================
-    -- TRANSPARENCY
-    --==================================================
-
-    self:ApplyTransparency()
-
-    return true
-
-end
-
---==================================================
--- GET STATUS
---==================================================
-
-function UI:GetStatus()
-
-    return {
-
-        Main =
-            self.Main ~= nil,
-
-        Window =
-            self.Window ~= nil,
-
-        References =
-            self.References ~= nil,
-
-        Topbar =
-            self.Topbar ~= nil,
-
-        Results =
-            self.Results ~= nil,
-
-        Search =
-            self.Search ~= nil,
-
-        Events =
-            self.Events ~= nil,
-
-        Drag =
-            self.Drag ~= nil,
-
-        Animation =
-            self.Animation ~= nil,
-
-        Logo =
-            self.Logo ~= nil,
-
-        Styling =
-            self.Styling ~= nil,
-
-        Transparency =
-            self.Transparency ~= nil,
-
-        Scroll =
-            self.Scroll ~= nil,
-
-        Sidebar =
-            self.Sidebar ~= nil,
-
-        PlayerGui =
-            self.PlayerGui ~= nil,
-
-    }
-
-end
-
---==================================================
--- READY
---==================================================
-
-function UI:IsReady()
-
-    return
-        self.Main ~= nil
-        and self.Scroll ~= nil
-
-end
-
---==================================================
 -- DESTROY
 --==================================================
 
@@ -1467,20 +1410,40 @@ function UI:Destroy()
     -- EVENTS
     --==================================================
 
-    if self.Events
-    and type(
-        self.Events.Destroy
-    ) == "function"
-    then
+    local Events =
+        self.Modules.Events
 
-        pcall(
-            function()
+    if Events then
 
-                self.Events:
-                    Destroy()
+        if type(
+            Events.Destroy
+        ) == "function"
+        then
 
-            end
-        )
+            pcall(
+                function()
+
+                    Events:
+                        Destroy()
+
+                end
+            )
+
+        elseif type(
+            Events.Disconnect
+        ) == "function"
+        then
+
+            pcall(
+                function()
+
+                    Events:
+                        Disconnect()
+
+                end
+            )
+
+        end
 
     end
 
@@ -1488,16 +1451,19 @@ function UI:Destroy()
     -- DRAG
     --==================================================
 
-    if self.Drag
+    local Drag =
+        self.Modules.Drag
+
+    if Drag
     and type(
-        self.Drag.Destroy
+        Drag.Destroy
     ) == "function"
     then
 
         pcall(
             function()
 
-                self.Drag:
+                Drag:
                     Destroy()
 
             end
@@ -1509,16 +1475,43 @@ function UI:Destroy()
     -- ANIMATION
     --==================================================
 
-    if self.Animation
+    local Animation =
+        self.Modules.Animation
+
+    if Animation
     and type(
-        self.Animation.Destroy
+        Animation.Destroy
     ) == "function"
     then
 
         pcall(
             function()
 
-                self.Animation:
+                Animation:
+                    Destroy()
+
+            end
+        )
+
+    end
+
+    --==================================================
+    -- WINDOW
+    --==================================================
+
+    local Window =
+        self.Modules.Window
+
+    if Window
+    and type(
+        Window.Destroy
+    ) == "function"
+    then
+
+        pcall(
+            function()
+
+                Window:
                     Destroy()
 
             end
@@ -1559,11 +1552,61 @@ function UI:Destroy()
 end
 
 --==================================================
+-- DEBUG
+--==================================================
+
+function UI:Debug()
+
+    local Status =
+        self:GetStatus()
+
+    print(
+        "========================================"
+    )
+
+    print(
+        "★ RIMURU HUB - UI STATUS"
+    )
+
+    print(
+        "========================================"
+    )
+
+    for Name, Value in
+        pairs(Status)
+    do
+
+        print(
+            "[UI] "
+            .. tostring(Name)
+            .. " = "
+            .. tostring(Value)
+        )
+
+    end
+
+    print(
+        "========================================"
+    )
+
+    return Status
+
+end
+
+--==================================================
 -- STARTUP MESSAGE
 --==================================================
 
 print(
-    "[Rimuru Hub] UI Folder Loader conectado."
+    "★RIMURU HUB"
 )
+
+print(
+    "Remote Modular UI Folder carregado."
+)
+
+--==================================================
+-- RETURN
+--==================================================
 
 return UI
