@@ -4,6 +4,23 @@
 local Categories = {}
 
 --==================================================
+-- CATEGORY ICONS
+--==================================================
+
+local CategoryIcons = {
+
+    ["Outro"] =
+        "🏠",
+
+    ["Heian Sukuna Sounds"] =
+        "👹",
+
+    ["Configuração"] =
+        "⚙️"
+
+}
+
+--==================================================
 -- INIT
 --==================================================
 
@@ -45,16 +62,33 @@ function Categories:Init(Context)
 end
 
 --==================================================
+-- GET CATEGORY ICON
+--==================================================
+
+function Categories:GetIcon(CategoryName)
+
+    return CategoryIcons[CategoryName]
+        or "📁"
+
+end
+
+--==================================================
 -- CLEAR CONTENT
 --==================================================
 
 function Categories:ClearContent()
 
     for _, Object in
-        ipairs(self.Scroll:GetChildren()) do
+        ipairs(
+            self.Scroll:GetChildren()
+        ) do
 
-        if not Object:IsA("UIListLayout")
-        and not Object:IsA("UIPadding") then
+        if not Object:IsA(
+            "UIListLayout"
+        )
+        and not Object:IsA(
+            "UIPadding"
+        ) then
 
             Object:Destroy()
 
@@ -68,7 +102,9 @@ end
 -- SHOW CATEGORY
 --==================================================
 
-function Categories:ShowCategory(CategoryName)
+function Categories:ShowCategory(
+    CategoryName
+)
 
     self:ClearContent()
 
@@ -86,8 +122,11 @@ function Categories:ShowCategory(CategoryName)
         ipairs(Category) do
 
         self.Cards:CreateSoundCard(
+
             Index,
+
             Data
+
         )
 
     end
@@ -98,7 +137,9 @@ end
 -- SELECT BUTTON
 --==================================================
 
-function Categories:SelectButton(Button)
+function Categories:SelectButton(
+    Button
+)
 
     if self.SelectedButton
     and self.SelectedButton ~= Button then
@@ -131,20 +172,29 @@ end
 --==================================================
 
 function Categories:CreateCategoryButton(
+
     CategoryName,
+
     Order,
+
     ShowSoundCategory
+
 )
 
     if ShowSoundCategory == nil then
-        ShowSoundCategory = true
+
+        ShowSoundCategory =
+            true
+
     end
 
     local CurrentTheme =
         self.Theme:GetCurrent()
 
     local Button =
-        Instance.new("TextButton")
+        Instance.new(
+            "TextButton"
+        )
 
     Button.Name =
         CategoryName
@@ -163,8 +213,19 @@ function Categories:CreateCategoryButton(
     Button.BorderSizePixel =
         0
 
+    --==================================================
+    -- CATEGORY ICON
+    --==================================================
+
+    local Icon =
+        self:GetIcon(
+            CategoryName
+        )
+
     Button.Text =
-        "💺  " .. CategoryName
+        Icon ..
+        "  " ..
+        CategoryName
 
     Button.TextColor3 =
         CurrentTheme.SubText
@@ -195,7 +256,9 @@ function Categories:CreateCategoryButton(
     --==================================================
 
     local ButtonPadding =
-        Instance.new("UIPadding")
+        Instance.new(
+            "UIPadding"
+        )
 
     ButtonPadding.PaddingLeft =
         UDim.new(
@@ -211,7 +274,9 @@ function Categories:CreateCategoryButton(
     --==================================================
 
     local ButtonCorner =
-        Instance.new("UICorner")
+        Instance.new(
+            "UICorner"
+        )
 
     ButtonCorner.CornerRadius =
         UDim.new(
@@ -226,21 +291,25 @@ function Categories:CreateCategoryButton(
     -- CLICK
     --==================================================
 
-    Button.MouseButton1Click:Connect(function()
+    Button.MouseButton1Click:Connect(
 
-        self:SelectButton(
-            Button
-        )
+        function()
 
-        if ShowSoundCategory then
-
-            self:ShowCategory(
-                CategoryName
+            self:SelectButton(
+                Button
             )
+
+            if ShowSoundCategory then
+
+                self:ShowCategory(
+                    CategoryName
+                )
+
+            end
 
         end
 
-    end)
+    )
 
     self.CategoryButtons[
         CategoryName
@@ -261,14 +330,20 @@ function Categories:CreateCategories()
         0
 
     for CategoryName in
-        pairs(self.Sounds) do
+        pairs(
+            self.Sounds
+        ) do
 
         CategoryIndex += 1
 
         self:CreateCategoryButton(
+
             CategoryName,
+
             CategoryIndex,
+
             true
+
         )
 
     end
@@ -279,9 +354,13 @@ function Categories:CreateCategories()
 
     local ConfigButton =
         self:CreateCategoryButton(
+
             "Configuração",
+
             CategoryIndex + 1,
+
             false
+
         )
 
     self.ConfigButton =
@@ -297,17 +376,21 @@ end
 
 function Categories:SetDefaultCategory()
 
-    if not self.Sounds["Principal"] then
+    if not self.Sounds[
+        "Outro"
+    ] then
+
         return
+
     end
 
     self:ShowCategory(
-        "Principal"
+        "Outro"
     )
 
     local PrincipalButton =
         self.CategoryButtons[
-            "Principal"
+            "Outro"
         ]
 
     if PrincipalButton then
@@ -334,7 +417,9 @@ end
 -- GET CATEGORY BUTTON
 --==================================================
 
-function Categories:GetButton(CategoryName)
+function Categories:GetButton(
+    CategoryName
+)
 
     return self.CategoryButtons[
         CategoryName
@@ -352,7 +437,9 @@ function Categories:ApplyTheme()
         self.Theme:GetCurrent()
 
     for _, Button in
-        pairs(self.CategoryButtons) do
+        pairs(
+            self.CategoryButtons
+        ) do
 
         if Button ==
             self.SelectedButton then
@@ -363,8 +450,8 @@ function Categories:ApplyTheme()
             Button.TextColor3 =
                 Color3.fromRGB(
                     255,
-                    255,
-                    255
+                    245,
+                    235
                 )
 
         else
@@ -380,5 +467,9 @@ function Categories:ApplyTheme()
     end
 
 end
+
+--==================================================
+-- RETURN
+--==================================================
 
 return Categories
