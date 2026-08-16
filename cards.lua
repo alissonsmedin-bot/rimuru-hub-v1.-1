@@ -1,12 +1,73 @@
 --// 💥 RIMURU HUB
 --// Sound Cards System
 --// ⭐ Favorites Integration
---// 🎨 Transparent Cards + Theme Support
---// CLEAN REWORK
+--// 🎨 Transparent Cards
+--// 🎨 Theme Support
+--// 🛡️ SAFE REWORK
 --// Card Transparency: 0.75
---// Compatible with Remote Main + Config + Theme + UI + Favorites
+--// Compatible with Remote Main
+--// Config + Theme + UI + Favorites + Sound
 
 local Cards = {}
+
+--==================================================
+-- DEFAULTS
+--==================================================
+
+local DEFAULT_CARD_TRANSPARENCY = 0.75
+
+local DEFAULT_CARD_COLOR =
+    Color3.fromRGB(
+        28,
+        32,
+        40
+    )
+
+local DEFAULT_TEXT_COLOR =
+    Color3.fromRGB(
+        240,
+        245,
+        255
+    )
+
+local DEFAULT_SUBTEXT_COLOR =
+    Color3.fromRGB(
+        160,
+        170,
+        185
+    )
+
+local DEFAULT_ACCENT_COLOR =
+    Color3.fromRGB(
+        80,
+        170,
+        255
+    )
+
+--==================================================
+-- SAFE CALL
+--==================================================
+
+local function SafeCall(
+    Function,
+    ...
+)
+
+    if type(Function) ~= "function" then
+        return false, nil
+    end
+
+    local Success,
+        Result =
+        pcall(
+            Function,
+            ...
+        )
+
+    return Success,
+        Result
+
+end
 
 --==================================================
 -- INIT
@@ -26,12 +87,20 @@ function Cards:Init(Context)
 
     --==================================================
     -- SOUND
-    -- Accepts Sound or Sounds
     --==================================================
 
-    self.Sounds =
+    self.Sound =
         self.Context.Sound
-        or self.Context.Sounds
+
+    self.Sounds =
+        self.Context.Sounds
+
+    if not self.Sound then
+
+        self.Sound =
+            self.Sounds
+
+    end
 
     --==================================================
     -- THEME
@@ -47,43 +116,14 @@ function Cards:Init(Context)
     self.UI =
         self.Context.UI
 
+    --==================================================
+    -- SCROLL
+    --==================================================
+
     self.Scroll =
         nil
 
-    if self.UI then
-
-        self.Scroll =
-            self.UI.Scroll
-
-        -- Compatibility with UI:GetScroll()
-
-        if not self.Scroll
-        and type(
-            self.UI.GetScroll
-        ) == "function"
-        then
-
-            local Success,
-                Result =
-                pcall(
-                    function()
-
-                        return self.UI:
-                            GetScroll()
-
-                    end
-                )
-
-            if Success then
-
-                self.Scroll =
-                    Result
-
-            end
-
-        end
-
-    end
+    self:_FindScroll()
 
     --==================================================
     -- FAVORITES
@@ -102,6 +142,124 @@ function Cards:Init(Context)
 end
 
 --==================================================
+-- FIND SCROLL
+--==================================================
+
+function Cards:_FindScroll()
+
+    self.Scroll =
+        nil
+
+    if not self.UI then
+        return nil
+    end
+
+    --==================================================
+    -- DIRECT
+    --==================================================
+
+    if self.UI.Scroll
+    and typeof(self.UI.Scroll) == "Instance"
+    then
+
+        self.Scroll =
+            self.UI.Scroll
+
+        return self.Scroll
+
+    end
+
+    --==================================================
+    -- GET SCROLL
+    --==================================================
+
+    if type(
+        self.UI.GetScroll
+    ) == "function"
+    then
+
+        local Success,
+            Result =
+            SafeCall(
+                function()
+
+                    return self.UI:
+                        GetScroll()
+
+                end
+            )
+
+        if Success
+        and typeof(Result) == "Instance"
+        then
+
+            self.Scroll =
+                Result
+
+            return self.Scroll
+
+        end
+
+    end
+
+    --==================================================
+    -- COMMON UI NAMES
+    --==================================================
+
+    local PossibleNames = {
+
+        "Scroll",
+        "ScrollingFrame",
+        "SoundList",
+        "Items",
+        "Content",
+        "Results",
+
+    }
+
+    for _, Name in
+        ipairs(
+            PossibleNames
+        )
+    do
+
+        local Object =
+            self.UI[Name]
+
+        if typeof(Object) == "Instance" then
+
+            self.Scroll =
+                Object
+
+            return self.Scroll
+
+        end
+
+    end
+
+    return nil
+
+end
+
+--==================================================
+-- GET SCROLL
+--==================================================
+
+function Cards:GetScroll()
+
+    if self.Scroll
+    and self.Scroll.Parent
+    then
+
+        return self.Scroll
+
+    end
+
+    return self:_FindScroll()
+
+end
+
+--==================================================
 -- GET CARD TRANSPARENCY
 --==================================================
 
@@ -111,24 +269,61 @@ function Cards:GetCardTransparency()
     -- CONFIG
     --==================================================
 
-    if self.Config
-    and self.Config.UI
-    and self.Config.UI.CardTransparency
-    ~= nil
-    then
+    if self.Config then
 
-        local Value =
-            tonumber(
-                self.Config.UI.CardTransparency
-            )
+        -- Direct UI table
 
-        if Value then
+        if self.Config.UI
+        and self.Config.UI.CardTransparency
+        ~= nil
+        then
 
-            return math.clamp(
-                Value,
-                0,
-                1
-            )
+            local Value =
+                tonumber(
+                    self.Config.UI.CardTransparency
+                )
+
+            if Value then
+
+                return math.clamp(
+                    Value,
+                    0,
+                    1
+                )
+
+            end
+
+        end
+
+        -- Config getter
+
+        if type(
+            self.Config.GetCardTransparency
+        ) == "function"
+        then
+
+            local Success,
+                Value =
+                SafeCall(
+                    function()
+
+                        return self.Config:
+                            GetCardTransparency()
+
+                    end
+                )
+
+            if Success
+            and type(Value) == "number"
+            then
+
+                return math.clamp(
+                    Value,
+                    0,
+                    1
+                )
+
+            end
 
         end
 
@@ -146,7 +341,7 @@ function Cards:GetCardTransparency()
 
         local Success,
             CurrentTheme =
-            pcall(
+            SafeCall(
                 function()
 
                     return self.Theme:
@@ -157,22 +352,26 @@ function Cards:GetCardTransparency()
 
         if Success
         and type(CurrentTheme) == "table"
-        and CurrentTheme.CardTransparency
-        ~= nil
         then
 
-            local Value =
-                tonumber(
-                    CurrentTheme.CardTransparency
-                )
+            if CurrentTheme.CardTransparency
+            ~= nil
+            then
 
-            if Value then
+                local Value =
+                    tonumber(
+                        CurrentTheme.CardTransparency
+                    )
 
-                return math.clamp(
-                    Value,
-                    0,
-                    1
-                )
+                if Value then
+
+                    return math.clamp(
+                        Value,
+                        0,
+                        1
+                    )
+
+                end
 
             end
 
@@ -184,12 +383,128 @@ function Cards:GetCardTransparency()
     -- DEFAULT
     --==================================================
 
-    return 0.75
+    return DEFAULT_CARD_TRANSPARENCY
 
 end
 
 --==================================================
--- COPY SYSTEM
+-- SET CARD TRANSPARENCY
+--==================================================
+
+function Cards:SetCardTransparency(
+    Value
+)
+
+    Value =
+        tonumber(Value)
+
+    if not Value then
+        return false
+    end
+
+    Value =
+        math.clamp(
+            Value,
+            0,
+            1
+        )
+
+    --==================================================
+    -- CONFIG
+    --==================================================
+
+    if self.Config then
+
+        if self.Config.UI then
+
+            self.Config.UI.CardTransparency =
+                Value
+
+        end
+
+        if type(
+            self.Config.SetCardTransparency
+        ) == "function"
+        then
+
+            SafeCall(
+                function()
+
+                    self.Config:
+                        SetCardTransparency(
+                            Value
+                        )
+
+                end
+            )
+
+        end
+
+    end
+
+    --==================================================
+    -- APPLY
+    --==================================================
+
+    self:ApplyTransparency(
+        Value
+    )
+
+    return true
+
+end
+
+--==================================================
+-- APPLY TRANSPARENCY
+--==================================================
+
+function Cards:ApplyTransparency(
+    Value
+)
+
+    local Scroll =
+        self:GetScroll()
+
+    if not Scroll then
+        return false
+    end
+
+    Value =
+        tonumber(Value)
+        or self:GetCardTransparency()
+
+    Value =
+        math.clamp(
+            Value,
+            0,
+            1
+        )
+
+    for _, Object in
+        ipairs(
+            Scroll:GetChildren()
+        )
+    do
+
+        if Object:IsA("Frame")
+        and Object.Name:match(
+            "^Sound_"
+        )
+        then
+
+            Object.BackgroundTransparency =
+                Value
+
+        end
+
+    end
+
+    return true
+
+end
+
+--==================================================
+-- COPY
 --==================================================
 
 function Cards:Copy(ID)
@@ -198,6 +513,14 @@ function Cards:Copy(ID)
         tostring(
             ID or ""
         )
+
+    if ID == "" then
+        return false
+    end
+
+    --==================================================
+    -- SETCLIPBOARD
+    --==================================================
 
     if setclipboard then
 
@@ -217,6 +540,10 @@ function Cards:Copy(ID)
         end
 
     end
+
+    --==================================================
+    -- TOCLIPBOARD
+    --==================================================
 
     if toclipboard then
 
@@ -262,7 +589,7 @@ function Cards:IsFavorite(ID)
 
     local Success,
         Result =
-        pcall(
+        SafeCall(
             function()
 
                 return self.Favorites:
@@ -304,7 +631,7 @@ function Cards:ToggleFavorite(ID)
 
     local Success,
         Result =
-        pcall(
+        SafeCall(
             function()
 
                 return self.Favorites:
@@ -326,7 +653,7 @@ function Cards:ToggleFavorite(ID)
 end
 
 --==================================================
--- UPDATE FAVORITES
+-- REFRESH FAVORITES
 --==================================================
 
 function Cards:RefreshFavorites()
@@ -340,7 +667,7 @@ function Cards:RefreshFavorites()
     ) == "function"
     then
 
-        pcall(
+        SafeCall(
             function()
 
                 self.Categories:
@@ -349,12 +676,16 @@ function Cards:RefreshFavorites()
             end
         )
 
-    elseif type(
+        return
+
+    end
+
+    if type(
         self.Categories.UpdateFavoritesButton
     ) == "function"
     then
 
-        pcall(
+        SafeCall(
             function()
 
                 self.Categories:
@@ -373,24 +704,26 @@ end
 
 function Cards:HandleFavorite(
     ID,
-    UpdateButton
+    Button
 )
 
-    local IsFavorite =
+    local Result =
         self:ToggleFavorite(
             ID
         )
 
-    if UpdateButton then
+    if Button
+    and Button.Parent
+    then
 
-        if IsFavorite then
+        if Result then
 
-            UpdateButton.Text =
+            Button.Text =
                 "⭐"
 
         else
 
-            UpdateButton.Text =
+            Button.Text =
                 "☆"
 
         end
@@ -399,63 +732,86 @@ function Cards:HandleFavorite(
 
     self:RefreshFavorites()
 
-    --==================================================
-    -- FAVORITES CATEGORY
-    --==================================================
+    return Result
 
-    if self.Categories then
+end
 
-        local CurrentCategory =
-            nil
+--==================================================
+-- GET THEME
+--==================================================
 
-        if type(
-            self.Categories.GetCurrentCategory
-        ) == "function"
-        then
+function Cards:GetTheme()
 
-            pcall(
+    if not self.Theme then
+        return {}
+    end
+
+    if type(
+        self.Theme.GetCurrent
+    ) ~= "function"
+    then
+
+        return {}
+
+    end
+
+    local Success,
+        Result =
+        SafeCall(
+            function()
+
+                return self.Theme:
+                    GetCurrent()
+
+            end
+        )
+
+    if Success
+    and type(Result) == "table"
+    then
+
+        return Result
+
+    end
+
+    return {}
+
+end
+
+--==================================================
+-- GET ACCENT
+--==================================================
+
+function Cards:GetAccent()
+
+    if self.Theme
+    and type(
+        self.Theme.GetAccent
+    ) == "function"
+    then
+
+        local Success,
+            Result =
+            SafeCall(
                 function()
 
-                    CurrentCategory =
-                        self.Categories:
-                        GetCurrentCategory()
+                    return self.Theme:
+                        GetAccent()
 
                 end
             )
 
-        end
-
-        if CurrentCategory ==
-            "Favoritos"
+        if Success
+        and typeof(Result) == "Color3"
         then
 
-            if type(
-                self.Categories.ShowFavorites
-            ) == "function"
-            then
-
-                task.defer(
-                    function()
-
-                        pcall(
-                            function()
-
-                                self.Categories:
-                                ShowFavorites()
-
-                            end
-                        )
-
-                    end
-                )
-
-            end
+            return Result
 
         end
 
     end
 
-    return IsFavorite
+    return DEFAULT_ACCENT_COLOR
 
 end
 
@@ -472,7 +828,10 @@ function Cards:CreateSoundCard(
         return nil
     end
 
-    if not self.Scroll then
+    local Scroll =
+        self:GetScroll()
+
+    if not Scroll then
 
         warn(
             "[Rimuru Hub] Cards: Scroll não encontrado."
@@ -489,12 +848,15 @@ function Cards:CreateSoundCard(
     local Name =
         tostring(
             Data[1]
+            or Data.Name
             or "Unknown"
         )
 
     local ID =
         tostring(
             Data[2]
+            or Data.ID
+            or Data.Id
             or ""
         )
 
@@ -502,94 +864,23 @@ function Cards:CreateSoundCard(
     -- THEME
     --==================================================
 
-    local CurrentTheme = {}
-
-    if self.Theme
-    and type(
-        self.Theme.GetCurrent
-    ) == "function"
-    then
-
-        local Success,
-            Result =
-            pcall(
-                function()
-
-                    return self.Theme:
-                        GetCurrent()
-
-                end
-            )
-
-        if Success
-        and type(Result) == "table"
-        then
-
-            CurrentTheme =
-                Result
-
-        end
-
-    end
+    local CurrentTheme =
+        self:GetTheme()
 
     local CardColor =
         CurrentTheme.Card
-        or Color3.fromRGB(
-            28,
-            32,
-            40
-        )
+        or DEFAULT_CARD_COLOR
 
     local TextColor =
         CurrentTheme.Text
-        or Color3.fromRGB(
-            240,
-            245,
-            255
-        )
+        or DEFAULT_TEXT_COLOR
 
     local SubTextColor =
         CurrentTheme.SubText
-        or Color3.fromRGB(
-            160,
-            170,
-            185
-        )
+        or DEFAULT_SUBTEXT_COLOR
 
     local AccentColor =
-        Color3.fromRGB(
-            80,
-            170,
-            255
-        )
-
-    if self.Theme
-    and type(
-        self.Theme.GetAccent
-    ) == "function"
-    then
-
-        local Success,
-            Result =
-            pcall(
-                function()
-
-                    return self.Theme:
-                        GetAccent()
-
-                end
-            )
-
-        if Success
-        and typeof(Result) == "Color3"
-        then
-
-            AccentColor =
-                Result
-
-        end
-
-    end
+        self:GetAccent()
 
     --==================================================
     -- CARD
@@ -615,8 +906,6 @@ function Cards:CreateSoundCard(
     Card.BackgroundColor3 =
         CardColor
 
-    -- ⭐ DEFAULT = 0.75
-
     Card.BackgroundTransparency =
         self:GetCardTransparency()
 
@@ -624,16 +913,17 @@ function Cards:CreateSoundCard(
         0
 
     Card.LayoutOrder =
-        Index
+        tonumber(Index)
+        or 0
 
     Card.ZIndex =
         504
 
     Card.Parent =
-        self.Scroll
+        Scroll
 
     --==================================================
-    -- CARD CORNER
+    -- CORNER
     --==================================================
 
     local CardCorner =
@@ -651,7 +941,7 @@ function Cards:CreateSoundCard(
         Card
 
     --==================================================
-    -- SOUND NAME
+    -- NAME
     --==================================================
 
     local NameLabel =
@@ -706,7 +996,7 @@ function Cards:CreateSoundCard(
         Card
 
     --==================================================
-    -- SOUND ID
+    -- ID
     --==================================================
 
     local IDLabel =
@@ -810,10 +1100,18 @@ function Cards:CreateSoundCard(
         Card
 
     --==================================================
-    -- INITIAL FAVORITE
+    -- FAVORITE TEXT
     --==================================================
 
-    local function UpdateFavoriteButton()
+    local function UpdateFavorite()
+
+        if not FavoriteButton
+        or not FavoriteButton.Parent
+        then
+
+            return
+
+        end
 
         if self:IsFavorite(ID) then
 
@@ -829,7 +1127,7 @@ function Cards:CreateSoundCard(
 
     end
 
-    UpdateFavoriteButton()
+    UpdateFavorite()
 
     --==================================================
     -- FAVORITE CLICK
@@ -864,6 +1162,7 @@ function Cards:CreateSoundCard(
             0,
             55,
             0,
+                       0,
             28
         )
 
@@ -971,22 +1270,185 @@ function Cards:CreateSoundCard(
 end
 
 --==================================================
+-- CLEAR CARDS
+--==================================================
+
+function Cards:Clear()
+
+    local Scroll =
+        self:GetScroll()
+
+    if not Scroll then
+        return false
+    end
+
+    for _, Object in
+        ipairs(
+            Scroll:GetChildren()
+        )
+    do
+
+        if Object:IsA("Frame")
+        and Object.Name:match(
+            "^Sound_"
+        )
+        then
+
+            Object:Destroy()
+
+        end
+
+    end
+
+    return true
+
+end
+
+--==================================================
+-- CREATE ALL CARDS
+--==================================================
+
+function Cards:CreateCards(Data)
+
+    if type(Data) ~= "table" then
+        return false
+    end
+
+    local Scroll =
+        self:GetScroll()
+
+    if not Scroll then
+
+        warn(
+            "[Rimuru Hub] Cards: Scroll não encontrado."
+        )
+
+        return false
+
+    end
+
+    --==================================================
+    -- CLEAR OLD
+    --==================================================
+
+    self:Clear()
+
+    --==================================================
+    -- CREATE
+    --==================================================
+
+    local Created =
+        0
+
+    for Index, SoundData in
+        ipairs(Data)
+    do
+
+        local Success,
+            Card =
+            SafeCall(
+                function()
+
+                    return self:
+                        CreateSoundCard(
+                            Index,
+                            SoundData
+                        )
+
+                end
+            )
+
+        if Success
+        and Card
+        then
+
+            Created +=
+                1
+
+        end
+
+    end
+
+    --==================================================
+    -- LAYOUT
+    --==================================================
+
+    self:UpdateCanvas()
+
+    return Created > 0
+
+end
+
+--==================================================
+-- UPDATE CANVAS
+--==================================================
+
+function Cards:UpdateCanvas()
+
+    local Scroll =
+        self:GetScroll()
+
+    if not Scroll then
+        return false
+    end
+
+    local Layout =
+        Scroll:FindFirstChildOfClass(
+            "UIListLayout"
+        )
+
+    if not Layout then
+        return true
+    end
+
+    task.defer(
+        function()
+
+            if Layout
+            and Layout.Parent
+            then
+
+                Scroll.CanvasSize =
+                    UDim2.new(
+                        0,
+                        0,
+                        0,
+                        Layout.AbsoluteContentSize.Y
+                    )
+
+            end
+
+        end
+    )
+
+    return true
+
+end
+
+--==================================================
 -- REFRESH FAVORITE BUTTONS
 --==================================================
 
 function Cards:RefreshFavoriteButtons()
 
-    if not self.Scroll then
-        return
+    local Scroll =
+        self:GetScroll()
+
+    if not Scroll then
+        return false
     end
 
     for _, Object in
         ipairs(
-            self.Scroll:GetChildren()
+            Scroll:GetChildren()
         )
     do
 
-        if Object:IsA("Frame") then
+        if Object:IsA("Frame")
+        and Object.Name:match(
+            "^Sound_"
+        )
+        then
 
             local FavoriteButton =
                 Object:FindFirstChild(
@@ -1005,6 +1467,7 @@ function Cards:RefreshFavoriteButtons()
                 local ID =
                     tostring(
                         IDLabel.Text
+                        or ""
                     )
 
                 if self:IsFavorite(ID) then
@@ -1025,6 +1488,8 @@ function Cards:RefreshFavoriteButtons()
 
     end
 
+    return true
+
 end
 
 --==================================================
@@ -1033,118 +1498,55 @@ end
 
 function Cards:ApplyTheme()
 
-    if not self.Scroll then
-        return
+    local Scroll =
+        self:GetScroll()
+
+    if not Scroll then
+        return false
     end
 
-    local CurrentTheme = {}
-
-    if self.Theme
-    and type(
-        self.Theme.GetCurrent
-    ) == "function"
-    then
-
-        local Success,
-            Result =
-            pcall(
-                function()
-
-                    return self.Theme:
-                        GetCurrent()
-
-                end
-            )
-
-        if Success
-        and type(Result) == "table"
-        then
-
-            CurrentTheme =
-                Result
-
-        end
-
-    end
+    local CurrentTheme =
+        self:GetTheme()
 
     local CardColor =
         CurrentTheme.Card
-        or Color3.fromRGB(
-            28,
-            32,
-            40
-        )
+        or DEFAULT_CARD_COLOR
 
     local TextColor =
         CurrentTheme.Text
-        or Color3.fromRGB(
-            240,
-            245,
-            255
-        )
+        or DEFAULT_TEXT_COLOR
 
     local SubTextColor =
         CurrentTheme.SubText
-        or Color3.fromRGB(
-            160,
-            170,
-            185
-        )
+        or DEFAULT_SUBTEXT_COLOR
 
     local AccentColor =
-        Color3.fromRGB(
-            80,
-            170,
-            255
-        )
+        self:GetAccent()
 
-    if self.Theme
-    and type(
-        self.Theme.GetAccent
-    ) == "function"
-    then
-
-        local Success,
-            Result =
-            pcall(
-                function()
-
-                    return self.Theme:
-                        GetAccent()
-
-                end
-            )
-
-        if Success
-        and typeof(Result) == "Color3"
-        then
-
-            AccentColor =
-                Result
-
-        end
-
-    end
+    local Transparency =
+        self:GetCardTransparency()
 
     --==================================================
-    -- APPLY TO CARDS
+    -- APPLY
     --==================================================
 
     for _, Object in
         ipairs(
-            self.Scroll:GetChildren()
+            Scroll:GetChildren()
         )
     do
 
-        if Object:IsA("Frame") then
+        if Object:IsA("Frame")
+        and Object.Name:match(
+            "^Sound_"
+        )
+        then
 
-            Object.BackgroundColor3 =
-           
             Object.BackgroundColor3 =
                 CardColor
 
             Object.BackgroundTransparency =
-                self:GetCardTransparency()
+                Transparency
 
             local NameLabel =
                 Object:FindFirstChild(
@@ -1152,7 +1554,9 @@ function Cards:ApplyTheme()
                 )
 
             if NameLabel
-            and NameLabel:IsA("TextLabel")
+            and NameLabel:IsA(
+                "TextLabel"
+            )
             then
 
                 NameLabel.TextColor3 =
@@ -1166,7 +1570,9 @@ function Cards:ApplyTheme()
                 )
 
             if IDLabel
-            and IDLabel:IsA("TextLabel")
+            and IDLabel:IsA(
+                "TextLabel"
+            )
             then
 
                 IDLabel.TextColor3 =
@@ -1180,7 +1586,9 @@ function Cards:ApplyTheme()
                 )
 
             if CopyButton
-            and CopyButton:IsA("TextButton")
+            and CopyButton:IsA(
+                "TextButton"
+            )
             then
 
                 CopyButton.BackgroundColor3 =
@@ -1192,390 +1600,31 @@ function Cards:ApplyTheme()
 
     end
 
-end
-
---==================================================
--- REFRESH CARDS
---==================================================
-
-function Cards:Refresh()
-
-    if not self.Scroll then
-
-        warn(
-            "[Rimuru Hub] Cards: Scroll não encontrado."
-        )
-
-        return false
-
-    end
-
-    --==================================================
-    -- REMOVE OLD CARDS
-    --==================================================
-
-    for _, Object in
-        ipairs(
-            self.Scroll:GetChildren()
-        )
-    do
-
-        if Object:IsA("Frame")
-        and Object.Name:match("^Sound_")
-        then
-
-            Object:Destroy()
-
-        end
-
-    end
-
-    --==================================================
-    -- CHECK SOUNDS
-    --==================================================
-
-    if not self.Sounds then
-
-        warn(
-            "[Rimuru Hub] Cards: Sound não carregado."
-        )
-
-        return false
-
-    end
-
-    --==================================================
-    -- FIND SOUND DATA
-    --==================================================
-
-    local Data = nil
-
-    if type(
-        self.Sounds.GetCurrentSounds
-    ) == "function"
-    then
-
-        local Success,
-            Result =
-            pcall(
-                function()
-
-                    return self.Sounds:
-                        GetCurrentSounds()
-
-                end
-            )
-
-        if Success
-        and type(Result) == "table"
-        then
-
-            Data =
-                Result
-
-        end
-
-    end
-        if Success
-        and type(Result) == "table"
-        then
-
-            Data =
-                Result
-
-        end
-
-    end
-
-    if not Data
-    and type(
-        self.Sounds.Sounds
-    ) == "table"
-    then
-
-        Data =
-            self.Sounds.Sounds
-
-    end
-
-    --==================================================
-    -- NO DATA
-    --==================================================
-
-    if type(Data) ~= "table" then
-
-        warn(
-            "[Rimuru Hub] Cards: Nenhum dado de som encontrado."
-        )
-
-        return false
-
-    end
-
-    --==================================================
-    -- CREATE CARDS
-    --==================================================
-
-    local Index =
-        0
-
-    for _, SoundData in
-        ipairs(Data)
-    do
-
-        if type(SoundData) == "table" then
-
-            Index +=
-                1
-
-            self:CreateSoundCard(
-                Index,
-                SoundData
-            )
-
-        end
-
-    end
-
-    --==================================================
-    -- APPLY THEME
-    --==================================================
-
-    self:ApplyTheme()
-
-    --==================================================
-    -- UPDATE FAVORITES
-    --==================================================
-
-    self:RefreshFavoriteButtons()
-
     return true
 
 end
 
 --==================================================
--- CREATE CARDS FROM DATA
+-- REFRESH
 --==================================================
 
-function Cards:CreateCards(
-    Data
-)
+function Cards:Refresh(Data)
 
-    if type(Data) ~= "table" then
+    if type(Data) == "table" then
 
-        return false
-
-    end
-
-    if not self.Scroll then
-
-        warn(
-            "[Rimuru Hub] Cards: Scroll não encontrado."
+        return self:CreateCards(
+            Data
         )
 
-        return false
-
     end
-
-    --==================================================
-    -- REMOVE EXISTING CARDS
-    --==================================================
-
-    for _, Object in
-        ipairs(
-            self.Scroll:GetChildren()
-        )
-    do
-
-        if Object:IsA("Frame")
-        and Object.Name:match("^Sound_")
-        then
-
-            Object:Destroy()
-
-        end
-
-    end
-
-    --==================================================
-    -- CREATE
-    --==================================================
-
-    local Index =
-        0
-
-    for _, SoundData in
-        ipairs(Data)
-    do
-
-        if type(SoundData) == "table" then
-
-            Index +=
-                1
-
-            self:CreateSoundCard(
-                Index,
-                SoundData
-            )
-
-        end
-
-    end
-
-    --==================================================
-    -- THEME
-    --==================================================
 
     self:ApplyTheme()
 
-    --==================================================
-    -- FAVORITES
-    --==================================================
-
     self:RefreshFavoriteButtons()
 
+    self:UpdateCanvas()
+
     return true
-
-end
-
---==================================================
--- ADD CARD
---==================================================
-
-function Cards:Add(
-    Name,
-    ID
-)
-
-    if not self.Scroll then
-
-        return nil
-
-    end
-
-    local Index =
-        1
-
-    for _, Object in
-        ipairs(
-            self.Scroll:GetChildren()
-        )
-    do
-
-        if Object:IsA("Frame")
-        and Object.Name:match("^Sound_")
-        then
-
-            Index +=
-                1
-
-        end
-
-    end
-
-    return self:CreateSoundCard(
-        Index,
-        {
-            tostring(Name or "Unknown"),
-            tostring(ID or ""),
-        }
-    )
-
-end
-
---==================================================
--- REMOVE CARD
---==================================================
-
-function Cards:Remove(
-    ID
-)
-
-    if not self.Scroll then
-        return false
-    end
-
-    ID =
-        tostring(
-            ID or ""
-        )
-
-    for _, Object in
-        ipairs(
-            self.Scroll:GetChildren()
-        )
-    do
-
-        if Object:IsA("Frame") then
-
-            local IDLabel =
-                Object:FindFirstChild(
-                    "ID"
-                )
-
-            if IDLabel
-            and tostring(IDLabel.Text)
-                == ID
-            then
-
-                Object:Destroy()
-
-                return true
-
-            end
-
-        end
-
-    end
-
-    return false
-
-end
-
---==================================================
--- FIND CARD
---==================================================
-
-function Cards:FindCard(
-    ID
-)
-
-    if not self.Scroll then
-        return nil
-    end
-
-    ID =
-        tostring(
-            ID or ""
-        )
-
-    for _, Object in
-        ipairs(
-            self.Scroll:GetChildren()
-        )
-    do
-
-        if Object:IsA("Frame") then
-
-            local IDLabel =
-                Object:FindFirstChild(
-                    "ID"
-                )
-
-            if IDLabel
-            and tostring(IDLabel.Text)
-                == ID
-            then
-
-                return Object
-
-            end
-
-        end
-
-    end
-
-    return nil
 
 end
 
@@ -1588,18 +1637,23 @@ function Cards:GetCards()
     local Result =
         {}
 
-    if not self.Scroll then
+    local Scroll =
+        self:GetScroll()
+
+    if not Scroll then
         return Result
     end
 
     for _, Object in
         ipairs(
-            self.Scroll:GetChildren()
+            Scroll:GetChildren()
         )
     do
 
         if Object:IsA("Frame")
-        and Object.Name:match("^Sound_")
+        and Object.Name:match(
+            "^Sound_"
+        )
         then
 
             table.insert(
@@ -1621,21 +1675,26 @@ end
 
 function Cards:GetCardCount()
 
-    if not self.Scroll then
-        return 0
-    end
-
     local Count =
         0
 
+    local Scroll =
+        self:GetScroll()
+
+    if not Scroll then
+        return Count
+    end
+
     for _, Object in
         ipairs(
-            self.Scroll:GetChildren()
+            Scroll:GetChildren()
         )
     do
 
         if Object:IsA("Frame")
-        and Object.Name:match("^Sound_")
+        and Object.Name:match(
+            "^Sound_"
+        )
         then
 
             Count +=
@@ -1650,173 +1709,46 @@ function Cards:GetCardCount()
 end
 
 --==================================================
--- SET CARD TRANSPARENCY
+-- DESTROY
 --==================================================
 
-function Cards:SetCardTransparency(
-    Value
-)
+function Cards:Destroy()
 
-    Value =
-        tonumber(Value)
+    local Scroll =
+        self:GetScroll()
 
-    if not Value then
-        return false
-    end
+    if Scroll then
 
-    Value =
-        math.clamp(
-            Value,
-            0,
-            1
-        )
-
-    --==================================================
-    -- SAVE TO CONFIG
-    --==================================================
-
-    if self.Config then
-
-        if self.Config.UI
-        and type(
-            self.Config.UI
-        ) == "table"
-        then
-
-            self.Config.UI.CardTransparency =
-                Value
-
-        end
-
-        if type(
-            self.Config.Set
-        ) == "function"
-        then
-
-            pcall(
-                function()
-
-                    self.Config:Set(
-                        "UI",
-                        "CardTransparency",
-                        Value
-                    )
-
-                end
-            )
-
-        end
+        self:Clear()
 
     end
 
-    --==================================================
-    -- APPLY
-    --==================================================
+    self.Context =
+        nil
 
-    if self.Scroll then
+    self.Config =
+        nil
 
-        for _, Object in
-            ipairs(
-                self.Scroll:GetChildren()
-            )
-        do
+    self.Sound =
+        nil
 
-            if Object:IsA("Frame")
-            and Object.Name:match("^Sound_")
-            then
+    self.Sounds =
+        nil
 
-                Object.BackgroundTransparency =
-                    Value
+    self.Theme =
+        nil
 
-            end
+    self.UI =
+        nil
 
-        end
+    self.Scroll =
+        nil
 
-    end
+    self.Favorites =
+        nil
 
-    return true
-
-end
-
---==================================================
--- GET SCROLL
---==================================================
-
-function Cards:GetScroll()
-
-    return self.Scroll
-
-end
-
---==================================================
--- GET FAVORITES
---==================================================
-
-function Cards:GetFavorites()
-
-    if not self.Favorites then
-        return {}
-    end
-
-    if type(
-        self.Favorites.GetFavorites
-    ) == "function"
-    then
-
-        local Success,
-            Result =
-            pcall(
-                function()
-
-                    return self.Favorites:
-                        GetFavorites()
-
-                end
-            )
-
-        if Success
-        and type(Result) == "table"
-        then
-
-            return Result
-
-        end
-
-    end
-
-    return {}
-
-end
-
---==================================================
--- INITIAL TRANSPARENCY
---==================================================
-
-function Cards:ApplyTransparency()
-
-    if not self.Scroll then
-        return
-    end
-
-    local Transparency =
-        self:GetCardTransparency()
-
-    for _, Object in
-        ipairs(
-            self.Scroll:GetChildren()
-        )
-    do
-
-        if Object:IsA("Frame")
-        and Object.Name:match("^Sound_")
-        then
-
-            Object.BackgroundTransparency =
-                Transparency
-
-        end
-
-    end
+    self.Categories =
+        nil
 
 end
 
