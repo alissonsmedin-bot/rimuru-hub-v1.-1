@@ -1,7 +1,8 @@
 --// 💥 RIMURU HUB
 --// Logo System
---// SEARCH VERSION
---// Modular Logo Controller
+--// GitHub Image Version
+--// Centralized Logo
+--// No Roblox ImageId Required
 
 local Players =
     game:GetService("Players")
@@ -10,6 +11,162 @@ local UIS =
     game:GetService("UserInputService")
 
 local Logo = {}
+
+--==================================================
+-- IMAGE CONFIG
+--==================================================
+
+local IMAGE_URL =
+    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000086171-removebg-preview.png"
+
+local IMAGE_FILE =
+    "RimuruHubLogo.png"
+
+local IMAGE_PATH =
+    "RimuruHubLogo.png"
+
+--==================================================
+-- LOAD GITHUB IMAGE
+--==================================================
+
+local function LoadImage()
+
+    --==================================================
+    -- CHECK CUSTOM ASSET SUPPORT
+    --==================================================
+
+    if not getcustomasset then
+
+        warn(
+            "⚠️ Rimuru Hub: getcustomasset() não está disponível."
+        )
+
+        return nil
+
+    end
+
+    --==================================================
+    -- CHECK EXISTING FILE
+    --==================================================
+
+    if isfile then
+
+        local Success, Exists =
+            pcall(function()
+
+                return isfile(
+                    IMAGE_PATH
+                )
+
+            end)
+
+        if Success
+        and Exists then
+
+            local AssetSuccess, Asset =
+                pcall(function()
+
+                    return getcustomasset(
+                        IMAGE_PATH
+                    )
+
+                end)
+
+            if AssetSuccess then
+
+                return Asset
+
+            end
+
+        end
+
+    end
+
+    --==================================================
+    -- DOWNLOAD IMAGE
+    --==================================================
+
+    local Success, Data =
+        pcall(function()
+
+            return game:HttpGet(
+                IMAGE_URL
+            )
+
+        end)
+
+    if not Success
+    or not Data
+    or Data == "" then
+
+        warn(
+            "⚠️ Rimuru Hub: não foi possível baixar a logo do GitHub."
+        )
+
+        return nil
+
+    end
+
+    --==================================================
+    -- SAVE IMAGE
+    --==================================================
+
+    if not writefile then
+
+        warn(
+            "⚠️ Rimuru Hub: writefile() não está disponível."
+        )
+
+        return nil
+
+    end
+
+    local WriteSuccess =
+        pcall(function()
+
+            writefile(
+                IMAGE_PATH,
+                Data
+            )
+
+        end)
+
+    if not WriteSuccess then
+
+        warn(
+            "⚠️ Rimuru Hub: não foi possível salvar a logo."
+        )
+
+        return nil
+
+    end
+
+    --==================================================
+    -- CONVERT TO CUSTOM ASSET
+    --==================================================
+
+    local AssetSuccess, Asset =
+        pcall(function()
+
+            return getcustomasset(
+                IMAGE_PATH
+            )
+
+        end)
+
+    if not AssetSuccess then
+
+        warn(
+            "⚠️ Rimuru Hub: getcustomasset() falhou ao carregar a logo."
+        )
+
+        return nil
+
+    end
+
+    return Asset
+
+end
 
 --==================================================
 -- INIT
@@ -85,6 +242,13 @@ function Logo:Init(Context)
         return
 
     end
+
+    --==================================================
+    -- LOAD IMAGE
+    --==================================================
+
+    self.ImageAsset =
+        LoadImage()
 
     --==================================================
     -- CREATE
@@ -177,8 +341,11 @@ function Logo:Create()
     LogoButton.BorderSizePixel =
         0
 
+    -- Não usamos ImageButton.Image.
+    -- A imagem ficará em um ImageLabel interno.
+
     LogoButton.Image =
-        "rbxassetid://6691708227"
+        ""
 
     LogoButton.ScaleType =
         Enum.ScaleType.Fit
@@ -210,6 +377,85 @@ function Logo:Create()
 
     LogoCorner.Parent =
         LogoButton
+
+    --==================================================
+    -- LOGO IMAGE
+    --==================================================
+
+    local LogoImage =
+        Instance.new("ImageLabel")
+
+    LogoImage.Name =
+        "LogoImage"
+
+    --==================================================
+    -- CENTRALIZAÇÃO
+    --==================================================
+
+    LogoImage.AnchorPoint =
+        Vector2.new(
+            0.5,
+            0.5
+        )
+
+    LogoImage.Position =
+        UDim2.new(
+            0.5,
+            0,
+            0.5,
+            0
+        )
+
+    -- A imagem fica menor que o quadrado
+    -- para não ficar espremida ou cortada.
+
+    LogoImage.Size =
+        UDim2.new(
+            0,
+            46,
+            0,
+            46
+        )
+
+    LogoImage.BackgroundTransparency =
+        1
+
+    LogoImage.BorderSizePixel =
+        0
+
+    LogoImage.ScaleType =
+        Enum.ScaleType.Fit
+
+    LogoImage.ZIndex =
+        1001
+
+    LogoImage.Active =
+        false
+
+    --==================================================
+    -- IMAGE ASSET
+    --==================================================
+
+    if self.ImageAsset then
+
+        LogoImage.Image =
+            self.ImageAsset
+
+    else
+
+        -- Fallback visual caso o executor
+        -- não consiga carregar o PNG.
+
+        LogoImage.Image =
+            "rbxassetid://6691708227"
+
+    end
+
+    LogoImage.Parent =
+        LogoButton
+
+    self.Image =
+        LogoImage
 
     --==================================================
     -- STROKE
@@ -473,8 +719,12 @@ function Logo:ApplyTheme()
     self.Button.BackgroundColor3 =
         CurrentTheme.LogoBackground
 
-    self.Stroke.Color =
-        self.Theme:GetAccent()
+    if self.Stroke then
+
+        self.Stroke.Color =
+            self.Theme:GetAccent()
+
+    end
 
 end
 
