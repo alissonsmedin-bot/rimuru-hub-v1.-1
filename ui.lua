@@ -1,8 +1,13 @@
 --// 💥 RIMURU HUB
 --// UI System
+--// SEARCH VERSION
+--// Modular UI Core
 
-local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
+local Players =
+    game:GetService("Players")
+
+local UIS =
+    game:GetService("UserInputService")
 
 local UI = {}
 
@@ -21,7 +26,9 @@ function UI:Init(Context)
 
     self.PlayerGui =
         Context.PlayerGui
-        or self.Player:WaitForChild("PlayerGui")
+        or self.Player:WaitForChild(
+            "PlayerGui"
+        )
 
     self.Config =
         Context.Config
@@ -47,7 +54,9 @@ function UI:RemoveOld()
             )
 
         if Old then
+
             Old:Destroy()
+
         end
 
     end)
@@ -62,8 +71,39 @@ function UI:Create()
 
     self:RemoveOld()
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+    --==================================================
+    -- THEME SAFETY
+    --==================================================
+
+    if not self.Theme then
+
+        warn(
+            "❌ Rimuru Hub UI: Theme não encontrado."
+        )
+
+        return
+
+    end
+
+    local CurrentTheme
+
+    local ThemeSuccess =
+        pcall(function()
+
+            CurrentTheme =
+                self.Theme:GetCurrent()
+
+        end)
+
+    if not ThemeSuccess or not CurrentTheme then
+
+        warn(
+            "❌ Rimuru Hub UI: não foi possível obter o tema atual."
+        )
+
+        return
+
+    end
 
     --==================================================
     -- SCREEN GUI
@@ -125,8 +165,24 @@ function UI:Create()
     Main.BorderSizePixel =
         0
 
-    Main.Visible =
+    --==================================================
+    -- INITIAL VISIBILITY
+    --==================================================
+
+    local InitialVisible =
         false
+
+    if self.Config
+        and self.Config.UI
+        and self.Config.UI.Visible ~= nil then
+
+        InitialVisible =
+            self.Config.UI.Visible
+
+    end
+
+    Main.Visible =
+        InitialVisible
 
     Main.ZIndex =
         500
@@ -185,6 +241,9 @@ function UI:Create()
     local Header =
         Instance.new("Frame")
 
+    Header.Name =
+        "Header"
+
     Header.Size =
         UDim2.new(
             1,
@@ -211,6 +270,9 @@ function UI:Create()
 
     local HeaderLogo =
         Instance.new("ImageLabel")
+
+    HeaderLogo.Name =
+        "HeaderLogo"
 
     HeaderLogo.Size =
         UDim2.new(
@@ -252,6 +314,9 @@ function UI:Create()
 
     local Title =
         Instance.new("TextLabel")
+
+    Title.Name =
+        "Title"
 
     Title.Position =
         UDim2.new(
@@ -303,6 +368,9 @@ function UI:Create()
     local Subtitle =
         Instance.new("TextLabel")
 
+    Subtitle.Name =
+        "Subtitle"
+
     Subtitle.Position =
         UDim2.new(
             0,
@@ -352,6 +420,9 @@ function UI:Create()
 
     local Close =
         Instance.new("TextButton")
+
+    Close.Name =
+        "Close"
 
     Close.Size =
         UDim2.new(
@@ -563,6 +634,9 @@ function UI:Create()
     local ContentTitle =
         Instance.new("TextLabel")
 
+    ContentTitle.Name =
+        "ContentTitle"
+
     ContentTitle.Position =
         UDim2.new(
             0,
@@ -709,8 +783,12 @@ function UI:SetupDrag()
 
     Main.InputBegan:Connect(function(Input)
 
-        if not Config.UI.MainMenuDraggable then
+        if not Config
+            or not Config.UI
+            or not Config.UI.MainMenuDraggable then
+
             return
+
         end
 
         if Input.UserInputType ==
@@ -790,12 +868,12 @@ end
 
 function UI:SetVisible(Value)
 
-    if self.Main then
-
-        self.Main.Visible =
-            Value
-
+    if not self.Main then
+        return
     end
+
+    self.Main.Visible =
+        Value
 
 end
 
@@ -853,5 +931,9 @@ function UI:ApplyTheme()
         self.Theme:GetAccent()
 
 end
+
+--==================================================
+-- RETURN
+--==================================================
 
 return UI
