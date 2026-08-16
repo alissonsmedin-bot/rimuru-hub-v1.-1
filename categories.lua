@@ -222,12 +222,56 @@ function Categories:ShowAll()
     -- INFORM SEARCH SYSTEM
     --==================================================
 
-    if self.Search
-    and self.Search.SetCategory then
+    if CategoryName ==
+    "Todos"
+then
 
-        self.Search:SetCategory(
-            "Todos"
-        )
+    self:ShowAll()
+
+elseif CategoryName ==
+    "Favoritos"
+then
+
+    self:ShowFavorites()
+
+elseif CategoryName ==
+    "Configuração"
+then
+
+    if self.Settings
+    and type(
+        self.Settings.Build
+    ) == "function"
+    then
+
+        local Success,
+            Error =
+            pcall(
+                function()
+
+                    self.Settings:
+                        Build()
+
+                end
+            )
+
+        if not Success then
+
+            warn(
+                "[Rimuru Hub] Erro ao abrir Configuração: "
+                .. tostring(Error)
+            )
+
+        end
+
+    end
+
+elseif ShowSoundCategory
+then
+
+    self:ShowCategory(
+        CategoryName
+    )
 
     end
 
