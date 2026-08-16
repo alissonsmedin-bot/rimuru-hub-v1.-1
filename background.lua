@@ -2,7 +2,7 @@
 --// Background System
 --// External Image + Local Asset Fallback
 --// Rimuru Dark / Slime
---// Safe Background Loader
+--// Automatic Theme Background Switching
 
 local Background = {}
 
@@ -13,26 +13,53 @@ local Background = {}
 local Players =
     game:GetService("Players")
 
-local HttpService =
-    game:GetService("HttpService")
+--==================================================
+-- BACKGROUND DATABASE
+--==================================================
+
+Background.Images = {
+
+    ["Rimuru Dark"] = {
+
+        URL =
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/main/images/rimuru-dark.jpeg",
+
+        Local =
+            "rimuru-dark.jpeg",
+
+    },
+
+    ["Slime"] = {
+
+        URL =
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/main/images/slime.jpeg",
+
+        Local =
+            "slime.jpeg",
+
+    },
+
+}
 
 --==================================================
 -- INIT
 --==================================================
 
-function Background:Init(Context)
+function Background:Init(
+    Context
+)
 
     self.Context =
         Context or {}
 
     self.Config =
-        Context.Config
+        self.Context.Config
 
     self.Theme =
-        Context.Theme
+        self.Context.Theme
 
     self.UI =
-        Context.UI
+        self.Context.UI
 
     self.Gui =
         self.UI
@@ -56,39 +83,7 @@ function Background:Init(Context)
 end
 
 --==================================================
--- BACKGROUND DATABASE
---==================================================
-
-Background.Images = {
-
-    ["Rimuru Dark"] = {
-
-        -- Novo método / URL externa
-        URL =
-            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/main/images/rimuru-dark.jpeg",
-
-        -- Fallback local
-        Local =
-            "rimuru-dark.jpeg",
-
-    },
-
-    ["Slime"] = {
-
-        -- Novo método / URL externa
-        URL =
-            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/main/images/slime.jpeg",
-
-        -- Fallback local
-        Local =
-            "slime.jpeg",
-
-    },
-
-}
-
---==================================================
--- GET BACKGROUND DATA
+-- GET DATA
 --==================================================
 
 function Background:GetData(
@@ -102,45 +97,7 @@ function Background:GetData(
 end
 
 --==================================================
--- SAFE HTTP GET
---==================================================
-
-function Background:GetImageFromURL(
-    URL
-)
-
-    if not URL
-    or URL == "" then
-
-        return nil
-
-    end
-
-    local Success, Result =
-        pcall(
-            function()
-
-                return game:HttpGet(
-                    URL
-                )
-
-            end
-        )
-
-    if not Success
-    or not Result
-    or Result == "" then
-
-        return nil
-
-    end
-
-    return Result
-
-end
-
---==================================================
--- LOAD EXTERNAL IMAGE
+-- LOAD EXTERNAL
 --==================================================
 
 function Background:LoadExternal(
@@ -148,15 +105,16 @@ function Background:LoadExternal(
     FileName
 )
 
-    if not URL then
+    if not URL
+    or URL == ""
+    then
+
         return nil
+
     end
 
-    --==================================================
-    -- CHECK HTTP
-    --==================================================
-
-    local Success, Content =
+    local Success,
+        Content =
         pcall(
             function()
 
@@ -169,21 +127,40 @@ function Background:LoadExternal(
 
     if not Success
     or not Content
-    or Content == "" then
+    or Content == ""
+    then
 
         return nil
 
     end
 
     --==================================================
-    -- WRITE FILE
+    -- SAVE FILE
     --==================================================
 
-    if writefile
-    and isfile
-    and not isfile(FileName) then
+    if writefile then
 
-        local WriteSuccess =
+        if isfile then
+
+            if not isfile(
+                FileName
+            ) then
+
+                pcall(
+                    function()
+
+                        writefile(
+                            FileName,
+                            Content
+                        )
+
+                    end
+                )
+
+            end
+
+        else
+
             pcall(
                 function()
 
@@ -195,25 +172,7 @@ function Background:LoadExternal(
                 end
             )
 
-        if not WriteSuccess then
-
-            return nil
-
         end
-
-    elseif writefile
-    and not isfile then
-
-        pcall(
-            function()
-
-                writefile(
-                    FileName,
-                    Content
-                )
-
-            end
-        )
 
     end
 
@@ -223,9 +182,13 @@ function Background:LoadExternal(
 
     if getcustomasset
     and isfile
-    and isfile(FileName) then
+    and isfile(
+        FileName
+    )
+    then
 
-        local Success, Asset =
+        local SuccessAsset,
+            Asset =
             pcall(
                 function()
 
@@ -236,8 +199,9 @@ function Background:LoadExternal(
                 end
             )
 
-        if Success
-        and Asset then
+        if SuccessAsset
+        and Asset
+        then
 
             return Asset
 
@@ -250,29 +214,33 @@ function Background:LoadExternal(
 end
 
 --==================================================
--- LOAD LOCAL IMAGE
+-- LOAD LOCAL
 --==================================================
 
 function Background:LoadLocal(
     FileName
 )
 
-    if not FileName then
-        return nil
-    end
+    if not FileName
+    or not getcustomasset
+    then
 
-    if not getcustomasset then
         return nil
+
     end
 
     if isfile
-    and not isfile(FileName) then
+    and not isfile(
+        FileName
+    )
+    then
 
         return nil
 
     end
 
-    local Success, Asset =
+    local Success,
+        Asset =
         pcall(
             function()
 
@@ -284,7 +252,8 @@ function Background:LoadLocal(
         )
 
     if Success
-    and Asset then
+    and Asset
+    then
 
         return Asset
 
@@ -308,13 +277,11 @@ function Background:GetAsset(
         )
 
     if not Data then
-
         return nil
-
     end
 
     --==================================================
-    -- METHOD 1
+    -- EXTERNAL FIRST
     --==================================================
 
     if Data.URL then
@@ -322,9 +289,9 @@ function Background:GetAsset(
         local FileName =
             Data.Local
             or (
-                "RimuruHub_" ..
-                ThemeName ..
-                ".image"
+                "RimuruHub_"
+                .. ThemeName
+                .. ".image"
             )
 
         local Asset =
@@ -334,15 +301,13 @@ function Background:GetAsset(
             )
 
         if Asset then
-
             return Asset
-
         end
 
     end
 
     --==================================================
-    -- METHOD 2
+    -- LOCAL FALLBACK
     --==================================================
 
     if Data.Local then
@@ -353,9 +318,7 @@ function Background:GetAsset(
             )
 
         if Asset then
-
             return Asset
-
         end
 
     end
@@ -365,7 +328,7 @@ function Background:GetAsset(
 end
 
 --==================================================
--- CREATE BACKGROUND
+-- CREATE
 --==================================================
 
 function Background:Create()
@@ -374,15 +337,16 @@ function Background:Create()
         return nil
     end
 
-    -- Remove old
     self:Remove()
 
     --==================================================
-    -- FRAME
+    -- BACKGROUND FRAME
     --==================================================
 
     local Frame =
-        Instance.new("Frame")
+        Instance.new(
+            "Frame"
+        )
 
     Frame.Name =
         "RimuruBackground"
@@ -426,7 +390,9 @@ function Background:Create()
     --==================================================
 
     local Image =
-        Instance.new("ImageLabel")
+        Instance.new(
+            "ImageLabel"
+        )
 
     Image.Name =
         "BackgroundImage"
@@ -484,7 +450,7 @@ function Background:Create()
 end
 
 --==================================================
--- APPLY BACKGROUND
+-- APPLY
 --==================================================
 
 function Background:Apply(
@@ -492,15 +458,31 @@ function Background:Apply(
 )
 
     if not self.Enabled then
+
         return false
+
     end
 
     if not ThemeName then
+
         return false
+
     end
 
     --==================================================
-    -- CHECK IF THEME HAS IMAGE
+    -- REMOVE CURRENT IMAGE FIRST
+    --==================================================
+
+    self:Remove()
+
+    self.CurrentTheme =
+        ThemeName
+
+    self.CurrentImage =
+        nil
+
+    --==================================================
+    -- GET DATA
     --==================================================
 
     local Data =
@@ -508,22 +490,18 @@ function Background:Apply(
             ThemeName
         )
 
+    --==================================================
+    -- THEME WITHOUT IMAGE
+    --==================================================
+
     if not Data then
 
-        self:Remove()
-
-        self.CurrentTheme =
-            ThemeName
-
-        self.CurrentImage =
-            nil
-
-        return false
+        return true
 
     end
 
     --==================================================
-    -- GET ASSET
+    -- LOAD IMAGE
     --==================================================
 
     local Asset =
@@ -538,27 +516,21 @@ function Background:Apply(
             .. ThemeName
         )
 
-        self:Remove()
-
-        self.CurrentTheme =
-            ThemeName
-
-        self.CurrentImage =
-            nil
-
         return false
 
     end
 
     --==================================================
-    -- CREATE
+    -- CREATE IMAGE
     --==================================================
 
     local Image =
         self:Create()
 
     if not Image then
+
         return false
+
     end
 
     Image.Image =
@@ -566,9 +538,6 @@ function Background:Apply(
 
     Image.ImageTransparency =
         self:GetTransparency()
-
-    self.CurrentTheme =
-        ThemeName
 
     self.CurrentImage =
         Asset
@@ -585,7 +554,8 @@ function Background:GetTransparency()
 
     if self.Config
     and self.Config.UI
-    and self.Config.UI.BackgroundTransparency then
+    and self.Config.UI.BackgroundTransparency
+    then
 
         return math.clamp(
             self.Config.UI.BackgroundTransparency,
@@ -596,19 +566,26 @@ function Background:GetTransparency()
     end
 
     if self.UI
-    and self.UI.GetBackgroundTransparency then
+    and type(
+        self.UI.GetBackgroundTransparency
+    ) == "function"
+    then
 
-        local Success, Value =
+        local Success,
+            Value =
             pcall(
                 function()
 
-                    return self.UI:GetBackgroundTransparency()
+                    return self.UI:
+                        GetBackgroundTransparency()
 
                 end
             )
 
         if Success
-        and typeof(Value) == "number" then
+        and typeof(Value) ==
+            "number"
+        then
 
             return math.clamp(
                 Value,
@@ -640,16 +617,19 @@ function Background:SetTransparency(
         )
 
     if self.Config
-    and self.Config.UI then
+    and self.Config.UI
+    then
 
-        self.Config.UI.BackgroundTransparency =
+        self.Config.UI:
+            BackgroundTransparency =
             Value
 
     end
 
     if self.BackgroundImage then
 
-        self.BackgroundImage.ImageTransparency =
+        self.BackgroundImage:
+            ImageTransparency =
             Value
 
     end
@@ -667,7 +647,8 @@ function Background:Remove()
         pcall(
             function()
 
-                self.BackgroundFrame:Destroy()
+                self.BackgroundFrame:
+                    Destroy()
 
             end
         )
@@ -696,10 +677,10 @@ end
 function Background:Refresh()
 
     if not self.CurrentTheme then
-        return
+        return false
     end
 
-    self:Apply(
+    return self:Apply(
         self.CurrentTheme
     )
 
@@ -720,17 +701,49 @@ function Background:SetEnabled(
 
         self:Remove()
 
-        return
+        return true
 
     end
 
     if self.CurrentTheme then
 
-        self:Apply(
+        return self:Apply(
             self.CurrentTheme
         )
 
     end
+
+    return true
+
+end
+
+--==================================================
+-- IS ENABLED
+--==================================================
+
+function Background:IsEnabled()
+
+    return self.Enabled == true
+
+end
+
+--==================================================
+-- GET CURRENT THEME
+--==================================================
+
+function Background:GetCurrentTheme()
+
+    return self.CurrentTheme
+
+end
+
+--==================================================
+-- GET CURRENT IMAGE
+--==================================================
+
+function Background:GetCurrentImage()
+
+    return self.CurrentImage
 
 end
 
