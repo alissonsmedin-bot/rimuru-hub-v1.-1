@@ -88,7 +88,7 @@ local DefaultThemes = {
             ),
 
         BackgroundTransparency =
-            0.78,
+            0.35,
 
         RGB =
             false,
@@ -168,7 +168,7 @@ local DefaultThemes = {
             ),
 
         BackgroundTransparency =
-            0.78,
+            0.35,
 
         RGB =
             false,
@@ -248,7 +248,7 @@ local DefaultThemes = {
             ),
 
         BackgroundTransparency =
-            0.78,
+            0.30,
 
         RGB =
             true,
