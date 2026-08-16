@@ -11,32 +11,6 @@ local Logo = {}
 --==================================================
 
 function Logo:Init(Context)
-
-    self.Context =
-        Context
-
-    self.Player =
-        Context.Player
-        or Players.LocalPlayer
-
-    self.PlayerGui =
-        Context.PlayerGui
-        or self.Player:WaitForChild("PlayerGui")
-
-    self.Config =
-        Context.Config
-
-    self.Theme =
-        Context.Theme
-
-    self.UI =
-        Context.UI
-
-    self.Gui =
-        Context.UI.Gui
-
-    self:Create()
-
 end
 
 --==================================================
