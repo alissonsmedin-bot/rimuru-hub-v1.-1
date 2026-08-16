@@ -525,21 +525,24 @@ function Theme:SetTheme(Name)
         ) == "function"
         then
 
-            pcall(
-                function()
+            if self.Config
+and type(
+    self.Config.SetBackgroundTransparency
+) == "function"
+then
 
-                    self.Config:Set(
-                        "Theme",
-                        "Selected",
-                        Name
-                    )
+    pcall(
+        function()
 
-                end
-            )
+            self.Config:
+                SetBackgroundTransparency(
+                    self.BackgroundTransparency
+                )
 
         end
+    )
 
-    end
+            end
 
     --==================================================
     -- UPDATE TRANSPARENCY
