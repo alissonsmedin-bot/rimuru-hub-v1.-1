@@ -1,12 +1,23 @@
 --// 💥 RIMURU HUB
 --// MAIN SYSTEM
---// CENTRAL MODULE LOADER
---// Modular Architecture
---// Config + Theme + Background + UI + Logo
---// Categories + Cards + Sound + Favorites
---// Settings + RGB
---// FIXED CONTEXT + CATEGORY STARTUP
---// Remote / Local Compatible
+--// REMOTE LOADER
+--// GitHub Modular Architecture
+--//
+--// Config
+--// Theme
+--// UI
+--// Logo
+--// Favorites
+--// Cards
+--// Categories
+--// Sound
+--// Settings
+--// RGB
+--//
+--// Sem script.Parent
+--// Sem ModuleScripts locais
+--// Compatível com carregamento remoto
+--// Compatibilidade entre módulos incluída
 
 local RimuruHub = {}
 
@@ -21,37 +32,100 @@ local Player =
     Players.LocalPlayer
 
 --==================================================
--- MODULE PATH
+-- GITHUB
 --==================================================
 
-local Root =
-    script.Parent
+local BASE_URL =
+    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/"
 
 --==================================================
--- MODULE LOADER
+-- MODULE URLS
 --==================================================
 
-local function LoadModule(Name)
+local MODULE_URLS = {
 
-    if not Root then
+    Config =
+        BASE_URL ..
+        "config.lua",
 
-        warn(
-            "[Rimuru Hub] Root não encontrado."
-        )
+    Theme =
+        BASE_URL ..
+        "theme.lua",
 
-        return nil
+    UI =
+        BASE_URL ..
+        "ui.lua",
+
+    Logo =
+        BASE_URL ..
+        "logo.lua",
+
+    Favorites =
+        BASE_URL ..
+        "favorites.lua",
+
+    Cards =
+        BASE_URL ..
+        "cards.lua",
+
+    Categories =
+        BASE_URL ..
+        "categories.lua",
+
+    Sound =
+        BASE_URL ..
+        "sound.lua",
+
+    Settings =
+        BASE_URL ..
+        "settings.lua",
+
+    RGB =
+        BASE_URL ..
+        "RGB.lua",
+
+}
+
+--==================================================
+-- HTTP FUNCTION
+--==================================================
+
+local function GetHttp()
+
+    if type(game.HttpGet) == "function" then
+
+        return function(URL)
+
+            return game:HttpGet(
+                URL
+            )
+
+        end
 
     end
 
-    local Module =
-        Root:FindFirstChild(
-            Name
-        )
+    return nil
 
-    if not Module then
+end
+
+local HttpGet =
+    GetHttp()
+
+--==================================================
+-- REMOTE MODULE LOADER
+--==================================================
+
+local function LoadModule(
+    Name
+)
+
+    local URL =
+        MODULE_URLS[Name]
+
+    if not URL then
 
         warn(
-            "[Rimuru Hub] Módulo não encontrado: "
+            "[Rimuru Hub] URL não encontrada para: "
             .. tostring(Name)
         )
 
@@ -59,13 +133,33 @@ local function LoadModule(Name)
 
     end
 
+    if not HttpGet then
+
+        warn(
+            "[Rimuru Hub] HttpGet não disponível."
+        )
+
+        return nil
+
+    end
+
+    print(
+        "[Rimuru Hub] Carregando: "
+        .. Name
+        .. ".lua"
+    )
+
+    --==================================================
+    -- DOWNLOAD
+    --==================================================
+
     local Success,
-        Result =
+        Source =
         pcall(
             function()
 
-                return require(
-                    Module
+                return HttpGet(
+                    URL
                 )
 
             end
@@ -74,9 +168,85 @@ local function LoadModule(Name)
     if not Success then
 
         warn(
-            "[Rimuru Hub] Erro ao carregar "
-            .. tostring(Name)
-            .. ": "
+            "[Rimuru Hub] Falha HTTP em "
+            .. Name
+            .. ".lua: "
+            .. tostring(Source)
+        )
+
+        return nil
+
+    end
+
+    if type(Source) ~= "string"
+    or Source == ""
+    then
+
+        warn(
+            "[Rimuru Hub] "
+            .. Name
+            .. ".lua retornou conteúdo vazio."
+        )
+
+        return nil
+
+    end
+
+    --==================================================
+    -- COMPILE
+    --==================================================
+
+    local Compiler =
+        loadstring
+
+    if type(Compiler) ~= "function" then
+
+        warn(
+            "[Rimuru Hub] loadstring não disponível."
+        )
+
+        return nil
+
+    end
+
+    local SuccessCompile,
+        Chunk =
+        pcall(
+            Compiler,
+            Source
+        )
+
+    if not SuccessCompile
+    or type(Chunk) ~= "function"
+    then
+
+        warn(
+            "[Rimuru Hub] Erro de compilação em "
+            .. Name
+            .. ".lua: "
+            .. tostring(Chunk)
+        )
+
+        return nil
+
+    end
+
+    --==================================================
+    -- EXECUTE
+    --==================================================
+
+    local SuccessRun,
+        Result =
+        pcall(
+            Chunk
+        )
+
+    if not SuccessRun then
+
+        warn(
+            "[Rimuru Hub] Erro ao executar "
+            .. Name
+            .. ".lua: "
             .. tostring(Result)
         )
 
@@ -84,62 +254,79 @@ local function LoadModule(Name)
 
     end
 
+    --==================================================
+    -- RESULT
+    --==================================================
+
+    if Result == nil then
+
+        warn(
+            "[Rimuru Hub] "
+            .. Name
+            .. ".lua não retornou um módulo."
+        )
+
+        return nil
+
+    end
+
+    print(
+        "[Rimuru Hub] OK: "
+        .. Name
+        .. ".lua"
+    )
+
     return Result
 
 end
 
 --==================================================
--- LOAD MODULES
+-- LOAD DATA/MODULES
 --==================================================
 
 RimuruHub.Config =
     LoadModule(
-        "config"
+        "Config"
     )
 
 RimuruHub.Sound =
     LoadModule(
-        "sound"
+        "Sound"
     )
 
 RimuruHub.Theme =
     LoadModule(
-        "theme"
-    )
-
-RimuruHub.Background =
-    LoadModule(
-        "background"
+        "Theme"
     )
 
 RimuruHub.UI =
     LoadModule(
-        "ui"
+        "UI"
     )
 
 RimuruHub.Logo =
     LoadModule(
-        "logo"
+        "Logo"
     )
 
 RimuruHub.Favorites =
     LoadModule(
-        "favorites"
+        "Favorites"
     )
 
 RimuruHub.Cards =
     LoadModule(
-        "cards"
+        "Cards"
     )
 
 RimuruHub.Categories =
     LoadModule(
-        "categories"
+        "Categories"
     )
 
 RimuruHub.Settings =
     LoadModule(
-        "settings"
+        "Settings"
     )
 
 RimuruHub.RGB =
@@ -148,30 +335,143 @@ RimuruHub.RGB =
     )
 
 --==================================================
--- PLAYER GUI
+-- STATUS
 --==================================================
 
-local PlayerGui
+local function ModuleExists(
+    Module
+)
 
-if Player then
+    return Module ~= nil
 
-    local Success,
-        Result =
-        pcall(
-            function()
+end
 
-                return Player:
-                    WaitForChild(
-                        "PlayerGui"
-                    )
+--==================================================
+-- CONFIG COMPATIBILITY
+--==================================================
+
+if RimuruHub.Config then
+
+    --==================================================
+    -- CONFIG.UI
+    --==================================================
+
+    if type(
+        RimuruHub.Config.GetUI
+    ) == "function"
+    then
+
+        local Success,
+            UIData =
+            pcall(
+                function()
+
+                    return RimuruHub.Config:
+                        GetUI()
+
+                end
+            )
+
+        if Success
+        and type(UIData) == "table"
+        then
+
+            RimuruHub.Config.UI =
+                UIData
+
+        end
+
+    end
+
+    if type(
+        RimuruHub.Config.UI
+    ) ~= "table"
+    then
+
+        RimuruHub.Config.UI =
+            {}
+
+    end
+
+    --==================================================
+    -- DEFAULT CARD TRANSPARENCY
+    --==================================================
+
+    if RimuruHub.Config.UI.CardTransparency
+        == nil
+    then
+
+        RimuruHub.Config.UI.CardTransparency =
+            0.75
+
+    end
+
+    --==================================================
+    -- DRAG COMPATIBILITY
+    --==================================================
+
+    if RimuruHub.Config.UI.MainMenuDraggable
+        == nil
+    then
+
+        if RimuruHub.Config.UI.Draggable
+            ~= nil
+        then
+
+            RimuruHub.Config.UI.MainMenuDraggable =
+                RimuruHub.Config.UI.Draggable
+
+        else
+
+            RimuruHub.Config.UI.MainMenuDraggable =
+                true
+
+        end
+
+    end
+
+    --==================================================
+    -- ANIMATION COMPATIBILITY
+    --==================================================
+
+    if RimuruHub.Config.UI.Animations
+        == nil
+    then
+
+        local AnimationValue =
+            true
+
+        if type(
+            RimuruHub.Config.GetAnimation
+        ) == "function"
+        then
+
+            local Success,
+                Value =
+                pcall(
+                    function()
+
+                        return RimuruHub.Config:
+                            GetAnimation(
+                                "Enabled"
+                            )
+
+                    end
+                )
+
+            if Success
+            and type(Value) == "boolean"
+            then
+
+                AnimationValue =
+                    Value
 
             end
-        )
 
-    if Success then
+        end
 
-        PlayerGui =
-            Result
+        RimuruHub.Config.UI.Animations =
+            AnimationValue
 
     end
 
@@ -187,11 +487,10 @@ RimuruHub.Context = {
         Player,
 
     PlayerGui =
-        PlayerGui,
-
-    --==================================================
-    -- CORE
-    --==================================================
+        Player
+        and Player:WaitForChild(
+            "PlayerGui"
+        ),
 
     Config =
         RimuruHub.Config,
@@ -199,48 +498,30 @@ RimuruHub.Context = {
     Theme =
         RimuruHub.Theme,
 
-    Background =
-        RimuruHub.Background,
-
     UI =
         RimuruHub.UI,
 
     Logo =
         RimuruHub.Logo,
 
-    --==================================================
-    -- SOUND
-    --==================================================
-
-    Sound =
-        RimuruHub.Sound,
-
-    -- IMPORTANT:
-    -- categories.lua usa Context.Sounds
-    -- cards.lua usa Context.Sounds
-    Sounds =
-        RimuruHub.Sound,
-
-    --==================================================
-    -- CONTENT
-    --==================================================
-
-    Categories =
-        RimuruHub.Categories,
+    Favorites =
+        RimuruHub.Favorites,
 
     Cards =
         RimuruHub.Cards,
 
-    --==================================================
-    -- FAVORITES
-    --==================================================
-
-    Favorites =
-        RimuruHub.Favorites,
+    Categories =
+        RimuruHub.Categories,
 
     --==================================================
-    -- OTHER
+    -- IMPORTANT
     --==================================================
+
+    Sounds =
+        RimuruHub.Sound,
+
+    Sound =
+        RimuruHub.Sound,
 
     Settings =
         RimuruHub.Settings,
@@ -263,7 +544,7 @@ local function InitModule(
 
         warn(
             "[Rimuru Hub] "
-            .. tostring(Name)
+            .. Name
             .. " não carregado."
         )
 
@@ -278,7 +559,7 @@ local function InitModule(
 
         warn(
             "[Rimuru Hub] "
-            .. tostring(Name)
+            .. Name
             .. " não possui Init()."
         )
 
@@ -302,7 +583,7 @@ local function InitModule(
 
         warn(
             "[Rimuru Hub] Erro ao iniciar "
-            .. tostring(Name)
+            .. Name
             .. ": "
             .. tostring(Error)
         )
@@ -313,7 +594,7 @@ local function InitModule(
 
     print(
         "[Rimuru Hub] "
-        .. tostring(Name)
+        .. Name
         .. " iniciado."
     )
 
@@ -322,7 +603,7 @@ local function InitModule(
 end
 
 --==================================================
--- INITIALIZATION ORDER
+-- INITIALIZATION
 --==================================================
 
 --==================================================
@@ -335,12 +616,12 @@ InitModule(
 )
 
 --==================================================
--- 2. SOUND
+-- 2. THEME
 --==================================================
 
 InitModule(
-    "Sound",
-    RimuruHub.Sound
+    "Theme",
+    RimuruHub.Theme
 )
 
 --==================================================
@@ -353,34 +634,7 @@ InitModule(
 )
 
 --==================================================
--- 4. BACKGROUND
---==================================================
-
-InitModule(
-    "Background",
-    RimuruHub.Background
-)
-
---==================================================
--- 5. THEME
---==================================================
-
-InitModule(
-    "Theme",
-    RimuruHub.Theme
-)
-
---==================================================
--- 6. LOGO
---==================================================
-
-InitModule(
-    "Logo",
-    RimuruHub.Logo
-)
-
---==================================================
--- 7. FAVORITES
+-- 4. FAVORITES
 --==================================================
 
 InitModule(
@@ -389,7 +643,7 @@ InitModule(
 )
 
 --==================================================
--- 8. CARDS
+-- 5. CARDS
 --==================================================
 
 InitModule(
@@ -398,7 +652,7 @@ InitModule(
 )
 
 --==================================================
--- 9. CATEGORIES
+-- 6. CATEGORIES
 --==================================================
 
 InitModule(
@@ -407,7 +661,16 @@ InitModule(
 )
 
 --==================================================
--- 10. SETTINGS
+-- 7. LOGO
+--==================================================
+
+InitModule(
+    "Logo",
+    RimuruHub.Logo
+)
+
+--==================================================
+-- 8. SETTINGS
 --==================================================
 
 InitModule(
@@ -416,7 +679,7 @@ InitModule(
 )
 
 --==================================================
--- 11. RGB
+-- 9. RGB
 --==================================================
 
 InitModule(
@@ -425,225 +688,265 @@ InitModule(
 )
 
 --==================================================
--- APPLY INITIAL THEME
+-- CARDS COMPATIBILITY
 --==================================================
 
-task.defer(
-    function()
+if RimuruHub.Cards then
 
-        task.wait(
-            0.1
-        )
+    -- Categories.lua chama CreateCard().
+    -- Cards.lua atual possui CreateSoundCard().
 
-        if RimuruHub.Theme
-        and RimuruHub.UI
-        and type(
-            RimuruHub.Theme.GetName
-        ) == "function"
-        then
+    if type(
+        RimuruHub.Cards.CreateCard
+    ) ~= "function"
+    and type(
+        RimuruHub.Cards.CreateSoundCard
+    ) == "function"
+    then
 
-            local Success,
-                Error =
-                pcall(
-                    function()
+        RimuruHub.Cards.CreateCard =
+            function(
+                Self,
+                Index,
+                Data
+            )
 
-                        if type(
-                            RimuruHub.UI.ApplyTheme
-                        ) == "function"
-                        then
-
-                            RimuruHub.UI:
-                                ApplyTheme()
-
-                        end
-
-                    end
-                )
-
-            if not Success then
-
-                warn(
-                    "[Rimuru Hub] Erro ao aplicar tema inicial: "
-                    .. tostring(Error)
-                )
+                return Self:
+                    CreateSoundCard(
+                        Index,
+                        Data
+                    )
 
             end
 
-        end
-
-    end
-)
-
---==================================================
--- APPLY INITIAL BACKGROUND
---==================================================
-
-task.defer(
-    function()
-
-        task.wait(
-            0.15
+        print(
+            "[Rimuru Hub] Compatibilidade Cards: CreateCard -> CreateSoundCard"
         )
 
-        if not RimuruHub.Background
-        or not RimuruHub.Theme
-        then
-
-            return
-
-        end
-
-        if type(
-            RimuruHub.Background.Apply
-        ) ~= "function"
-        then
-
-            return
-
-        end
-
-        local ThemeName
-
-        pcall(
-            function()
-
-                ThemeName =
-                    RimuruHub.Theme:
-                    GetName()
-
-            end
-        )
-
-        if not ThemeName then
-            return
-        end
-
-        local Success,
-            Error =
-            pcall(
-                function()
-
-                    RimuruHub.Background:
-                        Apply(
-                            ThemeName
-                        )
-
-                end
-            )
-
-        if not Success then
-
-            warn(
-                "[Rimuru Hub] Erro ao aplicar background: "
-                .. tostring(Error)
-            )
-
-        end
-
     end
-)
+
+end
+
+--==================================================
+-- REFRESH CONTEXT REFERENCES
+--==================================================
+
+if RimuruHub.UI then
+
+    RimuruHub.Context.UI =
+        RimuruHub.UI
+
+end
+
+if RimuruHub.Theme then
+
+    RimuruHub.Context.Theme =
+        RimuruHub.Theme
+
+end
+
+if RimuruHub.Cards then
+
+    RimuruHub.Context.Cards =
+        RimuruHub.Cards
+
+end
+
+if RimuruHub.Categories then
+
+    RimuruHub.Context.Categories =
+        RimuruHub.Categories
+
+end
 
 --==================================================
 -- CREATE CATEGORIES
 --==================================================
 
-task.defer(
-    function()
+if RimuruHub.Categories
+and type(
+    RimuruHub.Categories.CreateCategories
+) == "function"
+then
 
-        task.wait(
-            0.2
+    local Success,
+        Error =
+        pcall(
+            function()
+
+                RimuruHub.Categories:
+                    CreateCategories()
+
+            end
         )
 
-        local Categories =
-            RimuruHub.Categories
+    if not Success then
 
-        if not Categories then
+        warn(
+            "[Rimuru Hub] Erro ao criar categorias: "
+            .. tostring(Error)
+        )
 
-            warn(
-                "[Rimuru Hub] Categories não disponível."
-            )
+    else
 
-            return
-
-        end
-
-        --==================================================
-        -- CREATE CATEGORY BUTTONS
-        --==================================================
-
-        if type(
-            Categories.CreateCategories
-        ) == "function"
-        then
-
-            local Success,
-                Error =
-                pcall(
-                    function()
-
-                        Categories:
-                            CreateCategories()
-
-                    end
-                )
-
-            if not Success then
-
-                warn(
-                    "[Rimuru Hub] Erro ao criar categorias: "
-                    .. tostring(Error)
-                )
-
-                return
-
-            end
-
-        else
-
-            warn(
-                "[Rimuru Hub] CreateCategories() não encontrado."
-            )
-
-            return
-
-        end
-
-        --==================================================
-        -- SELECT DEFAULT CATEGORY
-        --==================================================
-
-        if type(
-            Categories.SetDefaultCategory
-        ) == "function"
-        then
-
-            local Success,
-                Error =
-                pcall(
-                    function()
-
-                        Categories:
-                            SetDefaultCategory()
-
-                    end
-                )
-
-            if not Success then
-
-                warn(
-                    "[Rimuru Hub] Erro ao selecionar categoria padrão: "
-                    .. tostring(Error)
-                )
-
-            end
-
-        end
+        print(
+            "[Rimuru Hub] Categorias criadas."
+        )
 
     end
-)
+
+end
 
 --==================================================
--- POST INIT
+-- DEFAULT CATEGORY
+--==================================================
+
+if RimuruHub.Categories
+and type(
+    RimuruHub.Categories.SetDefaultCategory
+) == "function"
+then
+
+    local Success,
+        Error =
+        pcall(
+            function()
+
+                RimuruHub.Categories:
+                    SetDefaultCategory()
+
+            end
+        )
+
+    if not Success then
+
+        warn(
+            "[Rimuru Hub] Erro ao selecionar categoria padrão: "
+            .. tostring(Error)
+        )
+
+    end
+
+end
+
+--==================================================
+-- BUILD SETTINGS
+--==================================================
+
+if RimuruHub.Settings
+and type(
+    RimuruHub.Settings.Build
+) == "function"
+then
+
+    local Success,
+        Error =
+        pcall(
+            function()
+
+                RimuruHub.Settings:
+                    Build()
+
+            end
+        )
+
+    if not Success then
+
+        warn(
+            "[Rimuru Hub] Erro ao construir Settings: "
+            .. tostring(Error)
+        )
+
+    end
+
+end
+
+--==================================================
+-- APPLY THEME
+--==================================================
+
+if RimuruHub.UI
+and type(
+    RimuruHub.UI.ApplyTheme
+) == "function"
+then
+
+    pcall(
+        function()
+
+            RimuruHub.UI:
+                ApplyTheme()
+
+        end
+    )
+
+end
+
+--==================================================
+-- APPLY CATEGORY THEME
+--==================================================
+
+if RimuruHub.Categories
+and type(
+    RimuruHub.Categories.ApplyTheme
+) == "function"
+then
+
+    pcall(
+        function()
+
+            RimuruHub.Categories:
+                ApplyTheme()
+
+        end
+    )
+
+end
+
+--==================================================
+-- APPLY CARD THEME
+--==================================================
+
+if RimuruHub.Cards
+and type(
+    RimuruHub.Cards.ApplyTheme
+) == "function"
+then
+
+    pcall(
+        function()
+
+            RimuruHub.Cards:
+                ApplyTheme()
+
+        end
+    )
+
+end
+
+--==================================================
+-- APPLY LOGO THEME
+--==================================================
+
+if RimuruHub.Logo
+and type(
+    RimuruHub.Logo.ApplyTheme
+) == "function"
+then
+
+    pcall(
+        function()
+
+            RimuruHub.Logo:
+                ApplyTheme()
+
+        end
+    )
+
+end
+
+--==================================================
+-- OPEN / CLOSE
 --==================================================
 
 function RimuruHub:Open()
@@ -658,9 +961,19 @@ function RimuruHub:Open()
 
     end
 
-    --==================================================
-    -- DIRECT MAIN
-    --==================================================
+    if type(
+        self.UI.SetVisible
+    ) == "function"
+    then
+
+        self.UI:
+            SetVisible(
+                true
+            )
+
+        return true
+
+    end
 
     if self.UI.Main then
 
@@ -671,43 +984,8 @@ function RimuruHub:Open()
 
     end
 
-    --==================================================
-    -- UI OPEN METHOD
-    --==================================================
-
-    if type(
-        self.UI.Open
-    ) == "function"
-    then
-
-        local Success,
-            Error =
-            pcall(
-                function()
-
-                    self.UI:
-                        Open()
-
-                end
-            )
-
-        if not Success then
-
-            warn(
-                "[Rimuru Hub] Erro ao abrir UI: "
-                .. tostring(Error)
-            )
-
-            return false
-
-        end
-
-        return true
-
-    end
-
     warn(
-        "[Rimuru Hub] Não foi possível abrir a UI."
+        "[Rimuru Hub] Main não encontrado."
     )
 
     return false
@@ -724,9 +1002,19 @@ function RimuruHub:Close()
         return false
     end
 
-    --==================================================
-    -- DIRECT MAIN
-    --==================================================
+    if type(
+        self.UI.SetVisible
+    ) == "function"
+    then
+
+        self.UI:
+            SetVisible(
+                false
+            )
+
+        return true
+
+    end
 
     if self.UI.Main then
 
@@ -734,29 +1022,6 @@ function RimuruHub:Close()
             false
 
         return true
-
-    end
-
-    --==================================================
-    -- UI CLOSE METHOD
-    --==================================================
-
-    if type(
-        self.UI.Close
-    ) == "function"
-    then
-
-        local Success =
-            pcall(
-                function()
-
-                    self.UI:
-                        Close()
-
-                end
-            )
-
-        return Success
 
     end
 
@@ -774,37 +1039,24 @@ function RimuruHub:Toggle()
         return false
     end
 
-    if self.UI.Main then
-
-        self.UI.Main.Visible =
-            not self.UI.Main.Visible
-
-        return
-            self.UI.Main.Visible
-
-    end
-
     if type(
         self.UI.Toggle
     ) == "function"
     then
 
-        local Success,
-            Result =
-            pcall(
-                function()
+        self.UI:
+            Toggle()
 
-                    return self.UI:
-                        Toggle()
+        return self.UI:IsVisible()
 
-                end
-            )
+    end
 
-        if Success then
+    if self.UI.Main then
 
-            return Result
+        self.UI.Main.Visible =
+            not self.UI.Main.Visible
 
-        end
+        return self.UI.Main.Visible
 
     end
 
@@ -820,18 +1072,12 @@ function RimuruHub:GetModule(
     Name
 )
 
-    if type(Name) ~= "string" then
-        return nil
-    end
-
-    return self[
-        Name
-    ]
+    return self[Name]
 
 end
 
 --==================================================
--- GET STATUS
+-- STATUS
 --==================================================
 
 function RimuruHub:GetStatus()
@@ -839,130 +1085,61 @@ function RimuruHub:GetStatus()
     return {
 
         Config =
-            self.Config ~= nil,
+            ModuleExists(
+                self.Config
+            ),
 
         Sound =
-            self.Sound ~= nil,
-
-        Sounds =
-            self.Sound ~= nil,
+            ModuleExists(
+                self.Sound
+            ),
 
         Theme =
-            self.Theme ~= nil,
-
-        Background =
-            self.Background ~= nil,
+            ModuleExists(
+                self.Theme
+            ),
 
         UI =
-            self.UI ~= nil,
+            ModuleExists(
+                self.UI
+            ),
 
         Logo =
-            self.Logo ~= nil,
+            ModuleExists(
+                self.Logo
+            ),
 
         Favorites =
-            self.Favorites ~= nil,
-
-        Categories =
-            self.Categories ~= nil,
+            ModuleExists(
+                self.Favorites
+            ),
 
         Cards =
-            self.Cards ~= nil,
+            ModuleExists(
+                self.Cards
+            ),
+
+        Categories =
+            ModuleExists(
+                self.Categories
+            ),
 
         Settings =
-            self.Settings ~= nil,
+            ModuleExists(
+                self.Settings
+            ),
 
         RGB =
-            self.RGB ~= nil,
+            ModuleExists(
+                self.RGB
+            ),
 
     }
 
 end
 
 --==================================================
--- DEBUG STATUS
---==================================================
-
-function RimuruHub:PrintStatus()
-
-    local Status =
-        self:GetStatus()
-
-    print(
-        "========================================"
-    )
-
-    print(
-        "💥 RIMURU HUB STATUS"
-    )
-
-    print(
-        "Config:",
-        Status.Config
-    )
-
-    print(
-        "Sound:",
-        Status.Sound
-    )
-
-    print(
-        "Sounds:",
-        Status.Sounds
-    )
-
-    print(
-        "Theme:",
-        Status.Theme
-    )
-
-    print(
-        "Background:",
-        Status.Background
-    )
-
-    print(
-        "UI:",
-        Status.UI
-    )
-
-    print(
-        "Logo:",
-        Status.Logo
-    )
-
-    print(
-        "Favorites:",
-        Status.Favorites
-    )
-
-    print(
-        "Categories:",
-        Status.Categories
-    )
-
-    print(
-        "Cards:",
-        Status.Cards
-    )
-
-    print(
-        "Settings:",
-        Status.Settings
-    )
-
-    print(
-        "RGB:",
-        Status.RGB
-    )
-
-    print(
-        "========================================"
-    )
-
-end
-
---==================================================
--- STARTUP MESSAGE
+-- PRINT STATUS
 --==================================================
 
 print(
@@ -974,35 +1151,11 @@ print(
 )
 
 print(
-    "Modular System carregado."
+    "Remote Modular System carregado."
 )
 
 print(
-    "Config System carregado."
-)
-
-print(
-    "Sound System carregado."
-)
-
-print(
-    "Theme System carregado."
-)
-
-print(
-    "UI System carregado."
-)
-
-print(
-    "Favorites System carregado."
-)
-
-print(
-    "Categories System carregado."
-)
-
-print(
-    "Cards System carregado."
+    "GitHub Modules carregados."
 )
 
 print(
@@ -1017,7 +1170,7 @@ task.defer(
     function()
 
         task.wait(
-            0.35
+            0.25
         )
 
         RimuruHub:
