@@ -1,8 +1,13 @@
 --// 💥 RIMURU HUB
 --// Logo System
+--// SEARCH VERSION
+--// Modular Logo Controller
 
-local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
+local Players =
+    game:GetService("Players")
+
+local UIS =
+    game:GetService("UserInputService")
 
 local Logo = {}
 
@@ -11,6 +16,82 @@ local Logo = {}
 --==================================================
 
 function Logo:Init(Context)
+
+    self.Context =
+        Context
+
+    self.Player =
+        Context.Player
+        or Players.LocalPlayer
+
+    self.PlayerGui =
+        Context.PlayerGui
+        or self.Player:WaitForChild(
+            "PlayerGui"
+        )
+
+    self.Config =
+        Context.Config
+
+    self.Theme =
+        Context.Theme
+
+    self.UI =
+        Context.UI
+
+    --==================================================
+    -- VALIDATION
+    --==================================================
+
+    if not self.Config then
+
+        warn(
+            "❌ Rimuru Hub Logo: Config não encontrado."
+        )
+
+        return
+
+    end
+
+    if not self.Theme then
+
+        warn(
+            "❌ Rimuru Hub Logo: Theme não encontrado."
+        )
+
+        return
+
+    end
+
+    if not self.UI then
+
+        warn(
+            "❌ Rimuru Hub Logo: UI não encontrado."
+        )
+
+        return
+
+    end
+
+    self.Gui =
+        self.UI.Gui
+
+    if not self.Gui then
+
+        warn(
+            "❌ Rimuru Hub Logo: ScreenGui não encontrado."
+        )
+
+        return
+
+    end
+
+    --==================================================
+    -- CREATE
+    --==================================================
+
+    self:Create()
+
 end
 
 --==================================================
@@ -25,8 +106,44 @@ function Logo:Create()
     local Theme =
         self.Theme
 
+    if not Config
+    or not Config.UI then
+
+        warn(
+            "❌ Rimuru Hub Logo: Config.UI não encontrado."
+        )
+
+        return
+
+    end
+
     local CurrentTheme =
         Theme:GetCurrent()
+
+    if not CurrentTheme then
+
+        warn(
+            "❌ Rimuru Hub Logo: tema atual não encontrado."
+        )
+
+        return
+
+    end
+
+    --==================================================
+    -- REMOVE OLD LOGO
+    --==================================================
+
+    local OldLogo =
+        self.Gui:FindFirstChild(
+            "RimuruLogo"
+        )
+
+    if OldLogo then
+
+        OldLogo:Destroy()
+
+    end
 
     --==================================================
     -- LOGO BUTTON
@@ -72,9 +189,8 @@ function Logo:Create()
     LogoButton.ZIndex =
         1000
 
-    -- A logo continua visível mesmo com o menu aberto.
     LogoButton.Visible =
-        Config.UI.ShowLogo
+        Config.UI.ShowLogo == true
 
     LogoButton.Parent =
         self.Gui
@@ -133,25 +249,32 @@ function Logo:Create()
 
     LogoButton.MouseButton1Click:Connect(function()
 
-        -- Se o clique foi usado para arrastar,
-        -- não abre/fecha o menu.
-        if self.LogoMoved() then
+        if self.LogoMoved
+        and self.LogoMoved() then
 
-            self.ResetMoved()
+            if self.ResetMoved then
+
+                self.ResetMoved()
+
+            end
 
             return
 
         end
 
-        local Main =
-            self.UI.Main
+        local Main
+
+        if self.UI then
+
+            Main =
+                self.UI.Main
+
+        end
 
         if not Main then
             return
         end
 
-        -- A logo funciona como segundo botão
-        -- para abrir e fechar o menu.
         Main.Visible =
             not Main.Visible
 
@@ -171,6 +294,14 @@ function Logo:SetupDrag()
     local Config =
         self.Config
 
+    if not LogoButton
+    or not Config
+    or not Config.UI then
+
+        return
+
+    end
+
     local LogoDragging =
         false
 
@@ -178,6 +309,7 @@ function Logo:SetupDrag()
         false
 
     local LogoDragStart
+
     local LogoStartPosition
 
     LogoButton.InputBegan:Connect(function(Input)
@@ -324,12 +456,19 @@ end
 
 function Logo:ApplyTheme()
 
-    if not self.Button then
+    if not self.Button
+    or not self.Theme then
+
         return
+
     end
 
     local CurrentTheme =
         self.Theme:GetCurrent()
+
+    if not CurrentTheme then
+        return
+    end
 
     self.Button.BackgroundColor3 =
         CurrentTheme.LogoBackground
@@ -338,5 +477,9 @@ function Logo:ApplyTheme()
         self.Theme:GetAccent()
 
 end
+
+--==================================================
+-- RETURN
+--==================================================
 
 return Logo
