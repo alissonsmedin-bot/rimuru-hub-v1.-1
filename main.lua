@@ -103,6 +103,9 @@ local Logo =
 local Cards =
     Load("cards.lua")
 
+local Search =
+    Load("search.lua")
+
 local Categories =
     Load("categories.lua")
 
@@ -129,6 +132,10 @@ if not Logo then
 end
 
 if not Cards then
+    return
+end
+
+if not Search then
     return
 end
 
@@ -173,6 +180,9 @@ local Context = {
 
     Cards =
         Cards,
+
+    Search =
+        Search,
 
     Categories =
         Categories,
@@ -224,6 +234,16 @@ Cards:Init(
 Categories:Init(
     Context
 )
+
+--==================================================
+-- SEARCH
+--==================================================
+
+Search:Init(
+    Context
+)
+
+Search:Connect()
 
 --==================================================
 -- SETTINGS
@@ -282,6 +302,14 @@ if UI.Close then
             false
         )
 
+        if Config.UI.ShowLogo then
+
+            Logo:SetVisible(
+                true
+            )
+
+        end
+
     end)
 
 end
@@ -307,6 +335,8 @@ UI:ApplyTheme()
 Logo:ApplyTheme()
 
 Categories:ApplyTheme()
+
+Search:ApplyTheme()
 
 --==================================================
 -- LOADED
