@@ -1,9 +1,8 @@
 --// 🎨 RIMURU HUB
 --// Theme System
 --// Theme Core
---// REWORKED
 --// Compatible with Config + UI + Settings + RGB + Background
---// Runtime Color Editing + Background Transparency
+--// Runtime Color Editing + Background Switching
 
 local Theme = {}
 
@@ -256,7 +255,7 @@ local DefaultThemes = {
 }
 
 --==================================================
--- CLONE TABLE
+-- CLONE
 --==================================================
 
 local function CloneTable(
@@ -310,11 +309,11 @@ function Theme:Init(
     self.Background =
         self.Context.Background
 
-    --==================================================
-    -- CLONE DEFAULT THEMES
-    --==================================================
-
     self.Themes = {}
+
+    --==================================================
+    -- COPY DEFAULT THEMES
+    --==================================================
 
     for Name, Data in
         pairs(DefaultThemes)
@@ -328,7 +327,7 @@ function Theme:Init(
     end
 
     --==================================================
-    -- CUSTOM THEMES FROM CONFIG
+    -- CUSTOM THEMES
     --==================================================
 
     if self.Config then
@@ -375,34 +374,31 @@ function Theme:Init(
     end
 
     --==================================================
-    -- DEFAULT NAME
+    -- DEFAULT THEME
     --==================================================
 
     self.Name =
         "Rimuru Dark"
 
-    if self.Config then
+    if self.Config
+    and type(
+        self.Config.GetSelectedTheme
+    ) == "function"
+    then
 
-        if type(
-            self.Config.GetSelectedTheme
-        ) == "function"
+        local SavedTheme =
+            self.Config:
+                GetSelectedTheme()
+
+        if type(SavedTheme) ==
+            "string"
+        and self.Themes[
+            SavedTheme
+        ]
         then
 
-            local SavedTheme =
-                self.Config:
-                    GetSelectedTheme()
-
-            if type(SavedTheme) ==
-                "string"
-            and self.Themes[
+            self.Name =
                 SavedTheme
-            ]
-            then
-
-                self.Name =
-                    SavedTheme
-
-            end
 
         end
 
@@ -439,19 +435,11 @@ function Theme:Init(
             self.Name
         ]
 
-    --==================================================
-    -- RGB
-    --==================================================
-
     self.RGBHue =
         0
 
     self.RGBEnabled =
         false
-
-    --==================================================
-    -- BACKGROUND
-    --==================================================
 
     self.BackgroundTransparency =
         self:GetBackgroundTransparency()
@@ -522,7 +510,7 @@ function Theme:SetTheme(
         0
 
     --==================================================
-    -- SAVE CONFIG
+    -- SAVE
     --==================================================
 
     if self.Config then
@@ -532,20 +520,32 @@ function Theme:SetTheme(
         ) == "function"
         then
 
-            self.Config:
-                SetSelectedTheme(
-                    Name
-                )
+            pcall(
+                function()
+
+                    self.Config:
+                        SetSelectedTheme(
+                            Name
+                        )
+
+                end
+            )
 
         elseif type(
             self.Config.Set
         ) == "function"
         then
 
-            self.Config:Set(
-                "Theme",
-                "Selected",
-                Name
+            pcall(
+                function()
+
+                    self.Config:Set(
+                        "Theme",
+                        "Selected",
+                        Name
+                    )
+
+                end
             )
 
         end
@@ -553,7 +553,7 @@ function Theme:SetTheme(
     end
 
     --==================================================
-    -- UPDATE TRANSPARENCY
+    -- TRANSPARENCY
     --==================================================
 
     self.BackgroundTransparency =
@@ -600,7 +600,7 @@ function Theme:SetTheme(
     end
 
     --==================================================
-    -- NOTIFY UI
+    -- APPLY UI THEME
     --==================================================
 
     if self.Context
@@ -667,22 +667,9 @@ end
 
 function Theme:HasBackgroundImage()
 
-    if self.Background
-    and type(
-        self.Background.GetData
-    ) == "function"
-    then
-
-        return
-            self.Background:
-                GetData(
-                    self.Name
-                )
-            ~= nil
-
-    end
-
-    return false
+    return
+        self:GetBackgroundImage()
+        ~= nil
 
 end
 
@@ -692,48 +679,37 @@ end
 
 function Theme:GetBackgroundTransparency()
 
-    --==================================================
-    -- CONFIG
-    --==================================================
+    if self.Config
+    and type(
+        self.Config.GetBackgroundTransparency
+    ) == "function"
+    then
 
-    if self.Config then
+        local Success,
+            Value =
+            pcall(
+                function()
 
-        if type(
-            self.Config.GetBackgroundTransparency
-        ) == "function"
+                    return self.Config:
+                        GetBackgroundTransparency()
+
+                end
+            )
+
+        if Success
+        and type(Value) ==
+            "number"
         then
 
-            local Success,
-                Value =
-                pcall(
-                    function()
-
-                        return self.Config:
-                            GetBackgroundTransparency()
-
-                    end
-                )
-
-            if Success
-            and type(Value) ==
-                "number"
-            then
-
-                return math.clamp(
-                    Value,
-                    0,
-                    1
-                )
-
-            end
+            return math.clamp(
+                Value,
+                0,
+                1
+            )
 
         end
 
     end
-
-    --==================================================
-    -- THEME
-    --==================================================
 
     if self.Current
     and self.Current.BackgroundTransparency
@@ -747,10 +723,6 @@ function Theme:GetBackgroundTransparency()
         )
 
     end
-
-    --==================================================
-    -- INTERNAL
-    --==================================================
 
     if type(
         self.BackgroundTransparency
@@ -804,33 +776,30 @@ function Theme:SetBackgroundTransparency(
     end
 
     --==================================================
-    -- SAVE CONFIG
+    -- CONFIG
     --==================================================
 
-    if self.Config then
+    if self.Config
+    and type(
+        self.Config.SetBackgroundTransparency
+    ) == "function"
+    then
 
-        if type(
-            self.Config.SetBackgroundTransparency
-        ) == "function"
-        then
+        pcall(
+            function()
 
-            pcall(
-                function()
+                self.Config:
+                    SetBackgroundTransparency(
+                        Value
+                    )
 
-                    self.Config:
-                        SetBackgroundTransparency(
-                            Value
-                        )
-
-                end
-            )
-
-        end
+            end
+        )
 
     end
 
     --==================================================
-    -- UPDATE REAL BACKGROUND
+    -- REAL BACKGROUND
     --==================================================
 
     if self.Background
@@ -942,7 +911,7 @@ function Theme:GetName()
 end
 
 --==================================================
--- GET THEME NAME
+-- GET CURRENT THEME NAME
 --==================================================
 
 function Theme:GetCurrentThemeName()
@@ -1030,13 +999,13 @@ function Theme:SetColor(
         return false
     end
 
-    if typeof(Color) ~= "Color3" then
-        return false
-    end
+    if typeof(Color) ~=
+        "Color3"
+    then
 
-    --==================================================
-    -- ONLY ALLOWED COLOR VALUES
-    --==================================================
+        return false
+
+    end
 
     local Allowed = {
 
@@ -1096,7 +1065,7 @@ function Theme:GetColor(
 end
 
 --==================================================
--- RESET CURRENT THEME
+-- RESET CURRENT
 --==================================================
 
 function Theme:ResetCurrent()
@@ -1141,104 +1110,16 @@ function Theme:ResetCurrent()
     ) == "function"
     then
 
-                task.defer(
-            function()
-
-                local Success,
-                    Error =
-                    pcall(
-                        function()
-
-                            self.Background:
-                                Apply(
-                                    self.Name
-                                )
-
-                        end
-                    )
-
-                if not Success then
-
-                    warn(
-                        "[Rimuru Hub] Erro ao resetar background: "
-                        .. tostring(Error)
-                    )
-
-                end
-
-            end
-        )
-
-    end
-
-    --==================================================
-    -- RESET TRANSPARENCY
-    --==================================================
-
-    if self.Background
-    and type(
-        self.Background.SetTransparency
-    ) == "function"
-    then
-
-        pcall(
-            function()
-
-                self.Background:
-                    SetTransparency(
-                        self.BackgroundTransparency
-                    )
-
-            end
-        )
-
-    end
-
-    --==================================================
-    -- UPDATE CONFIG
-    --==================================================
-
-    if self.Config then
-
-        if type(
-            self.Config.SetBackgroundTransparency
-        ) == "function"
-        then
-
-            pcall(
-                function()
-
-                    self.Config:
-                        SetBackgroundTransparency(
-                            self.BackgroundTransparency
-                        )
-
-                end
-            )
-
-        end
-
-    end
-
-    --==================================================
-    -- UPDATE UI
-    --==================================================
-
-    if self.Context
-    and self.Context.Settings
-    and type(
-        self.Context.Settings.ApplyTheme
-    ) == "function"
-    then
-
         task.defer(
             function()
 
                 pcall(
                     function()
 
-                        self.Context.Settings:
-                            ApplyTheme()
+                        self.Background:
+                            Apply(
+                                self.Name
+                            )
 
                     end
                 )
@@ -1268,7 +1149,8 @@ function Theme:Export()
     for Key, Value in
         pairs(
             self.Current
-        ) do
+        )
+    do
 
         Data[Key] =
             Value
@@ -1276,203 +1158,6 @@ function Theme:Export()
     end
 
     return Data
-
-end
-
---==================================================
--- IMPORT
---==================================================
-
-function Theme:Import(
-    Data
-)
-
-    if type(Data) ~= "table" then
-        return false
-    end
-
-    if not self.Current then
-        return false
-    end
-
-    local Allowed = {
-
-        Main = true,
-        Sidebar = true,
-        Content = true,
-        Card = true,
-        Button = true,
-        Text = true,
-        SubText = true,
-        Accent = true,
-        LogoBackground = true,
-        Close = true,
-        BackgroundTransparency = true,
-        RGB = true,
-
-    }
-
-    for Key, Value in
-        pairs(Data)
-    do
-
-        if Allowed[Key] then
-
-            if Key ==
-                "BackgroundTransparency"
-            then
-
-                if type(Value) ==
-                    "number"
-                then
-
-                    self:SetBackgroundTransparency(
-                        Value
-                    )
-
-                end
-
-            elseif Key == "RGB" then
-
-                self.Current.RGB =
-                    Value == true
-
-            elseif typeof(Value) ==
-                "Color3"
-            then
-
-                self.Current[Key] =
-                    Value
-
-            end
-
-        end
-
-    end
-
-    --==================================================
-    -- APPLY
-    --==================================================
-
-    if self.Context
-    and self.Context.Settings
-    and type(
-        self.Context.Settings.ApplyTheme
-    ) == "function"
-    then
-
-        task.defer(
-            function()
-
-                pcall(
-                    function()
-
-                        self.Context.Settings:
-                            ApplyTheme()
-
-                    end
-                )
-
-            end
-        )
-
-    end
-
-    return true
-
-end
-
---==================================================
--- APPLY CURRENT THEME
---==================================================
-
-function Theme:Apply()
-
-    if not self.Current then
-        return false
-    end
-
-    --==================================================
-    -- BACKGROUND
-    --==================================================
-
-    if self.Background
-    and type(
-        self.Background.Apply
-    ) == "function"
-    then
-
-        task.defer(
-            function()
-
-                pcall(
-                    function()
-
-                        self.Background:
-                            Apply(
-                                self.Name
-                            )
-
-                    end
-                )
-
-            end
-        )
-
-    end
-
-    --==================================================
-    -- TRANSPARENCY
-    --==================================================
-
-    if self.Background
-    and type(
-        self.Background.SetTransparency
-    ) == "function"
-    then
-
-        pcall(
-            function()
-
-                self.Background:
-                    SetTransparency(
-                        self:GetBackgroundTransparency()
-                    )
-
-            end
-        )
-
-    end
-
-    --==================================================
-    -- UI
-    --==================================================
-
-    if self.Context
-    and self.Context.Settings
-    and type(
-        self.Context.Settings.ApplyTheme
-    ) == "function"
-    then
-
-        task.defer(
-            function()
-
-                pcall(
-                    function()
-
-                        self.Context.Settings:
-                            ApplyTheme()
-
-                    end
-                )
-
-            end
-        )
-
-    end
-
-    return true
 
 end
 
