@@ -1,149 +1,44 @@
 --// 💥 RIMURU HUB
---// UI SYSTEM
---// UI MODULE MANAGER
---// Modular UI Architecture
+--// UI CORE
+--// Modular UI Controller
+--// Connects all UI modules safely
 
 local UI = {}
 
 --==================================================
--- CONTEXT
+-- SERVICES
 --==================================================
 
-function UI:Init(Context)
+local Players =
+    game:GetService("Players")
 
-    self.Context =
-        Context or {}
-
-    --==================================================
-    -- MODULES
-    --==================================================
-
-    self.Utils =
-        self:LoadModule(
-            "Utils"
-        )
-
-    self.Visuals =
-        self:LoadModule(
-            "Visuals"
-        )
-
-    self.Navigation =
-        self:LoadModule(
-            "Navigation"
-        )
-
-    self.Main =
-        self:LoadModule(
-            "Main"
-        )
-
-    --==================================================
-    -- INITIALIZE MODULES
-    --==================================================
-
-    self:InitModule(
-        "Utils",
-        self.Utils
-    )
-
-    self:InitModule(
-        "Visuals",
-        self.Visuals
-    )
-
-    self:InitModule(
-        "Navigation",
-        self.Navigation
-    )
-
-    self:InitModule(
-        "Main",
-        self.Main
-    )
-
-    --==================================================
-    -- CREATE UI
-    --==================================================
-
-    if self.Main
-    and type(
-        self.Main.Create
-    ) == "function"
-    then
-
-        local Success,
-            Result =
-            pcall(
-                function()
-
-                    return self.Main:
-                        Create(
-                            self.Context
-                        )
-
-                end
-            )
-
-        if not Success then
-
-            warn(
-                "[Rimuru Hub] Erro ao criar UI: "
-                .. tostring(Result)
-            )
-
-        end
-
-    end
-
-end
+local Player =
+    Players.LocalPlayer
 
 --==================================================
--- LOAD MODULE
+-- MODULES
 --==================================================
 
-function UI:LoadModule(Name)
+local ModuleFolder =
+    script.Parent
 
-    --==================================================
-    -- MODULE FOLDER
-    --==================================================
-
-    local Root =
-        script.Parent
-
-    if not Root then
-
-        warn(
-            "[Rimuru Hub] UI Root não encontrado."
-        )
-
-        return nil
-
-    end
-
-    --==================================================
-    -- FIND MODULE
-    --==================================================
+local function LoadModule(Name)
 
     local Module =
-        Root:FindFirstChild(
+        ModuleFolder:FindFirstChild(
             Name
         )
 
     if not Module then
 
         warn(
-            "[Rimuru Hub] UI módulo não encontrado: "
-            .. tostring(Name)
+            "[Rimuru Hub] UI module not found: "
+            .. Name
         )
 
         return nil
 
     end
-
-    --==================================================
-    -- REQUIRE
-    --==================================================
 
     local Success,
         Result =
@@ -155,9 +50,9 @@ function UI:LoadModule(Name)
     if not Success then
 
         warn(
-            "[Rimuru Hub] Erro ao carregar UI."
-            .. tostring(Name)
-            .. ": "
+            "[Rimuru Hub] UI module error: "
+            .. Name
+            .. " | "
             .. tostring(Result)
         )
 
@@ -170,18 +65,72 @@ function UI:LoadModule(Name)
 end
 
 --==================================================
--- INIT MODULE
+-- MODULE REFERENCES
 --==================================================
 
-function UI:InitModule(
+UI.Window =
+    LoadModule(
+        "Window"
+    )
+
+UI.Sidebar =
+    LoadModule(
+        "Sidebar"
+    )
+
+UI.Categories =
+    LoadModule(
+        "Categories"
+    )
+
+UI.Results =
+    LoadModule(
+        "Results"
+    )
+
+UI.Topbar =
+    LoadModule(
+        "Topbar"
+    )
+
+UI.Drag =
+    LoadModule(
+        "Drag"
+    )
+
+UI.Animation =
+    LoadModule(
+        "Animation"
+    )
+
+UI.Logo =
+    LoadModule(
+        "Logo"
+    )
+
+UI.Transparency =
+    LoadModule(
+        "Transparency"
+    )
+
+--==================================================
+-- CONTEXT
+--==================================================
+
+UI.Context =
+    {}
+
+--==================================================
+-- SAFE INIT
+--==================================================
+
+local function InitModule(
     Name,
     Module
 )
 
     if not Module then
-
         return false
-
     end
 
     if type(
@@ -189,7 +138,13 @@ function UI:InitModule(
     ) ~= "function"
     then
 
-        return true
+        warn(
+            "[Rimuru Hub] "
+            .. Name
+            .. " does not have Init()."
+        )
+
+        return false
 
     end
 
@@ -199,7 +154,7 @@ function UI:InitModule(
             function()
 
                 Module:Init(
-                    self.Context
+                    UI.Context
                 )
 
             end
@@ -208,9 +163,9 @@ function UI:InitModule(
     if not Success then
 
         warn(
-            "[Rimuru Hub] Erro ao iniciar UI/"
-            .. tostring(Name)
-            .. ": "
+            "[Rimuru Hub] UI "
+            .. Name
+            .. " Init error: "
             .. tostring(Error)
         )
 
@@ -223,137 +178,479 @@ function UI:InitModule(
 end
 
 --==================================================
--- OPEN
+-- SET CONTEXT
 --==================================================
 
-function UI:Open()
+function UI:SetContext(
+    Context
+)
 
-    if self.Main
-    and type(
-        self.Main.Open
-    ) == "function"
+    if type(Context) ~=
+        "table"
     then
 
-        return self.Main:
-            Open()
+        return false
 
     end
 
-    if self.Main
-    and self.Main.Main
+    --==================================================
+    -- COPY CONTEXT
+    --==================================================
+
+    for Key, Value in
+        pairs(Context)
+    do
+
+        self.Context[Key] =
+            Value
+
+    end
+
+    --==================================================
+    -- SELF REFERENCE
+    --==================================================
+
+    self.Context.UI =
+        self
+
+    return true
+
+end
+
+--==================================================
+-- CREATE WINDOW
+--==================================================
+
+function UI:CreateWindow()
+
+    if not self.Window then
+
+        warn(
+            "[Rimuru Hub] Window module unavailable."
+        )
+
+        return false
+
+    end
+
+    if type(
+        self.Window.Create
+    ) == "function"
     then
 
-        self.Main.Main.Visible =
+        local Success,
+            Result =
+            pcall(
+                function()
+
+                    return self.Window:
+                        Create(
+                            self.Context
+                        )
+
+                end
+            )
+
+        if Success
+        and Result ~= false
+        then
+
+            return true
+
+        end
+
+    end
+
+    if type(
+        self.Window.Init
+    ) == "function"
+    then
+
+        return InitModule(
+            "Window",
+            self.Window
+        )
+
+    end
+
+    return false
+
+end
+
+--==================================================
+-- FIND MAIN
+--==================================================
+
+function UI:FindMain()
+
+    if self.Main
+    and self.Main.Parent
+    then
+
+        return self.Main
+
+    end
+
+    --==================================================
+    -- WINDOW MODULE
+    --==================================================
+
+    if self.Window then
+
+        if self.Window.Main
+        and typeof(
+            self.Window.Main
+        ) == "Instance"
+        then
+
+            self.Main =
+                self.Window.Main
+
+            return self.Main
+
+        end
+
+        if self.Window.Window
+        and typeof(
+            self.Window.Window
+        ) == "Instance"
+        then
+
+            self.Main =
+                self.Window.Window
+
+            return self.Main
+
+        end
+
+        if type(
+            self.Window.Get
+        ) == "function"
+        then
+
+            local Success,
+                Result =
+                pcall(
+                    function()
+
+                        return self.Window:
+                            Get()
+
+                    end
+                )
+
+            if Success
+            and typeof(Result) ==
+                "Instance"
+            then
+
+                self.Main =
+                    Result
+
+                return self.Main
+
+            end
+
+        end
+
+    end
+
+    --==================================================
+    -- PLAYER GUI FALLBACK
+    --==================================================
+
+    local PlayerGui =
+        Player
+        and Player:FindFirstChild(
+            "PlayerGui"
+        )
+
+    if PlayerGui then
+
+        local Candidate =
+            PlayerGui:FindFirstChild(
+                "RimuruHub",
+                true
+            )
+
+        if Candidate
+        and Candidate:IsA(
+            "GuiObject"
+        )
+        then
+
+            self.Main =
+                Candidate
+
+            return Candidate
+
+        end
+
+    end
+
+    return nil
+
+end
+
+--==================================================
+-- UPDATE REFERENCES
+--==================================================
+
+function UI:UpdateReferences()
+
+    self:FindMain()
+
+    --==================================================
+    -- WINDOW
+    --==================================================
+
+    if self.Main then
+
+        self.WindowInstance =
+            self.Main
+
+    end
+
+    --==================================================
+    -- TOPBAR
+    --==================================================
+
+    if self.Topbar
+    and self.Topbar.Container
+    then
+
+        self.TopbarInstance =
+            self.Topbar.Container
+
+    end
+
+    --==================================================
+    -- SIDEBAR
+    --==================================================
+
+    if self.Sidebar
+    and self.Sidebar.Container
+    then
+
+        self.SidebarInstance =
+            self.Sidebar.Container
+
+    end
+
+    --==================================================
+    -- RESULTS
+    --==================================================
+
+    if self.Results then
+
+        if self.Results.Scroll then
+
+            self.Scroll =
+                self.Results.Scroll
+
+        end
+
+        if self.Results.Container then
+
+            self.ResultsContainer =
+                self.Results.Container
+
+        end
+
+    end
+
+    return true
+
+end
+
+--==================================================
+-- INIT
+--==================================================
+
+function UI:Init(Context)
+
+    --==================================================
+    -- CONTEXT
+    --==================================================
+
+    self:SetContext(
+        Context or {}
+    )
+
+    --==================================================
+    -- INITIALIZE WINDOW FIRST
+    --==================================================
+
+    if self.Window then
+
+        InitModule(
+            "Window",
+            self.Window
+        )
+
+    end
+
+    --==================================================
+    -- REFERENCES
+    --==================================================
+
+    self:UpdateReferences()
+
+    --==================================================
+    -- TOPBAR
+    --==================================================
+
+    if self.Topbar then
+
+        InitModule(
+            "Topbar",
+            self.Topbar
+        )
+
+    end
+
+    --==================================================
+    -- SIDEBAR
+    --==================================================
+
+    if self.Sidebar then
+
+        InitModule(
+            "Sidebar",
+            self.Sidebar
+        )
+
+    end
+
+    --==================================================
+    -- RESULTS
+    --==================================================
+
+    if self.Results then
+
+        InitModule(
+            "Results",
+            self.Results
+        )
+
+    end
+
+    --==================================================
+    -- UPDATE SCROLL
+    --==================================================
+
+    self:UpdateReferences()
+
+    --==================================================
+    -- CATEGORIES
+    --==================================================
+
+    if self.Categories then
+
+        InitModule(
+            "Categories",
+            self.Categories
+        )
+
+    end
+
+    --==================================================
+    -- LOGO
+    --==================================================
+
+    if self.Logo then
+
+        InitModule(
+            "Logo",
+            self.Logo
+        )
+
+    end
+
+    --==================================================
+    -- TRANSPARENCY
+    --==================================================
+
+    if self.Transparency then
+
+        InitModule(
+            "Transparency",
+            self.Transparency
+        )
+
+    end
+
+    --==================================================
+    -- DRAG
+    --==================================================
+
+    if self.Drag then
+
+        InitModule(
+            "Drag",
+            self.Drag
+        )
+
+    end
+
+    --==================================================
+    -- ANIMATION
+    --==================================================
+
+    if self.Animation then
+
+        InitModule(
+            "Animation",
+            self.Animation
+        )
+
+    end
+
+    --==================================================
+    -- FINAL REFERENCES
+    --==================================================
+
+    self:UpdateReferences()
+
+    --==================================================
+    -- APPLY TRANSPARENCY
+    --==================================================
+
+    if self.Transparency
+    and type(
+        self.Transparency.Apply
+    ) == "function"
+    then
+
+        pcall(
+            function()
+
+                self.Transparency:
+                    Apply()
+
+            end
+        )
+
+    end
+
+    --==================================================
+    -- APPLY THEME
+    --==================================================
+
+    self:ApplyTheme()
+
+    --==================================================
+    -- DEFAULT VISIBILITY
+    --==================================================
+
+    if self.Main then
+
+        self.Main.Visible =
             true
 
-        return true
-
     end
 
-    return false
-
-end
-
---==================================================
--- CLOSE
---==================================================
-
-function UI:Close()
-
-    if self.Main
-    and type(
-        self.Main.Close
-    ) == "function"
-    then
-
-        return self.Main:
-            Close()
-
-    end
-
-    if self.Main
-    and self.Main.Main
-    then
-
-        self.Main.Main.Visible =
-            false
-
-        return true
-
-    end
-
-    return false
-
-end
-
---==================================================
--- TOGGLE
---==================================================
-
-function UI:Toggle()
-
-    if self.Main
-    and type(
-        self.Main.Toggle
-    ) == "function"
-    then
-
-        return self.Main:
-            Toggle()
-
-    end
-
-    if self.Main
-    and self.Main.Main
-    then
-
-        self.Main.Main.Visible =
-            not self.Main.Main.Visible
-
-        return self.Main.Main.Visible
-
-    end
-
-    return false
-
-end
-
---==================================================
--- GET MAIN
---==================================================
-
-function UI:GetMain()
-
-    if self.Main
-    and self.Main.Main
-    then
-
-        return self.Main.Main
-
-    end
-
-    return nil
-
-end
-
---==================================================
--- GET SCROLL
---==================================================
-
-function UI:GetScroll()
-
-    if self.Main
-    and type(
-        self.Main.GetScroll
-    ) == "function"
-    then
-
-        return self.Main:
-            GetScroll()
-
-    end
-
-    return nil
+    return true
 
 end
 
@@ -363,16 +660,20 @@ end
 
 function UI:ApplyTheme()
 
-    if self.Main
+    --==================================================
+    -- TOPBAR
+    --==================================================
+
+    if self.Topbar
     and type(
-        self.Main.ApplyTheme
+        self.Topbar.ApplyTheme
     ) == "function"
     then
 
         pcall(
             function()
 
-                self.Main:
+                self.Topbar:
                     ApplyTheme()
 
             end
@@ -380,16 +681,20 @@ function UI:ApplyTheme()
 
     end
 
-    if self.Visuals
+    --==================================================
+    -- SIDEBAR
+    --==================================================
+
+    if self.Sidebar
     and type(
-        self.Visuals.ApplyTheme
+        self.Sidebar.ApplyTheme
     ) == "function"
     then
 
         pcall(
             function()
 
-                self.Visuals:
+                self.Sidebar:
                     ApplyTheme()
 
             end
@@ -397,45 +702,371 @@ function UI:ApplyTheme()
 
     end
 
-    if self.Navigation
+    --==================================================
+    -- CATEGORIES
+    --==================================================
+
+    if self.Categories
     and type(
-        self.Navigation.ApplyTheme
+        self.Categories.ApplyTheme
     ) == "function"
     then
 
         pcall(
             function()
 
-                self.Navigation:
+                self.Categories:
                     ApplyTheme()
 
             end
         )
 
     end
+
+    --==================================================
+    -- RESULTS
+    --==================================================
+
+    if self.Results
+    and type(
+        self.Results.ApplyTheme
+    ) == "function"
+    then
+
+        pcall(
+            function()
+
+                self.Results:
+                    ApplyTheme()
+
+            end
+        )
+
+    end
+
+    return true
 
 end
 
 --==================================================
--- SET VISIBLE
+-- GET SCROLL
 --==================================================
 
-function UI:SetVisible(
-    Visible
+function UI:GetScroll()
+
+    if self.Scroll
+    and self.Scroll.Parent
+    then
+
+        return self.Scroll
+
+    end
+
+    if self.Results
+    and type(
+        self.Results.GetScroll
+    ) == "function"
+    then
+
+        local Success,
+            Result =
+            pcall(
+                function()
+
+                    return self.Results:
+                        GetScroll()
+
+                end
+            )
+
+        if Success
+        and typeof(Result) ==
+            "Instance"
+        then
+
+            self.Scroll =
+                Result
+
+            return Result
+
+        end
+
+    end
+
+    return nil
+
+end
+
+--==================================================
+-- GET BACKGROUND
+--==================================================
+
+function UI:GetBackground()
+
+    if self.Background
+    and typeof(
+        self.Background
+    ) == "Instance"
+    then
+
+        return self.Background
+
+    end
+
+    if self.Main then
+
+        return self.Main:FindFirstChild(
+            "Background",
+            true
+        )
+
+    end
+
+    return nil
+
+end
+
+--==================================================
+-- SET BACKGROUND TRANSPARENCY
+--==================================================
+
+function UI:SetBackgroundTransparency(
+    Value
 )
 
-    if Visible then
+    Value =
+        tonumber(Value)
 
-        return self:Open()
+    if not Value then
+        return false
+    end
+
+    Value =
+        math.clamp(
+            Value,
+            0,
+            1
+        )
+
+    local Background =
+        self:GetBackground()
+
+    if Background
+    and Background:IsA(
+        "ImageLabel"
+    )
+    then
+
+        Background.ImageTransparency =
+            Value
+
+        return true
 
     end
 
-    return self:Close()
+    return false
 
 end
 
 --==================================================
--- RETURN
+-- OPEN
 --==================================================
+
+function UI:Open()
+
+    if not self.Main then
+
+        self:UpdateReferences()
+
+    end
+
+    if not self.Main then
+        return false
+    end
+
+    if self.Animation
+    and type(
+        self.Animation.Open
+    ) == "function"
+    then
+
+        local Success =
+            pcall(
+                function()
+
+                    self.Animation:
+                        Open()
+
+                end
+            )
+
+        if Success then
+            return true
+        end
+
+    end
+
+    self.Main.Visible =
+        true
+
+    return true
+
+end
+
+--==================================================
+-- CLOSE
+--==================================================
+
+function UI:Close()
+
+    if not self.Main then
+
+        self:UpdateReferences()
+
+    end
+
+    if not self.Main then
+        return false
+    end
+
+    if self.Animation
+    and type(
+        self.Animation.Close
+    ) == "function"
+    then
+
+        local Success =
+            pcall(
+                function()
+
+                    self.Animation:
+                        Close()
+
+                end
+            )
+
+        if Success then
+            return true
+        end
+
+    end
+
+    self.Main.Visible =
+        false
+
+    return true
+
+end
+
+--==================================================
+-- TOGGLE
+--==================================================
+
+function UI:Toggle()
+
+    if not self.Main then
+
+        self:UpdateReferences()
+
+    end
+
+    if not self.Main then
+        return false
+    end
+
+    if self.Main.Visible then
+
+        self:Close()
+
+        return false
+
+    else
+
+        self:Open()
+
+        return true
+
+    end
+
+end
+
+--==================================================
+-- IS OPEN
+--==================================================
+
+function UI:IsOpen()
+
+    if not self.Main then
+        return false
+    end
+
+    return self.Main.Visible == true
+
+end
+
+--==================================================
+-- GET STATUS
+--==================================================
+
+function UI:GetStatus()
+
+    return {
+
+        Main =
+            self.Main ~= nil,
+
+        Window =
+            self.Window ~= nil,
+
+        Topbar =
+            self.Topbar ~= nil,
+
+        Sidebar =
+            self.Sidebar ~= nil,
+
+        Categories =
+            self.Categories ~= nil,
+
+        Results =
+            self.Results ~= nil,
+
+        Logo =
+            self.Logo ~= nil,
+
+        Drag =
+            self.Drag ~= nil,
+
+        Animation =
+            self.Animation ~= nil,
+
+        Transparency =
+            self.Transparency ~= nil,
+
+        Scroll =
+            self:GetScroll() ~= nil,
+
+    }
+
+end
+
+--==================================================
+-- READY
+--==================================================
+
+function UI:IsReady()
+
+    return
+        self.Main ~= nil
+        and self:GetScroll() ~= nil
+
+end
+
+--==================================================
+-- STARTUP
+--==================================================
+
+print(
+    "[Rimuru Hub] UI Core carregado."
+)
 
 return UI
