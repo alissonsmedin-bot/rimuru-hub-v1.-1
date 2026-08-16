@@ -96,7 +96,7 @@ function Theme:UpdateRGB()
 
     return Color3.fromHSV(
         self.RGBHue,
-        0.75,
+        0.9,
         1
     )
 
