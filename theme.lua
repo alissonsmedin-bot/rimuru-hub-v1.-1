@@ -525,24 +525,21 @@ function Theme:SetTheme(Name)
         ) == "function"
         then
 
-            if self.Config
-and type(
-    self.Config.SetBackgroundTransparency
-) == "function"
-then
+            pcall(
+                function()
 
-    pcall(
-        function()
+                    self.Config:Set(
+                        "Theme",
+                        "Selected",
+                        Name
+                    )
 
-            self.Config:
-                SetBackgroundTransparency(
-                    self.BackgroundTransparency
-                )
+                end
+            )
 
         end
-    )
 
-            end
+    end
 
     --==================================================
     -- UPDATE TRANSPARENCY
@@ -1112,9 +1109,7 @@ function Theme:ResetCurrent()
     end
 
     self.Current =
-        CloneTable(
-            Default
-        )
+        CloneTable(Default)
 
     self.Themes[self.Name] =
         self.Current
@@ -1141,13 +1136,8 @@ function Theme:ResetCurrent()
 
                 self.Config:
                     SetBackgroundTransparency(
-                                   self.Config:
-                            SetBackgroundTransparency(
-                                self.BackgroundTransparency
-                            )
-
-                    end
-                )
+                        self.BackgroundTransparency
+                    )
 
             end
         )
@@ -1155,7 +1145,7 @@ function Theme:ResetCurrent()
     end
 
     --==================================================
-    -- APPLY UI
+    -- APPLY RESET TO UI
     --==================================================
 
     if self.UI
@@ -1186,12 +1176,11 @@ function Theme:ResetCurrent()
 end
 
 --==================================================
--- CREATE THEME
+-- SAVE CUSTOM THEME
 --==================================================
 
-function Theme:CreateTheme(
-    Name,
-    Data
+function Theme:SaveTheme(
+    Name
 )
 
     if type(Name) ~= "string"
@@ -1202,108 +1191,19 @@ function Theme:CreateTheme(
 
     end
 
-    if type(Data) ~= "table" then
+    if not self.Current then
 
         return false
 
     end
 
-    --==================================================
-    -- COPY DATA
-    --==================================================
-
     self.Themes[Name] =
-        CloneTable(Data)
+        CloneTable(
+            self.Current
+        )
 
     --==================================================
-    -- DEFAULT VALUES
-    --==================================================
-
-    local ThemeData =
-        self.Themes[Name]
-
-    ThemeData.Main =
-        ThemeData.Main
-        or Color3.fromRGB(
-            15,
-            17,
-            22
-        )
-
-    ThemeData.Sidebar =
-        ThemeData.Sidebar
-        or ThemeData.Main
-
-    ThemeData.Content =
-        ThemeData.Content
-        or ThemeData.Main
-
-    ThemeData.Card =
-        ThemeData.Card
-        or ThemeData.Content
-
-    ThemeData.Button =
-        ThemeData.Button
-        or ThemeData.Card
-
-    ThemeData.Text =
-        ThemeData.Text
-        or Color3.fromRGB(
-            240,
-            245,
-            255
-        )
-
-    ThemeData.SubText =
-        ThemeData.SubText
-        or Color3.fromRGB(
-            160,
-            170,
-            185
-        )
-
-    ThemeData.Accent =
-        ThemeData.Accent
-        or Color3.fromRGB(
-            80,
-            170,
-            255
-        )
-
-    ThemeData.LogoBackground =
-        ThemeData.LogoBackground
-        or ThemeData.Card
-
-    ThemeData.Close =
-        ThemeData.Close
-        or Color3.fromRGB(
-            150,
-            45,
-            55
-        )
-
-    ThemeData.BackgroundTransparency =
-        tonumber(
-            ThemeData.BackgroundTransparency
-        )
-        or 0.78
-
-    ThemeData.BackgroundTransparency =
-        math.clamp(
-            ThemeData.BackgroundTransparency,
-            0,
-            1
-        )
-
-    if ThemeData.RGB == nil then
-
-        ThemeData.RGB =
-            false
-
-    end
-
-    --==================================================
-    -- SAVE CONFIG
+    -- CONFIG
     --==================================================
 
     if self.Config
@@ -1315,27 +1215,10 @@ function Theme:CreateTheme(
         pcall(
             function()
 
-                local Existing =
-                    self.Config:Get(
-                        "Theme",
-                        "Themes"
-                    )
-
-                if type(Existing) ~= "table" then
-
-                    Existing = {}
-
-                end
-
-                Existing[Name] =
-                    CloneTable(
-                        ThemeData
-                    )
-
                 self.Config:Set(
                     "Theme",
                     "Themes",
-                    Existing
+                    self.Themes
                 )
 
             end
@@ -1356,13 +1239,11 @@ function Theme:DeleteTheme(
 )
 
     if type(Name) ~= "string" then
-
         return false
-
     end
 
     --==================================================
-    -- PROTECTED DEFAULT THEMES
+    -- PROTECT DEFAULT THEMES
     --==================================================
 
     if DefaultThemes[Name] then
@@ -1377,43 +1258,12 @@ function Theme:DeleteTheme(
 
     end
 
+    --==================================================
+    -- DELETE
+    --==================================================
+
     self.Themes[Name] =
         nil
-
-    --==================================================
-    -- IF CURRENT THEME WAS DELETED
-    --==================================================
-
-    if self.Name == Name then
-
-        if self.Themes[
-            "Rimuru Dark"
-        ]
-        then
-
-            self:SetTheme(
-                "Rimuru Dark"
-            )
-
-        else
-
-            for ThemeName in
-                pairs(
-                    self.Themes
-                )
-            do
-
-                self:SetTheme(
-                    ThemeName
-                )
-
-                break
-
-            end
-
-        end
-
-    end
 
     --==================================================
     -- SAVE
@@ -1428,26 +1278,113 @@ function Theme:DeleteTheme(
         pcall(
             function()
 
-                local Existing =
-                    self.Config:Get(
-                        "Theme",
-                        "Themes"
-                    )
+                self.Config:Set(
+                    "Theme",
+                    "Themes",
+                    self.Themes
+                )
 
-                if type(Existing) ==
-                    "table"
-                then
+            end
+        )
 
-                    Existing[Name] =
-                        nil
+    end
 
-                    self.Config:Set(
-                        "Theme",
-                        "Themes",
-                        Existing
-                    )
+    --==================================================
+    -- FALLBACK CURRENT
+    --==================================================
 
-                end
+    if self.Name == Name then
+
+        self:SetTheme(
+            "Rimuru Dark"
+        )
+
+    end
+
+    return true
+
+end
+
+--==================================================
+-- CREATE THEME
+--==================================================
+
+function Theme:CreateTheme(
+    Name,
+    BaseTheme
+)
+
+    if type(Name) ~= "string"
+    or Name == ""
+    then
+
+        return false
+
+    end
+
+    if self.Themes[Name] then
+
+        return false
+
+    end
+
+    local Source
+
+    if type(BaseTheme) == "string" then
+
+        Source =
+            self.Themes[
+                BaseTheme
+            ]
+
+    end
+
+    if not Source then
+
+        Source =
+            self.Current
+
+    end
+
+    if not Source then
+
+        Source =
+            DefaultThemes[
+                "Rimuru Dark"
+            ]
+
+    end
+
+    self.Themes[Name] =
+        CloneTable(
+            Source
+        )
+
+    --==================================================
+    -- CUSTOM THEME IS NOT RGB
+    --==================================================
+
+    self.Themes[Name].RGB =
+        false
+
+    --==================================================
+    -- SAVE
+    --==================================================
+
+    if self.Config
+    and type(
+        self.Config.Set
+    ) == "function"
+    then
+
+        pcall(
+            function()
+
+                self.Config:Set(
+                    "Theme",
+                    "Themes",
+                    self.Themes
+                )
 
             end
         )
@@ -1459,15 +1396,15 @@ function Theme:DeleteTheme(
 end
 
 --==================================================
--- DUPLICATE THEME
+-- COPY THEME
 --==================================================
 
-function Theme:DuplicateTheme(
-    OriginalName,
+function Theme:CopyTheme(
+    SourceName,
     NewName
 )
 
-    if type(OriginalName) ~= "string"
+    if type(SourceName) ~= "string"
     or type(NewName) ~= "string"
     then
 
@@ -1481,12 +1418,10 @@ function Theme:DuplicateTheme(
 
     end
 
-    local Original =
-        self.Themes[
-            OriginalName
-        ]
-
-    if not Original then
+    if not self.Themes[
+        SourceName
+    ]
+    then
 
         return false
 
@@ -1505,7 +1440,9 @@ function Theme:DuplicateTheme(
         NewName
     ] =
         CloneTable(
-            Original
+            self.Themes[
+                SourceName
+            ]
         )
 
     --==================================================
@@ -1521,29 +1458,10 @@ function Theme:DuplicateTheme(
         pcall(
             function()
 
-                local Existing =
-                    self.Config:Get(
-                        "Theme",
-                        "Themes"
-                    )
-
-                if type(Existing) ~= "table" then
-
-                    Existing = {}
-
-                end
-
-                Existing[NewName] =
-                    CloneTable(
-                        self.Themes[
-                            NewName
-                        ]
-                    )
-
                 self.Config:Set(
                     "Theme",
                     "Themes",
-                    Existing
+                    self.Themes
                 )
 
             end
@@ -1556,36 +1474,98 @@ function Theme:DuplicateTheme(
 end
 
 --==================================================
--- EXPORT CURRENT THEME
+-- SET CURRENT THEME COLOR
 --==================================================
 
-function Theme:Export()
+function Theme:SetCurrentColor(
+    ColorName,
+    Color
+)
 
-    if not self.Current then
-
-        return {}
-
-    end
-
-    return CloneTable(
-        self.Current
+    return self:SetColor(
+        ColorName,
+        Color
     )
 
 end
 
 --==================================================
--- EXPORT ALL THEMES
+-- GET CURRENT COLOR
 --==================================================
 
-function Theme:ExportAll()
+function Theme:GetCurrentColor(
+    ColorName
+)
+
+    return self:GetColor(
+        ColorName
+    )
+
+end
+
+--==================================================
+-- GET DEFAULT THEME
+--==================================================
+
+function Theme:GetDefaultTheme(
+    Name
+)
+
+    if type(Name) ~= "string" then
+
+        return nil
+
+    end
+
+    local Default =
+        DefaultThemes[
+            Name
+        ]
+
+    if not Default then
+
+        return nil
+
+    end
+
+    return CloneTable(
+        Default
+    )
+
+end
+
+--==================================================
+-- IS DEFAULT THEME
+--==================================================
+
+function Theme:IsDefaultTheme(
+    Name
+)
+
+    if type(Name) ~= "string" then
+
+        return false
+
+    end
+
+    return
+        DefaultThemes[
+            Name
+        ] ~= nil
+
+end
+
+--==================================================
+-- GET DEFAULT THEMES
+--==================================================
+
+function Theme:GetDefaultThemes()
 
     local Result =
         {}
 
     for Name, Data in
-        pairs(
-            self.Themes
-        )
+        pairs(DefaultThemes)
     do
 
         Result[Name] =
@@ -1600,6 +1580,162 @@ function Theme:ExportAll()
 end
 
 --==================================================
+-- GET THEME COUNT
+--==================================================
+
+function Theme:GetThemeCount()
+
+    local Count =
+        0
+
+    for _ in pairs(
+        self.Themes
+    )
+    do
+
+        Count +=
+            1
+
+    end
+
+    return Count
+
+end
+
+--==================================================
+-- REFRESH
+--==================================================
+
+function Theme:Refresh()
+
+    if not self.Name then
+
+        return false
+
+    end
+
+    if not self.Themes[
+        self.Name
+    ]
+    then
+
+        return false
+
+    end
+
+    self.Current =
+        self.Themes[
+            self.Name
+        ]
+
+    self.BackgroundTransparency =
+        self:GetBackgroundTransparency()
+
+    if self.UI
+    and type(
+        self.UI.ApplyTheme
+    ) == "function"
+    then
+
+        task.defer(
+            function()
+
+                pcall(
+                    function()
+
+                        self.UI:
+                            ApplyTheme()
+
+                    end
+                )
+
+            end
+        )
+
+    end
+
+    return true
+
+end
+
+--==================================================
+-- APPLY
+--==================================================
+
+function Theme:Apply()
+
+    return self:Refresh()
+
+end
+
+--==================================================
+-- EXPORT
+--==================================================
+
+function Theme:Export()
+
+    local Data =
+        {}
+
+    if not self.Current then
+
+        return Data
+
+    end
+
+    for Key, Value in
+        pairs(
+            self.Current
+        )
+    do
+
+        if type(Value) == "table" then
+
+            Data[Key] =
+                CloneTable(
+                    Value
+                )
+
+        else
+
+            Data[Key] =
+                Value
+
+        end
+
+    end
+
+    return Data
+
+end
+
+--==================================================
+-- EXPORT ALL
+--==================================================
+
+function Theme:ExportAll()
+
+    local Data =
+        {}
+
+    for Name, ThemeData in
+        pairs(
+            self.Themes
+        )
+    do
+
+        Data[Name] =
+            CloneTable(
+                ThemeData
+            )
+
+    end
+
+    return Data
+
+end
+
+--==================================================
 -- IMPORT THEME
 --==================================================
 
@@ -1609,78 +1745,87 @@ function Theme:Import(
 )
 
     if type(Name) ~= "string"
-    or type(Data) ~= "table"
+    or Name == ""
     then
 
         return false
 
     end
 
-    return self:CreateTheme(
-        Name,
-        Data
-    )
-
-end
-
---==================================================
--- APPLY CURRENT THEME
---==================================================
-
-function Theme:Apply()
-
-    if not self.UI
-    or type(
-        self.UI.ApplyTheme
-    ) ~= "function"
-    then
+    if type(Data) ~= "table" then
 
         return false
 
     end
 
-    local Success =
+    self.Themes[Name] =
+        CloneTable(
+            Data
+        )
+
+    if self.Name == Name then
+
+        self.Current =
+            self.Themes[Name]
+
+        self.RGBHue =
+            0
+
+        self.BackgroundTransparency =
+            self:GetBackgroundTransparency()
+
+    end
+
+    --==================================================
+    -- SAVE
+    --==================================================
+
+    if self.Config
+    and type(
+        self.Config.Set
+    ) == "function"
+    then
+
         pcall(
             function()
 
-                self.UI:
-                    ApplyTheme()
+                self.Config:Set(
+                    "Theme",
+                    "Themes",
+                    self.Themes
+                )
 
             end
         )
 
-    return Success
+    end
+
+    return true
 
 end
 
 --==================================================
--- GET DEFAULT THEMES
+-- GET RGB COLOR
 --==================================================
 
-function Theme:GetDefaultThemes()
+function Theme:GetRGBColor()
 
-    return CloneTable(
-        DefaultThemes
+    if not self:IsRGB() then
+
+        return self:GetAccent()
+
+    end
+
+    return Color3.fromHSV(
+        self.RGBHue or 0,
+        0.9,
+        1
     )
 
 end
 
 --==================================================
--- IS DEFAULT THEME
---==================================================
-
-function Theme:IsDefaultTheme(
-    Name
-)
-
-    return
-        DefaultThemes[Name]
-        ~= nil
-
-end
-
---==================================================
--- SET RGB ENABLED
+-- ENABLE RGB
 --==================================================
 
 function Theme:SetRGBEnabled(
@@ -1690,58 +1835,35 @@ function Theme:SetRGBEnabled(
     self.RGBEnabled =
         Enabled == true
 
-    if self.Current then
-
-        self.Current.RGB =
-            self.RGBEnabled
-
-    end
-
-    self:Apply()
-
-    return true
+    return self.RGBEnabled
 
 end
 
 --==================================================
--- GET RGB ENABLED
+-- IS RGB ENABLED
 --==================================================
 
-function Theme:GetRGBEnabled()
-
-    if not self.Current then
-
-        return false
-
-    end
+function Theme:IsRGBEnabled()
 
     return
-        self.Current.RGB == true
+        self.RGBEnabled == true
+        or self:IsRGB()
 
 end
 
 --==================================================
--- UPDATE
+-- RESET RGB
 --==================================================
 
-function Theme:Update()
+function Theme:ResetRGB()
 
-    if self:IsRGB() then
+    self.RGBHue =
+        0
 
-        local Accent =
-            self:UpdateRGB()
+    self.RGBEnabled =
+        false
 
-        if Accent then
-
-            self:Apply()
-
-        end
-
-        return Accent
-
-    end
-
-    return nil
+    return true
 
 end
 
