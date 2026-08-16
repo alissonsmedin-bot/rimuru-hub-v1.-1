@@ -8,6 +8,34 @@ local Settings = {}
 --==================================================
 
 function Settings:Init(Context)
+
+    self.Context =
+        Context
+
+    self.Config =
+        Context.Config
+
+    self.Theme =
+        Context.Theme
+
+    self.UI =
+        Context.UI
+
+    self.Logo =
+        Context.Logo
+
+    self.Categories =
+        Context.Categories
+
+    self.Scroll =
+        self.UI.Scroll
+
+    self.Content =
+        self.UI.Content
+
+    self.ContentTitle =
+        self.UI.ContentTitle
+
 end
 
 --==================================================
@@ -15,6 +43,29 @@ end
 --==================================================
 
 function Settings:ClearContent()
+
+    if not self.Scroll then
+        return
+    end
+
+    for _, Object in
+        ipairs(
+            self.Scroll:GetChildren()
+        ) do
+
+        if not Object:IsA(
+            "UIListLayout"
+        )
+        and not Object:IsA(
+            "UIPadding"
+        ) then
+
+            Object:Destroy()
+
+        end
+
+    end
+
 end
 
 --==================================================
@@ -155,7 +206,9 @@ function Settings:CreateThemeSelector()
     local ThemeNames =
         {}
 
-    for Name in pairs(Themes) do
+    for Name in pairs(
+        Themes
+    ) do
 
         table.insert(
             ThemeNames,
@@ -172,7 +225,9 @@ function Settings:CreateThemeSelector()
         1
 
     for Index, Name in
-        ipairs(ThemeNames) do
+        ipairs(
+            ThemeNames
+        ) do
 
         if Name ==
             self.Theme:GetName() then
@@ -315,10 +370,52 @@ end
 
 function Settings:Show()
 
+    if not self.Scroll
+    or not self.ContentTitle then
+
+        return
+
+    end
+
+    --==================================================
+    -- CLEAR OLD CATEGORY
+    --==================================================
+
     self:ClearContent()
+
+    --==================================================
+    -- TITLE
+    --==================================================
 
     self.ContentTitle.Text =
         "Configuração"
+
+    --==================================================
+    -- REMOVE CATEGORY SELECTION
+    --==================================================
+
+    if self.Categories then
+
+        local Selected =
+            self.Categories.SelectedButton
+
+        if Selected then
+
+            local CurrentTheme =
+                self.Theme:GetCurrent()
+
+            Selected.BackgroundColor3 =
+                CurrentTheme.Button
+
+            Selected.TextColor3 =
+                CurrentTheme.SubText
+
+        end
+
+        self.Categories.SelectedButton =
+            nil
+
+    end
 
     --==================================================
     -- THEME
@@ -413,17 +510,35 @@ end
 
 function Settings:ApplyTheme()
 
-    self.UI:ApplyTheme()
+    if self.UI then
 
-    self.Logo:ApplyTheme()
+        self.UI:ApplyTheme()
 
-    self.Categories:ApplyTheme()
+    end
+
+    if self.Logo then
+
+        self.Logo:ApplyTheme()
+
+    end
+
+    if self.Categories then
+
+        self.Categories:ApplyTheme()
+
+    end
+
+    if not self.Scroll then
+        return
+    end
 
     local CurrentTheme =
         self.Theme:GetCurrent()
 
     for _, Object in
-        ipairs(self.Scroll:GetDescendants()) do
+        ipairs(
+            self.Scroll:GetDescendants()
+        ) do
 
         if Object:IsA("Frame") then
 
@@ -432,54 +547,25 @@ function Settings:ApplyTheme()
 
         elseif Object:IsA("TextLabel") then
 
-            if Object.Font ==
-                Enum.Font.Code then
-
-                Object.TextColor3 =
-                    CurrentTheme.SubText
-
-            else
-
-                Object.TextColor3 =
-                    CurrentTheme.Text
-
-            end
+            Object.TextColor3 =
+                CurrentTheme.Text
 
         elseif Object:IsA("TextButton") then
 
-            if Object.Name ==
-                "Copy"
-            or Object.Text ==
-                "Copy"
-            or Object.Text ==
-                "Copied!"
-            or Object.Text ==
-                "N/A" then
+            Object.BackgroundColor3 =
+                CurrentTheme.Card
 
-                Object.BackgroundColor3 =
-                    self.Theme:GetAccent()
-
-                Object.TextColor3 =
-                    Color3.fromRGB(
-                        255,
-                        255,
-                        255
-                    )
-
-            else
-
-                Object.BackgroundColor3 =
-                    CurrentTheme.Card
-
-                Object.TextColor3 =
-                    CurrentTheme.Text
-
-            end
+            Object.TextColor3 =
+                CurrentTheme.Text
 
         end
 
     end
 
 end
+
+--==================================================
+-- RETURN
+--==================================================
 
 return Settings
