@@ -1,5 +1,8 @@
 --// 💥 RIMURU HUB
 --// Main Loader / Connector
+--// SEARCH VERSION
+--// Modular Remote Architecture
+--// Future Updates Compatible
 
 --==================================================
 -- SERVICES
@@ -24,6 +27,13 @@ local PlayerGui =
 -- BASE URL
 --==================================================
 
+-- IMPORTANTE:
+-- Mantém "main" para que futuras atualizações
+-- dos módulos sejam carregadas normalmente.
+--
+-- O commit 2bf022d foi usado apenas para
+-- recuperar a versão antiga dos módulos.
+
 local BaseURL =
     "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/"
 
@@ -40,9 +50,19 @@ local function Load(FileName)
     local Success, Result =
         pcall(function()
 
-            return loadstring(
+            local Source =
                 game:HttpGet(URL)
-            )()
+
+            local Module =
+                loadstring(Source)
+
+            if not Module then
+                error(
+                    "loadstring retornou nil"
+                )
+            end
+
+            return Module()
 
         end)
 
@@ -61,6 +81,18 @@ local function Load(FileName)
 
     end
 
+    if Result == nil then
+
+        warn(
+            "❌ Rimuru Hub: " ..
+            FileName ..
+            " não retornou um módulo válido."
+        )
+
+        return nil
+
+    end
+
     return Result
 
 end
@@ -73,6 +105,7 @@ local Config =
     Load("config.lua")
 
 if not Config then
+    warn("❌ Rimuru Hub: Config não carregado.")
     return
 end
 
@@ -84,6 +117,7 @@ local Sounds =
     Load("sound.lua")
 
 if not Sounds then
+    warn("❌ Rimuru Hub: Sounds não carregado.")
     return
 end
 
@@ -119,36 +153,32 @@ local RGB =
 -- VERIFY MODULES
 --==================================================
 
-if not Theme then
-    return
-end
+local Modules = {
 
-if not UI then
-    return
-end
+    Theme = Theme,
+    UI = UI,
+    Logo = Logo,
+    Cards = Cards,
+    Search = Search,
+    Categories = Categories,
+    Settings = Settings,
+    RGB = RGB
 
-if not Logo then
-    return
-end
+}
 
-if not Cards then
-    return
-end
+for Name, Module in pairs(Modules) do
 
-if not Search then
-    return
-end
+    if not Module then
 
-if not Categories then
-    return
-end
+        warn(
+            "❌ Rimuru Hub: módulo ausente -> " ..
+            Name
+        )
 
-if not Settings then
-    return
-end
+        return
 
-if not RGB then
-    return
+    end
+
 end
 
 --==================================================
