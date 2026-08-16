@@ -2,7 +2,7 @@
 --// MAIN SYSTEM
 --// CENTRAL MODULE LOADER
 --// Modular Architecture
---// Config + Theme + UI + Logo + Categories + Cards + Sound + Settings + RGB + Background
+--// Config + Theme + Background + UI + Logo + Categories + Cards + Sound + Settings + RGB
 
 local RimuruHub = {}
 
@@ -85,18 +85,14 @@ RimuruHub.Theme =
         "theme"
     )
 
-RimuruHub.UI =
-    LoadModule(
-        "ui"
-    )
-
---==================================================
--- BACKGROUND
---==================================================
-
 RimuruHub.Background =
     LoadModule(
         "background"
+    )
+
+RimuruHub.UI =
+    LoadModule(
+        "ui"
     )
 
 RimuruHub.Logo =
@@ -150,11 +146,11 @@ RimuruHub.Context = {
     Theme =
         RimuruHub.Theme,
 
-    UI =
-        RimuruHub.UI,
-
     Background =
         RimuruHub.Background,
+
+    UI =
+        RimuruHub.UI,
 
     Logo =
         RimuruHub.Logo,
@@ -259,16 +255,7 @@ InitModule(
 )
 
 --==================================================
--- 2. THEME
---==================================================
-
-InitModule(
-    "Theme",
-    RimuruHub.Theme
-)
-
---==================================================
--- 3. UI
+-- 2. UI
 --==================================================
 
 InitModule(
@@ -277,12 +264,21 @@ InitModule(
 )
 
 --==================================================
--- 4. BACKGROUND
+-- 3. BACKGROUND
 --==================================================
 
 InitModule(
     "Background",
     RimuruHub.Background
+)
+
+--==================================================
+-- 4. THEME
+--==================================================
+
+InitModule(
+    "Theme",
+    RimuruHub.Theme
 )
 
 --==================================================
@@ -340,161 +336,36 @@ InitModule(
 )
 
 --==================================================
--- GET CURRENT THEME NAME
+-- APPLY INITIAL BACKGROUND
 --==================================================
 
-function RimuruHub:GetCurrentThemeName()
+task.defer(
+    function()
 
-    if not self.Theme then
-        return nil
-    end
+        task.wait(
+            0.1
+        )
 
-    if type(
-        self.Theme.GetCurrentThemeName
-    ) == "function" then
+        if RimuruHub.Background
+        and RimuruHub.Theme
+        then
 
-        local Success,
-            Result =
-            pcall(
-                function()
+            local ThemeName =
+                RimuruHub.Theme:GetName()
 
-                    return self.Theme:GetCurrentThemeName()
+            if ThemeName then
 
-                end
-            )
+                RimuruHub.Background:
+                    Apply(
+                        ThemeName
+                    )
 
-        if Success
-        and Result then
-
-            return Result
+            end
 
         end
 
     end
-
-    --==================================================
-    -- FALLBACK
-    --==================================================
-
-    if type(
-        self.Theme.GetCurrent
-    ) ~= "function"
-    or type(
-        self.Theme.GetThemes
-    ) ~= "function" then
-
-        return nil
-
-    end
-
-    local Success,
-        Current =
-        pcall(
-            function()
-
-                return self.Theme:GetCurrent()
-
-            end
-        )
-
-    if not Success
-    or not Current then
-
-        return nil
-
-    end
-
-    local SuccessThemes,
-        Themes =
-        pcall(
-            function()
-
-                return self.Theme:GetThemes()
-
-            end
-        )
-
-    if not SuccessThemes
-    or type(Themes) ~= "table" then
-
-        return nil
-
-    end
-
-    for ThemeName, ThemeData in
-        pairs(
-            Themes
-        ) do
-
-        if ThemeData == Current then
-
-            return ThemeName
-
-        end
-
-    end
-
-    return nil
-
-end
-
---==================================================
--- APPLY CURRENT BACKGROUND
---==================================================
-
-function RimuruHub:ApplyCurrentBackground()
-
-    if not self.Background then
-        return false
-    end
-
-    if type(
-        self.Background.Apply
-    ) ~= "function" then
-
-        return false
-
-    end
-
-    local ThemeName =
-        self:GetCurrentThemeName()
-
-    if not ThemeName then
-
-        warn(
-            "[Rimuru Hub] Não foi possível descobrir o tema atual para o background."
-        )
-
-        return false
-
-    end
-
-    local Success,
-        Result =
-        pcall(
-            function()
-
-                return self.Background:Apply(
-                    ThemeName
-                )
-
-            end
-        )
-
-    if not Success then
-
-        warn(
-            "[Rimuru Hub] Erro ao aplicar background: "
-            .. tostring(Result)
-        )
-
-        return false
-
-    end
-
-    return Result == true
-
-end
+)
 
 --==================================================
 -- POST INIT
@@ -512,10 +383,6 @@ function RimuruHub:Open()
 
     end
 
-    --================================================
-    -- OPEN MAIN
-    --================================================
-
     if self.UI.Main then
 
         self.UI.Main.Visible =
@@ -525,13 +392,18 @@ function RimuruHub:Open()
         self.UI.Open
     ) == "function" then
 
-        pcall(
-            function()
+        local Success =
+            pcall(
+                function()
 
-                self.UI:Open()
+                    self.UI:Open()
 
-            end
-        )
+                end
+            )
+
+        if not Success then
+            return false
+        end
 
     else
 
@@ -568,7 +440,8 @@ function RimuruHub:Close()
 
     if type(
         self.UI.Close
-    ) == "function" then
+    ) == "function"
+    then
 
         local Success =
             pcall(
@@ -636,11 +509,11 @@ function RimuruHub:GetStatus()
         Theme =
             self.Theme ~= nil,
 
-        UI =
-            self.UI ~= nil,
-
         Background =
             self.Background ~= nil,
+
+        UI =
+            self.UI ~= nil,
 
         Logo =
             self.Logo ~= nil,
@@ -698,22 +571,6 @@ task.defer(
         task.wait(
             0.15
         )
-
-        --==================================================
-        -- APPLY BACKGROUND
-        --==================================================
-
-        pcall(
-            function()
-
-                RimuruHub:ApplyCurrentBackground()
-
-            end
-        )
-
-        --==================================================
-        -- OPEN UI
-        --==================================================
 
         RimuruHub:Open()
 
