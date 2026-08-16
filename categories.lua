@@ -627,13 +627,16 @@ function Categories:SelectButton(
 )
 
     if self.SelectedButton
-    and self.SelectedButton ~= Button then
+and self.SelectedButton ~= Button then
 
-        self.SelectedButton.BackgroundColor3 =
-            self.Theme:GetCurrent().Button
+    self.SelectedButton.BackgroundColor3 =
+        self.Theme:GetCurrent().Button
 
-        self.SelectedButton.TextColor3 =
-            self.Theme:GetCurrent().SubText
+    self.SelectedButton.BackgroundTransparency =
+        0.75
+
+    self.SelectedButton.TextColor3 =
+        self.Theme:GetCurrent().SubText
 
     end
 
