@@ -1,706 +1,153 @@
 --// 💥 RIMURU HUB
---// Config System
---// Central Configuration
---// UI + Theme + Background + Animation + RGB
---// Compatível com Settings / UI / Theme
+--// Configuration
 
-local Config = {}
+return {
 
---==================================================
--- DEFAULT CONFIGURATION
---==================================================
-
-local Defaults = {
-
-    --================================================
+    --==================================================
     -- UI
-    --================================================
+    --==================================================
 
     UI = {
 
-        Width = 600,
+        -- Tema inicial
+        Theme = "Azul Escuro",
 
-        Height = 400,
+        --==================================================
+        -- LOGO
+        --==================================================
 
-        CornerRadius = 12,
+        ShowLogo = true,
+        LogoDraggable = true,
+        MainMenuDraggable = true,
 
-        Visible = false,
+        --==================================================
+        -- TEMAS
+        --==================================================
 
-        Draggable = true,
+        Themes = {
 
-    },
+            -- 🔵 PADRÃO
+            ["Azul Escuro"] = {
 
-    --================================================
-    -- BACKGROUND
-    --================================================
+                Accent = Color3.fromRGB(35, 145, 255),
 
-    Background = {
+                Main = Color3.fromRGB(15, 18, 28),
+                Sidebar = Color3.fromRGB(11, 14, 23),
+                Content = Color3.fromRGB(11, 14, 23),
+                Card = Color3.fromRGB(24, 28, 40),
+                Button = Color3.fromRGB(20, 24, 35),
 
-        Enabled = true,
+                Text = Color3.fromRGB(240, 243, 250),
+                SubText = Color3.fromRGB(130, 140, 160),
 
-        Selected = "Rimuru Dark",
+                LogoBackground = Color3.fromRGB(8, 22, 48),
 
-        Transparency = 0.78,
+                Close = Color3.fromRGB(35, 40, 55)
 
-    },
+            },
 
-    --================================================
-    -- ANIMATIONS
-    --================================================
+            -- 💛 DOURADO CHIQUE
+            ["Dourado Neon"] = {
 
-    Animations = {
+                Accent = Color3.fromRGB(255, 190, 45),
 
-        Enabled = true,
+                Main = Color3.fromRGB(24, 20, 10),
+                Sidebar = Color3.fromRGB(20, 17, 9),
+                Content = Color3.fromRGB(20, 17, 9),
+                Card = Color3.fromRGB(39, 32, 17),
+                Button = Color3.fromRGB(32, 27, 14),
 
-        Speed = 0.25,
+                Text = Color3.fromRGB(255, 248, 220),
+                SubText = Color3.fromRGB(190, 170, 120),
 
-        Open = true,
+                LogoBackground = Color3.fromRGB(42, 31, 7),
 
-        Close = true,
+                Close = Color3.fromRGB(55, 44, 18)
 
-        ThemeChange = true,
+            },
 
-    },
+            -- 🤍 BRANCO + DOURADO
+            ["Branco Dourado"] = {
 
-    --================================================
-    -- RGB
-    --================================================
+                Accent = Color3.fromRGB(218, 170, 55),
 
-    RGB = {
+                Main = Color3.fromRGB(235, 235, 232),
+                Sidebar = Color3.fromRGB(220, 220, 216),
+                Content = Color3.fromRGB(225, 225, 221),
+                Card = Color3.fromRGB(245, 245, 241),
+                Button = Color3.fromRGB(235, 235, 230),
 
-        Enabled = false,
+                Text = Color3.fromRGB(35, 35, 35),
+                SubText = Color3.fromRGB(100, 100, 95),
 
-        Speed = 1,
+                LogoBackground = Color3.fromRGB(248, 245, 230),
 
-        Saturation = 1,
+                Close = Color3.fromRGB(205, 195, 170)
 
-        Brightness = 1,
+            },
 
-    },
+            -- ❤️ VERMELHO + PRETO
+            ["Vermelho"] = {
 
-    --================================================
-    -- SOUND
-    --================================================
+                Accent = Color3.fromRGB(235, 35, 45),
 
-    Sound = {
+                Main = Color3.fromRGB(18, 10, 12),
+                Sidebar = Color3.fromRGB(13, 8, 10),
+                Content = Color3.fromRGB(13, 8, 10),
+                Card = Color3.fromRGB(35, 18, 21),
+                Button = Color3.fromRGB(29, 14, 17),
 
-        Enabled = true,
+                Text = Color3.fromRGB(245, 235, 237),
+                SubText = Color3.fromRGB(160, 125, 130),
 
-        Volume = 1,
+                LogoBackground = Color3.fromRGB(45, 8, 12),
 
-    },
+                Close = Color3.fromRGB(55, 20, 24)
 
-    --================================================
-    -- THEME
-    --================================================
+            },
 
-    Theme = {
+            -- 💚 VERDE
+            ["Verde"] = {
 
-        Selected = "Rimuru Dark",
+                Accent = Color3.fromRGB(45, 220, 120),
 
-    },
+                Main = Color3.fromRGB(10, 20, 15),
+                Sidebar = Color3.fromRGB(7, 15, 11),
+                Content = Color3.fromRGB(7, 15, 11),
+                Card = Color3.fromRGB(17, 37, 25),
+                Button = Color3.fromRGB(13, 29, 20),
 
-    --================================================
-    -- SETTINGS
-    --================================================
+                Text = Color3.fromRGB(230, 250, 238),
+                SubText = Color3.fromRGB(125, 165, 140),
 
-    Settings = {
+                LogoBackground = Color3.fromRGB(6, 40, 23),
 
-        ShowColorPanel = false,
+                Close = Color3.fromRGB(20, 55, 35)
 
-        RememberTheme = true,
+            },
 
-        RememberBackground = true,
+            -- 🌈 RGB
+            ["RGB"] = {
 
-    },
+                RGB = true,
+
+                Main = Color3.fromRGB(15, 18, 28),
+                Sidebar = Color3.fromRGB(11, 14, 23),
+                Content = Color3.fromRGB(11, 14, 23),
+                Card = Color3.fromRGB(24, 28, 40),
+                Button = Color3.fromRGB(20, 24, 35),
+
+                Text = Color3.fromRGB(240, 243, 250),
+                SubText = Color3.fromRGB(130, 140, 160),
+
+                LogoBackground = Color3.fromRGB(8, 22, 48),
+
+                Close = Color3.fromRGB(35, 40, 55)
+
+            }
+
+        }
+
+    }
 
 }
-
---==================================================
--- INTERNAL DATA
---==================================================
-
-local Data = {}
-
---==================================================
--- DEEP COPY
---==================================================
-
-local function DeepCopy(Source)
-
-    local Copy = {}
-
-    for Key, Value in pairs(Source) do
-
-        if type(Value) == "table" then
-
-            Copy[Key] =
-                DeepCopy(Value)
-
-        else
-
-            Copy[Key] =
-                Value
-
-        end
-
-    end
-
-    return Copy
-
-end
-
---==================================================
--- INIT
---==================================================
-
-function Config:Init()
-
-    Data =
-        DeepCopy(
-            Defaults
-        )
-
-    return self
-
-end
-
---==================================================
--- GET
---==================================================
-
-function Config:Get(
-    Section,
-    Key
-)
-
-    if not Section then
-        return nil
-    end
-
-    local SectionData =
-        Data[Section]
-
-    if not SectionData then
-        return nil
-    end
-
-    if Key == nil then
-
-        return SectionData
-
-    end
-
-    return SectionData[Key]
-
-end
-
---==================================================
--- SET
---==================================================
-
-function Config:Set(
-    Section,
-    Key,
-    Value
-)
-
-    if not Section
-    or Key == nil then
-
-        return false
-
-    end
-
-    if not Data[Section] then
-
-        Data[Section] = {}
-
-    end
-
-    Data[Section][Key] =
-        Value
-
-    return true
-
-end
-
---==================================================
--- GET SECTION
---==================================================
-
-function Config:GetSection(
-    Section
-)
-
-    return Data[Section]
-
-end
-
---==================================================
--- SET SECTION
---==================================================
-
-function Config:SetSection(
-    Section,
-    Values
-)
-
-    if type(Values) ~= "table" then
-        return false
-    end
-
-    Data[Section] =
-        Values
-
-    return true
-
-end
-
---==================================================
--- UI
---==================================================
-
-function Config:GetUI(
-    Key
-)
-
-    return self:Get(
-        "UI",
-        Key
-    )
-
-end
-
-function Config:SetUI(
-    Key,
-    Value
-)
-
-    return self:Set(
-        "UI",
-        Key,
-        Value
-    )
-
-end
-
---==================================================
--- BACKGROUND
---==================================================
-
-function Config:GetBackground(
-    Key
-)
-
-    return self:Get(
-        "Background",
-        Key
-    )
-
-end
-
-function Config:SetBackground(
-    Key,
-    Value
-)
-
-    return self:Set(
-        "Background",
-        Key,
-        Value
-    )
-
-end
-
---==================================================
--- ANIMATIONS
---==================================================
-
-function Config:GetAnimation(
-    Key
-)
-
-    return self:Get(
-        "Animations",
-        Key
-    )
-
-end
-
-function Config:SetAnimation(
-    Key,
-    Value
-)
-
-    return self:Set(
-        "Animations",
-        Key,
-        Value
-    )
-
-end
-
---==================================================
--- RGB
---==================================================
-
-function Config:GetRGB(
-    Key
-)
-
-    return self:Get(
-        "RGB",
-        Key
-    )
-
-end
-
-function Config:SetRGB(
-    Key,
-    Value
-)
-
-    return self:Set(
-        "RGB",
-        Key,
-        Value
-    )
-
-end
-
---==================================================
--- SOUND
---==================================================
-
-function Config:GetSound(
-    Key
-)
-
-    return self:Get(
-        "Sound",
-        Key
-    )
-
-end
-
-function Config:SetSound(
-    Key,
-    Value
-)
-
-    return self:Set(
-        "Sound",
-        Key,
-        Value
-    )
-
-end
-
---==================================================
--- THEME
---==================================================
-
-function Config:GetTheme(
-    Key
-)
-
-    return self:Get(
-        "Theme",
-        Key
-    )
-
-end
-
-function Config:SetTheme(
-    Key,
-    Value
-)
-
-    return self:Set(
-        "Theme",
-        Key,
-        Value
-    )
-
-end
-
---==================================================
--- SETTINGS
---==================================================
-
-function Config:GetSetting(
-    Key
-)
-
-    return self:Get(
-        "Settings",
-        Key
-    )
-
-end
-
-function Config:SetSetting(
-    Key,
-    Value
-)
-
-    return self:Set(
-        "Settings",
-        Key,
-        Value
-    )
-
-end
-
---==================================================
--- BACKGROUND TRANSPARENCY
---==================================================
-
-function Config:GetBackgroundTransparency()
-
-    local Value =
-        self:GetBackground(
-            "Transparency"
-        )
-
-    if type(Value) ~= "number" then
-
-        return 0.78
-
-    end
-
-    return math.clamp(
-        Value,
-        0,
-        1
-    )
-
-end
-
-function Config:SetBackgroundTransparency(
-    Value
-)
-
-    if type(Value) ~= "number" then
-        return false
-    end
-
-    Value =
-        math.clamp(
-            Value,
-            0,
-            1
-        )
-
-    return self:SetBackground(
-        "Transparency",
-        Value
-    )
-
-end
-
---==================================================
--- UI SIZE
---==================================================
-
-function Config:GetUISize()
-
-    local Width =
-        self:GetUI(
-            "Width"
-        )
-
-    local Height =
-        self:GetUI(
-            "Height"
-        )
-
-    if type(Width) ~= "number" then
-        Width = 600
-    end
-
-    if type(Height) ~= "number" then
-        Height = 400
-    end
-
-    return Width, Height
-
-end
-
-function Config:SetUISize(
-    Width,
-    Height
-)
-
-    if type(Width) ~= "number"
-    or type(Height) ~= "number" then
-
-        return false
-
-    end
-
-    self:SetUI(
-        "Width",
-        Width
-    )
-
-    self:SetUI(
-        "Height",
-        Height
-    )
-
-    return true
-
-end
-
---==================================================
--- SELECTED THEME
---==================================================
-
-function Config:GetSelectedTheme()
-
-    return self:GetTheme(
-        "Selected"
-    )
-
-end
-
-function Config:SetSelectedTheme(
-    ThemeName
-)
-
-    if type(ThemeName) ~= "string"
-    or ThemeName == "" then
-
-        return false
-
-    end
-
-    return self:SetTheme(
-        "Selected",
-        ThemeName
-    )
-
-end
-
---==================================================
--- SELECTED BACKGROUND
---==================================================
-
-function Config:GetSelectedBackground()
-
-    return self:GetBackground(
-        "Selected"
-    )
-
-end
-
-function Config:SetSelectedBackground(
-    BackgroundName
-)
-
-    if type(BackgroundName) ~= "string"
-    or BackgroundName == "" then
-
-        return false
-
-    end
-
-    return self:SetBackground(
-        "Selected",
-        BackgroundName
-    )
-
-end
-
---==================================================
--- RESET
---==================================================
-
-function Config:Reset()
-
-    Data =
-        DeepCopy(
-            Defaults
-        )
-
-    return true
-
-end
-
---==================================================
--- RESET SECTION
---==================================================
-
-function Config:ResetSection(
-    Section
-)
-
-    if not Defaults[Section] then
-        return false
-    end
-
-    Data[Section] =
-        DeepCopy(
-            Defaults[Section]
-        )
-
-    return true
-
-end
-
---==================================================
--- GET ALL
---==================================================
-
-function Config:GetAll()
-
-    return Data
-
-end
-
---==================================================
--- EXPORT
---==================================================
-
-function Config:Export()
-
-    return DeepCopy(
-        Data
-    )
-
-end
-
---==================================================
--- IMPORT
---==================================================
-
-function Config:Import(
-    NewData
-)
-
-    if type(NewData) ~= "table" then
-        return false
-    end
-
-    Data =
-        DeepCopy(
-            NewData
-        )
-
-    return true
-
-end
-
---==================================================
--- INITIALIZE
---==================================================
-
-Config:Init()
-
---==================================================
--- RETURN
---==================================================
-
-return Config
