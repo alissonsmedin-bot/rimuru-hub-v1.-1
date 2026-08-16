@@ -1,762 +1,861 @@
 --// 💥 RIMURU HUB
---// Sound Cards System
---// ⭐ Favorites Integration
---// 🎨 Transparent Cards + Theme Support
+--// MAIN SYSTEM
+--// REMOTE LOADER
+--// GitHub Modular Architecture
+--//
+--// Config
+--// Theme
+--// UI
+--// Logo
+--// Favorites
+--// Cards
+--// Categories
+--// Sound
+--// Settings
+--// RGB
+--//
+--// Sem script.Parent
+--// Sem ModuleScripts locais
+--// Compatível com carregamento remoto
+--// Compatibilidade entre módulos incluída
 
-local Cards = {}
-
---==================================================
--- INIT
---==================================================
-
-function Cards:Init(Context)
-
-    self.Context =
-        Context or {}
-
-    self.Config =
-        Context.Config
-
-    self.Sounds =
-        Context.Sounds
-
-    self.Theme =
-        Context.Theme
-
-    self.UI =
-        Context.UI
-
-    self.Scroll =
-        self.UI.Scroll
-
-    self.Favorites =
-        Context.Favorites
-
-    self.Categories =
-        Context.Categories
-
-end
+local RimuruHub = {}
 
 --==================================================
--- GET CARD TRANSPARENCY
+-- SERVICES
 --==================================================
 
-function Cards:GetCardTransparency()
+local Players =
+    game:GetService("Players")
 
-    return 0.75
-
-end
-
-    --==================================================
-    -- CONFIG
-    --==================================================
-
-    if self.Config
-    and self.Config.UI
-    and self.Config.UI.CardTransparency
-    ~= nil then
-
-        return math.clamp(
-            tonumber(
-                self.Config.UI.CardTransparency
-            ) or 0.15,
-            0,
-            1
-        )
-
-    end
-
-    --==================================================
-    -- THEME
-    --==================================================
-
-    local CurrentTheme =
-        self.Theme
-        and self.Theme:GetCurrent()
-
-    if CurrentTheme
-    and CurrentTheme.CardTransparency
-    ~= nil then
-
-        return math.clamp(
-            tonumber(
-                CurrentTheme.CardTransparency
-            ) or 0.15,
-            0,
-            1
-        )
-
-    end
-
-    --==================================================
-    -- DEFAULT
-    --==================================================
-
-    return 0.15
-
-end
+local Player =
+    Players.LocalPlayer
 
 --==================================================
--- COPY SYSTEM
+-- GITHUB
 --==================================================
 
-function Cards:Copy(ID)
-
-    if setclipboard then
-
-        local Success =
-            pcall(function()
-
-                setclipboard(
-                    tostring(ID)
-                )
-
-            end)
-
-        if Success then
-            return true
-        end
-
-    end
-
-    if toclipboard then
-
-        local Success =
-            pcall(function()
-
-                toclipboard(
-                    tostring(ID)
-                )
-
-            end)
-
-        if Success then
-            return true
-        end
-
-    end
-
-    return false
-
-end
+local BASE_URL =
+    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/"
 
 --==================================================
--- ⭐ FAVORITE STATUS
+-- MODULE URLS
 --==================================================
 
-function Cards:IsFavorite(ID)
+local MODULE_URLS = {
 
-    if not self.Favorites then
-        return false
-    end
+    Config =
+        BASE_URL ..
+        "config.lua",
 
-    local Success,
-        Result =
-        pcall(function()
+    Theme =
+        BASE_URL ..
+        "theme.lua",
 
-            return self.Favorites:IsFavorite(
-                tostring(ID)
+    UI =
+        BASE_URL ..
+        "ui.lua",
+
+    Logo =
+        BASE_URL ..
+        "logo.lua",
+
+    Favorites =
+        BASE_URL ..
+        "favorites.lua",
+
+    Cards =
+        BASE_URL ..
+        "cards.lua",
+
+    Categories =
+        BASE_URL ..
+        "categories.lua",
+
+    Sound =
+        BASE_URL ..
+        "sound.lua",
+
+    Settings =
+        BASE_URL ..
+        "settings.lua",
+
+    RGB =
+        BASE_URL ..
+        "RGB.lua",
+
+}
+
+--==================================================
+-- HTTP FUNCTION
+--==================================================
+
+local function GetHttp()
+
+    if type(game.HttpGet) == "function" then
+
+        return function(URL)
+
+            return game:HttpGet(
+                URL
             )
 
-        end)
-
-    if Success then
-        return Result == true
-    end
-
-    return false
-
-end
-
---==================================================
--- ⭐ TOGGLE FAVORITE
---==================================================
-
-function Cards:ToggleFavorite(ID)
-
-    if not self.Favorites then
-        return false
-    end
-
-    local Success,
-        Result =
-        pcall(function()
-
-            return self.Favorites:Toggle(
-                tostring(ID)
-            )
-
-        end)
-
-    if Success then
-        return Result == true
-    end
-
-    return false
-
-end
-
---==================================================
--- ⭐ UPDATE FAVORITE SYSTEM
---==================================================
-
-function Cards:RefreshFavorites()
-
-    if not self.Categories then
-        return
-    end
-
-    if self.Categories.UpdateFavorites then
-
-        pcall(function()
-
-            self.Categories:UpdateFavorites()
-
-        end)
-
-    elseif self.Categories.UpdateFavoritesButton then
-
-        pcall(function()
-
-            self.Categories:UpdateFavoritesButton()
-
-        end)
-
-    end
-
-end
-
---==================================================
--- ⭐ HANDLE FAVORITE CLICK
---==================================================
-
-function Cards:HandleFavorite(
-    ID,
-    UpdateButton
-)
-
-    local IsFavorite =
-        self:ToggleFavorite(ID)
-
-    if UpdateButton then
-
-        if IsFavorite then
-
-            UpdateButton.Text =
-                "⭐"
-
-        else
-
-            UpdateButton.Text =
-                "☆"
-
         end
 
     end
 
-    self:RefreshFavorites()
-
-    if self.Categories then
-
-        local CurrentCategory
-
-        pcall(function()
-
-            CurrentCategory =
-                self.Categories:
-                GetCurrentCategory()
-
-        end)
-
-        if CurrentCategory ==
-            "Favoritos" then
-
-            task.defer(function()
-
-                pcall(function()
-
-                    self.Categories:
-                    ShowFavorites()
-
-                end)
-
-            end)
-
-        end
-
-    end
-
-    return IsFavorite
+    return nil
 
 end
 
+local HttpGet =
+    GetHttp()
+
 --==================================================
--- CREATE SOUND CARD
+-- REMOTE MODULE LOADER
 --==================================================
 
-function Cards:CreateSoundCard(
-    Index,
-    Data
+local function LoadModule(
+    Name
 )
 
-    if not Data then
+    local URL =
+        MODULE_URLS[Name]
+
+    if not URL then
+
+        warn(
+            "[Rimuru Hub] URL não encontrada para: "
+            .. tostring(Name)
+        )
+
         return nil
-    end
-
-    local Name =
-        tostring(
-            Data[1] or
-            "Unknown"
-        )
-
-    local ID =
-        tostring(
-            Data[2] or
-            ""
-        )
-
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    --==================================================
-    -- CARD
-    --==================================================
-
-    local Card =
-        Instance.new(
-            "Frame"
-        )
-
-    Card.Name =
-        "Sound_" ..
-        tostring(Index)
-
-    Card.Size =
-        UDim2.new(
-            1,
-            -5,
-            0,
-            48
-        )
-
-    Card.BackgroundColor3 =
-        CurrentTheme.Card
-
-    Card.BackgroundTransparency =
-        self:GetCardTransparency()
-
-    Card.BorderSizePixel =
-        0
-
-    Card.LayoutOrder =
-        Index
-
-    Card.ZIndex =
-        504
-
-    Card.Parent =
-        self.Scroll
-
-    --==================================================
-    -- CARD CORNER
-    --==================================================
-
-    local CardCorner =
-        Instance.new(
-            "UICorner"
-        )
-
-    CardCorner.CornerRadius =
-        UDim.new(
-            0,
-            8
-        )
-
-    CardCorner.Parent =
-        Card
-
-    --==================================================
-    -- SOUND NAME
-    --==================================================
-
-    local NameLabel =
-        Instance.new(
-            "TextLabel"
-        )
-
-    NameLabel.Name =
-        "Name"
-
-    NameLabel.Position =
-        UDim2.new(
-            0,
-            12,
-            0,
-            5
-        )
-
-    NameLabel.Size =
-        UDim2.new(
-            1,
-            -150,
-            0,
-            18
-        )
-
-    NameLabel.BackgroundTransparency =
-        1
-
-    NameLabel.Text =
-        Name
-
-    NameLabel.TextColor3 =
-        CurrentTheme.Text
-
-    NameLabel.TextSize =
-        12
-
-    NameLabel.Font =
-        Enum.Font.GothamMedium
-
-    NameLabel.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    NameLabel.TextTruncate =
-        Enum.TextTruncate.AtEnd
-
-    NameLabel.ZIndex =
-        505
-
-    NameLabel.Parent =
-        Card
-
-    --==================================================
-    -- SOUND ID
-    --==================================================
-
-    local IDLabel =
-        Instance.new(
-            "TextLabel"
-        )
-
-    IDLabel.Name =
-        "ID"
-
-    IDLabel.Position =
-        UDim2.new(
-            0,
-            12,
-            0,
-            25
-        )
-
-    IDLabel.Size =
-        UDim2.new(
-            1,
-            -150,
-            0,
-            16
-        )
-
-    IDLabel.BackgroundTransparency =
-        1
-
-    IDLabel.Text =
-        ID
-
-    IDLabel.TextColor3 =
-        CurrentTheme.SubText
-
-    IDLabel.TextSize =
-        10
-
-    IDLabel.Font =
-        Enum.Font.Code
-
-    IDLabel.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    IDLabel.TextTruncate =
-        Enum.TextTruncate.AtEnd
-
-    IDLabel.ZIndex =
-        505
-
-    IDLabel.Parent =
-        Card
-
-    --==================================================
-    -- ⭐ FAVORITE BUTTON
-    --==================================================
-
-    local FavoriteButton =
-        Instance.new(
-            "TextButton"
-        )
-
-    FavoriteButton.Name =
-        "Favorite"
-
-    FavoriteButton.Size =
-        UDim2.new(
-            0,
-            30,
-            0,
-            30
-        )
-
-    FavoriteButton.Position =
-        UDim2.new(
-            1,
-            -102,
-            0.5,
-            -15
-        )
-
-    FavoriteButton.BackgroundTransparency =
-        1
-
-    FavoriteButton.BorderSizePixel =
-        0
-
-    FavoriteButton.AutoButtonColor =
-        false
-
-    FavoriteButton.TextSize =
-        18
-
-    FavoriteButton.Font =
-        Enum.Font.GothamBold
-
-    FavoriteButton.ZIndex =
-        507
-
-    FavoriteButton.Parent =
-        Card
-
-    --==================================================
-    -- ⭐ INITIAL STATE
-    --==================================================
-
-    local function UpdateFavoriteButton()
-
-        if self:IsFavorite(ID) then
-
-            FavoriteButton.Text =
-                "⭐"
-
-        else
-
-            FavoriteButton.Text =
-                "☆"
-
-        end
 
     end
 
-    UpdateFavoriteButton()
+    if not HttpGet then
 
-    --==================================================
-    -- ⭐ FAVORITE CLICK
-    --==================================================
+        warn(
+            "[Rimuru Hub] HttpGet não disponível."
+        )
 
-    FavoriteButton.MouseButton1Click:Connect(
-        function()
+        return nil
 
-            self:HandleFavorite(
-                ID,
-                FavoriteButton
-            )
+    end
 
-        end
+    print(
+        "[Rimuru Hub] Carregando: "
+        .. Name
+        .. ".lua"
     )
 
     --==================================================
-    -- COPY BUTTON
+    -- DOWNLOAD
     --==================================================
 
-    local CopyButton =
-        Instance.new(
-            "TextButton"
-        )
+    local Success,
+        Source =
+        pcall(
+            function()
 
-    CopyButton.Name =
-        "Copy"
-
-    CopyButton.Size =
-        UDim2.new(
-            0,
-            55,
-            0,
-            28
-        )
-
-    CopyButton.Position =
-        UDim2.new(
-            1,
-            -65,
-            0.5,
-            -14
-        )
-
-    CopyButton.BackgroundColor3 =
-        self.Theme:GetAccent()
-
-    CopyButton.BackgroundTransparency =
-        0
-
-    CopyButton.BorderSizePixel =
-        0
-
-    CopyButton.Text =
-        "Copy"
-
-    CopyButton.TextColor3 =
-        Color3.fromRGB(
-            255,
-            255,
-            255
-        )
-
-    CopyButton.TextSize =
-        10
-
-    CopyButton.Font =
-        Enum.Font.GothamBold
-
-    CopyButton.AutoButtonColor =
-        false
-
-    CopyButton.ZIndex =
-        506
-
-    CopyButton.Parent =
-        Card
-
-    --==================================================
-    -- COPY CORNER
-    --==================================================
-
-    local CopyCorner =
-        Instance.new(
-            "UICorner"
-        )
-
-    CopyCorner.CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
-
-    CopyCorner.Parent =
-        CopyButton
-
-    --==================================================
-    -- COPY CLICK
-    --==================================================
-
-    CopyButton.MouseButton1Click:Connect(
-        function()
-
-            if self:Copy(ID) then
-
-                CopyButton.Text =
-                    "Copied!"
-
-                task.delay(
-                    0.8,
-                    function()
-
-                        if CopyButton
-                        and CopyButton.Parent then
-
-                            CopyButton.Text =
-                                "Copy"
-
-                        end
-
-                    end
-                )
-
-            else
-
-                CopyButton.Text =
-                    "N/A"
-
-                task.delay(
-                    0.8,
-                    function()
-
-                        if CopyButton
-                        and CopyButton.Parent then
-
-                            CopyButton.Text =
-                                "Copy"
-
-                        end
-
-                    end
+                return HttpGet(
+                    URL
                 )
 
             end
+        )
 
-        end
+    if not Success then
+
+        warn(
+            "[Rimuru Hub] Falha HTTP em "
+            .. Name
+            .. ".lua: "
+            .. tostring(Source)
+        )
+
+        return nil
+
+    end
+
+    if type(Source) ~= "string"
+    or Source == ""
+    then
+
+        warn(
+            "[Rimuru Hub] "
+            .. Name
+            .. ".lua retornou conteúdo vazio."
+        )
+
+        return nil
+
+    end
+
+    --==================================================
+    -- COMPILE
+    --==================================================
+
+    local Compiler =
+        loadstring
+
+    if type(Compiler) ~= "function" then
+
+        warn(
+            "[Rimuru Hub] loadstring não disponível."
+        )
+
+        return nil
+
+    end
+
+    local SuccessCompile,
+        Chunk =
+        pcall(
+            Compiler,
+            Source
+        )
+
+    if not SuccessCompile
+    or type(Chunk) ~= "function"
+    then
+
+        warn(
+            "[Rimuru Hub] Erro de compilação em "
+            .. Name
+            .. ".lua: "
+            .. tostring(Chunk)
+        )
+
+        return nil
+
+    end
+
+    --==================================================
+    -- EXECUTE
+    --==================================================
+
+    local SuccessRun,
+        Result =
+        pcall(
+            Chunk
+        )
+
+    if not SuccessRun then
+
+        warn(
+            "[Rimuru Hub] Erro ao executar "
+            .. Name
+            .. ".lua: "
+            .. tostring(Result)
+        )
+
+        return nil
+
+    end
+
+    --==================================================
+    -- RESULT
+    --==================================================
+
+    if Result == nil then
+
+        warn(
+            "[Rimuru Hub] "
+            .. Name
+            .. ".lua não retornou um módulo."
+        )
+
+        return nil
+
+    end
+
+    print(
+        "[Rimuru Hub] OK: "
+        .. Name
+        .. ".lua"
     )
 
-    return Card
+    return Result
 
 end
 
 --==================================================
--- REFRESH ALL FAVORITE BUTTONS
+-- LOAD DATA/MODULES
 --==================================================
 
-function Cards:RefreshFavoriteButtons()
+RimuruHub.Config =
+    LoadModule(
+        "Config"
+    )
 
-    if not self.Scroll then
-        return
-    end
+RimuruHub.Sound =
+    LoadModule(
+        "Sound"
+    )
 
-    for _, Object in
-        ipairs(
-            self.Scroll:GetChildren()
-        ) do
+RimuruHub.Theme =
+    LoadModule(
+        "Theme"
+    )
 
-        if Object:IsA("Frame") then
+RimuruHub.UI =
+    LoadModule(
+        "UI"
+    )
 
-            local FavoriteButton =
-                Object:FindFirstChild(
-                    "Favorite"
-                )
+RimuruHub.Logo =
+    LoadModule(
+        "Logo"
+    )
 
-            local IDLabel =
-                Object:FindFirstChild(
-                    "ID"
-                )
+RimuruHub.Favorites =
+    LoadModule(
+        "Favorites"
+    )
 
-            if FavoriteButton
-            and IDLabel then
+RimuruHub.Cards =
+    LoadModule(
+        "Cards"
+    )
 
-                local ID =
-                    tostring(
-                        IDLabel.Text
-                    )
+RimuruHub.Categories =
+    LoadModule(
+        "Categories"
+    )
 
-                if self:IsFavorite(ID) then
+RimuruHub.Settings =
+    LoadModule(
+        "Settings"
+    )
 
-                    FavoriteButton.Text =
-                        "⭐"
+RimuruHub.RGB =
+    LoadModule(
+        "RGB"
+    )
 
-                else
+--==================================================
+-- STATUS
+--==================================================
 
-                    FavoriteButton.Text =
-                        "☆"
+local function ModuleExists(
+    Module
+)
+
+    return Module ~= nil
+
+end
+
+--==================================================
+-- CONFIG COMPATIBILITY
+--==================================================
+
+if RimuruHub.Config then
+
+    --==================================================
+    -- CONFIG.UI
+    --==================================================
+
+    if type(
+        RimuruHub.Config.GetUI
+    ) == "function"
+    then
+
+        local Success,
+            UIData =
+            pcall(
+                function()
+
+                    return RimuruHub.Config:
+                        GetUI()
 
                 end
+            )
+
+        if Success
+        and type(UIData) == "table"
+        then
+
+            RimuruHub.Config.UI =
+                UIData
+
+        end
+
+    end
+
+    if type(
+        RimuruHub.Config.UI
+    ) ~= "table"
+    then
+
+        RimuruHub.Config.UI =
+            {}
+
+    end
+
+    --==================================================
+    -- DEFAULT CARD TRANSPARENCY
+    --==================================================
+
+    if RimuruHub.Config.UI.CardTransparency
+        == nil
+    then
+
+        RimuruHub.Config.UI.CardTransparency =
+            0.75
+
+    end
+
+    --==================================================
+    -- DRAG COMPATIBILITY
+    --==================================================
+
+    if RimuruHub.Config.UI.MainMenuDraggable
+        == nil
+    then
+
+        if RimuruHub.Config.UI.Draggable
+            ~= nil
+        then
+
+            RimuruHub.Config.UI.MainMenuDraggable =
+                RimuruHub.Config.UI.Draggable
+
+        else
+
+            RimuruHub.Config.UI.MainMenuDraggable =
+                true
+
+        end
+
+    end
+
+    --==================================================
+    -- ANIMATION COMPATIBILITY
+    --==================================================
+
+    if RimuruHub.Config.UI.Animations
+        == nil
+    then
+
+        local AnimationValue =
+            true
+
+        if type(
+            RimuruHub.Config.GetAnimation
+        ) == "function"
+        then
+
+            local Success,
+                Value =
+                pcall(
+                    function()
+
+                        return RimuruHub.Config:
+                            GetAnimation(
+                                "Enabled"
+                            )
+
+                    end
+                )
+
+            if Success
+            and type(Value) == "boolean"
+            then
+
+                AnimationValue =
+                    Value
 
             end
 
         end
+
+        RimuruHub.Config.UI.Animations =
+            AnimationValue
+
+    end
+
+end
+
+--==================================================
+-- CONTEXT
+--==================================================
+
+RimuruHub.Context = {
+
+    Player =
+        Player,
+
+    PlayerGui =
+        Player
+        and Player:WaitForChild(
+            "PlayerGui"
+        ),
+
+    Config =
+        RimuruHub.Config,
+
+    Theme =
+        RimuruHub.Theme,
+
+    UI =
+        RimuruHub.UI,
+
+    Logo =
+        RimuruHub.Logo,
+
+    Favorites =
+        RimuruHub.Favorites,
+
+    Cards =
+        RimuruHub.Cards,
+
+    Categories =
+        RimuruHub.Categories,
+
+    --==================================================
+    -- IMPORTANT
+    --==================================================
+
+    Sounds =
+        RimuruHub.Sound,
+
+    Sound =
+        RimuruHub.Sound,
+
+    Settings =
+        RimuruHub.Settings,
+
+    RGB =
+        RimuruHub.RGB,
+
+}
+
+--==================================================
+-- SAFE INIT
+--==================================================
+
+local function InitModule(
+    Name,
+    Module
+)
+
+    if not Module then
+
+        warn(
+            "[Rimuru Hub] "
+            .. Name
+            .. " não carregado."
+        )
+
+        return false
+
+    end
+
+    if type(
+        Module.Init
+    ) ~= "function"
+    then
+
+        warn(
+            "[Rimuru Hub] "
+            .. Name
+            .. " não possui Init()."
+        )
+
+        return false
+
+    end
+
+    local Success,
+        Error =
+        pcall(
+            function()
+
+                Module:Init(
+                    RimuruHub.Context
+                )
+
+            end
+        )
+
+    if not Success then
+
+        warn(
+            "[Rimuru Hub] Erro ao iniciar "
+            .. Name
+            .. ": "
+            .. tostring(Error)
+        )
+
+        return false
+
+    end
+
+    print(
+        "[Rimuru Hub] "
+        .. Name
+        .. " iniciado."
+    )
+
+    return true
+
+end
+
+--==================================================
+-- INITIALIZATION
+--==================================================
+
+--==================================================
+-- 1. CONFIG
+--==================================================
+
+InitModule(
+    "Config",
+    RimuruHub.Config
+)
+
+--==================================================
+-- 2. THEME
+--==================================================
+
+InitModule(
+    "Theme",
+    RimuruHub.Theme
+)
+
+--==================================================
+-- 3. UI
+--==================================================
+
+InitModule(
+    "UI",
+    RimuruHub.UI
+)
+
+--==================================================
+-- 4. FAVORITES
+--==================================================
+
+InitModule(
+    "Favorites",
+    RimuruHub.Favorites
+)
+
+--==================================================
+-- 5. CARDS
+--==================================================
+
+InitModule(
+    "Cards",
+    RimuruHub.Cards
+)
+
+--==================================================
+-- 6. CATEGORIES
+--==================================================
+
+InitModule(
+    "Categories",
+    RimuruHub.Categories
+)
+
+--==================================================
+-- 7. LOGO
+--==================================================
+
+InitModule(
+    "Logo",
+    RimuruHub.Logo
+)
+
+--==================================================
+-- 8. SETTINGS
+--==================================================
+
+InitModule(
+    "Settings",
+    RimuruHub.Settings
+)
+
+--==================================================
+-- 9. RGB
+--==================================================
+
+InitModule(
+    "RGB",
+    RimuruHub.RGB
+)
+
+--==================================================
+-- CARDS COMPATIBILITY
+--==================================================
+
+if RimuruHub.Cards then
+
+    -- Categories.lua chama CreateCard().
+    -- Cards.lua atual possui CreateSoundCard().
+
+    if type(
+        RimuruHub.Cards.CreateCard
+    ) ~= "function"
+    and type(
+        RimuruHub.Cards.CreateSoundCard
+    ) == "function"
+    then
+
+        RimuruHub.Cards.CreateCard =
+            function(
+                Self,
+                Index,
+                Data
+            )
+
+                return Self:
+                    CreateSoundCard(
+                        Index,
+                        Data
+                    )
+
+            end
+
+        print(
+            "[Rimuru Hub] Compatibilidade Cards: CreateCard -> CreateSoundCard"
+        )
+
+    end
+
+end
+
+--==================================================
+-- REFRESH CONTEXT REFERENCES
+--==================================================
+
+if RimuruHub.UI then
+
+    RimuruHub.Context.UI =
+        RimuruHub.UI
+
+end
+
+if RimuruHub.Theme then
+
+    RimuruHub.Context.Theme =
+        RimuruHub.Theme
+
+end
+
+if RimuruHub.Cards then
+
+    RimuruHub.Context.Cards =
+        RimuruHub.Cards
+
+end
+
+if RimuruHub.Categories then
+
+    RimuruHub.Context.Categories =
+        RimuruHub.Categories
+
+end
+
+--==================================================
+-- CREATE CATEGORIES
+--==================================================
+
+if RimuruHub.Categories
+and type(
+    RimuruHub.Categories.CreateCategories
+) == "function"
+then
+
+    local Success,
+        Error =
+        pcall(
+            function()
+
+                RimuruHub.Categories:
+                    CreateCategories()
+
+            end
+        )
+
+    if not Success then
+
+        warn(
+            "[Rimuru Hub] Erro ao criar categorias: "
+            .. tostring(Error)
+        )
+
+    else
+
+        print(
+            "[Rimuru Hub] Categorias criadas."
+        )
+
+    end
+
+end
+
+--==================================================
+-- DEFAULT CATEGORY
+--==================================================
+
+if RimuruHub.Categories
+and type(
+    RimuruHub.Categories.SetDefaultCategory
+) == "function"
+then
+
+    local Success,
+        Error =
+        pcall(
+            function()
+
+                RimuruHub.Categories:
+                    SetDefaultCategory()
+
+            end
+        )
+
+    if not Success then
+
+        warn(
+            "[Rimuru Hub] Erro ao selecionar categoria padrão: "
+            .. tostring(Error)
+        )
+
+    end
+
+end
+
+--==================================================
+-- BUILD SETTINGS
+--==================================================
+
+if RimuruHub.Settings
+and type(
+    RimuruHub.Settings.Build
+) == "function"
+then
+
+    local Success,
+        Error =
+        pcall(
+            function()
+
+                RimuruHub.Settings:
+                    Build()
+
+            end
+        )
+
+    if not Success then
+
+        warn(
+            "[Rimuru Hub] Erro ao construir Settings: "
+            .. tostring(Error)
+        )
 
     end
 
@@ -766,74 +865,322 @@ end
 -- APPLY THEME
 --==================================================
 
-function Cards:ApplyTheme()
+if RimuruHub.UI
+and type(
+    RimuruHub.UI.ApplyTheme
+) == "function"
+then
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+    pcall(
+        function()
 
-    if not self.Scroll then
-        return
-    end
-
-    for _, Object in
-        ipairs(
-            self.Scroll:GetChildren()
-        ) do
-
-        if Object:IsA("Frame") then
-
-            Object.BackgroundColor3 =
-                CurrentTheme.Card
-
-            Object.BackgroundTransparency =
-                self:GetCardTransparency()
-
-            local NameLabel =
-                Object:FindFirstChild(
-                    "Name"
-                )
-
-            local IDLabel =
-                Object:FindFirstChild(
-                    "ID"
-                )
-
-            local CopyButton =
-                Object:FindFirstChild(
-                    "Copy"
-                )
-
-            if NameLabel then
-
-                NameLabel.TextColor3 =
-                    CurrentTheme.Text
-
-            end
-
-            if IDLabel then
-
-                IDLabel.TextColor3 =
-                    CurrentTheme.SubText
-
-            end
-
-            if CopyButton then
-
-                CopyButton.BackgroundColor3 =
-                    self.Theme:GetAccent()
-
-            end
+            RimuruHub.UI:
+                ApplyTheme()
 
         end
-
-    end
-
-    self:RefreshFavoriteButtons()
+    )
 
 end
 
 --==================================================
--- EXPORT
+-- APPLY CATEGORY THEME
 --==================================================
 
-return Cards
+if RimuruHub.Categories
+and type(
+    RimuruHub.Categories.ApplyTheme
+) == "function"
+then
+
+    pcall(
+        function()
+
+            RimuruHub.Categories:
+                ApplyTheme()
+
+        end
+    )
+
+end
+
+--==================================================
+-- APPLY CARD THEME
+--==================================================
+
+if RimuruHub.Cards
+and type(
+    RimuruHub.Cards.ApplyTheme
+) == "function"
+then
+
+    pcall(
+        function()
+
+            RimuruHub.Cards:
+                ApplyTheme()
+
+        end
+    )
+
+end
+
+--==================================================
+-- APPLY LOGO THEME
+--==================================================
+
+if RimuruHub.Logo
+and type(
+    RimuruHub.Logo.ApplyTheme
+) == "function"
+then
+
+    pcall(
+        function()
+
+            RimuruHub.Logo:
+                ApplyTheme()
+
+        end
+    )
+
+end
+
+--==================================================
+-- OPEN / CLOSE
+--==================================================
+
+function RimuruHub:Open()
+
+    if not self.UI then
+
+        warn(
+            "[Rimuru Hub] UI não disponível."
+        )
+
+        return false
+
+    end
+
+    if type(
+        self.UI.SetVisible
+    ) == "function"
+    then
+
+        self.UI:
+            SetVisible(
+                true
+            )
+
+        return true
+
+    end
+
+    if self.UI.Main then
+
+        self.UI.Main.Visible =
+            true
+
+        return true
+
+    end
+
+    warn(
+        "[Rimuru Hub] Main não encontrado."
+    )
+
+    return false
+
+end
+
+--==================================================
+-- CLOSE
+--==================================================
+
+function RimuruHub:Close()
+
+    if not self.UI then
+        return false
+    end
+
+    if type(
+        self.UI.SetVisible
+    ) == "function"
+    then
+
+        self.UI:
+            SetVisible(
+                false
+            )
+
+        return true
+
+    end
+
+    if self.UI.Main then
+
+        self.UI.Main.Visible =
+            false
+
+        return true
+
+    end
+
+    return false
+
+end
+
+--==================================================
+-- TOGGLE
+--==================================================
+
+function RimuruHub:Toggle()
+
+    if not self.UI then
+        return false
+    end
+
+    if type(
+        self.UI.Toggle
+    ) == "function"
+    then
+
+        self.UI:
+            Toggle()
+
+        return self.UI:IsVisible()
+
+    end
+
+    if self.UI.Main then
+
+        self.UI.Main.Visible =
+            not self.UI.Main.Visible
+
+        return self.UI.Main.Visible
+
+    end
+
+    return false
+
+end
+
+--==================================================
+-- GET MODULE
+--==================================================
+
+function RimuruHub:GetModule(
+    Name
+)
+
+    return self[Name]
+
+end
+
+--==================================================
+-- STATUS
+--==================================================
+
+function RimuruHub:GetStatus()
+
+    return {
+
+        Config =
+            ModuleExists(
+                self.Config
+            ),
+
+        Sound =
+            ModuleExists(
+                self.Sound
+            ),
+
+        Theme =
+            ModuleExists(
+                self.Theme
+            ),
+
+        UI =
+            ModuleExists(
+                self.UI
+            ),
+
+        Logo =
+            ModuleExists(
+                self.Logo
+            ),
+
+        Favorites =
+            ModuleExists(
+                self.Favorites
+            ),
+
+        Cards =
+            ModuleExists(
+                self.Cards
+            ),
+
+        Categories =
+            ModuleExists(
+                self.Categories
+            ),
+
+        Settings =
+            ModuleExists(
+                self.Settings
+            ),
+
+        RGB =
+            ModuleExists(
+                self.RGB
+            ),
+
+    }
+
+end
+
+--==================================================
+-- PRINT STATUS
+--==================================================
+
+print(
+    "========================================"
+)
+
+print(
+    "💥 RIMURU HUB"
+)
+
+print(
+    "Remote Modular System carregado."
+)
+
+print(
+    "GitHub Modules carregados."
+)
+
+print(
+    "========================================"
+)
+
+--==================================================
+-- AUTO OPEN
+--==================================================
+
+task.defer(
+    function()
+
+        task.wait(
+            0.25
+        )
+
+        RimuruHub:
+            Open()
+
+    end
+)
+
+--==================================================
+-- RETURN
+--==================================================
+
+return RimuruHub
