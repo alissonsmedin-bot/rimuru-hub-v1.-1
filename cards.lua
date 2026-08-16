@@ -266,8 +266,8 @@ function Cards:CreateSoundCard(
 
     CopyButton.TextColor3 =
         Color3.fromRGB(
-            10,
-            200,
+            255,
+            255,
             255
         )
 
