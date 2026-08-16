@@ -1,15 +1,16 @@
 --// 💥 RIMURU HUB
---// UI TRANSPARENCY SYSTEM
---// Centralized Transparency Controller
---// Default: 0.75
+--// UI Transparency System
+--// Centralized Transparency
+--// Modular UI Architecture
 
 local Transparency = {}
 
 --==================================================
--- DEFAULT
+-- DEFAULTS
 --==================================================
 
-local DEFAULT_TRANSPARENCY = 0.75
+local DEFAULT_VALUE =
+    0.75
 
 --==================================================
 -- INIT
@@ -20,17 +21,17 @@ function Transparency:Init(Context)
     self.Context =
         Context or {}
 
+    self.UI =
+        self.Context.UI
+
     self.Config =
         self.Context.Config
 
     self.Theme =
         self.Context.Theme
 
-    self.References =
-        self.Context.UIReferences
-
     self.Value =
-        DEFAULT_TRANSPARENCY
+        DEFAULT_VALUE
 
     self:_Load()
 
@@ -46,68 +47,78 @@ function Transparency:_Load()
     -- CONFIG
     --==================================================
 
-    if self.Config then
+    if self.Config
+    and self.Config.UI
+    and self.Config.UI.Transparency
+    ~= nil
+    then
 
-        if self.Config.UI
-        and self.Config.UI.Transparency
-        ~= nil
-        then
+        local Value =
+            tonumber(
+                self.Config.UI.Transparency
+            )
 
-            local Value =
-                tonumber(
-                    self.Config.UI.Transparency
+        if Value then
+
+            self.Value =
+                math.clamp(
+                    Value,
+                    0,
+                    1
                 )
 
-            if Value then
-
-                self.Value =
-                    math.clamp(
-                        Value,
-                        0,
-                        1
-                    )
-
-                return self.Value
-
-            end
-
-        end
-
-        if self.Config.UI
-        and self.Config.UI.CardTransparency
-        ~= nil
-        then
-
-            local Value =
-                tonumber(
-                    self.Config.UI.CardTransparency
-                )
-
-            if Value then
-
-                self.Value =
-                    math.clamp(
-                        Value,
-                        0,
-                        1
-                    )
-
-                return self.Value
-
-            end
+            return
 
         end
 
     end
 
     --==================================================
-    -- DEFAULT
+    -- THEME
     --==================================================
 
-    self.Value =
-        DEFAULT_TRANSPARENCY
+    if self.Theme
+    and type(
+        self.Theme.GetCurrent
+    ) == "function"
+    then
 
-    return self.Value
+        local Success,
+            ThemeData =
+            pcall(
+                function()
+
+                    return self.Theme:
+                        GetCurrent()
+
+                end
+            )
+
+        if Success
+        and type(ThemeData) == "table"
+        and ThemeData.Transparency
+        ~= nil
+        then
+
+            local Value =
+                tonumber(
+                    ThemeData.Transparency
+                )
+
+            if Value then
+
+                self.Value =
+                    math.clamp(
+                        Value,
+                        0,
+                        1
+                    )
+
+            end
+
+        end
+
+    end
 
 end
 
@@ -118,7 +129,7 @@ end
 function Transparency:Get()
 
     return self.Value
-        or DEFAULT_TRANSPARENCY
+        or DEFAULT_VALUE
 
 end
 
@@ -137,15 +148,12 @@ function Transparency:Set(
         return false
     end
 
-    Value =
+    self.Value =
         math.clamp(
             Value,
             0,
             1
         )
-
-    self.Value =
-        Value
 
     --==================================================
     -- SAVE CONFIG
@@ -153,33 +161,12 @@ function Transparency:Set(
 
     if self.Config then
 
-        if self.Config.UI then
+        self.Config.UI =
+            self.Config.UI
+            or {}
 
-            self.Config.UI.Transparency =
-                Value
-
-            self.Config.UI.CardTransparency =
-                Value
-
-        end
-
-        if type(
-            self.Config.SetCardTransparency
-        ) == "function"
-        then
-
-            pcall(
-                function()
-
-                    self.Config:
-                        SetCardTransparency(
-                            Value
-                        )
-
-                end
-            )
-
-        end
+        self.Config.UI.Transparency =
+            self.Value
 
     end
 
@@ -199,87 +186,62 @@ end
 
 function Transparency:Apply()
 
-    local Root =
-        nil
-
-    --==================================================
-    -- GET ROOT
-    --==================================================
-
-    if self.References then
-
-        Root =
-            self.References.Root
-
-        if not Root
-        and type(
-            self.References.Get
-        ) == "function"
-        then
-
-            local Success,
-                Result =
-                pcall(
-                    function()
-
-                        return self.References:
-                            Get("Root")
-
-                    end
-                )
-
-            if Success then
-
-                Root =
-                    Result
-
-            end
-
-        end
-
-    end
-
-    if not Root then
+    if not self.UI then
         return false
     end
-
-    --==================================================
-    -- APPLY TO UI OBJECTS
-    --==================================================
 
     local Value =
         self:Get()
 
-    for _, Object in
-        ipairs(
-            Root:GetDescendants()
-        )
-    do
+    --==================================================
+    -- MAIN
+    --==================================================
 
-        if Object:IsA("Frame")
-        or Object:IsA("ScrollingFrame")
-        or Object:IsA("TextButton")
-        then
+    if self.UI.Main
+    and self.UI.Main:IsA("GuiObject")
+    then
 
-            -- Não mexer em botões que já
-            -- possuem transparência total.
+        self.UI.Main.BackgroundTransparency =
+            Value
 
-            if Object.Name ~= "Favorite"
-            and Object.Name ~= "Close"
-            then
+    end
 
-                if Object.BackgroundTransparency
-                    < 1
-                then
+    --==================================================
+    -- WINDOW
+    --==================================================
 
-                    Object.BackgroundTransparency =
-                        Value
+    if self.UI.Window
+    and self.UI.Window:IsA("GuiObject")
+    then
 
-                end
+        self.UI.Window.BackgroundTransparency =
+            Value
 
-            end
+    end
 
-        end
+    --==================================================
+    -- TOPBAR
+    --==================================================
+
+    if self.UI.Topbar
+    and self.UI.Topbar:IsA("GuiObject")
+    then
+
+        self.UI.Topbar.BackgroundTransparency =
+            Value
+
+    end
+
+    --==================================================
+    -- SIDEBAR
+    --==================================================
+
+    if self.UI.Sidebar
+    and self.UI.Sidebar:IsA("GuiObject")
+    then
+
+        self.UI.Sidebar.BackgroundTransparency =
+            Value
 
     end
 
@@ -293,24 +255,34 @@ end
 
 function Transparency:Reset()
 
-    return self:Set(
-        DEFAULT_TRANSPARENCY
-    )
+    self.Value =
+        DEFAULT_VALUE
+
+    self:Apply()
+
+    return true
 
 end
 
 --==================================================
--- GET DEFAULT
+-- SET UI
 --==================================================
 
-function Transparency:GetDefault()
+function Transparency:SetUI(
+    UI
+)
 
-    return DEFAULT_TRANSPARENCY
+    if type(UI) ~= "table" then
+        return false
+    end
+
+    self.UI =
+        UI
+
+    self:Apply()
+
+    return true
 
 end
-
---==================================================
--- RETURN
---==================================================
 
 return Transparency
