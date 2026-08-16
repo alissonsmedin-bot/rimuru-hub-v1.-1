@@ -27,9 +27,6 @@ function Search:Init(Context)
     self.Theme =
         Context.Theme
 
-    self.Categories =
-        Context.Categories
-
     self.Active =
         false
 
@@ -41,9 +38,6 @@ function Search:Init(Context)
 
     self.SortMode =
         "A-Z"
-
-    self.LastCategory =
-        "Outros"
 
     self:Create()
 
@@ -67,15 +61,15 @@ function Search:GetTheme()
 end
 
 --==================================================
--- CREATE SEARCH
+-- CREATE
 --==================================================
 
 function Search:Create()
 
-    local Header =
-        self.UI.Header
+    local Content =
+        self.UI.Content
 
-    if not Header then
+    if not Content then
         return
     end
 
@@ -84,9 +78,7 @@ function Search:Create()
     --==================================================
 
     local SearchBox =
-        Instance.new(
-            "TextBox"
-        )
+        Instance.new("TextBox")
 
     SearchBox.Name =
         "SearchBox"
@@ -94,17 +86,17 @@ function Search:Create()
     SearchBox.Position =
         UDim2.new(
             0,
-            285,
+            10,
             0,
-            12
+            10
         )
 
     SearchBox.Size =
         UDim2.new(
+            1,
+            -20,
             0,
-            210,
-            0,
-            34
+            38
         )
 
     SearchBox.BackgroundColor3 =
@@ -117,7 +109,7 @@ function Search:Create()
         ""
 
     SearchBox.PlaceholderText =
-        "🔎 Pesquisar..."
+        "🔎  Pesquisar sons..."
 
     SearchBox.PlaceholderColor3 =
         self:GetTheme().SubText
@@ -126,7 +118,7 @@ function Search:Create()
         self:GetTheme().Text
 
     SearchBox.TextSize =
-        11
+        12
 
     SearchBox.Font =
         Enum.Font.Gotham
@@ -138,19 +130,17 @@ function Search:Create()
         false
 
     SearchBox.ZIndex =
-        505
+        510
 
     SearchBox.Parent =
-        Header
+        Content
 
     --==================================================
     -- CORNER
     --==================================================
 
     local Corner =
-        Instance.new(
-            "UICorner"
-        )
+        Instance.new("UICorner")
 
     Corner.CornerRadius =
         UDim.new(
@@ -166,9 +156,7 @@ function Search:Create()
     --==================================================
 
     local Padding =
-        Instance.new(
-            "UIPadding"
-        )
+        Instance.new("UIPadding")
 
     Padding.PaddingLeft =
         UDim.new(
@@ -186,23 +174,21 @@ function Search:Create()
         SearchBox
 
     --==================================================
-    -- RESULT COUNT
+    -- RESULT COUNTER
     --==================================================
 
     local ResultLabel =
-        Instance.new(
-            "TextLabel"
-        )
+        Instance.new("TextLabel")
 
     ResultLabel.Name =
-        "SearchResultCount"
+        "ResultCount"
 
     ResultLabel.Position =
         UDim2.new(
             0,
             12,
             0,
-            6
+            52
         )
 
     ResultLabel.Size =
@@ -210,7 +196,7 @@ function Search:Create()
             1,
             -24,
             0,
-            22
+            20
         )
 
     ResultLabel.BackgroundTransparency =
@@ -226,19 +212,16 @@ function Search:Create()
         10
 
     ResultLabel.Font =
-        Enum.Font.GothamMedium
+        Enum.Font.Gotham
 
     ResultLabel.TextXAlignment =
         Enum.TextXAlignment.Left
 
-    ResultLabel.Visible =
-        false
-
     ResultLabel.ZIndex =
-        505
+        510
 
     ResultLabel.Parent =
-        self.UI.Content
+        Content
 
     --==================================================
     -- SAVE
@@ -250,24 +233,16 @@ function Search:Create()
     self.ResultLabel =
         ResultLabel
 
-end
+    --==================================================
+    -- SEARCH EVENT
+    --==================================================
 
---==================================================
--- SEARCH EVENTS
---==================================================
-
-function Search:Connect()
-
-    if not self.Box then
-        return
-    end
-
-    self.Box:GetPropertyChangedSignal(
+    SearchBox:GetPropertyChangedSignal(
         "Text"
     ):Connect(function()
 
         self:Search(
-            self.Box.Text
+            SearchBox.Text
         )
 
     end)
@@ -275,10 +250,167 @@ function Search:Connect()
 end
 
 --==================================================
--- CLEAR SCROLL
+-- COLLECT RESULTS
 --==================================================
 
-function Search:ClearScroll()
+function Search:Collect(Query)
+
+    local Results =
+        {}
+
+    Query =
+        string.lower(
+            tostring(Query or "")
+        )
+
+    for CategoryName, Category in
+        pairs(self.Sounds) do
+
+        if type(Category) == "table" then
+
+            for Index, Data in
+                ipairs(Category) do
+
+                local Name =
+                    tostring(
+                        Data[1] or ""
+                    )
+
+                local ID =
+                    tostring(
+                        Data[2] or ""
+                    )
+
+                local LowerName =
+                    string.lower(
+                        Name
+                    )
+
+                local LowerID =
+                    string.lower(
+                        ID
+                    )
+
+                if Query == ""
+                or string.find(
+                    LowerName,
+                    Query,
+                    1,
+                    true
+                )
+                or string.find(
+                    LowerID,
+                    Query,
+                    1,
+                    true
+                ) then
+
+                    table.insert(
+                        Results,
+                        {
+                            Name =
+                                Name,
+
+                            ID =
+                                ID,
+
+                            Category =
+                                CategoryName,
+
+                            Index =
+                                Index
+                        }
+                    )
+
+                end
+
+            end
+
+        end
+
+    end
+
+    return Results
+
+end
+
+--==================================================
+-- SORT
+--==================================================
+
+function Search:Sort(Results)
+
+    if self.SortMode == "A-Z" then
+
+        table.sort(
+            Results,
+            function(A, B)
+
+                return string.lower(
+                    A.Name
+                ) <
+                string.lower(
+                    B.Name
+                )
+
+            end
+        )
+
+    elseif self.SortMode == "Z-A" then
+
+        table.sort(
+            Results,
+            function(A, B)
+
+                return string.lower(
+                    A.Name
+                ) >
+                string.lower(
+                    B.Name
+                )
+
+            end
+        )
+
+    elseif self.SortMode == "ID ↑" then
+
+        table.sort(
+            Results,
+            function(A, B)
+
+                return tonumber(A.ID)
+                    or 0
+                    <
+                    tonumber(B.ID)
+                    or 0
+
+            end
+        )
+
+    elseif self.SortMode == "ID ↓" then
+
+        table.sort(
+            Results,
+            function(A, B)
+
+                return tonumber(A.ID)
+                    or 0
+                    >
+                    tonumber(B.ID)
+                    or 0
+
+            end
+        )
+
+    end
+
+end
+
+--==================================================
+-- CLEAR CARDS
+--==================================================
+
+function Search:ClearCards()
 
     local Scroll =
         self.UI.Scroll
@@ -308,144 +440,7 @@ function Search:ClearScroll()
 end
 
 --==================================================
--- COLLECT
---==================================================
-
-function Search:Collect(Query)
-
-    local Results =
-        {}
-
-    Query =
-        string.lower(
-            tostring(
-                Query or ""
-            )
-        )
-
-    for CategoryName, Category in
-        pairs(
-            self.Sounds
-        ) do
-
-        if type(Category) ==
-            "table" then
-
-            for Index, Data in
-                ipairs(Category) do
-
-                local Name =
-                    tostring(
-                        Data[1] or ""
-                    )
-
-                local ID =
-                    tostring(
-                        Data[2] or ""
-                    )
-
-                local LowerName =
-                    string.lower(
-                        Name
-                    )
-
-                local LowerID =
-                    string.lower(
-                        ID
-                    )
-
-                if string.find(
-                    LowerName,
-                    Query,
-                    1,
-                    true
-                )
-                or string.find(
-                    LowerID,
-                    Query,
-                    1,
-                    true
-                ) then
-
-                    table.insert(
-                        Results,
-                        {
-
-                            Name =
-                                Name,
-
-                            ID =
-                                ID,
-
-                            Category =
-                                CategoryName,
-
-                            Index =
-                                Index
-
-                        }
-                    )
-
-                end
-
-            end
-
-        end
-
-    end
-
-    return Results
-
-end
-
---==================================================
--- SORT
---==================================================
-
-function Search:Sort(Results)
-
-    if self.SortMode ==
-        "A-Z" then
-
-        table.sort(
-            Results,
-            function(A, B)
-
-                return string.lower(
-                    A.Name
-                )
-                <
-                string.lower(
-                    B.Name
-                )
-
-            end
-        )
-
-    elseif self.SortMode ==
-        "Z-A" then
-
-        table.sort(
-            Results,
-            function(A, B)
-
-                return string.lower(
-                    A.Name
-                )
-                >
-                string.lower(
-                    B.Name
-                )
-
-            end
-        )
-
-    end
-
-end
-
---==================================================
--- CREATE RESULT
+-- CREATE RESULT CARD
 --==================================================
 
 function Search:CreateResult(
@@ -453,102 +448,18 @@ function Search:CreateResult(
     Result
 )
 
-    if not self.Cards then
-        return
-    end
+    if self.Cards
+    and self.Cards.CreateSoundCard then
 
-    if not self.Cards.CreateSoundCard then
-        return
-    end
-
-    self.Cards:CreateSoundCard(
-        Index,
-        {
-
-            Result.Name,
-            Result.ID
-
-        }
-    )
-
-end
-
---==================================================
--- NO RESULTS
---==================================================
-
-function Search:ShowNoResults(
-    Query
-)
-
-    local Scroll =
-        self.UI.Scroll
-
-    if not Scroll then
-        return
-    end
-
-    local Label =
-        Instance.new(
-            "TextLabel"
+        self.Cards:CreateSoundCard(
+            Index,
+            {
+                Result.Name,
+                Result.ID
+            }
         )
 
-    Label.Name =
-        "NoResults"
-
-    Label.Size =
-        UDim2.new(
-            1,
-            -5,
-            0,
-            50
-        )
-
-    Label.BackgroundTransparency =
-        1
-
-    Label.Text =
-        'Nenhum resultado para "' ..
-        Query ..
-        '"'
-
-    Label.TextColor3 =
-        self:GetTheme().SubText
-
-    Label.TextSize =
-        12
-
-    Label.Font =
-        Enum.Font.GothamMedium
-
-    Label.ZIndex =
-        504
-
-    Label.Parent =
-        Scroll
-
-end
-
---==================================================
--- RESULT COUNT
---==================================================
-
-function Search:UpdateResultCount(
-    Count
-)
-
-    if not self.ResultLabel then
-        return
     end
-
-    self.ResultLabel.Text =
-        "Resultados encontrados: " ..
-        tostring(
-            Count
-        )
-
-    self.ResultLabel.Visible =
-        true
 
 end
 
@@ -567,7 +478,7 @@ function Search:Search(Query)
         Query
 
     --==================================================
-    -- EMPTY SEARCH
+    -- EMPTY
     --==================================================
 
     if Query == "" then
@@ -580,24 +491,8 @@ function Search:Search(Query)
 
         if self.ResultLabel then
 
-            self.ResultLabel.Visible =
-                false
-
             self.ResultLabel.Text =
                 ""
-
-        end
-
-        self:ClearScroll()
-
-        -- Volta para a categoria atual
-
-        if self.Categories
-        and self.Categories.ShowCategory then
-
-            self.Categories:ShowCategory(
-                self.LastCategory
-            )
 
         end
 
@@ -605,18 +500,8 @@ function Search:Search(Query)
 
     end
 
-    --==================================================
-    -- ACTIVE
-    --==================================================
-
     self.Active =
         true
-
-    --==================================================
-    -- CLEAR OLD CONTENT
-    --==================================================
-
-    self:ClearScroll()
 
     --==================================================
     -- COLLECT
@@ -627,6 +512,10 @@ function Search:Search(Query)
             Query
         )
 
+    --==================================================
+    -- SORT
+    --==================================================
+
     self:Sort(
         Results
     )
@@ -635,12 +524,24 @@ function Search:Search(Query)
         Results
 
     --==================================================
-    -- RESULT COUNT
+    -- CLEAR
     --==================================================
 
-    self:UpdateResultCount(
-        #Results
-    )
+    self:ClearCards()
+
+    --==================================================
+    -- COUNT
+    --==================================================
+
+    if self.ResultLabel then
+
+        self.ResultLabel.Text =
+            tostring(
+                #Results
+            ) ..
+            " resultado(s)"
+
+    end
 
     --==================================================
     -- NO RESULTS
@@ -657,13 +558,11 @@ function Search:Search(Query)
     end
 
     --==================================================
-    -- CREATE RESULTS
+    -- RESULTS
     --==================================================
 
     for Index, Result in
-        ipairs(
-            Results
-        ) do
+        ipairs(Results) do
 
         self:CreateResult(
             Index,
@@ -675,50 +574,54 @@ function Search:Search(Query)
 end
 
 --==================================================
--- CATEGORY CHANGED
+-- NO RESULTS
 --==================================================
 
-function Search:SetCategory(
-    CategoryName
-)
+function Search:ShowNoResults(Query)
 
-    if CategoryName then
+    local Scroll =
+        self.UI.Scroll
 
-        self.LastCategory =
-            CategoryName
-
+    if not Scroll then
+        return
     end
 
-end
+    local Label =
+        Instance.new("TextLabel")
 
---==================================================
--- THEME
---==================================================
+    Label.Name =
+        "NoResults"
 
-function Search:ApplyTheme()
+    Label.Size =
+        UDim2.new(
+            1,
+            -5,
+            0,
+            50
+        )
 
-    local CurrentTheme =
-        self:GetTheme()
+    Label.BackgroundTransparency =
+        1
 
-    if self.Box then
+    Label.Text =
+        'Nenhum som encontrado para "' ..
+        Query ..
+        '"'
 
-        self.Box.BackgroundColor3 =
-            CurrentTheme.Card
+    Label.TextColor3 =
+        self:GetTheme().SubText
 
-        self.Box.TextColor3 =
-            CurrentTheme.Text
+    Label.TextSize =
+        12
 
-        self.Box.PlaceholderColor3 =
-            CurrentTheme.SubText
+    Label.Font =
+        Enum.Font.GothamMedium
 
-    end
+    Label.ZIndex =
+        510
 
-    if self.ResultLabel then
-
-        self.ResultLabel.TextColor3 =
-            CurrentTheme.SubText
-
-    end
+    Label.Parent =
+        Scroll
 
 end
 
@@ -743,6 +646,12 @@ function Search:SetSortMode(
 
 end
 
+function Search:GetSortMode()
+
+    return self.SortMode
+
+end
+
 --==================================================
 -- VISIBILITY
 --==================================================
@@ -762,9 +671,18 @@ function Search:SetVisible(
 
         self.ResultLabel.Visible =
             Value
-            and self.Active
 
     end
+
+end
+
+function Search:IsVisible()
+
+    if not self.Box then
+        return false
+    end
+
+    return self.Box.Visible
 
 end
 
@@ -777,29 +695,5 @@ function Search:GetBox()
     return self.Box
 
 end
-
---==================================================
--- GET RESULTS
---==================================================
-
-function Search:GetResults()
-
-    return self.Results
-
-end
-
---==================================================
--- GET RESULT COUNT
---==================================================
-
-function Search:GetResultCount()
-
-    return #self.Results
-
-end
-
---==================================================
--- EXPORT
---==================================================
 
 return Search
