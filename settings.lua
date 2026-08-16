@@ -8,31 +8,6 @@ local Settings = {}
 --==================================================
 
 function Settings:Init(Context)
-
-    self.Context =
-        Context
-
-    self.Config =
-        Context.Config
-
-    self.Theme =
-        Context.Theme
-
-    self.UI =
-        Context.UI
-
-    self.Logo =
-        Context.Logo
-
-    self.Categories =
-        Context.Categories
-
-    self.Scroll =
-        self.UI.Scroll
-
-    self.ContentTitle =
-        self.UI.ContentTitle
-
 end
 
 --==================================================
@@ -40,19 +15,6 @@ end
 --==================================================
 
 function Settings:ClearContent()
-
-    for _, Object in
-        ipairs(self.Scroll:GetChildren()) do
-
-        if not Object:IsA("UIListLayout")
-        and not Object:IsA("UIPadding") then
-
-            Object:Destroy()
-
-        end
-
-    end
-
 end
 
 --==================================================
