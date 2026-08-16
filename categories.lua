@@ -63,6 +63,9 @@ function Categories:Init(Context)
     self.Favorites =
         Context.Favorites
 
+    self.Settings =
+    Context.Settings
+
     self.Sidebar =
         self.UI.Sidebar
 
