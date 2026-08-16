@@ -764,6 +764,9 @@ function UI:Create()
     Main.BackgroundColor3 =
         CurrentTheme.Main
 
+    Sidebar.BackgroundTransparency =
+    0.55
+    
     Main.BorderSizePixel =
         0
 
