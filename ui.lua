@@ -933,6 +933,503 @@ function UI:ApplyTheme()
 end
 
 --==================================================
+-- 🎬 RIMURU HUB ANIMATION SYSTEM
+--==================================================
+
+local TweenService =
+    game:GetService("TweenService")
+
+--==================================================
+-- ANIMATION CONFIG
+--==================================================
+
+UI.Animation = {
+
+    -- Duração principal
+    OpenTime = 0.32,
+    CloseTime = 0.24,
+
+    -- Duração dos elementos internos
+    ElementTime = 0.22,
+
+    -- Pequeno atraso entre elementos
+    ElementDelay = 0.035
+
+}
+
+--==================================================
+-- CHECK ANIMATION
+--==================================================
+
+function UI:IsAnimationEnabled()
+
+    if not self.Config
+    or not self.Config.UI then
+
+        return true
+
+    end
+
+    if self.Config.UI.Animation == nil then
+
+        return true
+
+    end
+
+    return self.Config.UI.Animation == true
+
+end
+
+--==================================================
+-- CREATE TWEEN
+--==================================================
+
+function UI:Tween(
+    Object,
+    Time,
+    Properties,
+    Style,
+    Direction
+)
+
+    if not Object then
+        return nil
+    end
+
+    local Info =
+        TweenInfo.new(
+
+            Time,
+
+            Style
+                or Enum.EasingStyle.Quint,
+
+            Direction
+                or Enum.EasingDirection.Out
+
+        )
+
+    local Tween =
+        TweenService:Create(
+
+            Object,
+            Info,
+            Properties
+
+        )
+
+    Tween:Play()
+
+    return Tween
+
+end
+
+--==================================================
+-- SAVE ORIGINAL SIZE
+--==================================================
+
+function UI:PrepareAnimation()
+
+    if not self.Main then
+        return
+    end
+
+    self.AnimationOriginalSize =
+        self.Main.Size
+
+    self.AnimationOriginalPosition =
+        self.Main.Position
+
+end
+
+--==================================================
+-- OPEN ANIMATION
+--==================================================
+
+function UI:OpenAnimated()
+
+    if not self.Main then
+        return
+    end
+
+    --==================================================
+    -- INSTANT MODE
+    --==================================================
+
+    if not self:IsAnimationEnabled() then
+
+        self.Main.Visible =
+            true
+
+        self.Main.Size =
+            self.AnimationOriginalSize
+            or UDim2.new(
+                0,
+                600,
+                0,
+                400
+            )
+
+        self.Main.BackgroundTransparency =
+            0
+
+        return
+
+    end
+
+    --==================================================
+    -- ORIGINAL VALUES
+    --==================================================
+
+    local OriginalSize =
+        self.AnimationOriginalSize
+        or self.Main.Size
+
+    local OriginalPosition =
+        self.AnimationOriginalPosition
+        or self.Main.Position
+
+    --==================================================
+    -- INITIAL STATE
+    --==================================================
+
+    self.Main.Visible =
+        true
+
+    self.Main.Size =
+        UDim2.new(
+
+            OriginalSize.X.Scale,
+            OriginalSize.X.Offset - 35,
+
+            OriginalSize.Y.Scale,
+            OriginalSize.Y.Offset - 25
+
+        )
+
+    self.Main.Position =
+        UDim2.new(
+
+            OriginalPosition.X.Scale,
+            OriginalPosition.X.Offset,
+
+            OriginalPosition.Y.Scale,
+            OriginalPosition.Y.Offset + 10
+
+        )
+
+    self.Main.BackgroundTransparency =
+        0
+
+    --==================================================
+    -- INTERNAL ELEMENTS
+    --==================================================
+
+    local Elements = {
+
+        self.Header,
+        self.Sidebar,
+        self.Content
+
+    }
+
+    local OriginalTransparency = {}
+
+    for _, Element in
+        ipairs(Elements) do
+
+        if Element then
+
+            OriginalTransparency[Element] =
+                Element.BackgroundTransparency
+
+            Element.BackgroundTransparency =
+                1
+
+        end
+
+    end
+
+    --==================================================
+    -- MAIN EXPANSION
+    --==================================================
+
+    self:Tween(
+
+        self.Main,
+
+        self.Animation.OpenTime,
+
+        {
+
+            Size =
+                OriginalSize,
+
+            Position =
+                OriginalPosition
+
+        },
+
+        Enum.EasingStyle.Quint,
+
+        Enum.EasingDirection.Out
+
+    )
+
+    --==================================================
+    -- INTERNAL ELEMENTS
+    --==================================================
+
+    task.spawn(function()
+
+        for Index, Element in
+            ipairs(Elements) do
+
+            if Element then
+
+                task.wait(
+                    (Index - 1) *
+                    self.Animation.ElementDelay
+                )
+
+                self:Tween(
+
+                    Element,
+
+                    self.Animation.ElementTime,
+
+                    {
+
+                        BackgroundTransparency =
+                            OriginalTransparency[Element]
+                            or 0
+
+                    },
+
+                    Enum.EasingStyle.Quad,
+
+                    Enum.EasingDirection.Out
+
+                )
+
+            end
+
+        end
+
+    end)
+
+end
+
+--==================================================
+-- CLOSE ANIMATION
+--==================================================
+
+function UI:CloseAnimated()
+
+    if not self.Main then
+        return
+    end
+
+    --==================================================
+    -- INSTANT MODE
+    --==================================================
+
+    if not self:IsAnimationEnabled() then
+
+        self.Main.Visible =
+            false
+
+        self.Main.Size =
+            self.AnimationOriginalSize
+            or self.Main.Size
+
+        return
+
+    end
+
+    --==================================================
+    -- ORIGINAL VALUES
+    --==================================================
+
+    local OriginalSize =
+        self.AnimationOriginalSize
+        or self.Main.Size
+
+    local OriginalPosition =
+        self.AnimationOriginalPosition
+        or self.Main.Position
+
+    --==================================================
+    -- CLOSE SIZE
+    --==================================================
+
+    local CloseSize =
+        UDim2.new(
+
+            OriginalSize.X.Scale,
+            OriginalSize.X.Offset - 30,
+
+            OriginalSize.Y.Scale,
+            OriginalSize.Y.Offset - 22
+
+        )
+
+    local ClosePosition =
+        UDim2.new(
+
+            OriginalPosition.X.Scale,
+            OriginalPosition.X.Offset,
+
+            OriginalPosition.Y.Scale,
+            OriginalPosition.Y.Offset + 8
+
+        )
+
+    --==================================================
+    -- ELEMENT FADE
+    --==================================================
+
+    local Elements = {
+
+        self.Header,
+        self.Sidebar,
+        self.Content
+
+    }
+
+    for _, Element in
+        ipairs(Elements) do
+
+        if Element then
+
+            self:Tween(
+
+                Element,
+
+                self.Animation.ElementTime,
+
+                {
+
+                    BackgroundTransparency =
+                        1
+
+                },
+
+                Enum.EasingStyle.Quad,
+
+                Enum.EasingDirection.In
+
+            )
+
+        end
+
+    end
+
+    --==================================================
+    -- MAIN CLOSE
+    --==================================================
+
+    local Tween =
+        self:Tween(
+
+            self.Main,
+
+            self.Animation.CloseTime,
+
+            {
+
+                Size =
+                    CloseSize,
+
+                Position =
+                    ClosePosition
+
+            },
+
+            Enum.EasingStyle.Quint,
+
+            Enum.EasingDirection.In
+
+        )
+
+    --==================================================
+    -- WAIT FOR ANIMATION
+    --==================================================
+
+    if Tween then
+
+        Tween.Completed:Wait()
+
+    end
+
+    --==================================================
+    -- RESET
+    --==================================================
+
+    self.Main.Visible =
+        false
+
+    self.Main.Size =
+        OriginalSize
+
+    self.Main.Position =
+        OriginalPosition
+
+    --==================================================
+    -- RESTORE ELEMENTS
+    --==================================================
+
+    for _, Element in
+        ipairs(Elements) do
+
+        if Element then
+
+            Element.BackgroundTransparency =
+                1
+
+        end
+
+    end
+
+end
+
+--==================================================
+-- TOGGLE ANIMATION
+--==================================================
+
+function UI:ToggleAnimated()
+
+    if not self.Main then
+        return
+    end
+
+    if self.Main.Visible then
+
+        self:CloseAnimated()
+
+    else
+
+        self:OpenAnimated()
+
+    end
+
+end
+
+--==================================================
+-- PREPARE ANIMATION
+--==================================================
+
+task.defer(function()
+
+    if UI.Main then
+
+        UI:PrepareAnimation()
+
+    end
+
+end)
+
+--==================================================
 -- RETURN
 --==================================================
 
