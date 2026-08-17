@@ -2,7 +2,7 @@
 --// Logo System
 --// GitHub Image Version
 --// Centralized Logo
---// Animated Open / Close
+--// Press Animation
 --// No Roblox ImageId Required
 
 local Players =
@@ -10,6 +10,9 @@ local Players =
 
 local UIS =
     game:GetService("UserInputService")
+
+local TweenService =
+    game:GetService("TweenService")
 
 local Logo = {}
 
@@ -20,21 +23,27 @@ local Logo = {}
 local IMAGE_URL =
     "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000086171-removebg-preview.png"
 
-local IMAGE_FILE =
+local IMAGE_PATH =
     "RimuruHubLogo.png"
 
-local IMAGE_PATH =
-    IMAGE_FILE
+--==================================================
+-- ANIMATION CONFIG
+--==================================================
+
+local PRESS_SCALE =
+    0.92
+
+local PRESS_TIME =
+    0.08
+
+local RELEASE_TIME =
+    0.14
 
 --==================================================
 -- LOAD GITHUB IMAGE
 --==================================================
 
 local function LoadImage()
-
-    --==================================================
-    -- CHECK CUSTOM ASSET SUPPORT
-    --==================================================
 
     if not getcustomasset then
 
@@ -73,8 +82,7 @@ local function LoadImage()
 
                 end)
 
-            if AssetSuccess
-            and Asset then
+            if AssetSuccess then
 
                 return Asset
 
@@ -144,7 +152,7 @@ local function LoadImage()
     end
 
     --==================================================
-    -- CONVERT TO CUSTOM ASSET
+    -- CUSTOM ASSET
     --==================================================
 
     local AssetSuccess, Asset =
@@ -156,8 +164,7 @@ local function LoadImage()
 
         end)
 
-    if not AssetSuccess
-    or not Asset then
+    if not AssetSuccess then
 
         warn(
             "⚠️ Rimuru Hub: getcustomasset() falhou ao carregar a logo."
@@ -344,14 +351,6 @@ function Logo:Create()
     LogoButton.BorderSizePixel =
         0
 
-    --==================================================
-    -- IMAGE BUTTON IMAGE
-    --==================================================
-
-    -- A imagem principal fica em um
-    -- ImageLabel interno para permitir
-    -- centralização precisa.
-
     LogoButton.Image =
         ""
 
@@ -396,10 +395,6 @@ function Logo:Create()
     LogoImage.Name =
         "LogoImage"
 
-    --==================================================
-    -- CENTRALIZAÇÃO
-    --==================================================
-
     LogoImage.AnchorPoint =
         Vector2.new(
             0.5,
@@ -413,9 +408,6 @@ function Logo:Create()
             0.5,
             0
         )
-
-    -- Mantém margem ao redor da imagem
-    -- para ela não ficar esmagada no quadrado.
 
     LogoImage.Size =
         UDim2.new(
@@ -440,19 +432,12 @@ function Logo:Create()
     LogoImage.Active =
         false
 
-    --==================================================
-    -- IMAGE ASSET
-    --==================================================
-
     if self.ImageAsset then
 
         LogoImage.Image =
             self.ImageAsset
 
     else
-
-        -- Fallback caso o executor não consiga
-        -- carregar a imagem personalizada.
 
         LogoImage.Image =
             "rbxassetid://6691708227"
@@ -482,6 +467,25 @@ function Logo:Create()
         LogoButton
 
     --==================================================
+    -- ANIMATION SCALE
+    --==================================================
+
+    local Scale =
+        Instance.new("UIScale")
+
+    Scale.Name =
+        "PressScale"
+
+    Scale.Scale =
+        1
+
+    Scale.Parent =
+        LogoButton
+
+    self.Scale =
+        Scale
+
+    --==================================================
     -- SAVE REFERENCES
     --==================================================
 
@@ -498,14 +502,16 @@ function Logo:Create()
     self:SetupDrag()
 
     --==================================================
+    -- PRESS ANIMATION
+    --==================================================
+
+    self:SetupPressAnimation()
+
+    --==================================================
     -- OPEN / CLOSE MENU
     --==================================================
 
     LogoButton.MouseButton1Click:Connect(function()
-
-        --==================================================
-        -- IGNORE CLICK AFTER DRAG
-        --==================================================
 
         if self.LogoMoved
         and self.LogoMoved() then
@@ -520,35 +526,146 @@ function Logo:Create()
 
         end
 
-        --==================================================
-        -- UI VALIDATION
-        --==================================================
+        local Main
 
-        if not self.UI then
+        if self.UI then
+
+            Main =
+                self.UI.Main
+
+        end
+
+        if not Main then
             return
         end
 
-        if not self.UI.Main then
+        Main.Visible =
+            not Main.Visible
+
+    end)
+
+end
+
+--==================================================
+-- PRESS ANIMATION
+--==================================================
+
+function Logo:SetupPressAnimation()
+
+    local LogoButton =
+        self.Button
+
+    local Scale =
+        self.Scale
+
+    if not LogoButton
+    or not Scale then
+
+        return
+
+    end
+
+    local PressTween
+
+    local ReleaseTween
+
+    --==================================================
+    -- PRESS
+    --==================================================
+
+    LogoButton.InputBegan:Connect(function(Input)
+
+        if Input.UserInputType ~=
+            Enum.UserInputType.MouseButton1
+
+        and Input.UserInputType ~=
+            Enum.UserInputType.Touch then
+
             return
-        end
-
-        --==================================================
-        -- ANIMATED TOGGLE
-        --==================================================
-
-        if self.UI.ToggleAnimated then
-
-            self.UI:ToggleAnimated()
-
-        else
-
-            -- Fallback caso o UI ainda não possua
-            -- o sistema de animação.
-
-            self.UI.Main.Visible =
-                not self.UI.Main.Visible
 
         end
+
+        if PressTween then
+
+            PressTween:Cancel()
+
+        end
+
+        if ReleaseTween then
+
+            ReleaseTween:Cancel()
+
+        end
+
+        PressTween =
+            TweenService:Create(
+
+                Scale,
+
+                TweenInfo.new(
+
+                    PRESS_TIME,
+
+                    Enum.EasingStyle.Quad,
+
+                    Enum.EasingDirection.Out
+
+                ),
+
+                {
+                    Scale = PRESS_SCALE
+                }
+
+            )
+
+        PressTween:Play()
+
+    end)
+
+    --==================================================
+    -- RELEASE
+    --==================================================
+
+    LogoButton.InputEnded:Connect(function(Input)
+
+        if Input.UserInputType ~=
+            Enum.UserInputType.MouseButton1
+
+        and Input.UserInputType ~=
+            Enum.UserInputType.Touch then
+
+            return
+
+        end
+
+        if PressTween then
+
+            PressTween:Cancel()
+
+        end
+
+        ReleaseTween =
+            TweenService:Create(
+
+                Scale,
+
+                TweenInfo.new(
+
+                    RELEASE_TIME,
+
+                    Enum.EasingStyle.Back,
+
+                    Enum.EasingDirection.Out
+
+                ),
+
+                {
+                    Scale = 1
+                }
+
+            )
+
+        ReleaseTween:Play()
 
     end)
 
@@ -669,10 +786,6 @@ function Logo:SetupDrag()
         end
 
     end)
-
-    --==================================================
-    -- DRAG STATE FUNCTIONS
-    --==================================================
 
     self.LogoMoved =
         function()
