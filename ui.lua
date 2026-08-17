@@ -1430,7 +1430,145 @@ task.defer(function()
 end)
 
 --==================================================
--- RETURN
+-- 🎬 BUTTON PRESS ANIMATION
 --==================================================
+
+function UI:PressAnimation(Button)
+
+    if not Button then
+        return
+    end
+
+    --==================================================
+    -- ANIMATION DISABLED
+    --==================================================
+
+    if not self:IsAnimationEnabled() then
+        return
+    end
+
+    --==================================================
+    -- SAVE / CREATE SCALE
+    --==================================================
+
+    local Scale =
+        Button:FindFirstChild(
+            "RimuruButtonScale"
+        )
+
+    if not Scale then
+
+        Scale =
+            Instance.new("UIScale")
+
+        Scale.Name =
+            "RimuruButtonScale"
+
+        Scale.Scale =
+            1
+
+        Scale.Parent =
+            Button
+
+    end
+
+    --==================================================
+    -- CANCEL PREVIOUS TWEEN
+    --==================================================
+
+    if self._ButtonTweens
+    and self._ButtonTweens[Button] then
+
+        pcall(function()
+
+            self._ButtonTweens[Button]:Cancel()
+
+        end)
+
+    end
+
+    self._ButtonTweens =
+        self._ButtonTweens
+        or {}
+
+    --==================================================
+    -- PRESS
+    --==================================================
+
+    local PressTween =
+        self:Tween(
+
+            Scale,
+
+            0.07,
+
+            {
+                Scale = 0.94
+            },
+
+            Enum.EasingStyle.Quad,
+
+            Enum.EasingDirection.Out
+
+        )
+
+    if PressTween then
+
+        PressTween.Completed:Wait()
+
+    end
+
+    --==================================================
+    -- SMALL BOUNCE
+    --==================================================
+
+    local BounceTween =
+        self:Tween(
+
+            Scale,
+
+            0.08,
+
+            {
+                Scale = 1.035
+            },
+
+            Enum.EasingStyle.Back,
+
+            Enum.EasingDirection.Out
+
+        )
+
+    if BounceTween then
+
+        BounceTween.Completed:Wait()
+
+    end
+
+    --==================================================
+    -- RETURN TO NORMAL
+    --==================================================
+
+    local ReturnTween =
+        self:Tween(
+
+            Scale,
+
+            0.09,
+
+            {
+                Scale = 1
+            },
+
+            Enum.EasingStyle.Quad,
+
+            Enum.EasingDirection.Out
+
+        )
+
+    self._ButtonTweens[Button] =
+        ReturnTween
+
+end
 
 return UI
