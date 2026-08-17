@@ -1939,29 +1939,338 @@ function UI:PressAnimation(Button)
     end
 
     --==================================================
-    -- RETURN TO NORMAL
+-- MENU ANIMATION
+--==================================================
+-- Apenas escala.
+-- NÃO altera BackgroundTransparency,
+-- TextTransparency, ImageTransparency ou
+-- qualquer outra propriedade visual.
+--
+-- Isso evita que o menu fique transparente
+-- durante a animação.
+
+function UI:SetupMenuAnimation()
+
+    if not self.Main then
+        return
+    end
+
+    -- Evita criar UIScale duplicado
+    local ExistingScale =
+        self.Main:FindFirstChild("MenuScale")
+
+    if ExistingScale then
+
+        self.MainScale =
+            ExistingScale
+
+        return
+
+    end
+
+    local MainScale =
+        Instance.new("UIScale")
+
+    MainScale.Name =
+        "MenuScale"
+
+    MainScale.Scale =
+        1
+
+    MainScale.Parent =
+        self.Main
+
+    self.MainScale =
+        MainScale
+
+end
+
+--==================================================
+-- ANIMATION ENABLE CHECK
+--==================================================
+
+function UI:IsAnimationEnabled()
+
+    if not self.Config
+    or not self.Config.UI then
+
+        return true
+
+    end
+
+    if self.Config.UI.Animation == false then
+
+        return false
+
+    end
+
+    return true
+
+end
+
+--==================================================
+-- SHOW MENU ANIMATION
+--==================================================
+
+function UI:ShowAnimated()
+
+    if not self.Main then
+        return
+    end
+
+    -- Garante que a escala existe
+    self:SetupMenuAnimation()
+
+    local Main =
+        self.Main
+
+    local Scale =
+        self.MainScale
+
+    --==================================================
+    -- ANIMATION DISABLED
     --==================================================
 
-    local ReturnTween =
-        self:Tween(
+    if not self:IsAnimationEnabled() then
+
+        Scale.Scale =
+            1
+
+        Main.Visible =
+            true
+
+        return
+
+    end
+
+    --==================================================
+    -- CANCEL OLD TWEEN
+    --==================================================
+
+    if self.MenuTween then
+
+        pcall(function()
+
+            self.MenuTween:Cancel()
+
+        end)
+
+        self.MenuTween =
+            nil
+
+    end
+
+    --==================================================
+    -- START STATE
+    --==================================================
+
+    Main.Visible =
+        true
+
+    Scale.Scale =
+        0.92
+
+    --==================================================
+    -- PLAY
+    --==================================================
+
+    self.MenuTween =
+        TweenService:Create(
 
             Scale,
 
-            0.09,
+            TweenInfo.new(
+
+                0.18,
+
+                Enum.EasingStyle.Back,
+
+                Enum.EasingDirection.Out
+
+            ),
 
             {
                 Scale = 1
-            },
-
-            Enum.EasingStyle.Quad,
-
-            Enum.EasingDirection.Out
+            }
 
         )
 
-    self._ButtonTweens[Button] =
-        ReturnTween
+    self.MenuTween:Play()
 
 end
+
+--==================================================
+-- HIDE MENU ANIMATION
+--==================================================
+
+function UI:HideAnimated()
+
+    if not self.Main then
+        return
+    end
+
+    self:SetupMenuAnimation()
+
+    local Main =
+        self.Main
+
+    local Scale =
+        self.MainScale
+
+    --==================================================
+    -- ANIMATION DISABLED
+    --==================================================
+
+    if not self:IsAnimationEnabled() then
+
+        Scale.Scale =
+            1
+
+        Main.Visible =
+            false
+
+        return
+
+    end
+
+    --==================================================
+    -- CANCEL OLD TWEEN
+    --==================================================
+
+    if self.MenuTween then
+
+        pcall(function()
+
+            self.MenuTween:Cancel()
+
+        end)
+
+        self.MenuTween =
+            nil
+
+    end
+
+    --==================================================
+    -- PLAY CLOSE
+    --==================================================
+
+    self.MenuTween =
+        TweenService:Create(
+
+            Scale,
+
+            TweenInfo.new(
+
+                0.12,
+
+                Enum.EasingStyle.Quad,
+
+                Enum.EasingDirection.In
+
+            ),
+
+            {
+                Scale = 0.92
+            }
+
+        )
+
+    self.MenuTween:Play()
+
+    --==================================================
+    -- HIDE AFTER ANIMATION
+    --==================================================
+
+    self.MenuTween.Completed:Connect(function()
+
+        if not self.Main then
+            return
+        end
+
+        -- Só esconde se ainda estiver
+        -- no estado de fechamento.
+
+        if self.MainScale == Scale
+        and Scale.Scale <= 0.93 then
+
+            Main.Visible =
+                false
+
+            Scale.Scale =
+                1
+
+        end
+
+    end)
+
+end
+
+--==================================================
+-- SET VISIBLE ANIMATED
+--==================================================
+
+function UI:SetVisibleAnimated(Value)
+
+    if not self.Main then
+        return
+    end
+
+    if Value then
+
+        self:ShowAnimated()
+
+    else
+
+        self:HideAnimated()
+
+    end
+
+end
+
+--==================================================
+-- TOGGLE ANIMATED
+--==================================================
+
+function UI:ToggleAnimated()
+
+    if not self.Main then
+        return
+    end
+
+    if self.Main.Visible then
+
+        self:HideAnimated()
+
+    else
+
+        self:ShowAnimated()
+
+    end
+
+end
+
+--==================================================
+-- INITIALIZE MENU ANIMATION
+--==================================================
+
+function UI:InitMenuAnimation()
+
+    if not self.Main then
+        return
+    end
+
+    self:SetupMenuAnimation()
+
+    -- Mantém o estado inicial definido
+    -- pelo sistema atual.
+
+    self.MainScale.Scale =
+        1
+
+end
+
+--==================================================
+-- RETURN
+--==================================================
 
 return UI
