@@ -544,8 +544,26 @@ function Logo:Create()
             return
         end
 
-        Main.Visible =
-            not Main.Visible
+        if self.UI.SetVisibleAnimated then
+
+    self.UI:SetVisibleAnimated(
+        not Main.Visible
+    )
+
+else
+
+    if self.UI.SetVisibleAnimated then
+
+    self.UI:SetVisibleAnimated(
+        not Main.Visible
+    )
+
+else
+
+    Main.Visible =
+        not Main.Visible
+
+                end
 
     end)
 
