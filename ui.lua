@@ -1092,6 +1092,195 @@ function UI:IsVisible()
 end
 
 --==================================================
+-- MENU ANIMATION
+--==================================================
+
+function UI:IsAnimationEnabled()
+
+    if not self.Config
+    or not self.Config.UI then
+
+        return true
+
+    end
+
+    return self.Config.UI.Animation ~= false
+
+end
+
+--==================================================
+-- SHOW / HIDE WITH ANIMATION
+--==================================================
+
+function UI:SetVisibleAnimated(Value)
+
+    local Main =
+        self.Main
+
+    if not Main then
+        return
+    end
+
+    --==================================================
+    -- ANIMATION DISABLED
+    --==================================================
+
+    if not self:IsAnimationEnabled() then
+
+        Main.Visible =
+            Value
+
+        Main.BackgroundTransparency =
+            0
+
+        if self.MainScale then
+
+            self.MainScale.Scale =
+                1
+
+        end
+
+        return
+
+    end
+
+    --==================================================
+    -- OPEN
+    --==================================================
+
+    if Value then
+
+        Main.Visible =
+            true
+
+        Main.BackgroundTransparency =
+            1
+
+        if self.MainScale then
+
+            self.MainScale.Scale =
+                0.92
+
+        end
+
+        local OpenInfo =
+            TweenInfo.new(
+
+                0.18,
+
+                Enum.EasingStyle.Quint,
+
+                Enum.EasingDirection.Out
+
+            )
+
+        local Fade =
+            TweenService:Create(
+
+                Main,
+
+                OpenInfo,
+
+                {
+                    BackgroundTransparency = 0
+                }
+
+            )
+
+        local Scale =
+            TweenService:Create(
+
+                self.MainScale,
+
+                OpenInfo,
+
+                {
+                    Scale = 1
+                }
+
+            )
+
+        Fade:Play()
+        Scale:Play()
+
+    --==================================================
+    -- CLOSE
+    --==================================================
+
+    else
+
+        local CloseInfo =
+            TweenInfo.new(
+
+                0.13,
+
+                Enum.EasingStyle.Quad,
+
+                Enum.EasingDirection.In
+
+            )
+
+        local Fade =
+            TweenService:Create(
+
+                Main,
+
+                CloseInfo,
+
+                {
+                    BackgroundTransparency = 1
+                }
+
+            )
+
+        local Scale =
+            TweenService:Create(
+
+                self.MainScale,
+
+                CloseInfo,
+
+                {
+                    Scale = 0.92
+                }
+
+            )
+
+        Fade:Play()
+        Scale:Play()
+
+        task.delay(
+
+            0.13,
+
+            function()
+
+                if not Main then
+                    return
+                end
+
+                Main.Visible =
+                    false
+
+                Main.BackgroundTransparency =
+                    0
+
+                if self.MainScale then
+
+                    self.MainScale.Scale =
+                        1
+
+                end
+
+            end
+
+        )
+
+    end
+
+end
+
+--==================================================
 -- APPLY THEME
 --==================================================
 
