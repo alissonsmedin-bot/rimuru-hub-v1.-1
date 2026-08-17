@@ -4,6 +4,7 @@
 --// Centralized Logo
 --// Press Animation
 --// Animation Config Support
+--// Menu Animation Support
 --// No Roblox ImageId Required
 
 local Players =
@@ -518,6 +519,10 @@ function Logo:Create()
 
     LogoButton.MouseButton1Click:Connect(function()
 
+        --==================================================
+        -- IGNORE CLICK AFTER DRAG
+        --==================================================
+
         if self.LogoMoved
         and self.LogoMoved() then
 
@@ -531,6 +536,10 @@ function Logo:Create()
 
         end
 
+        --==================================================
+        -- GET MAIN
+        --==================================================
+
         local Main
 
         if self.UI then
@@ -541,29 +550,31 @@ function Logo:Create()
         end
 
         if not Main then
+
             return
+
         end
+
+        --==================================================
+        -- ANIMATED MENU
+        --==================================================
 
         if self.UI.SetVisibleAnimated then
 
-    self.UI:SetVisibleAnimated(
-        not Main.Visible
-    )
+            self.UI:SetVisibleAnimated(
+                not Main.Visible
+            )
 
-else
+        else
 
-    if self.UI.SetVisibleAnimated then
+            --==================================================
+            -- FALLBACK
+            --==================================================
 
-    self.UI:SetVisibleAnimated(
-        not Main.Visible
-    )
+            Main.Visible =
+                not Main.Visible
 
-else
-
-    Main.Visible =
-        not Main.Visible
-
-                end
+        end
 
     end)
 
@@ -612,6 +623,7 @@ function Logo:SetupPressAnimation()
     end
 
     local PressTween
+
     local ReleaseTween
 
     --==================================================
@@ -620,20 +632,20 @@ function Logo:SetupPressAnimation()
 
     LogoButton.InputBegan:Connect(function(Input)
 
-        if not self:IsAnimationEnabled() then
-
-            Scale.Scale =
-                1
-
-            return
-
-        end
-
         if Input.UserInputType ~=
             Enum.UserInputType.MouseButton1
 
         and Input.UserInputType ~=
             Enum.UserInputType.Touch then
+
+            return
+
+        end
+
+        if not self:IsAnimationEnabled() then
+
+            Scale.Scale =
+                1
 
             return
 
@@ -773,7 +785,9 @@ function Logo:SetupDrag()
     LogoButton.InputBegan:Connect(function(Input)
 
         if not Config.UI.LogoDraggable then
+
             return
+
         end
 
         if Input.UserInputType ==
@@ -801,7 +815,9 @@ function Logo:SetupDrag()
     UIS.InputChanged:Connect(function(Input)
 
         if not LogoDragging then
+
             return
+
         end
 
         if Input.UserInputType ==
@@ -891,7 +907,9 @@ end
 function Logo:IsVisible()
 
     if not self.Button then
+
         return false
+
     end
 
     return self.Button.Visible
@@ -925,7 +943,9 @@ function Logo:ApplyTheme()
         self.Theme:GetCurrent()
 
     if not CurrentTheme then
+
         return
+
     end
 
     self.Button.BackgroundColor3 =
