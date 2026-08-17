@@ -1,9 +1,10 @@
 --// 💥 RIMURU HUB
 --// UI System
---// STABLE VERSION
+--// ANIMATED STABLE VERSION
 --// Modular UI Core
 --// Logo Animation Compatible
---// NO MENU ANIMATION
+--// Safe Menu Animation
+--// NO BackgroundTransparency Animation
 
 --==================================================
 -- SERVICES
@@ -15,11 +16,36 @@ local Players =
 local UIS =
     game:GetService("UserInputService")
 
+local TweenService =
+    game:GetService("TweenService")
+
 --==================================================
 -- UI MODULE
 --==================================================
 
 local UI = {}
+
+--==================================================
+-- ANIMATION CONFIG
+--==================================================
+
+local OPEN_TIME =
+    0.22
+
+local CLOSE_TIME =
+    0.16
+
+local OPEN_SCALE =
+    0.94
+
+local CLOSE_SCALE =
+    0.94
+
+local OPEN_OFFSET_Y =
+    10
+
+local CLOSE_OFFSET_Y =
+    10
 
 --==================================================
 -- INIT
@@ -45,6 +71,16 @@ function UI:Init(Context)
 
     self.Theme =
         Context.Theme
+
+    --==================================================
+    -- ANIMATION STATE
+    --==================================================
+
+    self.AnimationBusy =
+        false
+
+    self.AnimationToken =
+        0
 
     --==================================================
     -- CREATE UI
@@ -191,6 +227,35 @@ function UI:Create()
 
     self.Main =
         Main
+
+    --==================================================
+    -- SAVE ORIGINAL POSITION
+    --==================================================
+
+    self.OriginalPosition =
+        Main.Position
+
+    self.OriginalSize =
+        Main.Size
+
+    --==================================================
+    -- MAIN SCALE
+    --==================================================
+
+    local MainScale =
+        Instance.new("UIScale")
+
+    MainScale.Name =
+        "MenuScale"
+
+    MainScale.Scale =
+        1
+
+    MainScale.Parent =
+        Main
+
+    self.MainScale =
+        MainScale
 
     --==================================================
     -- MAIN CORNER
@@ -762,6 +827,302 @@ function UI:Create()
 end
 
 --==================================================
+-- ANIMATION ENABLED?
+--==================================================
+
+function UI:IsAnimationEnabled()
+
+    if not self.Config
+    or not self.Config.UI then
+
+        return true
+
+    end
+
+    return self.Config.UI.Animation ~= false
+
+end
+
+--==================================================
+-- CANCEL CURRENT ANIMATION
+--==================================================
+
+function UI:CancelAnimation()
+
+    self.AnimationToken =
+        self.AnimationToken + 1
+
+    self.AnimationBusy =
+        false
+
+end
+
+--==================================================
+-- SHOW / HIDE
+--==================================================
+
+function UI:SetVisible(Value)
+
+    if not self.Main then
+        return
+    end
+
+    self:CancelAnimation()
+
+    self.Main.Visible =
+        Value
+
+    if Value then
+
+        self.MainScale.Scale =
+            1
+
+        self.Main.Position =
+            self.OriginalPosition
+
+    end
+
+end
+
+--==================================================
+-- ANIMATED VISIBILITY
+--==================================================
+
+function UI:SetVisibleAnimated(Value)
+
+    local Main =
+        self.Main
+
+    local Scale =
+        self.MainScale
+
+    if not Main
+    or not Scale then
+
+        return
+
+    end
+
+    --==================================================
+    -- NO ANIMATION
+    --==================================================
+
+    if not self:IsAnimationEnabled() then
+
+        self:SetVisible(
+            Value
+        )
+
+        return
+
+    end
+
+    --==================================================
+    -- CANCEL PREVIOUS
+    --==================================================
+
+    self:CancelAnimation()
+
+    local Token =
+        self.AnimationToken
+
+    --==================================================
+    -- OPEN
+    --==================================================
+
+    if Value then
+
+        Main.Visible =
+            true
+
+        Scale.Scale =
+            OPEN_SCALE
+
+        Main.Position =
+            UDim2.new(
+
+                self.OriginalPosition.X.Scale,
+
+                self.OriginalPosition.X.Offset,
+
+                self.OriginalPosition.Y.Scale,
+
+                self.OriginalPosition.Y.Offset +
+                OPEN_OFFSET_Y
+
+            )
+
+        local OpenInfo =
+            TweenInfo.new(
+
+                OPEN_TIME,
+
+                Enum.EasingStyle.Quint,
+
+                Enum.EasingDirection.Out
+
+            )
+
+        local ScaleTween =
+            TweenService:Create(
+
+                Scale,
+
+                OpenInfo,
+
+                {
+                    Scale = 1
+                }
+
+            )
+
+        local PositionTween =
+            TweenService:Create(
+
+                Main,
+
+                OpenInfo,
+
+                {
+                    Position =
+                        self.OriginalPosition
+                }
+
+            )
+
+        self.AnimationBusy =
+            true
+
+        ScaleTween:Play()
+        PositionTween:Play()
+
+        task.spawn(function()
+
+            PositionTween.Completed:Wait()
+
+            if self.AnimationToken ==
+                Token then
+
+                self.AnimationBusy =
+                    false
+
+            end
+
+        end)
+
+        return
+
+    end
+
+    --==================================================
+    -- CLOSE
+    --==================================================
+
+    if not Main.Visible then
+        return
+    end
+
+    local CloseInfo =
+        TweenInfo.new(
+
+            CLOSE_TIME,
+
+            Enum.EasingStyle.Quad,
+
+            Enum.EasingDirection.In
+
+        )
+
+    local ScaleTween =
+        TweenService:Create(
+
+            Scale,
+
+            CloseInfo,
+
+            {
+                Scale = CLOSE_SCALE
+            }
+
+        )
+
+    local PositionTween =
+        TweenService:Create(
+
+            Main,
+
+            CloseInfo,
+
+            {
+
+                Position =
+                    UDim2.new(
+
+                        self.OriginalPosition.X.Scale,
+
+                        self.OriginalPosition.X.Offset,
+
+                        self.OriginalPosition.Y.Scale,
+
+                        self.OriginalPosition.Y.Offset +
+                        CLOSE_OFFSET_Y
+
+                    )
+
+            }
+
+        )
+
+    self.AnimationBusy =
+        true
+
+    ScaleTween:Play()
+    PositionTween:Play()
+
+    task.spawn(function()
+
+        PositionTween.Completed:Wait()
+
+        if self.AnimationToken ~=
+            Token then
+
+            return
+
+        end
+
+        Main.Visible =
+            false
+
+        Scale.Scale =
+            1
+
+        Main.Position =
+            self.OriginalPosition
+
+        self.AnimationBusy =
+            false
+
+    end)
+
+end
+
+--==================================================
+-- TOGGLE ANIMATED
+--==================================================
+
+function UI:ToggleAnimated()
+
+    if not self.Main then
+        return
+    end
+
+    self:SetVisibleAnimated(
+        not self.Main.Visible
+    )
+
+end
+
+--==================================================
 -- MAIN DRAG
 --==================================================
 
@@ -824,6 +1185,11 @@ function UI:SetupDrag()
 
         or Input.UserInputType ==
             Enum.UserInputType.Touch then
+                        if Input.UserInputType ==
+            Enum.UserInputType.MouseMovement
+
+        or Input.UserInputType ==
+            Enum.UserInputType.Touch then
 
             local Delta =
                 Input.Position -
@@ -866,36 +1232,7 @@ function UI:SetupDrag()
 end
 
 --==================================================
--- VISIBILITY
---==================================================
-
-function UI:SetVisible(Value)
-
-    if not self.Main then
-        return
-    end
-
-    self.Main.Visible =
-        Value
-
-end
-
---==================================================
--- IS VISIBLE
---==================================================
-
-function UI:IsVisible()
-
-    if not self.Main then
-        return false
-    end
-
-    return self.Main.Visible
-
-end
-
---==================================================
--- THEME
+-- APPLY THEME
 --==================================================
 
 function UI:ApplyTheme()
@@ -904,11 +1241,21 @@ function UI:ApplyTheme()
         return
     end
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+    local CurrentTheme
 
-    if not CurrentTheme then
+    local Success =
+        pcall(function()
+
+            CurrentTheme =
+                self.Theme:GetCurrent()
+
+        end)
+
+    if not Success
+    or not CurrentTheme then
+
         return
+
     end
 
     --==================================================
@@ -930,6 +1277,17 @@ function UI:ApplyTheme()
 
         self.MainStroke.Color =
             self.Theme:GetAccent()
+
+    end
+
+    --==================================================
+    -- HEADER
+    --==================================================
+
+    if self.Header then
+
+        self.Header.BackgroundTransparency =
+            1
 
     end
 
