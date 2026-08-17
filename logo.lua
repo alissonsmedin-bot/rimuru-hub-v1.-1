@@ -31,13 +31,13 @@ local IMAGE_PATH =
 --==================================================
 
 local PRESS_SCALE =
-    0.92
+    0.95
 
 local PRESS_TIME =
     0.08
 
 local RELEASE_TIME =
-    0.14
+    0.15
 
 --==================================================
 -- LOAD GITHUB IMAGE
@@ -342,7 +342,7 @@ function Logo:Create()
             0,
             20,
             0.5,
-            -27
+            -22
         )
 
     LogoButton.BackgroundColor3 =
