@@ -3,6 +3,7 @@
 --// GitHub Image Version
 --// Centralized Logo
 --// Press Animation
+--// Animation Config Support
 --// No Roblox ImageId Required
 
 local Players =
@@ -34,7 +35,7 @@ local PRESS_SCALE =
     0.95
 
 local PRESS_TIME =
-    0.08
+    0.09
 
 local RELEASE_TIME =
     0.15
@@ -432,6 +433,10 @@ function Logo:Create()
     LogoImage.Active =
         false
 
+    --==================================================
+    -- IMAGE ASSET
+    --==================================================
+
     if self.ImageAsset then
 
         LogoImage.Image =
@@ -547,6 +552,29 @@ function Logo:Create()
 end
 
 --==================================================
+-- CHECK ANIMATION
+--==================================================
+
+function Logo:IsAnimationEnabled()
+
+    if not self.Config
+    or not self.Config.UI then
+
+        return true
+
+    end
+
+    if self.Config.UI.Animation == false then
+
+        return false
+
+    end
+
+    return true
+
+end
+
+--==================================================
 -- PRESS ANIMATION
 --==================================================
 
@@ -566,7 +594,6 @@ function Logo:SetupPressAnimation()
     end
 
     local PressTween
-
     local ReleaseTween
 
     --==================================================
@@ -574,6 +601,15 @@ function Logo:SetupPressAnimation()
     --==================================================
 
     LogoButton.InputBegan:Connect(function(Input)
+
+        if not self:IsAnimationEnabled() then
+
+            Scale.Scale =
+                1
+
+            return
+
+        end
 
         if Input.UserInputType ~=
             Enum.UserInputType.MouseButton1
@@ -638,9 +674,24 @@ function Logo:SetupPressAnimation()
 
         end
 
+        if not self:IsAnimationEnabled() then
+
+            Scale.Scale =
+                1
+
+            return
+
+        end
+
         if PressTween then
 
             PressTween:Cancel()
+
+        end
+
+        if ReleaseTween then
+
+            ReleaseTween:Cancel()
 
         end
 
