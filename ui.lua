@@ -1,13 +1,23 @@
 --// 💥 RIMURU HUB
 --// UI System
---// SEARCH VERSION
+--// STABLE VERSION
 --// Modular UI Core
+--// Logo Animation Compatible
+--// NO MENU ANIMATION
+
+--==================================================
+-- SERVICES
+--==================================================
 
 local Players =
     game:GetService("Players")
 
 local UIS =
     game:GetService("UserInputService")
+
+--==================================================
+-- UI MODULE
+--==================================================
 
 local UI = {}
 
@@ -36,197 +46,16 @@ function UI:Init(Context)
     self.Theme =
         Context.Theme
 
+    --==================================================
+    -- CREATE UI
+    --==================================================
+
     self:Create()
 
 end
 
 --==================================================
--- MENU ANIMATION
---==================================================
-
-function UI:IsAnimationEnabled()
-
-    if not self.Config
-    or not self.Config.UI then
-
-        return true
-
-    end
-
-    return self.Config.UI.Animation ~= false
-
-end
-
---==================================================
--- SET MENU VISIBLE
---==================================================
-
-function UI:SetVisibleAnimated(Value)
-
-    local Main =
-        self.Main
-
-    if not Main then
-        return
-    end
-
-    --==================================================
-    -- ANIMATION DISABLED
-    --==================================================
-
-    if not self:IsAnimationEnabled() then
-
-        Main.Visible =
-            Value
-
-        Main.BackgroundTransparency =
-            0
-
-        if self.MainScale then
-
-            self.MainScale.Scale =
-                1
-
-        end
-
-        return
-
-    end
-
-    --==================================================
-    -- OPEN
-    --==================================================
-
-    if Value then
-
-        Main.Visible =
-            true
-
-        Main.BackgroundTransparency =
-            1
-
-        if self.MainScale then
-
-            self.MainScale.Scale =
-                0.92
-
-        end
-
-        local TweenInfoOpen =
-            TweenInfo.new(
-
-                0.18,
-
-                Enum.EasingStyle.Quint,
-
-                Enum.EasingDirection.Out
-
-            )
-
-        local TransparencyTween =
-            TweenService:Create(
-
-                Main,
-
-                TweenInfoOpen,
-
-                {
-                    BackgroundTransparency = 0
-                }
-
-            )
-
-        local ScaleTween =
-            TweenService:Create(
-
-                self.MainScale,
-
-                TweenInfoOpen,
-
-                {
-                    Scale = 1
-                }
-
-            )
-
-        TransparencyTween:Play()
-        ScaleTween:Play()
-
-    --==================================================
-    -- CLOSE
-    --==================================================
-
-    else
-
-        local TweenInfoClose =
-            TweenInfo.new(
-
-                0.13,
-
-                Enum.EasingStyle.Quad,
-
-                Enum.EasingDirection.In
-
-            )
-
-        local TransparencyTween =
-            TweenService:Create(
-
-                Main,
-
-                TweenInfoClose,
-
-                {
-                    BackgroundTransparency = 1
-                }
-
-            )
-
-        local ScaleTween =
-            TweenService:Create(
-
-                self.MainScale,
-
-                TweenInfoClose,
-
-                {
-                    Scale = 0.92
-                }
-
-            )
-
-        TransparencyTween:Play()
-        ScaleTween:Play()
-
-        task.delay(
-
-            0.13,
-
-            function()
-
-                if Main then
-
-                    Main.Visible =
-                        false
-
-                    Main.BackgroundTransparency =
-                        0
-
-                    self.MainScale.Scale =
-                        1
-
-                end
-
-            end
-
-        )
-
-    end
-
-end
-
---==================================================
--- REMOVE OLD VERSION
+-- REMOVE OLD GUI
 --==================================================
 
 function UI:RemoveOld()
@@ -272,7 +101,7 @@ function UI:Create()
 
     local CurrentTheme
 
-    local ThemeSuccess =
+    local Success =
         pcall(function()
 
             CurrentTheme =
@@ -280,7 +109,8 @@ function UI:Create()
 
         end)
 
-    if not ThemeSuccess or not CurrentTheme then
+    if not Success
+    or not CurrentTheme then
 
         warn(
             "❌ Rimuru Hub UI: não foi possível obter o tema atual."
@@ -350,24 +180,8 @@ function UI:Create()
     Main.BorderSizePixel =
         0
 
-    --==================================================
-    -- INITIAL VISIBILITY
-    --==================================================
-
-    local InitialVisible =
-        false
-
-    if self.Config
-        and self.Config.UI
-        and self.Config.UI.Visible ~= nil then
-
-        InitialVisible =
-            self.Config.UI.Visible
-
-    end
-
     Main.Visible =
-        InitialVisible
+        false
 
     Main.ZIndex =
         500
@@ -378,25 +192,6 @@ function UI:Create()
     self.Main =
         Main
 
-    --==================================================
--- MAIN ANIMATION SCALE
---==================================================
-
-local MainScale =
-    Instance.new("UIScale")
-
-MainScale.Name =
-    "MenuScale"
-
-MainScale.Scale =
-    1
-
-MainScale.Parent =
-    Main
-
-self.MainScale =
-    MainScale
-    
     --==================================================
     -- MAIN CORNER
     --==================================================
@@ -619,7 +414,7 @@ self.MainScale =
         Subtitle
 
     --==================================================
-    -- CLOSE
+    -- CLOSE BUTTON
     --==================================================
 
     local Close =
@@ -978,6 +773,10 @@ function UI:SetupDrag()
     local Config =
         self.Config
 
+    if not Main then
+        return
+    end
+
     local Dragging =
         false
 
@@ -988,8 +787,8 @@ function UI:SetupDrag()
     Main.InputBegan:Connect(function(Input)
 
         if not Config
-            or not Config.UI
-            or not Config.UI.MainMenuDraggable then
+        or not Config.UI
+        or not Config.UI.MainMenuDraggable then
 
             return
 
@@ -1081,6 +880,10 @@ function UI:SetVisible(Value)
 
 end
 
+--==================================================
+-- IS VISIBLE
+--==================================================
+
 function UI:IsVisible()
 
     if not self.Main then
@@ -1092,1185 +895,128 @@ function UI:IsVisible()
 end
 
 --==================================================
--- MENU ANIMATION
---==================================================
-
-function UI:IsAnimationEnabled()
-
-    if not self.Config
-    or not self.Config.UI then
-
-        return true
-
-    end
-
-    return self.Config.UI.Animation ~= false
-
-end
-
---==================================================
--- SHOW / HIDE WITH ANIMATION
---==================================================
-
-function UI:SetVisibleAnimated(Value)
-
-    local Main =
-        self.Main
-
-    if not Main then
-        return
-    end
-
-    --==================================================
-    -- ANIMATION DISABLED
-    --==================================================
-
-    if not self:IsAnimationEnabled() then
-
-        Main.Visible =
-            Value
-
-        Main.BackgroundTransparency =
-            0
-
-        if self.MainScale then
-
-            self.MainScale.Scale =
-                1
-
-        end
-
-        return
-
-    end
-
-    --==================================================
-    -- OPEN
-    --==================================================
-
-    if Value then
-
-        Main.Visible =
-            true
-
-        Main.BackgroundTransparency =
-            1
-
-        if self.MainScale then
-
-            self.MainScale.Scale =
-                0.92
-
-        end
-
-        local OpenInfo =
-            TweenInfo.new(
-
-                0.18,
-
-                Enum.EasingStyle.Quint,
-
-                Enum.EasingDirection.Out
-
-            )
-
-        local Fade =
-            TweenService:Create(
-
-                Main,
-
-                OpenInfo,
-
-                {
-                    BackgroundTransparency = 0
-                }
-
-            )
-
-        local Scale =
-            TweenService:Create(
-
-                self.MainScale,
-
-                OpenInfo,
-
-                {
-                    Scale = 1
-                }
-
-            )
-
-        Fade:Play()
-        Scale:Play()
-
-    --==================================================
-    -- CLOSE
-    --==================================================
-
-    else
-
-        local CloseInfo =
-            TweenInfo.new(
-
-                0.13,
-
-                Enum.EasingStyle.Quad,
-
-                Enum.EasingDirection.In
-
-            )
-
-        local Fade =
-            TweenService:Create(
-
-                Main,
-
-                CloseInfo,
-
-                {
-                    BackgroundTransparency = 1
-                }
-
-            )
-
-        local Scale =
-            TweenService:Create(
-
-                self.MainScale,
-
-                CloseInfo,
-
-                {
-                    Scale = 0.92
-                }
-
-            )
-
-        Fade:Play()
-        Scale:Play()
-
-        task.delay(
-
-            0.13,
-
-            function()
-
-                if not Main then
-                    return
-                end
-
-                Main.Visible =
-                    false
-
-                Main.BackgroundTransparency =
-                    0
-
-                if self.MainScale then
-
-                    self.MainScale.Scale =
-                        1
-
-                end
-
-            end
-
-        )
-
-    end
-
-end
-
---==================================================
--- APPLY THEME
+-- THEME
 --==================================================
 
 function UI:ApplyTheme()
 
-    if not self.Main then
+    if not self.Theme then
         return
     end
 
     local CurrentTheme =
         self.Theme:GetCurrent()
 
-    self.Main.BackgroundColor3 =
-        CurrentTheme.Main
-
-    self.MainStroke.Color =
-        self.Theme:GetAccent()
-
-    self.Sidebar.BackgroundColor3 =
-        CurrentTheme.Sidebar
-
-    self.Content.BackgroundColor3 =
-        CurrentTheme.Content
-
-    self.Title.TextColor3 =
-        CurrentTheme.Text
-
-    self.Subtitle.TextColor3 =
-        CurrentTheme.SubText
-
-    self.ContentTitle.TextColor3 =
-        CurrentTheme.Text
-
-    self.Close.BackgroundColor3 =
-        CurrentTheme.Close
-
-    self.Close.TextColor3 =
-        CurrentTheme.Text
-
-    self.Scroll.ScrollBarImageColor3 =
-        self.Theme:GetAccent()
-
-end
-
---==================================================
--- 🎬 RIMURU HUB ANIMATION SYSTEM
---==================================================
-
-local TweenService =
-    game:GetService("TweenService")
-
---==================================================
--- ANIMATION CONFIG
---==================================================
-
-UI.Animation = {
-
-    -- Duração principal
-    OpenTime = 0.32,
-    CloseTime = 0.24,
-
-    -- Duração dos elementos internos
-    ElementTime = 0.22,
-
-    -- Pequeno atraso entre elementos
-    ElementDelay = 0.035
-
-}
-
---==================================================
--- CHECK ANIMATION
---==================================================
-
-function UI:IsAnimationEnabled()
-
-    if not self.Config
-    or not self.Config.UI then
-
-        return true
-
-    end
-
-    if self.Config.UI.Animation == nil then
-
-        return true
-
-    end
-
-    return self.Config.UI.Animation == true
-
-end
-
---==================================================
--- CREATE TWEEN
---==================================================
-
-function UI:Tween(
-    Object,
-    Time,
-    Properties,
-    Style,
-    Direction
-)
-
-    if not Object then
-        return nil
-    end
-
-    local Info =
-        TweenInfo.new(
-
-            Time,
-
-            Style
-                or Enum.EasingStyle.Quint,
-
-            Direction
-                or Enum.EasingDirection.Out
-
-        )
-
-    local Tween =
-        TweenService:Create(
-
-            Object,
-            Info,
-            Properties
-
-        )
-
-    Tween:Play()
-
-    return Tween
-
-end
-
---==================================================
--- SAVE ORIGINAL SIZE
---==================================================
-
-function UI:PrepareAnimation()
-
-    if not self.Main then
-        return
-    end
-
-    self.AnimationOriginalSize =
-        self.Main.Size
-
-    self.AnimationOriginalPosition =
-        self.Main.Position
-
-end
-
---==================================================
--- OPEN ANIMATION
---==================================================
-
-function UI:OpenAnimated()
-
-    if not self.Main then
+    if not CurrentTheme then
         return
     end
 
     --==================================================
-    -- INSTANT MODE
+    -- MAIN
     --==================================================
 
-    if not self:IsAnimationEnabled() then
+    if self.Main then
 
-        self.Main.Visible =
-            true
-
-        self.Main.Size =
-            self.AnimationOriginalSize
-            or UDim2.new(
-                0,
-                600,
-                0,
-                400
-            )
-
-        self.Main.BackgroundTransparency =
-            0
-
-        return
+        self.Main.BackgroundColor3 =
+            CurrentTheme.Main
 
     end
 
     --==================================================
-    -- ORIGINAL VALUES
+    -- MAIN STROKE
     --==================================================
 
-    local OriginalSize =
-        self.AnimationOriginalSize
-        or self.Main.Size
+    if self.MainStroke then
 
-    local OriginalPosition =
-        self.AnimationOriginalPosition
-        or self.Main.Position
-
-    --==================================================
-    -- INITIAL STATE
-    --==================================================
-
-    self.Main.Visible =
-        true
-
-    self.Main.Size =
-        UDim2.new(
-
-            OriginalSize.X.Scale,
-            OriginalSize.X.Offset - 35,
-
-            OriginalSize.Y.Scale,
-            OriginalSize.Y.Offset - 25
-
-        )
-
-    self.Main.Position =
-        UDim2.new(
-
-            OriginalPosition.X.Scale,
-            OriginalPosition.X.Offset,
-
-            OriginalPosition.Y.Scale,
-            OriginalPosition.Y.Offset + 10
-
-        )
-
-    self.Main.BackgroundTransparency =
-        0
-
-    --==================================================
-    -- INTERNAL ELEMENTS
-    --==================================================
-
-    local Elements = {
-
-        self.Header,
-        self.Sidebar,
-        self.Content
-
-    }
-
-    local OriginalTransparency = {}
-
-    for _, Element in
-        ipairs(Elements) do
-
-        if Element then
-
-            OriginalTransparency[Element] =
-                Element.BackgroundTransparency
-
-            Element.BackgroundTransparency =
-                1
-
-        end
+        self.MainStroke.Color =
+            self.Theme:GetAccent()
 
     end
 
     --==================================================
-    -- MAIN EXPANSION
+    -- TITLE
     --==================================================
 
-    self:Tween(
+    if self.Title then
 
-        self.Main,
-
-        self.Animation.OpenTime,
-
-        {
-
-            Size =
-                OriginalSize,
-
-            Position =
-                OriginalPosition
-
-        },
-
-        Enum.EasingStyle.Quint,
-
-        Enum.EasingDirection.Out
-
-    )
-
-    --==================================================
-    -- INTERNAL ELEMENTS
-    --==================================================
-
-    task.spawn(function()
-
-        for Index, Element in
-            ipairs(Elements) do
-
-            if Element then
-
-                task.wait(
-                    (Index - 1) *
-                    self.Animation.ElementDelay
-                )
-
-                self:Tween(
-
-                    Element,
-
-                    self.Animation.ElementTime,
-
-                    {
-
-                        BackgroundTransparency =
-                            OriginalTransparency[Element]
-                            or 0
-
-                    },
-
-                    Enum.EasingStyle.Quad,
-
-                    Enum.EasingDirection.Out
-
-                )
-
-            end
-
-        end
-
-    end)
-
-end
-
---==================================================
--- CLOSE ANIMATION
---==================================================
-
-function UI:CloseAnimated()
-
-    if not self.Main then
-        return
-    end
-
-    --==================================================
-    -- INSTANT MODE
-    --==================================================
-
-    if not self:IsAnimationEnabled() then
-
-        self.Main.Visible =
-            false
-
-        self.Main.Size =
-            self.AnimationOriginalSize
-            or self.Main.Size
-
-        return
+        self.Title.TextColor3 =
+            CurrentTheme.Text
 
     end
 
     --==================================================
-    -- ORIGINAL VALUES
+    -- SUBTITLE
     --==================================================
 
-    local OriginalSize =
-        self.AnimationOriginalSize
-        or self.Main.Size
+    if self.Subtitle then
 
-    local OriginalPosition =
-        self.AnimationOriginalPosition
-        or self.Main.Position
-
-    --==================================================
-    -- CLOSE SIZE
-    --==================================================
-
-    local CloseSize =
-        UDim2.new(
-
-            OriginalSize.X.Scale,
-            OriginalSize.X.Offset - 30,
-
-            OriginalSize.Y.Scale,
-            OriginalSize.Y.Offset - 22
-
-        )
-
-    local ClosePosition =
-        UDim2.new(
-
-            OriginalPosition.X.Scale,
-            OriginalPosition.X.Offset,
-
-            OriginalPosition.Y.Scale,
-            OriginalPosition.Y.Offset + 8
-
-        )
-
-    --==================================================
-    -- ELEMENT FADE
-    --==================================================
-
-    local Elements = {
-
-        self.Header,
-        self.Sidebar,
-        self.Content
-
-    }
-
-    for _, Element in
-        ipairs(Elements) do
-
-        if Element then
-
-            self:Tween(
-
-                Element,
-
-                self.Animation.ElementTime,
-
-                {
-
-                    BackgroundTransparency =
-                        1
-
-                },
-
-                Enum.EasingStyle.Quad,
-
-                Enum.EasingDirection.In
-
-            )
-
-        end
+        self.Subtitle.TextColor3 =
+            CurrentTheme.SubText
 
     end
 
     --==================================================
-    -- MAIN CLOSE
+    -- CLOSE
     --==================================================
 
-    local Tween =
-        self:Tween(
+    if self.Close then
 
-            self.Main,
+        self.Close.BackgroundColor3 =
+            CurrentTheme.Close
 
-            self.Animation.CloseTime,
-
-            {
-
-                Size =
-                    CloseSize,
-
-                Position =
-                    ClosePosition
-
-            },
-
-            Enum.EasingStyle.Quint,
-
-            Enum.EasingDirection.In
-
-        )
-
-    --==================================================
-    -- WAIT FOR ANIMATION
-    --==================================================
-
-    if Tween then
-
-        Tween.Completed:Wait()
+        self.Close.TextColor3 =
+            CurrentTheme.Text
 
     end
 
     --==================================================
-    -- RESET
+    -- SIDEBAR
     --==================================================
 
-    self.Main.Visible =
-        false
+    if self.Sidebar then
 
-    self.Main.Size =
-        OriginalSize
+        self.Sidebar.BackgroundColor3 =
+            CurrentTheme.Sidebar
 
-    self.Main.Position =
-        OriginalPosition
+    end
 
     --==================================================
-    -- RESTORE ELEMENTS
+    -- CONTENT
     --==================================================
 
-    for _, Element in
-        ipairs(Elements) do
+    if self.Content then
 
-        if Element then
+        self.Content.BackgroundColor3 =
+            CurrentTheme.Content
 
-            Element.BackgroundTransparency =
-                1
+    end
 
-        end
+    --==================================================
+    -- CONTENT TITLE
+    --==================================================
+
+    if self.ContentTitle then
+
+        self.ContentTitle.TextColor3 =
+            CurrentTheme.Text
+
+    end
+
+    --==================================================
+    -- SCROLLBAR
+    --==================================================
+
+    if self.Scroll then
+
+        self.Scroll.ScrollBarImageColor3 =
+            self.Theme:GetAccent()
 
     end
 
 end
 
 --==================================================
--- TOGGLE ANIMATION
---==================================================
-
-function UI:ToggleAnimated()
-
-    if not self.Main then
-        return
-    end
-
-    if self.Main.Visible then
-
-        self:CloseAnimated()
-
-    else
-
-        self:OpenAnimated()
-
-    end
-
-end
-
---==================================================
--- PREPARE ANIMATION
---==================================================
-
-task.defer(function()
-
-    if UI.Main then
-
-        UI:PrepareAnimation()
-
-    end
-
-end)
-
---==================================================
--- 🎬 BUTTON PRESS ANIMATION
---==================================================
-
-function UI:PressAnimation(Button)
-
-    if not Button then
-        return
-    end
-
-    --==================================================
-    -- ANIMATION DISABLED
-    --==================================================
-
-    if not self:IsAnimationEnabled() then
-        return
-    end
-
-    --==================================================
-    -- SAVE / CREATE SCALE
-    --==================================================
-
-    local Scale =
-        Button:FindFirstChild(
-            "RimuruButtonScale"
-        )
-
-    if not Scale then
-
-        Scale =
-            Instance.new("UIScale")
-
-        Scale.Name =
-            "RimuruButtonScale"
-
-        Scale.Scale =
-            1
-
-        Scale.Parent =
-            Button
-
-    end
-
-    --==================================================
-    -- CANCEL PREVIOUS TWEEN
-    --==================================================
-
-    if self._ButtonTweens
-    and self._ButtonTweens[Button] then
-
-        pcall(function()
-
-            self._ButtonTweens[Button]:Cancel()
-
-        end)
-
-    end
-
-    self._ButtonTweens =
-        self._ButtonTweens
-        or {}
-
-    --==================================================
-    -- PRESS
-    --==================================================
-
-    local PressTween =
-        self:Tween(
-
-            Scale,
-
-            0.07,
-
-            {
-                Scale = 0.94
-            },
-
-            Enum.EasingStyle.Quad,
-
-            Enum.EasingDirection.Out
-
-        )
-
-    if PressTween then
-
-        PressTween.Completed:Wait()
-
-    end
-
-    --==================================================
-    -- SMALL BOUNCE
-    --==================================================
-
-    local BounceTween =
-        self:Tween(
-
-            Scale,
-
-            0.08,
-
-            {
-                Scale = 1.035
-            },
-
-            Enum.EasingStyle.Back,
-
-            Enum.EasingDirection.Out
-
-        )
-
-    if BounceTween then
-
-        BounceTween.Completed:Wait()
-
-    end
-
-    --==================================================
--- MENU ANIMATION
---==================================================
--- Apenas escala.
--- NÃO altera BackgroundTransparency,
--- TextTransparency, ImageTransparency ou
--- qualquer outra propriedade visual.
---
--- Isso evita que o menu fique transparente
--- durante a animação.
-
-function UI:SetupMenuAnimation()
-
-    if not self.Main then
-        return
-    end
-
-    -- Evita criar UIScale duplicado
-    local ExistingScale =
-        self.Main:FindFirstChild("MenuScale")
-
-    if ExistingScale then
-
-        self.MainScale =
-            ExistingScale
-
-        return
-
-    end
-
-    local MainScale =
-        Instance.new("UIScale")
-
-    MainScale.Name =
-        "MenuScale"
-
-    MainScale.Scale =
-        1
-
-    MainScale.Parent =
-        self.Main
-
-    self.MainScale =
-        MainScale
-
-end
-
---==================================================
--- ANIMATION ENABLE CHECK
---==================================================
-
-function UI:IsAnimationEnabled()
-
-    if not self.Config
-    or not self.Config.UI then
-
-        return true
-
-    end
-
-    if self.Config.UI.Animation == false then
-
-        return false
-
-    end
-
-    return true
-
-end
-
---==================================================
--- SHOW MENU ANIMATION
---==================================================
-
-function UI:ShowAnimated()
-
-    if not self.Main then
-        return
-    end
-
-    -- Garante que a escala existe
-    self:SetupMenuAnimation()
-
-    local Main =
-        self.Main
-
-    local Scale =
-        self.MainScale
-
-    --==================================================
-    -- ANIMATION DISABLED
-    --==================================================
-
-    if not self:IsAnimationEnabled() then
-
-        Scale.Scale =
-            1
-
-        Main.Visible =
-            true
-
-        return
-
-    end
-
-    --==================================================
-    -- CANCEL OLD TWEEN
-    --==================================================
-
-    if self.MenuTween then
-
-        pcall(function()
-
-            self.MenuTween:Cancel()
-
-        end)
-
-        self.MenuTween =
-            nil
-
-    end
-
-    --==================================================
-    -- START STATE
-    --==================================================
-
-    Main.Visible =
-        true
-
-    Scale.Scale =
-        0.92
-
-    --==================================================
-    -- PLAY
-    --==================================================
-
-    self.MenuTween =
-        TweenService:Create(
-
-            Scale,
-
-            TweenInfo.new(
-
-                0.18,
-
-                Enum.EasingStyle.Back,
-
-                Enum.EasingDirection.Out
-
-            ),
-
-            {
-                Scale = 1
-            }
-
-        )
-
-    self.MenuTween:Play()
-
-end
-
---==================================================
--- HIDE MENU ANIMATION
---==================================================
-
-function UI:HideAnimated()
-
-    if not self.Main then
-        return
-    end
-
-    self:SetupMenuAnimation()
-
-    local Main =
-        self.Main
-
-    local Scale =
-        self.MainScale
-
-    --==================================================
-    -- ANIMATION DISABLED
-    --==================================================
-
-    if not self:IsAnimationEnabled() then
-
-        Scale.Scale =
-            1
-
-        Main.Visible =
-            false
-
-        return
-
-    end
-
-    --==================================================
-    -- CANCEL OLD TWEEN
-    --==================================================
-
-    if self.MenuTween then
-
-        pcall(function()
-
-            self.MenuTween:Cancel()
-
-        end)
-
-        self.MenuTween =
-            nil
-
-    end
-
-    --==================================================
-    -- PLAY CLOSE
-    --==================================================
-
-    self.MenuTween =
-        TweenService:Create(
-
-            Scale,
-
-            TweenInfo.new(
-
-                0.12,
-
-                Enum.EasingStyle.Quad,
-
-                Enum.EasingDirection.In
-
-            ),
-
-            {
-                Scale = 0.92
-            }
-
-        )
-
-    self.MenuTween:Play()
-
-    --==================================================
-    -- HIDE AFTER ANIMATION
-    --==================================================
-
-    self.MenuTween.Completed:Connect(function()
-
-        if not self.Main then
-            return
-        end
-
-        -- Só esconde se ainda estiver
-        -- no estado de fechamento.
-
-        if self.MainScale == Scale
-        and Scale.Scale <= 0.93 then
-
-            Main.Visible =
-                false
-
-            Scale.Scale =
-                1
-
-        end
-
-    end)
-
-end
-
---==================================================
--- SET VISIBLE ANIMATED
---==================================================
-
-function UI:SetVisibleAnimated(Value)
-
-    if not self.Main then
-        return
-    end
-
-    if Value then
-
-        self:ShowAnimated()
-
-    else
-
-        self:HideAnimated()
-
-    end
-
-end
-
---==================================================
--- TOGGLE ANIMATED
---==================================================
-
-function UI:ToggleAnimated()
-
-    if not self.Main then
-        return
-    end
-
-    if self.Main.Visible then
-
-        self:HideAnimated()
-
-    else
-
-        self:ShowAnimated()
-
-    end
-
-end
-
---==================================================
--- INITIALIZE MENU ANIMATION
---==================================================
-
-function UI:InitMenuAnimation()
-
-    if not self.Main then
-        return
-    end
-
-    self:SetupMenuAnimation()
-
-    -- Mantém o estado inicial definido
-    -- pelo sistema atual.
-
-    self.MainScale.Scale =
-        1
-
-end
-
---==================================================
--- RETURN
+-- RETURN MODULE
 --==================================================
 
 return UI
