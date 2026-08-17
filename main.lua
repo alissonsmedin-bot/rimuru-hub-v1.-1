@@ -326,21 +326,17 @@ Categories:SetDefaultCategory()
 
 if UI.Close then
 
-UI.Close.MouseButton1Click:Connect(function()  
+    UI.Close.MouseButton1Click:Connect(function()
 
-    UI:SetVisible(  
-        false  
-    )  
+        UI:SetVisibleAnimated(false)
 
-    if Config.UI.ShowLogo then  
+        if Config.UI.ShowLogo then
 
-        Logo:SetVisible(  
-            true  
-        )  
+            Logo:SetVisible(true)
 
-    end  
+        end
 
-end)
+    end)
 
 end
 
