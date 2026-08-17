@@ -3,7 +3,7 @@
 --// GitHub Image Version
 --// Centralized Logo
 --// Press Animation
---// Animation Config Support
+--// Menu Animation Compatible
 --// No Roblox ImageId Required
 
 local Players =
@@ -28,7 +28,7 @@ local IMAGE_PATH =
     "RimuruHubLogo.png"
 
 --==================================================
--- ANIMATION CONFIG
+-- PRESS ANIMATION CONFIG
 --==================================================
 
 local PRESS_SCALE =
@@ -396,10 +396,6 @@ function Logo:Create()
     LogoImage.Name =
         "LogoImage"
 
-    --==================================================
-    -- CENTRALIZAÇÃO
-    --==================================================
-
     LogoImage.AnchorPoint =
         Vector2.new(
             0.5,
@@ -448,7 +444,6 @@ function Logo:Create()
 
     else
 
-        -- Fallback
         LogoImage.Image =
             "rbxassetid://6691708227"
 
@@ -477,7 +472,7 @@ function Logo:Create()
         LogoButton
 
     --==================================================
-    -- ANIMATION SCALE
+    -- PRESS SCALE
     --==================================================
 
     local Scale =
@@ -523,6 +518,10 @@ function Logo:Create()
 
     LogoButton.MouseButton1Click:Connect(function()
 
+        --==================================================
+        -- IGNORE CLICK AFTER DRAG
+        --==================================================
+
         if self.LogoMoved
         and self.LogoMoved() then
 
@@ -536,6 +535,10 @@ function Logo:Create()
 
         end
 
+        --==================================================
+        -- GET MAIN
+        --==================================================
+
         local Main
 
         if self.UI then
@@ -546,15 +549,31 @@ function Logo:Create()
         end
 
         if not Main then
+
             return
+
         end
 
         --==================================================
-        -- NORMAL MENU TOGGLE
+        -- ANIMATED MENU
         --==================================================
 
-        Main.Visible =
-            not Main.Visible
+        if self.UI.SetVisibleAnimated then
+
+            self.UI:SetVisibleAnimated(
+                not Main.Visible
+            )
+
+        else
+
+            --==================================================
+            -- SAFE FALLBACK
+            --==================================================
+
+            Main.Visible =
+                not Main.Visible
+
+        end
 
     end)
 
@@ -764,7 +783,9 @@ function Logo:SetupDrag()
     LogoButton.InputBegan:Connect(function(Input)
 
         if not Config.UI.LogoDraggable then
+
             return
+
         end
 
         if Input.UserInputType ==
@@ -792,7 +813,9 @@ function Logo:SetupDrag()
     UIS.InputChanged:Connect(function(Input)
 
         if not LogoDragging then
+
             return
+
         end
 
         if Input.UserInputType ==
@@ -882,7 +905,9 @@ end
 function Logo:IsVisible()
 
     if not self.Button then
+
         return false
+
     end
 
     return self.Button.Visible
@@ -916,7 +941,9 @@ function Logo:ApplyTheme()
         self.Theme:GetCurrent()
 
     if not CurrentTheme then
+
         return
+
     end
 
     self.Button.BackgroundColor3 =
