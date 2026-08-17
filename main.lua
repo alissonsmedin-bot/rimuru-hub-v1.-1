@@ -1,943 +1,377 @@
 --// 💥 RIMURU HUB
---// Logo System
---// GitHub Image Version
---// Centralized Logo
---// Press Animation
---// Animation Config Support
---// No Roblox ImageId Required
+--// Main Loader / Connector
+--// SEARCH VERSION
+--// Modular Remote Architecture
+--// Future Updates Compatible
+
+--==================================================
+-- SERVICES
+--==================================================
 
 local Players =
-    game:GetService("Players")
-
-local UIS =
-    game:GetService("UserInputService")
-
-local TweenService =
-    game:GetService("TweenService")
-
-local Logo = {}
+game:GetService("Players")
 
 --==================================================
--- IMAGE CONFIG
+-- PLAYER
 --==================================================
 
-local IMAGE_URL =
-    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000086171-removebg-preview.png"
+local Player =
+Players.LocalPlayer
 
-local IMAGE_PATH =
-    "RimuruHubLogo.png"
-
---==================================================
--- ANIMATION CONFIG
---==================================================
-
-local PRESS_SCALE =
-    0.95
-
-local PRESS_TIME =
-    0.09
-
-local RELEASE_TIME =
-    0.15
+local PlayerGui =
+Player:WaitForChild(
+"PlayerGui"
+)
 
 --==================================================
--- LOAD GITHUB IMAGE
+-- BASE URL
 --==================================================
 
-local function LoadImage()
+-- IMPORTANTE:
+-- Mantém "main" para que futuras atualizações
+-- dos módulos sejam carregadas normalmente.
 
-    if not getcustomasset then
+-- O commit 2bf022d foi usado apenas para
+-- recuperar a versão antiga dos módulos.
 
-        warn(
-            "⚠️ Rimuru Hub: getcustomasset() não está disponível."
-        )
+local BaseURL =
+"https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/"
 
-        return nil
+--==================================================
+-- LOAD MODULE
+--==================================================
 
-    end
+local function Load(FileName)
 
-    --==================================================
-    -- CHECK EXISTING FILE
-    --==================================================
+local URL =  
+    BaseURL ..  
+    FileName  
 
-    if isfile then
+local Success, Result =  
+    pcall(function()  
 
-        local Success, Exists =
-            pcall(function()
+        local Source =  
+            game:HttpGet(URL)  
 
-                return isfile(
-                    IMAGE_PATH
-                )
+        local Module =  
+            loadstring(Source)  
 
-            end)
+        if not Module then  
+            error(  
+                "loadstring retornou nil"  
+            )  
+        end  
 
-        if Success
-        and Exists then
+        return Module()  
 
-            local AssetSuccess, Asset =
-                pcall(function()
+    end)  
 
-                    return getcustomasset(
-                        IMAGE_PATH
-                    )
+if not Success then  
 
-                end)
+    warn(  
+        "❌ Rimuru Hub: erro ao carregar " ..  
+        FileName  
+    )  
 
-            if AssetSuccess then
+    warn(  
+        tostring(Result)  
+    )  
 
-                return Asset
+    return nil  
 
-            end
+end  
 
-        end
+if Result == nil then  
 
-    end
+    warn(  
+        "❌ Rimuru Hub: " ..  
+        FileName ..  
+        " não retornou um módulo válido."  
+    )  
 
-    --==================================================
-    -- DOWNLOAD IMAGE
-    --==================================================
+    return nil  
 
-    local Success, Data =
-        pcall(function()
+end  
 
-            return game:HttpGet(
-                IMAGE_URL
-            )
-
-        end)
-
-    if not Success
-    or not Data
-    or Data == "" then
-
-        warn(
-            "⚠️ Rimuru Hub: não foi possível baixar a logo do GitHub."
-        )
-
-        return nil
-
-    end
-
-    --==================================================
-    -- SAVE IMAGE
-    --==================================================
-
-    if not writefile then
-
-        warn(
-            "⚠️ Rimuru Hub: writefile() não está disponível."
-        )
-
-        return nil
-
-    end
-
-    local WriteSuccess =
-        pcall(function()
-
-            writefile(
-                IMAGE_PATH,
-                Data
-            )
-
-        end)
-
-    if not WriteSuccess then
-
-        warn(
-            "⚠️ Rimuru Hub: não foi possível salvar a logo."
-        )
-
-        return nil
-
-    end
-
-    --==================================================
-    -- CUSTOM ASSET
-    --==================================================
-
-    local AssetSuccess, Asset =
-        pcall(function()
-
-            return getcustomasset(
-                IMAGE_PATH
-            )
-
-        end)
-
-    if not AssetSuccess then
-
-        warn(
-            "⚠️ Rimuru Hub: getcustomasset() falhou ao carregar a logo."
-        )
-
-        return nil
-
-    end
-
-    return Asset
+return Result
 
 end
 
 --==================================================
--- INIT
+-- LOAD CONFIGURATION
 --==================================================
 
-function Logo:Init(Context)
+local Config =
+Load("config.lua")
 
-    self.Context =
-        Context
+if not Config then
+warn("❌ Rimuru Hub: Config não carregado.")
+return
+end
 
-    self.Player =
-        Context.Player
-        or Players.LocalPlayer
+--==================================================
+-- LOAD SOUNDS
+--==================================================
 
-    self.PlayerGui =
-        Context.PlayerGui
-        or self.Player:WaitForChild(
-            "PlayerGui"
-        )
+local Sounds =
+Load("sound.lua")
 
-    self.Config =
-        Context.Config
+if not Sounds then
+warn("❌ Rimuru Hub: Sounds não carregado.")
+return
+end
 
-    self.Theme =
-        Context.Theme
+--==================================================
+-- LOAD SYSTEMS
+--==================================================
 
-    self.UI =
-        Context.UI
+local Theme =
+Load("theme.lua")
 
-    --==================================================
-    -- VALIDATION
-    --==================================================
+local UI =
+Load("ui.lua")
 
-    if not self.Config then
+local Logo =
+Load("logo.lua")
 
-        warn(
-            "❌ Rimuru Hub Logo: Config não encontrado."
-        )
+local Cards =
+Load("cards.lua")
 
-        return
+local Search =
+Load("search.lua")
 
-    end
+local Categories =
+Load("categories.lua")
 
-    if not self.Theme then
+local Settings =
+Load("settings.lua")
 
-        warn(
-            "❌ Rimuru Hub Logo: Theme não encontrado."
-        )
+local RGB =
+Load("RGB.lua")
 
-        return
+--==================================================
+-- VERIFY MODULES
+--==================================================
 
-    end
+local Modules = {
 
-    if not self.UI then
+Theme = Theme,  
+UI = UI,  
+Logo = Logo,  
+Cards = Cards,  
+Search = Search,  
+Categories = Categories,  
+Settings = Settings,  
+RGB = RGB
 
-        warn(
-            "❌ Rimuru Hub Logo: UI não encontrado."
-        )
+}
 
-        return
+for Name, Module in pairs(Modules) do
 
-    end
+if not Module then  
 
-    self.Gui =
-        self.UI.Gui
+    warn(  
+        "❌ Rimuru Hub: módulo ausente -> " ..  
+        Name  
+    )  
 
-    if not self.Gui then
+    return  
 
-        warn(
-            "❌ Rimuru Hub Logo: ScreenGui não encontrado."
-        )
-
-        return
-
-    end
-
-    --==================================================
-    -- LOAD IMAGE
-    --==================================================
-
-    self.ImageAsset =
-        LoadImage()
-
-    --==================================================
-    -- CREATE
-    --==================================================
-
-    self:Create()
+end
 
 end
 
 --==================================================
--- CREATE LOGO
+-- CONTEXT
 --==================================================
 
-function Logo:Create()
+local Context = {
 
-    local Config =
-        self.Config
+Player =  
+    Player,  
 
-    local Theme =
-        self.Theme
+PlayerGui =  
+    PlayerGui,  
 
-    if not Config
-    or not Config.UI then
+Config =  
+    Config,  
 
-        warn(
-            "❌ Rimuru Hub Logo: Config.UI não encontrado."
-        )
+Sounds =  
+    Sounds,  
 
-        return
+Theme =  
+    Theme,  
 
-    end
+UI =  
+    UI,  
 
-    local CurrentTheme =
-        Theme:GetCurrent()
+Logo =  
+    Logo,  
 
-    if not CurrentTheme then
+Cards =  
+    Cards,  
 
-        warn(
-            "❌ Rimuru Hub Logo: tema atual não encontrado."
-        )
+Search =  
+    Search,  
 
-        return
+Categories =  
+    Categories,  
 
-    end
+Settings =  
+    Settings,  
 
-    --==================================================
-    -- REMOVE OLD LOGO
-    --==================================================
+RGB =  
+    RGB
 
-    local OldLogo =
-        self.Gui:FindFirstChild(
-            "RimuruLogo"
-        )
+}
 
-    if OldLogo then
+--==================================================
+-- THEME
+--==================================================
 
-        OldLogo:Destroy()
+Theme:Init(
+Context
+)
 
-    end
+--==================================================
+-- UI
+--==================================================
 
-    --==================================================
-    -- LOGO BUTTON
-    --==================================================
+UI:Init(
+Context
+)
 
-    local LogoButton =
-        Instance.new("ImageButton")
+--==================================================
+-- LOGO
+--==================================================
 
-    LogoButton.Name =
-        "RimuruLogo"
+Logo:Init(
+Context
+)
 
-    LogoButton.Size =
-        UDim2.new(
-            0,
-            55,
-            0,
-            55
-        )
+--==================================================
+-- CARDS
+--==================================================
 
-    LogoButton.Position =
-        UDim2.new(
-            0,
-            20,
-            0.5,
-            -22
-        )
+Cards:Init(
+Context
+)
 
-    LogoButton.BackgroundColor3 =
-        CurrentTheme.LogoBackground
+--==================================================
+-- CATEGORIES
+--==================================================
 
-    LogoButton.BorderSizePixel =
-        0
+Categories:Init(
+Context
+)
 
-    LogoButton.Image =
-        ""
+--==================================================
+-- SEARCH
+--==================================================
 
-    LogoButton.ScaleType =
-        Enum.ScaleType.Fit
+Search:Init(
+Context
+)
 
-    LogoButton.AutoButtonColor =
-        false
+Search:Connect()
 
-    LogoButton.ZIndex =
-        1000
+--==================================================
+-- SETTINGS
+--==================================================
 
-    LogoButton.Visible =
-        Config.UI.ShowLogo == true
+Settings:Init(
+Context
+)
 
-    LogoButton.Parent =
-        self.Gui
+--==================================================
+-- RGB
+--==================================================
 
-    --==================================================
-    -- CORNER
-    --==================================================
+RGB:Init(
+Context
+)
 
-    local LogoCorner =
-        Instance.new("UICorner")
+--==================================================
+-- CREATE CATEGORIES
+--==================================================
 
-    LogoCorner.CornerRadius =
-        UDim.new(
-            0,
-            14
-        )
+Categories:CreateCategories()
 
-    LogoCorner.Parent =
-        LogoButton
+--==================================================
+-- CONFIGURATION BUTTON
+--==================================================
 
-    --==================================================
-    -- LOGO IMAGE
-    --==================================================
+local ConfigButton =
+Categories.ConfigButton
 
-    local LogoImage =
-        Instance.new("ImageLabel")
+if ConfigButton then
 
-    LogoImage.Name =
-        "LogoImage"
+ConfigButton.MouseButton1Click:Connect(function()  
 
-    LogoImage.AnchorPoint =
-        Vector2.new(
-            0.5,
-            0.5
-        )
+    Settings:Show()  
 
-    LogoImage.Position =
-        UDim2.new(
-            0.5,
-            0,
-            0.5,
-            0
-        )
-
-    LogoImage.Size =
-        UDim2.new(
-            0,
-            46,
-            0,
-            46
-        )
-
-    LogoImage.BackgroundTransparency =
-        1
-
-    LogoImage.BorderSizePixel =
-        0
-
-    LogoImage.ScaleType =
-        Enum.ScaleType.Fit
-
-    LogoImage.ZIndex =
-        1001
-
-    LogoImage.Active =
-        false
-
-    --==================================================
-    -- IMAGE ASSET
-    --==================================================
-
-    if self.ImageAsset then
-
-        LogoImage.Image =
-            self.ImageAsset
-
-    else
-
-        LogoImage.Image =
-            "rbxassetid://6691708227"
-
-    end
-
-    LogoImage.Parent =
-        LogoButton
-
-    self.Image =
-        LogoImage
-
-    --==================================================
-    -- STROKE
-    --==================================================
-
-    local LogoStroke =
-        Instance.new("UIStroke")
-
-    LogoStroke.Color =
-        Theme:GetAccent()
-
-    LogoStroke.Thickness =
-        2
-
-    LogoStroke.Parent =
-        LogoButton
-
-    --==================================================
-    -- ANIMATION SCALE
-    --==================================================
-
-    local Scale =
-        Instance.new("UIScale")
-
-    Scale.Name =
-        "PressScale"
-
-    Scale.Scale =
-        1
-
-    Scale.Parent =
-        LogoButton
-
-    self.Scale =
-        Scale
-
-    --==================================================
-    -- SAVE REFERENCES
-    --==================================================
-
-    self.Button =
-        LogoButton
-
-    self.Stroke =
-        LogoStroke
-
-    --==================================================
-    -- DRAG
-    --==================================================
-
-    self:SetupDrag()
-
-    --==================================================
-    -- PRESS ANIMATION
-    --==================================================
-
-    self:SetupPressAnimation()
-
-    --==================================================
-    -- OPEN / CLOSE MENU
-    --==================================================
-
-    LogoButton.MouseButton1Click:Connect(function()
-
-        if self.LogoMoved
-        and self.LogoMoved() then
-
-            if self.ResetMoved then
-
-                self.ResetMoved()
-
-            end
-
-            return
-
-        end
-
-        local Main
-
-        if self.UI then
-
-            Main =
-                self.UI.Main
-
-        end
-
-        if not Main then
-            return
-        end
-
-        --==================================================
-        -- ANIMATED MENU
-        --==================================================
-
-        if self.UI.SetVisibleAnimated then
-
-            self.UI:SetVisibleAnimated(
-                not Main.Visible
-            )
-
-        else
-
-            Main.Visible =
-                not Main.Visible
-
-        end
-
-    end)
+end)
 
 end
 
 --==================================================
--- CHECK ANIMATION
+-- DEFAULT CATEGORY
 --==================================================
 
-function Logo:IsAnimationEnabled()
+Categories:SetDefaultCategory()
 
-    if not self.Config
-    or not self.Config.UI then
+--==================================================
+-- CLOSE BUTTON
+--==================================================
 
-        return true
+if UI.Close then
 
-    end
+UI.Close.MouseButton1Click:Connect(function()  
 
-    if self.Config.UI.Animation == false then
+    UI:SetVisible(  
+        false  
+    )  
 
-        return false
+    if Config.UI.ShowLogo then  
 
-    end
+        Logo:SetVisible(  
+            true  
+        )  
 
-    return true
+    end  
+
+end)
 
 end
 
 --==================================================
--- PRESS ANIMATION
+-- INITIAL STATE
 --==================================================
 
-function Logo:SetupPressAnimation()
+UI:SetVisible(
+false
+)
 
-    local LogoButton =
-        self.Button
-
-    local Scale =
-        self.Scale
-
-    if not LogoButton
-    or not Scale then
-
-        return
-
-    end
-
-    local PressTween
-    local ReleaseTween
-
-    --==================================================
-    -- PRESS
-    --==================================================
-
-    LogoButton.InputBegan:Connect(function(Input)
-
-        if Input.UserInputType ~=
-            Enum.UserInputType.MouseButton1
-
-        and Input.UserInputType ~=
-            Enum.UserInputType.Touch then
-
-            return
-
-        end
-
-        if not self:IsAnimationEnabled() then
-
-            Scale.Scale =
-                1
-
-            return
-
-        end
-
-        if PressTween then
-
-            PressTween:Cancel()
-
-        end
-
-        if ReleaseTween then
-
-            ReleaseTween:Cancel()
-
-        end
-
-        PressTween =
-            TweenService:Create(
-
-                Scale,
-
-                TweenInfo.new(
-
-                    PRESS_TIME,
-
-                    Enum.EasingStyle.Quad,
-
-                    Enum.EasingDirection.Out
-
-                ),
-
-                {
-                    Scale = PRESS_SCALE
-                }
-
-            )
-
-        PressTween:Play()
-
-    end)
-
-    --==================================================
-    -- RELEASE
-    --==================================================
-
-    LogoButton.InputEnded:Connect(function(Input)
-
-        if Input.UserInputType ~=
-            Enum.UserInputType.MouseButton1
-
-        and Input.UserInputType ~=
-            Enum.UserInputType.Touch then
-
-            return
-
-        end
-
-        if not self:IsAnimationEnabled() then
-
-            Scale.Scale =
-                1
-
-            return
-
-        end
-
-        if PressTween then
-
-            PressTween:Cancel()
-
-        end
-
-        if ReleaseTween then
-
-            ReleaseTween:Cancel()
-
-        end
-
-        ReleaseTween =
-            TweenService:Create(
-
-                Scale,
-
-                TweenInfo.new(
-
-                    RELEASE_TIME,
-
-                    Enum.EasingStyle.Back,
-
-                    Enum.EasingDirection.Out
-
-                ),
-
-                {
-                    Scale = 1
-                }
-
-            )
-
-        ReleaseTween:Play()
-
-    end)
-
-end
+Logo:SetVisible(
+Config.UI.ShowLogo
+)
 
 --==================================================
--- DRAG SYSTEM
+-- INITIAL THEME
 --==================================================
 
-function Logo:SetupDrag()
+UI:ApplyTheme()
 
-    local LogoButton =
-        self.Button
+Logo:ApplyTheme()
 
-    local Config =
-        self.Config
+Categories:ApplyTheme()
 
-    if not LogoButton
-    or not Config
-    or not Config.UI then
-
-        return
-
-    end
-
-    local LogoDragging =
-        false
-
-    local LogoMoved =
-        false
-
-    local LogoDragStart
-
-    local LogoStartPosition
-
-    LogoButton.InputBegan:Connect(function(Input)
-
-        if not Config.UI.LogoDraggable then
-            return
-        end
-
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseButton1
-
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
-
-            LogoDragging =
-                true
-
-            LogoMoved =
-                false
-
-            LogoDragStart =
-                Input.Position
-
-            LogoStartPosition =
-                LogoButton.Position
-
-        end
-
-    end)
-
-    UIS.InputChanged:Connect(function(Input)
-
-        if not LogoDragging then
-            return
-        end
-
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseMovement
-
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
-
-            local Delta =
-                Input.Position -
-                LogoDragStart
-
-            if math.abs(Delta.X) > 5
-            or math.abs(Delta.Y) > 5 then
-
-                LogoMoved =
-                    true
-
-            end
-
-            LogoButton.Position =
-                UDim2.new(
-
-                    LogoStartPosition.X.Scale,
-
-                    LogoStartPosition.X.Offset +
-                    Delta.X,
-
-                    LogoStartPosition.Y.Scale,
-
-                    LogoStartPosition.Y.Offset +
-                    Delta.Y
-
-                )
-
-        end
-
-    end)
-
-    UIS.InputEnded:Connect(function(Input)
-
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseButton1
-
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
-
-            LogoDragging =
-                false
-
-        end
-
-    end)
-
-    self.LogoMoved =
-        function()
-
-            return LogoMoved
-
-        end
-
-    self.ResetMoved =
-        function()
-
-            LogoMoved =
-                false
-
-        end
-
-end
+Search:ApplyTheme()
 
 --==================================================
--- VISIBILITY
+-- LOADED
 --==================================================
 
-function Logo:SetVisible(Value)
-
-    if self.Button then
-
-        self.Button.Visible =
-            Value
-
-    end
-
-end
-
-function Logo:IsVisible()
-
-    if not self.Button then
-        return false
-    end
-
-    return self.Button.Visible
-
-end
-
---==================================================
--- GET BUTTON
---==================================================
-
-function Logo:GetButton()
-
-    return self.Button
-
-end
-
---==================================================
--- APPLY THEME
---==================================================
-
-function Logo:ApplyTheme()
-
-    if not self.Button
-    or not self.Theme then
-
-        return
-
-    end
-
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    if not CurrentTheme then
-        return
-    end
-
-    self.Button.BackgroundColor3 =
-        CurrentTheme.LogoBackground
-
-    if self.Stroke then
-
-        self.Stroke.Color =
-            self.Theme:GetAccent()
-
-    end
-
-end
-
---==================================================
--- RETURN
---==================================================
-
-return Logo
+print(
+"💥 Rimuru Hub carregado."
+)
