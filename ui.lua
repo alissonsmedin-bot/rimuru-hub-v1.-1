@@ -41,6 +41,191 @@ function UI:Init(Context)
 end
 
 --==================================================
+-- MENU ANIMATION
+--==================================================
+
+function UI:IsAnimationEnabled()
+
+    if not self.Config
+    or not self.Config.UI then
+
+        return true
+
+    end
+
+    return self.Config.UI.Animation ~= false
+
+end
+
+--==================================================
+-- SET MENU VISIBLE
+--==================================================
+
+function UI:SetVisibleAnimated(Value)
+
+    local Main =
+        self.Main
+
+    if not Main then
+        return
+    end
+
+    --==================================================
+    -- ANIMATION DISABLED
+    --==================================================
+
+    if not self:IsAnimationEnabled() then
+
+        Main.Visible =
+            Value
+
+        Main.BackgroundTransparency =
+            0
+
+        if self.MainScale then
+
+            self.MainScale.Scale =
+                1
+
+        end
+
+        return
+
+    end
+
+    --==================================================
+    -- OPEN
+    --==================================================
+
+    if Value then
+
+        Main.Visible =
+            true
+
+        Main.BackgroundTransparency =
+            1
+
+        if self.MainScale then
+
+            self.MainScale.Scale =
+                0.92
+
+        end
+
+        local TweenInfoOpen =
+            TweenInfo.new(
+
+                0.18,
+
+                Enum.EasingStyle.Quint,
+
+                Enum.EasingDirection.Out
+
+            )
+
+        local TransparencyTween =
+            TweenService:Create(
+
+                Main,
+
+                TweenInfoOpen,
+
+                {
+                    BackgroundTransparency = 0
+                }
+
+            )
+
+        local ScaleTween =
+            TweenService:Create(
+
+                self.MainScale,
+
+                TweenInfoOpen,
+
+                {
+                    Scale = 1
+                }
+
+            )
+
+        TransparencyTween:Play()
+        ScaleTween:Play()
+
+    --==================================================
+    -- CLOSE
+    --==================================================
+
+    else
+
+        local TweenInfoClose =
+            TweenInfo.new(
+
+                0.13,
+
+                Enum.EasingStyle.Quad,
+
+                Enum.EasingDirection.In
+
+            )
+
+        local TransparencyTween =
+            TweenService:Create(
+
+                Main,
+
+                TweenInfoClose,
+
+                {
+                    BackgroundTransparency = 1
+                }
+
+            )
+
+        local ScaleTween =
+            TweenService:Create(
+
+                self.MainScale,
+
+                TweenInfoClose,
+
+                {
+                    Scale = 0.92
+                }
+
+            )
+
+        TransparencyTween:Play()
+        ScaleTween:Play()
+
+        task.delay(
+
+            0.13,
+
+            function()
+
+                if Main then
+
+                    Main.Visible =
+                        false
+
+                    Main.BackgroundTransparency =
+                        0
+
+                    self.MainScale.Scale =
+                        1
+
+                end
+
+            end
+
+        )
+
+    end
+
+end
+
+--==================================================
 -- REMOVE OLD VERSION
 --==================================================
 
@@ -193,6 +378,25 @@ function UI:Create()
     self.Main =
         Main
 
+    --==================================================
+-- MAIN ANIMATION SCALE
+--==================================================
+
+local MainScale =
+    Instance.new("UIScale")
+
+MainScale.Name =
+    "MenuScale"
+
+MainScale.Scale =
+    1
+
+MainScale.Parent =
+    Main
+
+self.MainScale =
+    MainScale
+    
     --==================================================
     -- MAIN CORNER
     --==================================================
