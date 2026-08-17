@@ -2,6 +2,7 @@
 --// Logo System
 --// GitHub Image Version
 --// Centralized Logo
+--// Animated Open / Close
 --// No Roblox ImageId Required
 
 local Players =
@@ -23,7 +24,7 @@ local IMAGE_FILE =
     "RimuruHubLogo.png"
 
 local IMAGE_PATH =
-    "RimuruHubLogo.png"
+    IMAGE_FILE
 
 --==================================================
 -- LOAD GITHUB IMAGE
@@ -72,7 +73,8 @@ local function LoadImage()
 
                 end)
 
-            if AssetSuccess then
+            if AssetSuccess
+            and Asset then
 
                 return Asset
 
@@ -154,7 +156,8 @@ local function LoadImage()
 
         end)
 
-    if not AssetSuccess then
+    if not AssetSuccess
+    or not Asset then
 
         warn(
             "⚠️ Rimuru Hub: getcustomasset() falhou ao carregar a logo."
@@ -341,8 +344,13 @@ function Logo:Create()
     LogoButton.BorderSizePixel =
         0
 
-    -- Não usamos ImageButton.Image.
-    -- A imagem ficará em um ImageLabel interno.
+    --==================================================
+    -- IMAGE BUTTON IMAGE
+    --==================================================
+
+    -- A imagem principal fica em um
+    -- ImageLabel interno para permitir
+    -- centralização precisa.
 
     LogoButton.Image =
         ""
@@ -406,8 +414,8 @@ function Logo:Create()
             0
         )
 
-    -- A imagem fica menor que o quadrado
-    -- para não ficar espremida ou cortada.
+    -- Mantém margem ao redor da imagem
+    -- para ela não ficar esmagada no quadrado.
 
     LogoImage.Size =
         UDim2.new(
@@ -443,8 +451,8 @@ function Logo:Create()
 
     else
 
-        -- Fallback visual caso o executor
-        -- não consiga carregar o PNG.
+        -- Fallback caso o executor não consiga
+        -- carregar a imagem personalizada.
 
         LogoImage.Image =
             "rbxassetid://6691708227"
@@ -495,6 +503,10 @@ function Logo:Create()
 
     LogoButton.MouseButton1Click:Connect(function()
 
+        --==================================================
+        -- IGNORE CLICK AFTER DRAG
+        --==================================================
+
         if self.LogoMoved
         and self.LogoMoved() then
 
@@ -508,21 +520,35 @@ function Logo:Create()
 
         end
 
-        local Main
+        --==================================================
+        -- UI VALIDATION
+        --==================================================
 
-        if self.UI then
-
-            Main =
-                self.UI.Main
-
-        end
-
-        if not Main then
+        if not self.UI then
             return
         end
 
-        Main.Visible =
-            not Main.Visible
+        if not self.UI.Main then
+            return
+        end
+
+        --==================================================
+        -- ANIMATED TOGGLE
+        --==================================================
+
+        if self.UI.ToggleAnimated then
+
+            self.UI:ToggleAnimated()
+
+        else
+
+            -- Fallback caso o UI ainda não possua
+            -- o sistema de animação.
+
+            self.UI.Main.Visible =
+                not self.UI.Main.Visible
+
+        end
 
     end)
 
@@ -643,6 +669,10 @@ function Logo:SetupDrag()
         end
 
     end)
+
+    --==================================================
+    -- DRAG STATE FUNCTIONS
+    --==================================================
 
     self.LogoMoved =
         function()
