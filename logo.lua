@@ -396,6 +396,10 @@ function Logo:Create()
     LogoImage.Name =
         "LogoImage"
 
+    --==================================================
+    -- CENTRALIZAÇÃO
+    --==================================================
+
     LogoImage.AnchorPoint =
         Vector2.new(
             0.5,
@@ -444,6 +448,7 @@ function Logo:Create()
 
     else
 
+        -- Fallback
         LogoImage.Image =
             "rbxassetid://6691708227"
 
@@ -545,21 +550,11 @@ function Logo:Create()
         end
 
         --==================================================
-        -- ANIMATED MENU
+        -- NORMAL MENU TOGGLE
         --==================================================
 
-        if self.UI.SetVisibleAnimated then
-
-            self.UI:SetVisibleAnimated(
-                not Main.Visible
-            )
-
-        else
-
-            Main.Visible =
-                not Main.Visible
-
-        end
+        Main.Visible =
+            not Main.Visible
 
     end)
 
