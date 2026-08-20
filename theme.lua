@@ -1,5 +1,8 @@
 --// 🎨 RIMURU HUB
 --// Theme System
+--// Background Image Support
+--// Transparency Support
+--// RGB Compatible
 
 local Theme = {}
 
@@ -19,7 +22,10 @@ function Theme:Init(Context)
         self.Config.UI.Theme or "Azul Escuro"
 
     if not self.Themes[self.Name] then
-        self.Name = "Azul Escuro"
+
+        self.Name =
+            "Azul Escuro"
+
     end
 
     self.Current =
@@ -36,13 +42,26 @@ end
 
 function Theme:GetAccent()
 
-    if self.Current
-    and self.Current.RGB then
+    if not self.Current then
+
+        return Color3.fromRGB(
+            255,
+            255,
+            255
+        )
+
+    end
+
+    if self.Current.RGB then
 
         return Color3.fromHSV(
+
             self.RGBHue,
+
             0.9,
+
             1
+
         )
 
     end
@@ -58,7 +77,9 @@ end
 function Theme:SetTheme(Name)
 
     if not self.Themes[Name] then
+
         return false
+
     end
 
     self.Name =
@@ -69,6 +90,13 @@ function Theme:SetTheme(Name)
 
     self.Config.UI.Theme =
         Name
+
+    --==================================================
+    -- RESET RGB
+    --==================================================
+
+    self.RGBHue =
+        0
 
     return true
 
@@ -81,24 +109,101 @@ end
 function Theme:UpdateRGB()
 
     if not self.Current then
+
         return nil
+
     end
 
     if not self.Current.RGB then
+
         return nil
+
     end
 
-    self.RGBHue += 0.0025
+    self.RGBHue +=
+        0.0025
 
     if self.RGBHue >= 1 then
-        self.RGBHue = 0
+
+        self.RGBHue =
+            0
+
     end
 
     return Color3.fromHSV(
+
         self.RGBHue,
+
         0.9,
+
         1
+
     )
+
+end
+
+--==================================================
+-- GET BACKGROUND IMAGE
+--==================================================
+
+function Theme:GetBackgroundImage()
+
+    if not self.Current then
+
+        return nil
+
+    end
+
+    return self.Current.BackgroundImage
+
+end
+
+--==================================================
+-- HAS BACKGROUND IMAGE
+--==================================================
+
+function Theme:HasBackgroundImage()
+
+    if not self.Current then
+
+        return false
+
+    end
+
+    return self.Current.BackgroundImage ~= nil
+        and self.Current.BackgroundImage ~= ""
+
+end
+
+--==================================================
+-- GET TRANSPARENCY
+--==================================================
+
+function Theme:GetTransparency()
+
+    if not self.Current then
+
+        return 0
+
+    end
+
+    return self.Current.Transparency or 0
+
+end
+
+--==================================================
+-- GET BORDER TRANSPARENCY
+--==================================================
+
+function Theme:GetBorderTransparency()
+
+    if not self.Current then
+
+        return 0
+
+    end
+
+    return self.Current.BorderTransparency or 0
 
 end
 
@@ -107,15 +212,21 @@ end
 --==================================================
 
 function Theme:GetCurrent()
+
     return self.Current
+
 end
 
 function Theme:GetName()
+
     return self.Name
+
 end
 
 function Theme:GetThemes()
+
     return self.Themes
+
 end
 
 return Theme
