@@ -137,6 +137,9 @@ Load("logo.lua")
 local Cards =
 Load("cards.lua")
 
+local Favorites =
+Load("favorites.lua")
+
 local Search =
 Load("search.lua")
 
@@ -159,6 +162,7 @@ Theme = Theme,
 UI = UI,  
 Logo = Logo,  
 Cards = Cards,  
+Favorites = Favorites,
 Search = Search,  
 Categories = Categories,  
 Settings = Settings,  
@@ -210,6 +214,9 @@ Logo =
 
 Cards =  
     Cards,  
+
+Favorites =
+    Favorites,
 
 Search =  
     Search,  
