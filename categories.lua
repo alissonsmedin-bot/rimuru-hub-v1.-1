@@ -7,6 +7,7 @@
 --// ALL Always First
 --// No Sound Duplication
 --// Favorite Filter Compatible
+--// M1 Filters By SOUND NAME
 
 local Categories = {}
 
@@ -136,11 +137,8 @@ function Categories:BuildAllSounds()
                 if type(SoundData) == "table" then
 
                     table.insert(
-
                         self.AllSounds,
-
                         SoundData
-
                     )
 
                 end
@@ -228,6 +226,7 @@ end
 
 --==================================================
 -- GET M1 SOUNDS
+-- FILTER BY NAME
 --==================================================
 
 function Categories:GetM1Sounds()
@@ -242,19 +241,29 @@ function Categories:GetM1Sounds()
 
         if type(SoundData) == "table" then
 
-            local ID =
+            --==================================================
+            -- SOUND NAME
+            --==================================================
+
+            local Name =
                 tostring(
-                    SoundData[2]
+                    SoundData[1]
                     or ""
                 )
 
             --==================================================
             -- CASE INSENSITIVE
-            -- M1 / m1 / M1_ / m1_ ETC.
+            --
+            -- M1
+            -- m1
+            -- M1 Attack
+            -- m1_attack
+            -- M1 Punch
+            -- etc.
             --==================================================
 
             if string.find(
-                string.lower(ID),
+                string.lower(Name),
                 "m1",
                 1,
                 true
@@ -375,6 +384,10 @@ function Categories:CreateFilterMenu()
     Menu.Parent =
         self.ContentTitle.Parent
 
+    --==================================================
+    -- MENU CORNER
+    --==================================================
+
     local MenuCorner =
         Instance.new("UICorner")
 
@@ -386,6 +399,10 @@ function Categories:CreateFilterMenu()
 
     MenuCorner.Parent =
         Menu
+
+    --==================================================
+    -- MENU STROKE
+    --==================================================
 
     local MenuStroke =
         Instance.new("UIStroke")
@@ -458,6 +475,10 @@ function Categories:CreateFilterMenu()
     AllButton.Parent =
         Menu
 
+    --==================================================
+    -- ALL PADDING
+    --==================================================
+
     local AllPadding =
         Instance.new("UIPadding")
 
@@ -469,6 +490,10 @@ function Categories:CreateFilterMenu()
 
     AllPadding.Parent =
         AllButton
+
+    --==================================================
+    -- ALL CORNER
+    --==================================================
 
     local AllCorner =
         Instance.new("UICorner")
@@ -538,6 +563,10 @@ function Categories:CreateFilterMenu()
     FavoriteButton.Parent =
         Menu
 
+    --==================================================
+    -- FAVORITE PADDING
+    --==================================================
+
     local FavoritePadding =
         Instance.new("UIPadding")
 
@@ -549,6 +578,10 @@ function Categories:CreateFilterMenu()
 
     FavoritePadding.Parent =
         FavoriteButton
+
+    --==================================================
+    -- FAVORITE CORNER
+    --==================================================
 
     local FavoriteCorner =
         Instance.new("UICorner")
@@ -618,6 +651,10 @@ function Categories:CreateFilterMenu()
     M1Button.Parent =
         Menu
 
+    --==================================================
+    -- M1 PADDING
+    --==================================================
+
     local M1Padding =
         Instance.new("UIPadding")
 
@@ -629,6 +666,10 @@ function Categories:CreateFilterMenu()
 
     M1Padding.Parent =
         M1Button
+
+    --==================================================
+    -- M1 CORNER
+    --==================================================
 
     local M1Corner =
         Instance.new("UICorner")
@@ -769,8 +810,19 @@ function Categories:CreateFilterButton()
     Button.ZIndex =
         700
 
+    --==================================================
+    -- START HIDDEN
+    --==================================================
+
+    Button.Visible =
+        false
+
     Button.Parent =
         Parent
+
+    --==================================================
+    -- CORNER
+    --==================================================
 
     local Corner =
         Instance.new("UICorner")
@@ -783,6 +835,10 @@ function Categories:CreateFilterButton()
 
     Corner.Parent =
         Button
+
+    --==================================================
+    -- STROKE
+    --==================================================
 
     local Stroke =
         Instance.new("UIStroke")
@@ -836,7 +892,7 @@ end
 function Categories:ShowAll()
 
     --==================================================
-    -- SHOW FILTER ONLY IN ALL
+    -- FILTER ONLY EXISTS IN ALL
     --==================================================
 
     if self.FilterButton then
@@ -879,15 +935,17 @@ end
 function Categories:ShowFavorites()
 
     --==================================================
-    -- FILTER STAYS VISIBLE
+    -- HIDE FILTER
     --==================================================
 
     if self.FilterButton then
 
         self.FilterButton.Visible =
-            true
+            false
 
     end
+
+    self:CloseFilterMenu()
 
     self:ClearContent()
 
@@ -923,15 +981,17 @@ end
 function Categories:ShowM1()
 
     --==================================================
-    -- FILTER STAYS VISIBLE
+    -- HIDE FILTER
     --==================================================
 
     if self.FilterButton then
 
         self.FilterButton.Visible =
-            true
+            false
 
     end
+
+    self:CloseFilterMenu()
 
     self:ClearContent()
 
@@ -986,6 +1046,15 @@ function Categories:ShowCategory(
     end
 
     --==================================================
+    -- NORMAL CATEGORY
+    --==================================================
+
+    self.CurrentFilter =
+        "All"
+
+    self:UpdateFilterButton()
+
+    --==================================================
     -- HIDE FILTER
     --==================================================
 
@@ -999,7 +1068,7 @@ function Categories:ShowCategory(
     self:CloseFilterMenu()
 
     --==================================================
-    -- NORMAL CATEGORY
+    -- CLEAR
     --==================================================
 
     self:ClearContent()
@@ -1013,6 +1082,10 @@ function Categories:ShowCategory(
     if not Category then
         return
     end
+
+    --==================================================
+    -- CREATE CATEGORY CARDS
+    --==================================================
 
     for Index, Data in
         ipairs(Category) do
@@ -1391,6 +1464,19 @@ function Categories:GetFavoriteSoundCount()
 end
 
 --==================================================
+-- GET M1 SOUND COUNT
+--==================================================
+
+function Categories:GetM1SoundCount()
+
+    local M1Sounds =
+        self:GetM1Sounds()
+
+    return #M1Sounds
+
+end
+
+--==================================================
 -- GET CURRENT FILTER
 --==================================================
 
@@ -1506,6 +1592,10 @@ function Categories:ApplyTheme()
 
     local CurrentTheme =
         self.Theme:GetCurrent()
+
+    if not CurrentTheme then
+        return
+    end
 
     --==================================================
     -- CATEGORY BUTTONS
