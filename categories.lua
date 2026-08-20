@@ -2,6 +2,7 @@
 --// Categories System
 --// ALL CATEGORY SYSTEM
 --// FAVORITE FILTER
+--// M1 FILTER
 --// Dynamic All Sounds
 --// ALL Always First
 --// No Sound Duplication
@@ -91,6 +92,9 @@ function Categories:Init(Context)
     self.FilterMenu =
         nil
 
+    self.FilterStroke =
+        nil
+
 end
 
 --==================================================
@@ -124,15 +128,7 @@ function Categories:BuildAllSounds()
     for CategoryName, CategoryData in
         pairs(self.Sounds) do
 
-        --==================================================
-        -- IGNORE INVALID DATA
-        --==================================================
-
         if type(CategoryData) == "table" then
-
-            --==================================================
-            -- ADD SOUNDS TO ALL
-            --==================================================
 
             for _, SoundData in
                 ipairs(CategoryData) do
@@ -231,6 +227,55 @@ function Categories:GetFavoriteSounds()
 end
 
 --==================================================
+-- GET M1 SOUNDS
+--==================================================
+
+function Categories:GetM1Sounds()
+
+    local Result =
+        {}
+
+    self:BuildAllSounds()
+
+    for _, SoundData in
+        ipairs(self.AllSounds) do
+
+        if type(SoundData) == "table" then
+
+            local ID =
+                tostring(
+                    SoundData[2]
+                    or ""
+                )
+
+            --==================================================
+            -- CASE INSENSITIVE
+            -- M1 / m1 / M1_ / m1_ ETC.
+            --==================================================
+
+            if string.find(
+                string.lower(ID),
+                "m1",
+                1,
+                true
+            ) then
+
+                table.insert(
+                    Result,
+                    SoundData
+                )
+
+            end
+
+        end
+
+    end
+
+    return Result
+
+end
+
+--==================================================
 -- UPDATE FILTER BUTTON
 --==================================================
 
@@ -245,6 +290,12 @@ function Categories:UpdateFilterButton()
 
         self.FilterButton.Text =
             "★ Favorite"
+
+    elseif self.CurrentFilter ==
+        "M1" then
+
+        self.FilterButton.Text =
+            "M1"
 
     else
 
@@ -298,7 +349,7 @@ function Categories:CreateFilterMenu()
             0,
             120,
             0,
-            82
+            119
         )
 
     Menu.Position =
@@ -512,6 +563,86 @@ function Categories:CreateFilterMenu()
         FavoriteButton
 
     --==================================================
+    -- M1 BUTTON
+    --==================================================
+
+    local M1Button =
+        Instance.new("TextButton")
+
+    M1Button.Name =
+        "M1"
+
+    M1Button.Size =
+        UDim2.new(
+            1,
+            -10,
+            0,
+            32
+        )
+
+    M1Button.Position =
+        UDim2.new(
+            0,
+            5,
+            0,
+            82
+        )
+
+    M1Button.BackgroundColor3 =
+        CurrentTheme.Button
+
+    M1Button.BorderSizePixel =
+        0
+
+    M1Button.Text =
+        "M1"
+
+    M1Button.TextColor3 =
+        CurrentTheme.Text
+
+    M1Button.TextSize =
+        11
+
+    M1Button.Font =
+        Enum.Font.GothamMedium
+
+    M1Button.AutoButtonColor =
+        false
+
+    M1Button.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    M1Button.ZIndex =
+        801
+
+    M1Button.Parent =
+        Menu
+
+    local M1Padding =
+        Instance.new("UIPadding")
+
+    M1Padding.PaddingLeft =
+        UDim.new(
+            0,
+            9
+        )
+
+    M1Padding.Parent =
+        M1Button
+
+    local M1Corner =
+        Instance.new("UICorner")
+
+    M1Corner.CornerRadius =
+        UDim.new(
+            0,
+            6
+        )
+
+    M1Corner.Parent =
+        M1Button
+
+    --==================================================
     -- ALL EVENT
     --==================================================
 
@@ -548,6 +679,27 @@ function Categories:CreateFilterMenu()
             self:UpdateFilterButton()
 
             self:ShowFavorites()
+
+        end
+
+    )
+
+    --==================================================
+    -- M1 EVENT
+    --==================================================
+
+    M1Button.MouseButton1Click:Connect(
+
+        function()
+
+            self.CurrentFilter =
+                "M1"
+
+            self:CloseFilterMenu()
+
+            self:UpdateFilterButton()
+
+            self:ShowM1()
 
         end
 
@@ -683,6 +835,17 @@ end
 
 function Categories:ShowAll()
 
+    --==================================================
+    -- SHOW FILTER ONLY IN ALL
+    --==================================================
+
+    if self.FilterButton then
+
+        self.FilterButton.Visible =
+            true
+
+    end
+
     self:ClearContent()
 
     self:BuildAllSounds()
@@ -715,6 +878,17 @@ end
 
 function Categories:ShowFavorites()
 
+    --==================================================
+    -- FILTER STAYS VISIBLE
+    --==================================================
+
+    if self.FilterButton then
+
+        self.FilterButton.Visible =
+            true
+
+    end
+
     self:ClearContent()
 
     self.ContentTitle.Text =
@@ -729,6 +903,50 @@ function Categories:ShowFavorites()
 
     for Index, Data in
         ipairs(FavoriteSounds) do
+
+        self.Cards:CreateSoundCard(
+
+            Index,
+
+            Data
+
+        )
+
+    end
+
+end
+
+--==================================================
+-- SHOW M1
+--==================================================
+
+function Categories:ShowM1()
+
+    --==================================================
+    -- FILTER STAYS VISIBLE
+    --==================================================
+
+    if self.FilterButton then
+
+        self.FilterButton.Visible =
+            true
+
+    end
+
+    self:ClearContent()
+
+    self.ContentTitle.Text =
+        "M1"
+
+    local M1Sounds =
+        self:GetM1Sounds()
+
+    --==================================================
+    -- CREATE M1 CARDS
+    --==================================================
+
+    for Index, Data in
+        ipairs(M1Sounds) do
 
         self.Cards:CreateSoundCard(
 
@@ -768,8 +986,15 @@ function Categories:ShowCategory(
     end
 
     --==================================================
-    -- CLOSE FILTER MENU
+    -- HIDE FILTER
     --==================================================
+
+    if self.FilterButton then
+
+        self.FilterButton.Visible =
+            false
+
+    end
 
     self:CloseFilterMenu()
 
@@ -1029,10 +1254,6 @@ function Categories:CreateCategories()
             self.Sounds
         ) do
 
-        --==================================================
-        -- NEVER CREATE ANOTHER ALL
-        --==================================================
-
         if CategoryName ~= "ALL"
         and CategoryName ~= "Configuração" then
 
@@ -1085,10 +1306,6 @@ end
 --==================================================
 
 function Categories:SetDefaultCategory()
-
-    --==================================================
-    -- ALL IS ALWAYS DEFAULT
-    --==================================================
 
     local AllButton =
         self.CategoryButtons[
@@ -1192,7 +1409,8 @@ function Categories:SetFilter(
 )
 
     if FilterName ~= "All"
-    and FilterName ~= "Favorite" then
+    and FilterName ~= "Favorite"
+    and FilterName ~= "M1" then
 
         return
 
@@ -1206,6 +1424,10 @@ function Categories:SetFilter(
     if FilterName == "Favorite" then
 
         self:ShowFavorites()
+
+    elseif FilterName == "M1" then
+
+        self:ShowM1()
 
     else
 
@@ -1225,6 +1447,15 @@ function Categories:RefreshCurrent()
         "Favorite" then
 
         self:ShowFavorites()
+
+        return
+
+    end
+
+    if self.CurrentFilter ==
+        "M1" then
+
+        self:ShowM1()
 
         return
 
@@ -1344,17 +1575,21 @@ function Categories:ApplyTheme()
         self.FilterMenu.BackgroundColor3 =
             CurrentTheme.Content
 
-        local Stroke =
+        local MenuStroke =
             self.FilterMenu:FindFirstChildOfClass(
                 "UIStroke"
             )
 
-        if Stroke then
+        if MenuStroke then
 
-            Stroke.Color =
+            MenuStroke.Color =
                 self.Theme:GetAccent()
 
         end
+
+        --==================================================
+        -- ALL
+        --==================================================
 
         local AllButton =
             self.FilterMenu:FindFirstChild(
@@ -1371,6 +1606,10 @@ function Categories:ApplyTheme()
 
         end
 
+        --==================================================
+        -- FAVORITE
+        --==================================================
+
         local FavoriteButton =
             self.FilterMenu:FindFirstChild(
                 "Favorite"
@@ -1382,6 +1621,25 @@ function Categories:ApplyTheme()
                 CurrentTheme.Button
 
             FavoriteButton.TextColor3 =
+                CurrentTheme.Text
+
+        end
+
+        --==================================================
+        -- M1
+        --==================================================
+
+        local M1Button =
+            self.FilterMenu:FindFirstChild(
+                "M1"
+            )
+
+        if M1Button then
+
+            M1Button.BackgroundColor3 =
+                CurrentTheme.Button
+
+            M1Button.TextColor3 =
                 CurrentTheme.Text
 
         end
