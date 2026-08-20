@@ -158,7 +158,7 @@ function RGB:Start()
 
                     0.9,
 
-                    1
+                    0.64
 
                 )
 
