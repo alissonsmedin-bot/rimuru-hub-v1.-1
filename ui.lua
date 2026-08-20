@@ -19,6 +19,9 @@ local UIS =
 local TweenService =
     game:GetService("TweenService")
 
+local TweenService =
+    game:GetService("TweenService")
+
 --==================================================
 -- UI MODULE
 --==================================================
@@ -1174,18 +1177,13 @@ function UI:SetupDrag()
 
     end)
 
-    UIS.InputChanged:Connect(function(Input)
+     UIS.InputChanged:Connect(function(Input)
 
         if not Dragging then
             return
         end
 
         if Input.UserInputType ==
-            Enum.UserInputType.MouseMovement
-
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
-                        if Input.UserInputType ==
             Enum.UserInputType.MouseMovement
 
         or Input.UserInputType ==
