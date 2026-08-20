@@ -1,9 +1,9 @@
 --// 💥 RIMURU HUB
 --// Search System
---// FILTER AWARE
---// CATEGORY AWARE
+--// FILTER-AWARE SEARCH
+--// CATEGORY-AWARE SEARCH
+--// FAVORITE / M1 / HIT COMPATIBLE
 --// FUTURE FILTER COMPATIBLE
---// Modular Search Architecture
 
 local Search = {}
 
@@ -31,12 +31,11 @@ function Search:Init(Context)
     self.Cards =
         Context.Cards
 
+    self.Favorites =
+        Context.Favorites
+
     self.Categories =
         Context.Categories
-
-    --==================================================
-    -- STATE
-    --==================================================
 
     self.Box =
         nil
@@ -55,10 +54,6 @@ function Search:Init(Context)
 
     self.SortMode =
         nil
-
-    --==================================================
-    -- CATEGORY STATE
-    --==================================================
 
     self.LastCategory =
         "ALL"
@@ -275,8 +270,21 @@ end
 function Search:Connect()
 
     if not self.Box then
+
+        self:Create()
+
+    end
+
+    if not self.Box then
         return
     end
+
+    if self.Connected then
+        return
+    end
+
+    self.Connected =
+        true
 
     self.Box:GetPropertyChangedSignal(
         "Text"
@@ -324,51 +332,26 @@ function Search:ClearScroll()
 end
 
 --==================================================
--- GET ACTIVE CATEGORY
+-- GET CURRENT SOUND POOL
+--==================================================
+-- O Search NÃO decide mais qual filtro usar.
+--
+-- O Categories é responsável por informar
+-- exatamente quais sons estão disponíveis
+-- no contexto atual.
 --==================================================
 
-function Search:GetActiveCategory()
+function Search:GetCurrentSoundPool()
 
-    --==================================================
-    -- CATEGORIES SYSTEM
-    --==================================================
+    if self.Categories
+    and self.Categories.GetCurrentSounds then
 
-    if self.Categories then
+        local Sounds =
+            self.Categories:GetCurrentSounds()
 
-        --==================================================
-        -- SELECTED BUTTON
-        --==================================================
+        if type(Sounds) == "table" then
 
-        local SelectedButton =
-            self.Categories:GetSelectedButton()
-
-        if SelectedButton then
-
-            local Name =
-                SelectedButton.Name
-
-            if Name then
-
-                return Name
-
-            end
-
-        end
-
-        --==================================================
-        -- FALLBACK
-        --==================================================
-
-        if self.Categories.GetCurrentCategory then
-
-            local Category =
-                self.Categories:GetCurrentCategory()
-
-            if Category then
-
-                return Category
-
-            end
+            return Sounds
 
         end
 
@@ -378,217 +361,123 @@ function Search:GetActiveCategory()
     -- FALLBACK
     --==================================================
 
-    return self.LastCategory
-        or "ALL"
-
-end
-
---==================================================
--- GET ACTIVE FILTER
---==================================================
-
-function Search:GetActiveFilter()
-
-    if not self.Categories then
-        return "All"
-    end
-
-    --==================================================
-    -- GENERIC FUTURE FILTER SYSTEM
-    --==================================================
-
-    if self.Categories.GetCurrentFilter then
-
-        local Filter =
-            self.Categories:GetCurrentFilter()
-
-        if Filter then
-
-            return Filter
-
-        end
-
-    end
-
-    return "All"
-
-end
-
---==================================================
--- GET FILTERED SOUNDS
---==================================================
--- IMPORTANTE:
---
--- O SEARCH NÃO PRECISA SABER QUAIS FILTROS EXISTEM.
---
--- O Categories é responsável por isso.
---
--- Assim, no futuro:
---
--- M1
--- Hit
--- Dash
--- Grab
--- Block
--- Ultimate
--- etc.
---
--- basta o Categories fornecer os sons daquele filtro.
--- O Search continuará funcionando sozinho.
---==================================================
-
-function Search:GetSoundsFromCurrentFilter()
-
-    if not self.Categories then
-        return nil
-    end
-
-    --==================================================
-    -- NOVO SISTEMA GENÉRICO
-    --==================================================
-
-    if self.Categories.GetFilteredSounds then
-
-        local Success, Result =
-            pcall(function()
-
-                return self.Categories:GetFilteredSounds()
-
-            end)
-
-        if Success
-        and type(Result) == "table" then
-
-            return Result
-
-        end
-
-    end
-
-    --==================================================
-    -- COMPATIBILIDADE COM VERSÃO ATUAL
-    --==================================================
-
-    local Filter =
-        self:GetActiveFilter()
-
-    if Filter == "Favorite" then
-
-        if self.Categories.GetFavoriteSounds then
-
-            return self.Categories:GetFavoriteSounds()
-
-        end
-
-    elseif Filter == "M1" then
-
-        if self.Categories.GetM1Sounds then
-
-            return self.Categories:GetM1Sounds()
-
-        end
-
-    elseif Filter == "Hit" then
-
-        if self.Categories.GetHitSounds then
-
-            return self.Categories:GetHitSounds()
-
-        end
-
-    end
-
-    --==================================================
-    -- ALL
-    --==================================================
-
-    if self.Categories.GetAllSounds then
-
-        return self.Categories:GetAllSounds()
-
-    end
-
-    return nil
-
-end
-
---==================================================
--- GET CATEGORY SOUNDS
---==================================================
-
-function Search:GetCategorySounds(
-    CategoryName
-)
-
-    local Results =
+    local Result =
         {}
 
     if not self.Sounds then
-        return Results
+        return Result
     end
 
-    --==================================================
-    -- ALL
-    --==================================================
+    for CategoryName, Category in
+        pairs(
+            self.Sounds
+        ) do
 
-    if CategoryName == "ALL" then
-
-        local FilteredSounds =
-            self:GetSoundsFromCurrentFilter()
-
-        if type(FilteredSounds) ==
+        if type(Category) ==
             "table" then
 
-            return FilteredSounds
+            for _, Data in
+                ipairs(Category) do
+
+                if type(Data) ==
+                    "table" then
+
+                    table.insert(
+                        Result,
+                        Data
+                    )
+
+                end
+
+            end
 
         end
 
-        return Results
-
     end
 
-    --==================================================
-    -- NORMAL CATEGORY
-    --==================================================
+    return Result
 
-    local Category =
-        self.Sounds[
-            CategoryName
-        ]
+end
 
-    if type(Category) ~= "table" then
-        return Results
+--==================================================
+-- MATCH QUERY
+--==================================================
+
+function Search:Matches(
+    SoundData,
+    Query
+)
+
+    if type(SoundData) ~= "table" then
+        return false
     end
 
-    for _, Data in
-        ipairs(Category) do
+    local Name =
+        tostring(
+            SoundData[1]
+            or ""
+        )
 
-        if type(Data) == "table" then
+    local ID =
+        tostring(
+            SoundData[2]
+            or ""
+        )
 
-            table.insert(
-                Results,
-                Data
+    local LowerName =
+        string.lower(
+            Name
+        )
+
+    local LowerID =
+        string.lower(
+            ID
+        )
+
+    local LowerQuery =
+        string.lower(
+            tostring(
+                Query
+                or ""
             )
+        )
 
-        end
+    --==================================================
+    -- NAME
+    --==================================================
+
+    if string.find(
+        LowerName,
+        LowerQuery,
+        1,
+        true
+    ) then
+
+        return true
 
     end
 
-    return Results
+    --==================================================
+    -- ID
+    --==================================================
+
+    if string.find(
+        LowerID,
+        LowerQuery,
+        1,
+        true
+    ) then
+
+        return true
+
+    end
+
+    return false
 
 end
 
 --==================================================
 -- COLLECT
---==================================================
--- Pesquisa dentro do conjunto correto:
---
--- ALL + filtro:
---     somente sons daquele filtro.
---
--- Categoria:
---     somente sons daquela categoria.
---
 --==================================================
 
 function Search:Collect(
@@ -601,91 +490,66 @@ function Search:Collect(
     Query =
         string.lower(
             tostring(
-                Query or ""
+                Query
+                or ""
             )
         )
 
-    local CategoryName =
-        self:GetActiveCategory()
-
-    local SourceSounds =
-        self:GetCategorySounds(
-            CategoryName
-        )
-
-    if type(SourceSounds) ~=
-        "table" then
-
+    if Query == "" then
         return Results
-
     end
 
     --==================================================
-    -- SEARCH
+    -- CURRENT FILTER / CATEGORY
+    --==================================================
+
+    local CurrentPool =
+        self:GetCurrentSoundPool()
+
+    --==================================================
+    -- SEARCH ONLY INSIDE CURRENT POOL
     --==================================================
 
     for Index, Data in
-        ipairs(SourceSounds) do
+        ipairs(
+            CurrentPool
+        ) do
 
-        if type(Data) == "table" then
+        if type(Data) ==
+            "table"
+        and self:Matches(
+            Data,
+            Query
+        ) then
 
-            local Name =
-                tostring(
-                    Data[1] or ""
-                )
+            table.insert(
+                Results,
+                {
+                    Name =
+                        tostring(
+                            Data[1]
+                            or ""
+                        ),
 
-            local ID =
-                tostring(
-                    Data[2] or ""
-                )
+                    ID =
+                        tostring(
+                            Data[2]
+                            or ""
+                        ),
 
-            local LowerName =
-                string.lower(
-                    Name
-                )
+                    Category =
+                        self.Categories
+                        and self.Categories.GetCurrentCategory
+                        and self.Categories:GetCurrentCategory()
+                        or "ALL",
 
-            local LowerID =
-                string.lower(
-                    ID
-                )
+                    Index =
+                        Index,
 
-            --==================================================
-            -- QUERY MATCH
-            --==================================================
-
-            if string.find(
-                LowerName,
-                Query,
-                1,
-                true
+                    Data =
+                        Data
+                }
             )
-            or string.find(
-                LowerID,
-                Query,
-                1,
-                true
-            ) then
-
-                table.insert(
-                    Results,
-                    {
-
-                        Name =
-                            Name,
-
-                        ID =
-                            ID,
-
-                        Category =
-                            CategoryName,
-
-                        Index =
-                            Index
-
-                    }
-                )
-
-            end
 
         end
 
@@ -760,15 +624,35 @@ function Search:CreateResult(
         return
     end
 
+    --==================================================
+    -- USE ORIGINAL DATA WHEN AVAILABLE
+    --==================================================
+
+    local Data =
+        Result.Data
+
+    if type(Data) ==
+        "table" then
+
+        self.Cards:CreateSoundCard(
+            Index,
+            Data
+        )
+
+        return
+
+    end
+
+    --==================================================
+    -- FALLBACK
+    --==================================================
+
     self.Cards:CreateSoundCard(
-
         Index,
-
         {
             Result.Name,
             Result.ID
         }
-
     )
 
 end
@@ -821,9 +705,6 @@ function Search:ShowNoResults(
     Label.Font =
         Enum.Font.GothamMedium
 
-    Label.TextXAlignment =
-        Enum.TextXAlignment.Center
-
     Label.ZIndex =
         504
 
@@ -842,7 +723,8 @@ function Search:Search(
 
     Query =
         tostring(
-            Query or ""
+            Query
+            or ""
         )
 
     self.Query =
@@ -873,20 +755,13 @@ function Search:Search(
         self:ClearScroll()
 
         --==================================================
-        -- RESTORE CURRENT CONTENT
+        -- RESTORE CURRENT CONTEXT
         --==================================================
 
         if self.Categories
         and self.Categories.RefreshCurrent then
 
             self.Categories:RefreshCurrent()
-
-        elseif self.Categories
-        and self.Categories.ShowCategory then
-
-            self.Categories:ShowCategory(
-                self.LastCategory
-            )
 
         end
 
@@ -902,7 +777,7 @@ function Search:Search(
         true
 
     --==================================================
-    -- CLEAR OLD CONTENT
+    -- CLEAR OLD RESULTS
     --==================================================
 
     self:ClearScroll()
@@ -935,8 +810,7 @@ function Search:Search(
         self.ResultLabel.Text =
             tostring(
                 #Results
-            )
-            ..
+            ) ..
             " resultado(s)"
 
     end
@@ -960,17 +834,35 @@ function Search:Search(
     --==================================================
 
     for Index, Result in
-        ipairs(Results) do
+        ipairs(
+            Results
+        ) do
 
         self:CreateResult(
-
             Index,
-
             Result
-
         )
 
     end
+
+end
+
+--==================================================
+-- CONTEXT CHANGED
+--==================================================
+-- Chamado pelo Categories quando o usuário
+-- muda de categoria ou filtro.
+--==================================================
+
+function Search:OnContextChanged()
+
+    if not self.Active then
+        return
+    end
+
+    self:Search(
+        self.Query
+    )
 
 end
 
@@ -990,59 +882,11 @@ function Search:SetCategory(
     end
 
     --==================================================
-    -- IF SEARCH IS ACTIVE
+    -- SE JÁ EXISTE UMA PESQUISA,
+    -- ATUALIZA IMEDIATAMENTE
     --==================================================
 
-    if self.Active
-    and self.Query ~= "" then
-
-        self:Search(
-            self.Query
-        )
-
-    end
-
-end
-
---==================================================
--- FILTER CHANGED
---==================================================
--- Pode ser chamado pelo Categories quando
--- o filtro mudar.
---
--- O Search automaticamente refaz a pesquisa
--- usando o novo conjunto de sons.
---==================================================
-
-function Search:SetFilter(
-    FilterName
-)
-
-    self.CurrentFilter =
-        FilterName
-
-    if self.Active
-    and self.Query ~= "" then
-
-        self:Search(
-            self.Query
-        )
-
-    end
-
-end
-
---==================================================
--- REFRESH
---==================================================
--- Útil quando favoritos são adicionados/removidos
--- enquanto a pesquisa está aberta.
---==================================================
-
-function Search:Refresh()
-
-    if self.Active
-    and self.Query ~= "" then
+    if self.Active then
 
         self:Search(
             self.Query
@@ -1155,7 +999,28 @@ end
 
 function Search:IsActive()
 
-    return self.Active == true
+    return self.Active
+
+end
+
+--==================================================
+-- CLEAR SEARCH
+--==================================================
+
+function Search:Clear()
+
+    if self.Box then
+
+        self.Box.Text =
+            ""
+
+    else
+
+        self:Search(
+            ""
+        )
+
+    end
 
 end
 
