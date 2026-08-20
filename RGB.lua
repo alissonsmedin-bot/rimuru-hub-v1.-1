@@ -1,9 +1,32 @@
 --// 💥 RIMURU HUB
 --// RGB System
+--// Dual Speed RGB
+--// Main RGB + Slow Logo Stroke RGB
 
-local RunService = game:GetService("RunService")
+local RunService =
+    game:GetService("RunService")
 
 local RGB = {}
+
+--==================================================
+-- RGB SPEED CONFIG
+--==================================================
+
+-- RGB principal:
+-- Fundo da logo
+-- MainStroke
+-- Scrollbar
+-- Selected Category
+-- Copy Buttons
+
+local MAIN_RGB_SPEED =
+    0.15
+
+-- RGB do contorno da logo.
+-- Bem mais lento que o RGB principal.
+
+local LOGO_STROKE_RGB_SPEED =
+    0.045
 
 --==================================================
 -- INIT
@@ -26,11 +49,30 @@ function RGB:Init(Context)
     self.Categories =
         Context.Categories
 
-    self.Running =
-        true
+    --==================================================
+    -- MAIN RGB HUE
+    --==================================================
 
     self.Hue =
         0
+
+    --==================================================
+    -- LOGO STROKE HUE
+    --==================================================
+
+    self.LogoStrokeHue =
+        0
+
+    --==================================================
+    -- RUNNING
+    --==================================================
+
+    self.Running =
+        true
+
+    --==================================================
+    -- START
+    --==================================================
 
     self:Start()
 
@@ -42,119 +84,182 @@ end
 
 function RGB:Start()
 
-    RunService.RenderStepped:Connect(function()
+    RunService.RenderStepped:Connect(
+        function(DeltaTime)
 
-        if not self.Running then
-            return
-        end
+            if not self.Running then
 
-        local CurrentTheme =
-            self.Theme:GetCurrent()
+                return
 
-        if not CurrentTheme then
-            return
-        end
+            end
 
-        if not CurrentTheme.RGB then
-            return
-        end
+            local CurrentTheme =
+                self.Theme:GetCurrent()
 
-        self.Hue +=
-            0.0025
+            if not CurrentTheme then
 
-        if self.Hue >= 1 then
-            self.Hue = 0
-        end
+                return
 
-        local RGBColor =
-            Color3.fromHSV(
-                self.Hue,
-                0.9,
-                1
-            )
+            end
 
-        --==================================================
-        -- LOGO
-        --==================================================
+            --==================================================
+            -- RGB CHECK
+            --==================================================
 
-        if self.Logo
-        and self.Logo.Stroke then
+            if not CurrentTheme.RGB then
 
-            self.Logo.Stroke.Color =
-                RGBColor
+                return
 
-        end
+            end
 
-        --==================================================
-        -- MAIN STROKE
-        --==================================================
+            --==================================================
+            -- MAIN RGB
+            --==================================================
 
-        if self.UI
-        and self.UI.MainStroke then
+            self.Hue +=
+                DeltaTime *
+                MAIN_RGB_SPEED
 
-            self.UI.MainStroke.Color =
-                RGBColor
+            if self.Hue >= 1 then
 
-        end
+                self.Hue -= 1
 
-        --==================================================
-        -- SCROLLBAR
-        --==================================================
+            end
 
-        if self.UI
-        and self.UI.Scroll then
+            local RGBColor =
+                Color3.fromHSV(
 
-            self.UI.Scroll.ScrollBarImageColor3 =
-                RGBColor
+                    self.Hue,
 
-        end
+                    0.9,
 
-        --==================================================
-        -- SELECTED CATEGORY
-        --==================================================
+                    1
 
-        if self.Categories then
+                )
 
-            local Selected =
-                self.Categories:GetSelectedButton()
+            --==================================================
+            -- LOGO STROKE RGB
+            --==================================================
 
-            if Selected then
+            self.LogoStrokeHue +=
+                DeltaTime *
+                LOGO_STROKE_RGB_SPEED
 
-                Selected.BackgroundColor3 =
+            if self.LogoStrokeHue >= 1 then
+
+                self.LogoStrokeHue -= 1
+
+            end
+
+            local LogoStrokeColor =
+                Color3.fromHSV(
+
+                    self.LogoStrokeHue,
+
+                    0.9,
+
+                    1
+
+                )
+
+            --==================================================
+            -- LOGO BACKGROUND
+            --==================================================
+            -- O FUNDO acompanha o RGB principal.
+
+            if self.Logo
+            and self.Logo.Button then
+
+                self.Logo.Button.BackgroundColor3 =
                     RGBColor
 
             end
 
-        end
+            --==================================================
+            -- LOGO STROKE
+            --==================================================
+            -- O CONTORNO usa RGB separado e mais lento.
 
-        --==================================================
-        -- COPY BUTTONS
-        --==================================================
+            if self.Logo
+            and self.Logo.Stroke then
 
-        if self.UI
-        and self.UI.Scroll then
+                self.Logo.Stroke.Color =
+                    LogoStrokeColor
 
-            for _, Object in
-                ipairs(
-                    self.UI.Scroll:GetDescendants()
-                ) do
+            end
 
-                if Object:IsA("TextButton") then
+            --==================================================
+            -- MAIN STROKE
+            --==================================================
 
-                    if Object.Name ==
-                        "Copy"
+            if self.UI
+            and self.UI.MainStroke then
 
-                    or Object.Text ==
-                        "Copy"
+                self.UI.MainStroke.Color =
+                    RGBColor
 
-                    or Object.Text ==
-                        "Copied!"
+            end
 
-                    or Object.Text ==
-                        "N/A" then
+            --==================================================
+            -- SCROLLBAR
+            --==================================================
 
-                        Object.BackgroundColor3 =
-                            RGBColor
+            if self.UI
+            and self.UI.Scroll then
+
+                self.UI.Scroll.ScrollBarImageColor3 =
+                    RGBColor
+
+            end
+
+            --==================================================
+            -- SELECTED CATEGORY
+            --==================================================
+
+            if self.Categories then
+
+                local Selected =
+                    self.Categories:GetSelectedButton()
+
+                if Selected then
+
+                    Selected.BackgroundColor3 =
+                        RGBColor
+
+                end
+
+            end
+
+            --==================================================
+            -- COPY BUTTONS
+            --==================================================
+
+            if self.UI
+            and self.UI.Scroll then
+
+                for _, Object in
+                    ipairs(
+                        self.UI.Scroll:GetDescendants()
+                    ) do
+
+                    if Object:IsA("TextButton") then
+
+                        if Object.Name ==
+                            "Copy"
+
+                        or Object.Text ==
+                            "Copy"
+
+                        or Object.Text ==
+                            "Copied!"
+
+                        or Object.Text ==
+                            "N/A" then
+
+                            Object.BackgroundColor3 =
+                                RGBColor
+
+                        end
 
                     end
 
@@ -163,8 +268,7 @@ function RGB:Start()
             end
 
         end
-
-    end)
+    )
 
 end
 
@@ -178,5 +282,9 @@ function RGB:Stop()
         false
 
 end
+
+--==================================================
+-- RETURN
+--==================================================
 
 return RGB
