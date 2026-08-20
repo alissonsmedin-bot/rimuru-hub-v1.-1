@@ -1,8 +1,22 @@
 --// 💥 RIMURU HUB
 --// Settings System
+--// Theme Popup Selector
 --// Animation Toggle Version
 
 local Settings = {}
+
+--==================================================
+-- THEME POPUP CONFIG
+--==================================================
+
+local THEME_POPUP_WIDTH =
+    120
+
+local THEME_POPUP_HEIGHT =
+    82
+
+local THEME_BUTTON_HEIGHT =
+    28
 
 --==================================================
 -- INIT
@@ -34,6 +48,9 @@ function Settings:Init(Context)
     self.ContentTitle =
         self.UI.ContentTitle
 
+    self.ThemePopup =
+        nil
+
 end
 
 --==================================================
@@ -41,6 +58,12 @@ end
 --==================================================
 
 function Settings:ClearContent()
+
+    --==================================================
+    -- CLOSE THEME POPUP
+    --==================================================
+
+    self:CloseThemePopup()
 
     for _, Object in
         ipairs(
@@ -182,10 +205,41 @@ function Settings:CreateToggle(
 end
 
 --==================================================
--- CREATE THEME SELECTOR
+-- CLOSE THEME POPUP
 --==================================================
 
-function Settings:CreateThemeSelector()
+function Settings:CloseThemePopup()
+
+    if self.ThemePopup then
+
+        self.ThemePopup:Destroy()
+
+        self.ThemePopup =
+            nil
+
+    end
+
+end
+
+--==================================================
+-- CREATE THEME POPUP
+--==================================================
+
+function Settings:CreateThemePopup(
+    ThemeButton
+)
+
+    --==================================================
+    -- TOGGLE
+    --==================================================
+
+    if self.ThemePopup then
+
+        self:CloseThemePopup()
+
+        return
+
+    end
 
     local CurrentTheme =
         self.Theme:GetCurrent()
@@ -209,23 +263,360 @@ function Settings:CreateThemeSelector()
         ThemeNames
     )
 
-    local ThemeIndex =
+    --==================================================
+    -- POPUP
+    --==================================================
+
+    local Popup =
+        Instance.new("Frame")
+
+    Popup.Name =
+        "ThemePopup"
+
+    Popup.Size =
+        UDim2.new(
+            0,
+            THEME_POPUP_WIDTH,
+            0,
+            THEME_POPUP_HEIGHT
+        )
+
+    Popup.BackgroundColor3 =
+        CurrentTheme.Main
+
+    Popup.BackgroundTransparency =
+        CurrentTheme.Transparency or 0
+
+    Popup.BorderSizePixel =
+        0
+
+    Popup.ZIndex =
+        900
+
+    Popup.ClipsDescendants =
+        true
+
+    --==================================================
+    -- POSITION
+    --==================================================
+
+    Popup.AnchorPoint =
+        Vector2.new(
+            0,
+            0
+        )
+
+    Popup.Position =
+        UDim2.new(
+            0,
+            ThemeButton.AbsolutePosition.X
+            - self.UI.Gui.AbsolutePosition.X,
+
+            0,
+            ThemeButton.AbsolutePosition.Y
+            - self.UI.Gui.AbsolutePosition.Y
+            + ThemeButton.AbsoluteSize.Y
+            + 5
+        )
+
+    Popup.Parent =
+        self.UI.Gui
+
+    --==================================================
+    -- CORNER
+    --==================================================
+
+    local PopupCorner =
+        Instance.new("UICorner")
+
+    PopupCorner.CornerRadius =
+        UDim.new(
+            0,
+            8
+        )
+
+    PopupCorner.Parent =
+        Popup
+
+    --==================================================
+    -- STROKE
+    --==================================================
+
+    local PopupStroke =
+        Instance.new("UIStroke")
+
+    PopupStroke.Color =
+        self.Theme:GetAccent()
+
+    PopupStroke.Thickness =
         1
 
+    PopupStroke.Transparency =
+        CurrentTheme.BorderTransparency or 0
+
+    PopupStroke.Parent =
+        Popup
+
+    --==================================================
+    -- SCROLL
+    --==================================================
+
+    local Scroll =
+        Instance.new("ScrollingFrame")
+
+    Scroll.Name =
+        "ThemeList"
+
+    Scroll.Size =
+        UDim2.new(
+            1,
+            0,
+            1,
+            0
+        )
+
+    Scroll.Position =
+        UDim2.new(
+            0,
+            0,
+            0,
+            0
+        )
+
+    Scroll.BackgroundTransparency =
+        1
+
+    Scroll.BorderSizePixel =
+        0
+
+    Scroll.ScrollBarThickness =
+        4
+
+    Scroll.ScrollBarImageColor3 =
+        self.Theme:GetAccent()
+
+    Scroll.ScrollingDirection =
+        Enum.ScrollingDirection.Y
+
+    Scroll.CanvasSize =
+        UDim2.new(
+            0,
+            0,
+            0,
+            #ThemeNames *
+            THEME_BUTTON_HEIGHT
+        )
+
+    Scroll.ZIndex =
+        901
+
+    Scroll.Parent =
+        Popup
+
+    --==================================================
+    -- LIST
+    --==================================================
+
+    local Layout =
+        Instance.new("UIListLayout")
+
+    Layout.SortOrder =
+        Enum.SortOrder.LayoutOrder
+
+    Layout.Padding =
+        UDim.new(
+            0,
+            2
+        )
+
+    Layout.Parent =
+        Scroll
+
+    --==================================================
+    -- PADDING
+    --==================================================
+
+    local ListPadding =
+        Instance.new("UIPadding")
+
+    ListPadding.PaddingTop =
+        UDim.new(
+            0,
+            3
+        )
+
+    ListPadding.PaddingBottom =
+        UDim.new(
+            0,
+            3
+        )
+
+    ListPadding.PaddingLeft =
+        UDim.new(
+            0,
+            3
+        )
+
+    ListPadding.PaddingRight =
+        UDim.new(
+            0,
+            5
+        )
+
+    ListPadding.Parent =
+        Scroll
+
+    --==================================================
+    -- CREATE THEME BUTTONS
+    --==================================================
+
     for Index, Name in
-        ipairs(ThemeNames) do
+        ipairs(
+            ThemeNames
+        ) do
 
-        if Name ==
-            self.Theme:GetName() then
+        local IsSelected =
+            Name ==
+            self.Theme:GetName()
 
-            ThemeIndex =
-                Index
+        local Button =
+            Instance.new("TextButton")
 
-            break
+        Button.Name =
+            Name
+
+        Button.Size =
+            UDim2.new(
+                1,
+                -5,
+                0,
+                THEME_BUTTON_HEIGHT
+            )
+
+        --==================================================
+        -- SELECTED COLOR
+        --==================================================
+
+        if IsSelected then
+
+            Button.BackgroundColor3 =
+                self.Theme:GetAccent()
+
+        else
+
+            Button.BackgroundColor3 =
+                CurrentTheme.Card
 
         end
 
+        Button.BackgroundTransparency =
+            CurrentTheme.Transparency or 0
+
+        Button.BorderSizePixel =
+            0
+
+        Button.Text =
+            Name
+
+        Button.TextColor3 =
+            IsSelected
+            and Color3.fromRGB(
+                255,
+                255,
+                255
+            )
+            or CurrentTheme.Text
+
+        Button.TextSize =
+            10
+
+        Button.Font =
+            Enum.Font.GothamMedium
+
+        Button.TextXAlignment =
+            Enum.TextXAlignment.Left
+
+        Button.AutoButtonColor =
+            false
+
+        Button.LayoutOrder =
+            Index
+
+        Button.ZIndex =
+            902
+
+        Button.Parent =
+            Scroll
+
+        --==================================================
+        -- BUTTON PADDING
+        --==================================================
+
+        local ButtonPadding =
+            Instance.new("UIPadding")
+
+        ButtonPadding.PaddingLeft =
+            UDim.new(
+                0,
+                7
+            )
+
+        ButtonPadding.Parent =
+            Button
+
+        --==================================================
+        -- CORNER
+        --==================================================
+
+        local ButtonCorner =
+            Instance.new("UICorner")
+
+        ButtonCorner.CornerRadius =
+            UDim.new(
+                0,
+                5
+            )
+
+        ButtonCorner.Parent =
+            Button
+
+        --==================================================
+        -- CLICK
+        --==================================================
+
+        Button.MouseButton1Click:Connect(function()
+
+            if self.Theme:SetTheme(
+                Name
+            ) then
+
+                ThemeButton.Text =
+                    "Tema: " ..
+                    Name
+
+                self:ApplyTheme()
+
+                self:CloseThemePopup()
+
+            end
+
+        end)
+
     end
+
+    self.ThemePopup =
+        Popup
+
+end
+
+--==================================================
+-- CREATE THEME SELECTOR
+--==================================================
+
+function Settings:CreateThemeSelector()
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
 
     local ThemeButton =
         Instance.new("TextButton")
@@ -243,6 +634,9 @@ function Settings:CreateThemeSelector()
 
     ThemeButton.BackgroundColor3 =
         CurrentTheme.Card
+
+    ThemeButton.BackgroundTransparency =
+        CurrentTheme.Transparency or 0
 
     ThemeButton.BorderSizePixel =
         0
@@ -308,43 +702,38 @@ function Settings:CreateThemeSelector()
         ThemeButton
 
     --==================================================
+    -- STROKE
+    --==================================================
+
+    local ThemeStroke =
+        Instance.new("UIStroke")
+
+    ThemeStroke.Color =
+        self.Theme:GetAccent()
+
+    ThemeStroke.Thickness =
+        1
+
+    ThemeStroke.Transparency =
+        CurrentTheme.BorderTransparency or 0
+
+    ThemeStroke.Parent =
+        ThemeButton
+
+    --==================================================
     -- CLICK
     --==================================================
 
     ThemeButton.MouseButton1Click:Connect(function()
 
-        if #ThemeNames == 0 then
-            return
-        end
-
-        ThemeIndex += 1
-
-        if ThemeIndex >
-            #ThemeNames then
-
-            ThemeIndex =
-                1
-
-        end
-
-        local NewTheme =
-            ThemeNames[
-                ThemeIndex
-            ]
-
-        if self.Theme:SetTheme(
-            NewTheme
-        ) then
-
-            ThemeButton.Text =
-                "Tema: " ..
-                NewTheme
-
-            self:ApplyTheme()
-
-        end
+        self:CreateThemePopup(
+            ThemeButton
+        )
 
     end)
+
+    self.ThemeButton =
+        ThemeButton
 
     return ThemeButton
 
@@ -488,6 +877,53 @@ function Settings:ApplyTheme()
     local CurrentTheme =
         self.Theme:GetCurrent()
 
+    --==================================================
+    -- UPDATE THEME BUTTON
+    --==================================================
+
+    if self.ThemeButton then
+
+        self.ThemeButton.Text =
+            "Tema: " ..
+            self.Theme:GetName()
+
+        self.ThemeButton.BackgroundColor3 =
+            CurrentTheme.Card
+
+        self.ThemeButton.BackgroundTransparency =
+            CurrentTheme.Transparency or 0
+
+        local Stroke =
+            self.ThemeButton:FindFirstChildOfClass(
+                "UIStroke"
+            )
+
+        if Stroke then
+
+            Stroke.Color =
+                self.Theme:GetAccent()
+
+            Stroke.Transparency =
+                CurrentTheme.BorderTransparency or 0
+
+        end
+
+    end
+
+    --==================================================
+    -- UPDATE POPUP
+    --==================================================
+
+    if self.ThemePopup then
+
+        self:CloseThemePopup()
+
+    end
+
+    --==================================================
+    -- APPLY CONTENT
+    --==================================================
+
     for _, Object in
         ipairs(
             self.Scroll:GetDescendants()
@@ -497,6 +933,9 @@ function Settings:ApplyTheme()
 
             Object.BackgroundColor3 =
                 CurrentTheme.Card
+
+            Object.BackgroundTransparency =
+                CurrentTheme.Transparency or 0
 
         elseif Object:IsA("TextLabel") then
 
@@ -517,10 +956,13 @@ function Settings:ApplyTheme()
 
             if Object.Name ==
                 "Copy"
+
             or Object.Text ==
                 "Copy"
+
             or Object.Text ==
                 "Copied!"
+
             or Object.Text ==
                 "N/A" then
 
@@ -539,8 +981,23 @@ function Settings:ApplyTheme()
                 Object.BackgroundColor3 =
                     CurrentTheme.Card
 
+                Object.BackgroundTransparency =
+                    CurrentTheme.Transparency or 0
+
                 Object.TextColor3 =
                     CurrentTheme.Text
+
+                local Stroke =
+                    Object:FindFirstChildOfClass(
+                        "UIStroke"
+                    )
+
+                if Stroke then
+
+                    Stroke.Transparency =
+                        CurrentTheme.BorderTransparency or 0
+
+                end
 
             end
 
