@@ -4,6 +4,7 @@
 --// Centralized Logo
 --// Press Animation
 --// Menu Animation Compatible
+--// RGB Compatible
 --// No Roblox ImageId Required
 
 local Players =
@@ -946,8 +947,16 @@ function Logo:ApplyTheme()
 
     end
 
+    --==================================================
+    -- LOGO BACKGROUND
+    --==================================================
+
     self.Button.BackgroundColor3 =
         CurrentTheme.LogoBackground
+
+    --==================================================
+    -- LOGO STROKE
+    --==================================================
 
     if self.Stroke then
 
