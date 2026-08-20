@@ -1,5 +1,7 @@
 --// 💥 RIMURU HUB
 --// Sound Cards System
+--// Favorites Compatible
+--// Copy + Favorite System
 
 local Cards = {}
 
@@ -26,6 +28,13 @@ function Cards:Init(Context)
 
     self.Scroll =
         self.UI.Scroll
+
+    --==================================================
+    -- FAVORITES
+    --==================================================
+
+    self.Favorites =
+        Context.Favorites
 
 end
 
@@ -70,6 +79,121 @@ function Cards:Copy(ID)
 end
 
 --==================================================
+-- FAVORITE STATUS
+--==================================================
+
+function Cards:IsFavorite(ID)
+
+    if not self.Favorites then
+        return false
+    end
+
+    local Success, Result =
+        pcall(function()
+
+            return self.Favorites:IsFavorite(
+                ID
+            )
+
+        end)
+
+    if Success then
+        return Result == true
+    end
+
+    return false
+
+end
+
+--==================================================
+-- UPDATE FAVORITE BUTTON
+--==================================================
+
+function Cards:UpdateFavoriteButton(
+    Button,
+    ID
+)
+
+    if not Button then
+        return
+    end
+
+    local IsFavorite =
+        self:IsFavorite(ID)
+
+    if IsFavorite then
+
+        Button.Text =
+            "★"
+
+        Button.TextColor3 =
+            self.Theme:GetAccent()
+
+    else
+
+        Button.Text =
+            "☆"
+
+        Button.TextColor3 =
+            self.Theme:GetCurrent().SubText
+
+    end
+
+end
+
+--==================================================
+-- TOGGLE FAVORITE
+--==================================================
+
+function Cards:ToggleFavorite(
+    ID,
+    Button
+)
+
+    if not self.Favorites then
+        return
+    end
+
+    local Success, Result =
+        pcall(function()
+
+            return self.Favorites:Toggle(
+                ID
+            )
+
+        end)
+
+    if not Success then
+
+        warn(
+            "⚠️ Rimuru Hub: erro ao alterar favorito."
+        )
+
+        return
+
+    end
+
+    if Result then
+
+        Button.Text =
+            "★"
+
+        Button.TextColor3 =
+            self.Theme:GetAccent()
+
+    else
+
+        Button.Text =
+            "☆"
+
+        Button.TextColor3 =
+            self.Theme:GetCurrent().SubText
+
+    end
+
+end
+
+--==================================================
 -- CREATE SOUND CARD
 --==================================================
 
@@ -86,6 +210,10 @@ function Cards:CreateSoundCard(
 
     local ID =
         Data[2]
+
+    --==================================================
+    -- CARD
+    --==================================================
 
     local Card =
         Instance.new("Frame")
@@ -150,7 +278,7 @@ function Cards:CreateSoundCard(
     NameLabel.Size =
         UDim2.new(
             1,
-            -90,
+            -130,
             0,
             18
         )
@@ -200,7 +328,7 @@ function Cards:CreateSoundCard(
     IDLabel.Size =
         UDim2.new(
             1,
-            -90,
+            -130,
             0,
             16
         )
@@ -228,6 +356,101 @@ function Cards:CreateSoundCard(
 
     IDLabel.Parent =
         Card
+
+    --==================================================
+    -- FAVORITE BUTTON
+    --==================================================
+
+    local FavoriteButton =
+        Instance.new("TextButton")
+
+    FavoriteButton.Name =
+        "Favorite"
+
+    FavoriteButton.Size =
+        UDim2.new(
+            0,
+            28,
+            0,
+            28
+        )
+
+    FavoriteButton.Position =
+        UDim2.new(
+            1,
+            -98,
+            0.5,
+            -14
+        )
+
+    FavoriteButton.BackgroundColor3 =
+        CurrentTheme.Button
+
+    FavoriteButton.BorderSizePixel =
+        0
+
+    FavoriteButton.TextSize =
+        18
+
+    FavoriteButton.Font =
+        Enum.Font.GothamBold
+
+    FavoriteButton.AutoButtonColor =
+        false
+
+    FavoriteButton.ZIndex =
+        506
+
+    FavoriteButton.Parent =
+        Card
+
+    --==================================================
+    -- FAVORITE CORNER
+    --==================================================
+
+    local FavoriteCorner =
+        Instance.new("UICorner")
+
+    FavoriteCorner.CornerRadius =
+        UDim.new(
+            0,
+            6
+        )
+
+    FavoriteCorner.Parent =
+        FavoriteButton
+
+    --==================================================
+    -- INITIAL FAVORITE STATE
+    --==================================================
+
+    self:UpdateFavoriteButton(
+
+        FavoriteButton,
+
+        ID
+
+    )
+
+    --==================================================
+    -- FAVORITE EVENT
+    --==================================================
+
+    FavoriteButton.MouseButton1Click:Connect(
+
+        function()
+
+            self:ToggleFavorite(
+
+                ID,
+
+                FavoriteButton
+
+            )
+
+        end
+
+    )
 
     --==================================================
     -- COPY BUTTON
@@ -306,52 +529,129 @@ function Cards:CreateSoundCard(
     -- COPY EVENT
     --==================================================
 
-    CopyButton.MouseButton1Click:Connect(function()
+    CopyButton.MouseButton1Click:Connect(
 
-        if self:Copy(ID) then
+        function()
 
-            CopyButton.Text =
-                "Copied!"
+            if self:Copy(ID) then
 
-            task.delay(
-                0.8,
-                function()
+                CopyButton.Text =
+                    "Copied!"
 
-                    if CopyButton.Parent then
+                task.delay(
 
-                        CopyButton.Text =
-                            "Copy"
+                    0.8,
 
-                    end
+                    function()
 
-                end
-            )
+                        if CopyButton.Parent then
 
-        else
+                            CopyButton.Text =
+                                "Copy"
 
-            CopyButton.Text =
-                "N/A"
-
-            task.delay(
-                0.8,
-                function()
-
-                    if CopyButton.Parent then
-
-                        CopyButton.Text =
-                            "Copy"
+                        end
 
                     end
 
-                end
-            )
+                )
+
+            else
+
+                CopyButton.Text =
+                    "N/A"
+
+                task.delay(
+
+                    0.8,
+
+                    function()
+
+                        if CopyButton.Parent then
+
+                            CopyButton.Text =
+                                "Copy"
+
+                        end
+
+                    end
+
+                )
+
+            end
 
         end
 
-    end)
+    )
+
+    --==================================================
+    -- RETURN
+    --==================================================
 
     return Card
 
 end
+
+--==================================================
+-- APPLY THEME
+--==================================================
+
+function Cards:ApplyTheme()
+
+    if not self.Scroll then
+        return
+    end
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    if not CurrentTheme then
+        return
+    end
+
+    for _, Card in
+        ipairs(
+            self.Scroll:GetChildren()
+        ) do
+
+        if Card:IsA("Frame")
+        and Card.Name:sub(1, 6) ==
+            "Sound_" then
+
+            Card.BackgroundColor3 =
+                CurrentTheme.Card
+
+            local FavoriteButton =
+                Card:FindFirstChild(
+                    "Favorite"
+                )
+
+            if FavoriteButton then
+
+                FavoriteButton.BackgroundColor3 =
+                    CurrentTheme.Button
+
+            end
+
+            local NameLabel =
+                Card:FindFirstChild(
+                    "TextLabel"
+                )
+
+            if NameLabel then
+
+                NameLabel.TextColor3 =
+                    CurrentTheme.Text
+
+            end
+
+        end
+
+    end
+
+end
+
+--==================================================
+-- RETURN MODULE
+--==================================================
 
 return Cards
