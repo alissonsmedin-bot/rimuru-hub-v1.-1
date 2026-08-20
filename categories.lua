@@ -9,6 +9,8 @@
 --// No Sound Duplication
 --// Favorite Filter Compatible
 --// Scrollable Filter Menu
+--// SEARCH CONTEXT COMPATIBLE
+--// FUTURE FILTER READY
 
 local Categories = {}
 
@@ -59,6 +61,9 @@ function Categories:Init(Context)
     self.Favorites =
         Context.Favorites
 
+    self.Search =
+        Context.Search
+
     self.Sidebar =
         self.UI.Sidebar
 
@@ -82,11 +87,22 @@ function Categories:Init(Context)
         {}
 
     --==================================================
+    -- CURRENT CATEGORY
+    --==================================================
+
+    self.CurrentCategory =
+        "ALL"
+
+    --==================================================
     -- FILTER STATE
     --==================================================
 
     self.CurrentFilter =
         "All"
+
+    --==================================================
+    -- FILTER UI
+    --==================================================
 
     self.FilterButton =
         nil
@@ -100,13 +116,55 @@ function Categories:Init(Context)
     self.FilterStroke =
         nil
 
+    --==================================================
+    -- FILTER RESOLVERS
+    --==================================================
+    -- Cada filtro retorna o conjunto de sons
+    -- que o Search deve pesquisar.
+    --
+    -- Para adicionar novos filtros no futuro,
+    -- basta registrar outro resolver aqui.
+    --==================================================
+
+    self.FilterResolvers = {
+
+        ["All"] = function()
+
+            self:BuildAllSounds()
+
+            return self.AllSounds
+
+        end,
+
+        ["Favorite"] = function()
+
+            return self:GetFavoriteSounds()
+
+        end,
+
+        ["M1"] = function()
+
+            return self:GetM1Sounds()
+
+        end,
+
+        ["Hit"] = function()
+
+            return self:GetHitSounds()
+
+        end
+
+    }
+
 end
 
 --==================================================
 -- GET CATEGORY ICON
 --==================================================
 
-function Categories:GetIcon(CategoryName)
+function Categories:GetIcon(
+    CategoryName
+)
 
     return CategoryIcons[CategoryName]
         or "📁"
@@ -127,21 +185,22 @@ function Categories:BuildAllSounds()
     end
 
     for CategoryName, CategoryData in
-        pairs(self.Sounds) do
+        pairs(
+            self.Sounds
+        ) do
 
-        if type(CategoryData) == "table" then
+        if type(CategoryData) ==
+            "table" then
 
             for _, SoundData in
                 ipairs(CategoryData) do
 
-                if type(SoundData) == "table" then
+                if type(SoundData) ==
+                    "table" then
 
                     table.insert(
-
                         self.AllSounds,
-
                         SoundData
-
                     )
 
                 end
@@ -185,6 +244,21 @@ function Categories:ClearContent()
 end
 
 --==================================================
+-- NOTIFY SEARCH
+--==================================================
+
+function Categories:NotifySearch()
+
+    if self.Search
+    and self.Search.OnContextChanged then
+
+        self.Search:OnContextChanged()
+
+    end
+
+end
+
+--==================================================
 -- GET FAVORITE SOUNDS
 --==================================================
 
@@ -200,9 +274,12 @@ function Categories:GetFavoriteSounds()
     self:BuildAllSounds()
 
     for _, SoundData in
-        ipairs(self.AllSounds) do
+        ipairs(
+            self.AllSounds
+        ) do
 
-        if type(SoundData) == "table" then
+        if type(SoundData) ==
+            "table" then
 
             local ID =
                 SoundData[2]
@@ -228,15 +305,18 @@ function Categories:GetFavoriteSounds()
 end
 
 --==================================================
--- GET NAME
+-- GET SOUND NAME
 --==================================================
 
 function Categories:GetSoundName(
     SoundData
 )
 
-    if type(SoundData) ~= "table" then
+    if type(SoundData) ~=
+        "table" then
+
         return ""
+
     end
 
     return string.lower(
@@ -274,9 +354,12 @@ function Categories:GetSoundsByName(
     end
 
     for _, SoundData in
-        ipairs(self.AllSounds) do
+        ipairs(
+            self.AllSounds
+        ) do
 
-        if type(SoundData) == "table" then
+        if type(SoundData) ==
+            "table" then
 
             local Name =
                 self:GetSoundName(
@@ -326,6 +409,112 @@ function Categories:GetHitSounds()
     return self:GetSoundsByName(
         "hit"
     )
+
+end
+
+--==================================================
+-- GET CURRENT SOUNDS
+--==================================================
+-- Essa é a função mais importante para o Search.
+--
+-- Ela decide qual conjunto de sons está ativo.
+--
+-- Search.lua NÃO precisa saber quais filtros existem.
+--==================================================
+
+function Categories:GetCurrentSounds()
+
+    --==================================================
+    -- NORMAL CATEGORY
+    --==================================================
+
+    if self.CurrentCategory ~= "ALL" then
+
+        local Category =
+            self.Sounds[
+                self.CurrentCategory
+            ]
+
+        if type(Category) ==
+            "table" then
+
+            local Result =
+                {}
+
+            for _, Data in
+                ipairs(Category) do
+
+                if type(Data) ==
+                    "table" then
+
+                    table.insert(
+                        Result,
+                        Data
+                    )
+
+                end
+
+            end
+
+            return Result
+
+        end
+
+    end
+
+    --==================================================
+    -- ALL + CURRENT FILTER
+    --==================================================
+
+    local Resolver =
+        self.FilterResolvers[
+            self.CurrentFilter
+        ]
+
+    if Resolver then
+
+        local Success, Result =
+            pcall(
+                Resolver
+            )
+
+        if Success
+        and type(Result) ==
+            "table" then
+
+            return Result
+
+        end
+
+    end
+
+    --==================================================
+    -- FALLBACK
+    --==================================================
+
+    self:BuildAllSounds()
+
+    return self.AllSounds
+
+end
+
+--==================================================
+-- GET CURRENT CATEGORY
+--==================================================
+
+function Categories:GetCurrentCategory()
+
+    return self.CurrentCategory
+
+end
+
+--==================================================
+-- GET CURRENT FILTER
+--==================================================
+
+function Categories:GetCurrentFilter()
+
+    return self.CurrentFilter
 
 end
 
@@ -382,7 +571,7 @@ function Categories:CloseFilterMenu()
 end
 
 --==================================================
--- CREATE FILTER BUTTON
+-- CREATE FILTER OPTION
 --==================================================
 
 function Categories:CreateFilterOption(
@@ -416,14 +605,6 @@ function Categories:CreateFilterOption(
             -10,
             0,
             32
-        )
-
-    Button.Position =
-        UDim2.new(
-            0,
-            5,
-            0,
-            5
         )
 
     Button.BackgroundColor3 =
@@ -537,10 +718,6 @@ function Categories:CreateFilterMenu()
 
     Menu.Name =
         "FilterMenu"
-
-    --==================================================
-    -- FIXED SIZE
-    --==================================================
 
     Menu.Size =
         UDim2.new(
@@ -975,7 +1152,14 @@ end
 function Categories:ShowAll()
 
     --==================================================
-    -- FILTER ONLY EXISTS IN ALL
+    -- CURRENT CATEGORY
+    --==================================================
+
+    self.CurrentCategory =
+        "ALL"
+
+    --==================================================
+    -- FILTER VISIBLE
     --==================================================
 
     if self.FilterButton then
@@ -993,7 +1177,7 @@ function Categories:ShowAll()
         "ALL"
 
     --==================================================
-    -- APPLY CURRENT FILTER
+    -- CURRENT FILTER
     --==================================================
 
     if self.CurrentFilter ==
@@ -1033,11 +1217,8 @@ function Categories:ShowAll()
         ) do
 
         self.Cards:CreateSoundCard(
-
             Index,
-
             Data
-
         )
 
     end
@@ -1050,14 +1231,13 @@ end
 
 function Categories:ShowFavorites()
 
-    --==================================================
-    -- HIDE FILTER OUTSIDE ALL
-    --==================================================
+    self.CurrentCategory =
+        "ALL"
 
     if self.FilterButton then
 
         self.FilterButton.Visible =
-            false
+            true
 
     end
 
@@ -1066,7 +1246,7 @@ function Categories:ShowFavorites()
     self:ClearContent()
 
     self.ContentTitle.Text =
-        "Favorite"
+        "ALL"
 
     local FavoriteSounds =
         self:GetFavoriteSounds()
@@ -1077,14 +1257,13 @@ function Categories:ShowFavorites()
         ) do
 
         self.Cards:CreateSoundCard(
-
             Index,
-
             Data
-
         )
 
     end
+
+    self:NotifySearch()
 
 end
 
@@ -1094,14 +1273,13 @@ end
 
 function Categories:ShowM1()
 
-    --==================================================
-    -- HIDE FILTER OUTSIDE ALL
-    --==================================================
+    self.CurrentCategory =
+        "ALL"
 
     if self.FilterButton then
 
         self.FilterButton.Visible =
-            false
+            true
 
     end
 
@@ -1110,7 +1288,7 @@ function Categories:ShowM1()
     self:ClearContent()
 
     self.ContentTitle.Text =
-        "M1"
+        "ALL"
 
     local M1Sounds =
         self:GetM1Sounds()
@@ -1121,14 +1299,13 @@ function Categories:ShowM1()
         ) do
 
         self.Cards:CreateSoundCard(
-
             Index,
-
             Data
-
         )
 
     end
+
+    self:NotifySearch()
 
 end
 
@@ -1138,14 +1315,13 @@ end
 
 function Categories:ShowHit()
 
-    --==================================================
-    -- HIDE FILTER OUTSIDE ALL
-    --==================================================
+    self.CurrentCategory =
+        "ALL"
 
     if self.FilterButton then
 
         self.FilterButton.Visible =
-            false
+            true
 
     end
 
@@ -1154,7 +1330,7 @@ function Categories:ShowHit()
     self:ClearContent()
 
     self.ContentTitle.Text =
-        "Hit"
+        "ALL"
 
     local HitSounds =
         self:GetHitSounds()
@@ -1165,14 +1341,13 @@ function Categories:ShowHit()
         ) do
 
         self.Cards:CreateSoundCard(
-
             Index,
-
             Data
-
         )
 
     end
+
+    self:NotifySearch()
 
 end
 
@@ -1190,6 +1365,9 @@ function Categories:ShowCategory(
 
     if CategoryName == "ALL" then
 
+        self.CurrentCategory =
+            "ALL"
+
         self.CurrentFilter =
             "All"
 
@@ -1200,6 +1378,21 @@ function Categories:ShowCategory(
         return
 
     end
+
+    --==================================================
+    -- NORMAL CATEGORY
+    --==================================================
+    -- Entrar numa categoria normal sempre
+    -- reseta o filtro.
+    --==================================================
+
+    self.CurrentCategory =
+        CategoryName
+
+    self.CurrentFilter =
+        "All"
+
+    self:UpdateFilterButton()
 
     --==================================================
     -- HIDE FILTER
@@ -1215,7 +1408,7 @@ function Categories:ShowCategory(
     self:CloseFilterMenu()
 
     --==================================================
-    -- NORMAL CATEGORY
+    -- CLEAR
     --==================================================
 
     self:ClearContent()
@@ -1223,25 +1416,38 @@ function Categories:ShowCategory(
     self.ContentTitle.Text =
         CategoryName
 
+    --==================================================
+    -- CATEGORY
+    --==================================================
+
     local Category =
-        self.Sounds[CategoryName]
+        self.Sounds[
+            CategoryName
+        ]
 
     if not Category then
+
+        self:NotifySearch()
+
         return
+
     end
 
     for Index, Data in
         ipairs(Category) do
 
         self.Cards:CreateSoundCard(
-
             Index,
-
             Data
-
         )
 
     end
+
+    --==================================================
+    -- UPDATE SEARCH
+    --==================================================
+
+    self:NotifySearch()
 
 end
 
@@ -1532,6 +1738,9 @@ function Categories:SetDefaultCategory()
         return
     end
 
+    self.CurrentCategory =
+        "ALL"
+
     self.CurrentFilter =
         "All"
 
@@ -1607,16 +1816,6 @@ function Categories:GetFavoriteSoundCount()
 end
 
 --==================================================
--- GET CURRENT FILTER
---==================================================
-
-function Categories:GetCurrentFilter()
-
-    return self.CurrentFilter
-
-end
-
---==================================================
 -- SET FILTER
 --==================================================
 
@@ -1624,29 +1823,46 @@ function Categories:SetFilter(
     FilterName
 )
 
-    if FilterName ~= "All"
-    and FilterName ~= "Favorite"
-    and FilterName ~= "M1"
-    and FilterName ~= "Hit" then
+    --==================================================
+    -- FILTER EXISTS?
+    --==================================================
+
+    if not self.FilterResolvers[
+        FilterName
+    ] then
 
         return
 
     end
+
+    --==================================================
+    -- FILTERS ONLY WORK IN ALL
+    --==================================================
+
+    self.CurrentCategory =
+        "ALL"
 
     self.CurrentFilter =
         FilterName
 
     self:UpdateFilterButton()
 
-    if FilterName == "Favorite" then
+    --==================================================
+    -- SHOW
+    --==================================================
+
+    if FilterName ==
+        "Favorite" then
 
         self:ShowFavorites()
 
-    elseif FilterName == "M1" then
+    elseif FilterName ==
+        "M1" then
 
         self:ShowM1()
 
-    elseif FilterName == "Hit" then
+    elseif FilterName ==
+        "Hit" then
 
         self:ShowHit()
 
@@ -1659,10 +1875,75 @@ function Categories:SetFilter(
 end
 
 --==================================================
+-- ADD FUTURE FILTER
+--==================================================
+-- Essa função existe justamente para facilitar
+-- nossas atualizações futuras.
+--
+-- Exemplo:
+--
+-- Categories:RegisterFilter(
+--     "Dash",
+--     function()
+--         return Categories:GetSoundsByName("dash")
+--     end
+-- )
+--
+-- O Search automaticamente respeitará o filtro.
+--==================================================
+
+function Categories:RegisterFilter(
+    FilterName,
+    Resolver
+)
+
+    if type(FilterName) ~=
+        "string" then
+
+        return false
+
+    end
+
+    if type(Resolver) ~=
+        "function" then
+
+        return false
+
+    end
+
+    self.FilterResolvers[
+        FilterName
+    ] =
+        Resolver
+
+    return true
+
+end
+
+--==================================================
 -- REFRESH CURRENT CONTENT
 --==================================================
 
 function Categories:RefreshCurrent()
+
+    --==================================================
+    -- NORMAL CATEGORY
+    --==================================================
+
+    if self.CurrentCategory ~=
+        "ALL" then
+
+        self:ShowCategory(
+            self.CurrentCategory
+        )
+
+        return
+
+    end
+
+    --==================================================
+    -- FILTER
+    --==================================================
 
     if self.CurrentFilter ==
         "Favorite" then
@@ -1691,38 +1972,9 @@ function Categories:RefreshCurrent()
 
     end
 
-    local SelectedButton =
-        self.SelectedButton
-
-    if SelectedButton
-    and SelectedButton.Name ==
-        "ALL" then
-
-        self:ShowAll()
-
-        return
-
-    end
-
-    local CategoryName
-
-    if SelectedButton then
-
-        CategoryName =
-            SelectedButton.Name
-
-    end
-
-    if CategoryName
-    and self.Sounds[CategoryName] then
-
-        self:ShowCategory(
-            CategoryName
-        )
-
-        return
-
-    end
+    --==================================================
+    -- ALL
+    --==================================================
 
     self:ShowAll()
 
