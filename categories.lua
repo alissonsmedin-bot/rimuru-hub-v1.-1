@@ -1,5 +1,9 @@
 --// 💥 RIMURU HUB
 --// Categories System
+--// ALL CATEGORY SYSTEM
+--// Dynamic All Sounds
+--// ALL Always First
+--// No Sound Duplication
 
 local Categories = {}
 
@@ -9,8 +13,11 @@ local Categories = {}
 
 local CategoryIcons = {
 
-    ["Outro"] =
+    ["ALL"] =
         "🏠",
+
+    ["Outro"] =
+        "📁",
 
     ["Heian Sukuna Sounds"] =
         "👹",
@@ -59,6 +66,13 @@ function Categories:Init(Context)
     self.CategoryButtons =
         {}
 
+    --==================================================
+    -- ALL SOUNDS
+    --==================================================
+
+    self.AllSounds =
+        {}
+
 end
 
 --==================================================
@@ -73,10 +87,67 @@ function Categories:GetIcon(CategoryName)
 end
 
 --==================================================
+-- BUILD ALL SOUNDS
+--==================================================
+
+function Categories:BuildAllSounds()
+
+    self.AllSounds =
+        {}
+
+    if not self.Sounds then
+        return
+    end
+
+    --==================================================
+    -- GO THROUGH ALL SOUND CATEGORIES
+    --==================================================
+
+    for CategoryName, CategoryData in
+        pairs(self.Sounds) do
+
+        --==================================================
+        -- IGNORE INVALID DATA
+        --==================================================
+
+        if type(CategoryData) == "table" then
+
+            --==================================================
+            -- ADD SOUNDS TO ALL
+            --==================================================
+
+            for _, SoundData in
+                ipairs(CategoryData) do
+
+                if type(SoundData) == "table" then
+
+                    table.insert(
+
+                        self.AllSounds,
+
+                        SoundData
+
+                    )
+
+                end
+
+            end
+
+        end
+
+    end
+
+end
+
+--==================================================
 -- CLEAR CONTENT
 --==================================================
 
 function Categories:ClearContent()
+
+    if not self.Scroll then
+        return
+    end
 
     for _, Object in
         ipairs(
@@ -99,12 +170,60 @@ function Categories:ClearContent()
 end
 
 --==================================================
+-- SHOW ALL
+--==================================================
+
+function Categories:ShowAll()
+
+    self:ClearContent()
+
+    self:BuildAllSounds()
+
+    self.ContentTitle.Text =
+        "ALL"
+
+    --==================================================
+    -- CREATE ALL CARDS
+    --==================================================
+
+    for Index, Data in
+        ipairs(self.AllSounds) do
+
+        self.Cards:CreateSoundCard(
+
+            Index,
+
+            Data
+
+        )
+
+    end
+
+end
+
+--==================================================
 -- SHOW CATEGORY
 --==================================================
 
 function Categories:ShowCategory(
     CategoryName
 )
+
+    --==================================================
+    -- ALL
+    --==================================================
+
+    if CategoryName == "ALL" then
+
+        self:ShowAll()
+
+        return
+
+    end
+
+    --==================================================
+    -- NORMAL CATEGORY
+    --==================================================
 
     self:ClearContent()
 
@@ -329,22 +448,55 @@ function Categories:CreateCategories()
     local CategoryIndex =
         0
 
-    for CategoryName in
-        pairs(
-            self.Sounds
-        ) do
+    --==================================================
+    -- ALL ALWAYS FIRST
+    --==================================================
 
-        CategoryIndex += 1
+    CategoryIndex += 1
 
+    local AllButton =
         self:CreateCategoryButton(
 
-            CategoryName,
+            "ALL",
 
             CategoryIndex,
 
             true
 
         )
+
+    self.AllButton =
+        AllButton
+
+    --==================================================
+    -- NORMAL SOUND CATEGORIES
+    --==================================================
+
+    for CategoryName in
+        pairs(
+            self.Sounds
+        ) do
+
+        --==================================================
+        -- NEVER CREATE ANOTHER ALL
+        --==================================================
+
+        if CategoryName ~= "ALL"
+        and CategoryName ~= "Configuração" then
+
+            CategoryIndex += 1
+
+            self:CreateCategoryButton(
+
+                CategoryName,
+
+                CategoryIndex,
+
+                true
+
+            )
+
+        end
 
     end
 
@@ -366,7 +518,7 @@ function Categories:CreateCategories()
     self.ConfigButton =
         ConfigButton
 
-    return CategoryIndex
+    return CategoryIndex + 1
 
 end
 
@@ -376,30 +528,24 @@ end
 
 function Categories:SetDefaultCategory()
 
-    if not self.Sounds[
-        "Outro"
-    ] then
+    --==================================================
+    -- ALL IS ALWAYS DEFAULT
+    --==================================================
 
-        return
-
-    end
-
-    self:ShowCategory(
-        "Outro"
-    )
-
-    local PrincipalButton =
+    local AllButton =
         self.CategoryButtons[
-            "Outro"
+            "ALL"
         ]
 
-    if PrincipalButton then
-
-        self:SelectButton(
-            PrincipalButton
-        )
-
+    if not AllButton then
+        return
     end
+
+    self:ShowAll()
+
+    self:SelectButton(
+        AllButton
+    )
 
 end
 
@@ -424,6 +570,30 @@ function Categories:GetButton(
     return self.CategoryButtons[
         CategoryName
     ]
+
+end
+
+--==================================================
+-- GET ALL SOUNDS
+--==================================================
+
+function Categories:GetAllSounds()
+
+    self:BuildAllSounds()
+
+    return self.AllSounds
+
+end
+
+--==================================================
+-- GET ALL SOUND COUNT
+--==================================================
+
+function Categories:GetAllSoundCount()
+
+    self:BuildAllSounds()
+
+    return #self.AllSounds
 
 end
 
