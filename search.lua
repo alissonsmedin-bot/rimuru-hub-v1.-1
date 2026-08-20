@@ -197,59 +197,60 @@ function Search:Create()
         SearchBox
 
     --==================================================
-    -- RESULT COUNT
-    --==================================================
+-- RESULT COUNT
+-- FICA DIRETAMENTE ABAIXO DA SEARCH BOX
+--==================================================
 
-    local ResultLabel =
-        Instance.new(
-            "TextLabel"
-        )
+local ResultLabel =
+    Instance.new(
+        "TextLabel"
+    )
 
-    ResultLabel.Name =
-        "SearchResultCount"
+ResultLabel.Name =
+    "SearchResultCount"
 
-    ResultLabel.Position =
-        UDim2.new(
-            0,
-            12,
-            0,
-            6
-        )
+ResultLabel.Position =
+    UDim2.new(
+        0,
+        285,
+        0,
+        48
+    )
 
-    ResultLabel.Size =
-        UDim2.new(
-            1,
-            -24,
-            0,
-            20
-        )
+ResultLabel.Size =
+    UDim2.new(
+        0,
+        210,
+        0,
+        18
+    )
 
-    ResultLabel.BackgroundTransparency =
-        1
+ResultLabel.BackgroundTransparency =
+    1
 
-    ResultLabel.Text =
-        ""
+ResultLabel.Text =
+    ""
 
-    ResultLabel.TextColor3 =
-        self:GetTheme().SubText
+ResultLabel.TextColor3 =
+    self:GetTheme().SubText
 
-    ResultLabel.TextSize =
-        10
+ResultLabel.TextSize =
+    10
 
-    ResultLabel.Font =
-        Enum.Font.Gotham
+ResultLabel.Font =
+    Enum.Font.Gotham
 
-    ResultLabel.TextXAlignment =
-        Enum.TextXAlignment.Left
+ResultLabel.TextXAlignment =
+    Enum.TextXAlignment.Left
 
-    ResultLabel.Visible =
-        false
+ResultLabel.Visible =
+    false
 
-    ResultLabel.ZIndex =
-        505
+ResultLabel.ZIndex =
+    505
 
-    ResultLabel.Parent =
-        self.UI.Content
+ResultLabel.Parent =
+    Header
 
     --==================================================
     -- SAVE
