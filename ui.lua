@@ -2,6 +2,8 @@
 --// UI System
 --// ANIMATED STABLE VERSION
 --// Modular UI Core
+--// Background Image System
+--// Transparent Interface System
 --// Logo Animation Compatible
 --// Safe Menu Animation
 --// NO BackgroundTransparency Animation
@@ -15,9 +17,6 @@ local Players =
 
 local UIS =
     game:GetService("UserInputService")
-
-local TweenService =
-    game:GetService("TweenService")
 
 local TweenService =
     game:GetService("TweenService")
@@ -49,6 +48,59 @@ local OPEN_OFFSET_Y =
 
 local CLOSE_OFFSET_Y =
     10
+
+--==================================================
+-- BACKGROUND CONFIG
+--==================================================
+
+local BACKGROUND_IMAGES = {
+
+    ["Rimuru Dark"] =
+        "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/images%20(2).jpeg",
+
+    ["Slime"] =
+        "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/images%20(3).jpeg",
+
+    ["Void"] =
+        nil,
+
+    ["Blackout"] =
+        nil,
+
+    ["RGB"] =
+        nil,
+
+    ["Azul Escuro"] =
+        nil,
+
+    ["Dourado Neon"] =
+        nil,
+
+    ["Branco Dourado"] =
+        nil,
+
+    ["Vermelho"] =
+        nil,
+
+    ["Verde"] =
+        nil
+
+}
+
+--==================================================
+-- TRANSPARENCY CONFIG
+--==================================================
+
+-- Quanto maior, mais o fundo aparece.
+
+local MAIN_TRANSPARENCY =
+    0.12
+
+local SIDEBAR_TRANSPARENCY =
+    0.16
+
+local CONTENT_TRANSPARENCY =
+    0.16
 
 --==================================================
 -- INIT
@@ -113,6 +165,127 @@ function UI:RemoveOld()
         end
 
     end)
+
+end
+
+--==================================================
+-- GET BACKGROUND IMAGE
+--==================================================
+
+function UI:GetBackgroundImage()
+
+    if not self.Theme then
+        return nil
+    end
+
+    local ThemeName =
+        self.Theme:GetName()
+
+    --==================================================
+    -- CONFIG OVERRIDE
+    --==================================================
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    if CurrentTheme
+    and CurrentTheme.BackgroundImage then
+
+        return CurrentTheme.BackgroundImage
+
+    end
+
+    --==================================================
+    -- DEFAULT IMAGE TABLE
+    --==================================================
+
+    return BACKGROUND_IMAGES[
+        ThemeName
+    ]
+
+end
+
+--==================================================
+-- CREATE BACKGROUND
+--==================================================
+
+function UI:CreateBackground(
+    Main,
+    CurrentTheme
+)
+
+    --==================================================
+    -- BACKGROUND IMAGE
+    --==================================================
+
+    local Background =
+        Instance.new("ImageLabel")
+
+    Background.Name =
+        "ThemeBackground"
+
+    Background.Size =
+        UDim2.new(
+            1,
+            0,
+            1,
+            0
+        )
+
+    Background.Position =
+        UDim2.new(
+            0,
+            0,
+            0,
+            0
+        )
+
+    Background.BackgroundColor3 =
+        CurrentTheme.Main
+
+    Background.BackgroundTransparency =
+        0
+
+    Background.BorderSizePixel =
+        0
+
+    Background.Image =
+        self:GetBackgroundImage()
+        or ""
+
+    Background.ImageTransparency =
+        0
+
+    Background.ScaleType =
+        Enum.ScaleType.Crop
+
+    Background.ZIndex =
+        500
+
+    Background.ClipsDescendants =
+        true
+
+    Background.Parent =
+        Main
+
+    --==================================================
+    -- CORNER
+    --==================================================
+
+    local Corner =
+        Instance.new("UICorner")
+
+    Corner.CornerRadius =
+        UDim.new(
+            0,
+            12
+        )
+
+    Corner.Parent =
+        Background
+
+    self.Background =
+        Background
 
 end
 
@@ -216,6 +389,9 @@ function UI:Create()
     Main.BackgroundColor3 =
         CurrentTheme.Main
 
+    Main.BackgroundTransparency =
+        MAIN_TRANSPARENCY
+
     Main.BorderSizePixel =
         0
 
@@ -225,11 +401,23 @@ function UI:Create()
     Main.ZIndex =
         500
 
+    Main.ClipsDescendants =
+        true
+
     Main.Parent =
         Gui
 
     self.Main =
         Main
+
+    --==================================================
+    -- BACKGROUND IMAGE
+    --==================================================
+
+    self:CreateBackground(
+        Main,
+        CurrentTheme
+    )
 
     --==================================================
     -- SAVE ORIGINAL POSITION
@@ -510,6 +698,9 @@ function UI:Create()
     Close.BackgroundColor3 =
         CurrentTheme.Close
 
+    Close.BackgroundTransparency =
+        0
+
     Close.BorderSizePixel =
         0
 
@@ -577,6 +768,9 @@ function UI:Create()
 
     Sidebar.BackgroundColor3 =
         CurrentTheme.Sidebar
+
+    Sidebar.BackgroundTransparency =
+        SIDEBAR_TRANSPARENCY
 
     Sidebar.BorderSizePixel =
         0
@@ -669,6 +863,9 @@ function UI:Create()
 
     Content.BackgroundColor3 =
         CurrentTheme.Content
+
+    Content.BackgroundTransparency =
+        CONTENT_TRANSPARENCY
 
     Content.BorderSizePixel =
         0
@@ -1177,7 +1374,7 @@ function UI:SetupDrag()
 
     end)
 
-     UIS.InputChanged:Connect(function(Input)
+    UIS.InputChanged:Connect(function(Input)
 
         if not Dragging then
             return
@@ -1230,6 +1427,32 @@ function UI:SetupDrag()
 end
 
 --==================================================
+-- APPLY BACKGROUND
+--==================================================
+
+function UI:ApplyBackground(
+    CurrentTheme
+)
+
+    if not self.Background then
+        return
+    end
+
+    local Image =
+        self:GetBackgroundImage()
+
+    self.Background.BackgroundColor3 =
+        CurrentTheme.Main
+
+    self.Background.Image =
+        Image or ""
+
+    self.Background.ImageTransparency =
+        0
+
+end
+
+--==================================================
 -- APPLY THEME
 --==================================================
 
@@ -1257,6 +1480,14 @@ function UI:ApplyTheme()
     end
 
     --==================================================
+    -- BACKGROUND
+    --==================================================
+
+    self:ApplyBackground(
+        CurrentTheme
+    )
+
+    --==================================================
     -- MAIN
     --==================================================
 
@@ -1264,6 +1495,9 @@ function UI:ApplyTheme()
 
         self.Main.BackgroundColor3 =
             CurrentTheme.Main
+
+        self.Main.BackgroundTransparency =
+            MAIN_TRANSPARENCY
 
     end
 
@@ -1320,6 +1554,9 @@ function UI:ApplyTheme()
         self.Close.BackgroundColor3 =
             CurrentTheme.Close
 
+        self.Close.BackgroundTransparency =
+            0
+
         self.Close.TextColor3 =
             CurrentTheme.Text
 
@@ -1334,6 +1571,9 @@ function UI:ApplyTheme()
         self.Sidebar.BackgroundColor3 =
             CurrentTheme.Sidebar
 
+        self.Sidebar.BackgroundTransparency =
+            SIDEBAR_TRANSPARENCY
+
     end
 
     --==================================================
@@ -1344,6 +1584,9 @@ function UI:ApplyTheme()
 
         self.Content.BackgroundColor3 =
             CurrentTheme.Content
+
+        self.Content.BackgroundTransparency =
+            CONTENT_TRANSPARENCY
 
     end
 
