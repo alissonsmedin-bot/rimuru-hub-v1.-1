@@ -14,6 +14,9 @@
 --// CATEGORY CLICK SIZE ANIMATION
 --// CLICK = +4 PIXELS
 --// RETURN TO ORIGINAL AFTER 0.34s
+--// CONTRAST SELECTION SYSTEM
+--// NORMAL = THEME BUTTON
+--// SELECTED = THEME CONTENT
 
 local TweenService =
     game:GetService("TweenService")
@@ -129,30 +132,20 @@ function Categories:Init(Context)
     self.CategoryClickAnimation =
         true
 
-    -- Quantos pixels o bloco aumenta
     self.CategoryClickHeight =
         4
 
-    -- Tempo até começar a voltar
     self.CategoryClickDuration =
         0.34
 
-    -- Tempo da expansão
     self.CategoryClickExpandTime =
         0.07
 
-    -- Tempo da volta
     self.CategoryClickReturnTime =
         0.10
 
     --==================================================
     -- FILTER RESOLVERS
-    --==================================================
-    -- Cada filtro retorna o conjunto de sons
-    -- que o Search deve pesquisar.
-    --
-    -- Para adicionar novos filtros no futuro,
-    -- basta registrar outro resolver aqui.
     --==================================================
 
     self.FilterResolvers = {
@@ -203,18 +196,6 @@ end
 --==================================================
 -- CATEGORY CLICK ANIMATION
 --==================================================
--- A animação NÃO usa UIScale.
---
--- O tamanho físico do botão aumenta exatamente
--- 4 pixels na altura e depois retorna ao tamanho
--- original.
---
--- Exemplo:
---
--- 38px -> 42px -> 38px
---
--- O UIListLayout continua responsável pela posição.
---==================================================
 
 function Categories:AnimateCategoryClick(
     Button
@@ -232,10 +213,6 @@ function Categories:AnimateCategoryClick(
         return
 
     end
-
-    --==================================================
-    -- ORIGINAL SIZE
-    --==================================================
 
     local OriginalSize =
         Button.Size
@@ -257,10 +234,6 @@ function Categories:AnimateCategoryClick(
 
     --==================================================
     -- TOKEN
-    --==================================================
-    -- Impede que uma animação antiga devolva o
-    -- botão para um tamanho incorreto depois de
-    -- vários cliques rápidos.
     --==================================================
 
     local Token =
@@ -293,7 +266,7 @@ function Categories:AnimateCategoryClick(
     end
 
     --==================================================
-    -- EXPAND
+    -- EXPANDED SIZE
     --==================================================
 
     local ExpandedSize =
@@ -306,6 +279,10 @@ function Categories:AnimateCategoryClick(
             OriginalHeight + ExtraHeight
 
         )
+
+    --==================================================
+    -- EXPAND
+    --==================================================
 
     local ExpandTween =
         TweenService:Create(
@@ -326,6 +303,11 @@ function Categories:AnimateCategoryClick(
         )
 
     ExpandTween:Play()
+
+    Button:SetAttribute(
+        "CategoryAnimationTween",
+        ExpandTween
+    )
 
     --==================================================
     -- RETURN
@@ -369,6 +351,11 @@ function Categories:AnimateCategoryClick(
                 )
 
             ReturnTween:Play()
+
+            Button:SetAttribute(
+                "CategoryAnimationTween",
+                ReturnTween
+            )
 
         end
     )
@@ -618,12 +605,6 @@ end
 
 --==================================================
 -- GET CURRENT SOUNDS
---==================================================
--- Essa é a função mais importante para o Search.
---
--- Ela decide qual conjunto de sons está ativo.
---
--- Search.lua NÃO precisa saber quais filtros existem.
 --==================================================
 
 function Categories:GetCurrentSounds()
@@ -1355,16 +1336,8 @@ end
 
 function Categories:ShowAll()
 
-    --==================================================
-    -- CURRENT CATEGORY
-    --==================================================
-
     self.CurrentCategory =
         "ALL"
-
-    --==================================================
-    -- FILTER VISIBLE
-    --==================================================
 
     if self.FilterButton then
 
@@ -1379,10 +1352,6 @@ function Categories:ShowAll()
 
     self.ContentTitle.Text =
         "ALL"
-
-    --==================================================
-    -- CURRENT FILTER
-    --==================================================
 
     if self.CurrentFilter ==
         "Favorite" then
@@ -1410,10 +1379,6 @@ function Categories:ShowAll()
         return
 
     end
-
-    --==================================================
-    -- ALL CARDS
-    --==================================================
 
     for Index, Data in
         ipairs(
@@ -1563,10 +1528,6 @@ function Categories:ShowCategory(
     CategoryName
 )
 
-    --==================================================
-    -- ALL
-    --==================================================
-
     if CategoryName == "ALL" then
 
         self.CurrentCategory =
@@ -1583,13 +1544,6 @@ function Categories:ShowCategory(
 
     end
 
-    --==================================================
-    -- NORMAL CATEGORY
-    --==================================================
-    -- Entrar numa categoria normal sempre
-    -- reseta o filtro.
-    --==================================================
-
     self.CurrentCategory =
         CategoryName
 
@@ -1597,10 +1551,6 @@ function Categories:ShowCategory(
         "All"
 
     self:UpdateFilterButton()
-
-    --==================================================
-    -- HIDE FILTER
-    --==================================================
 
     if self.FilterButton then
 
@@ -1611,18 +1561,10 @@ function Categories:ShowCategory(
 
     self:CloseFilterMenu()
 
-    --==================================================
-    -- CLEAR
-    --==================================================
-
     self:ClearContent()
 
     self.ContentTitle.Text =
         CategoryName
-
-    --==================================================
-    -- CATEGORY
-    --==================================================
 
     local Category =
         self.Sounds[
@@ -1647,10 +1589,6 @@ function Categories:ShowCategory(
 
     end
 
-    --==================================================
-    -- UPDATE SEARCH
-    --==================================================
-
     self:NotifySearch()
 
 end
@@ -1658,34 +1596,65 @@ end
 --==================================================
 -- SELECT BUTTON
 --==================================================
+-- SISTEMA DE CONTRASTE
+--
+-- NORMAL:
+-- Background = Theme.Button
+-- Text       = Theme.Text
+--
+-- SELECIONADO:
+-- Background = Theme.Content
+-- Text       = Theme.Text
+--
+-- A seleção NÃO usa Accent como fundo.
+--==================================================
 
 function Categories:SelectButton(
     Button
 )
 
+    if not Button then
+        return
+    end
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    if not CurrentTheme then
+        return
+    end
+
+    --==================================================
+    -- DESELECIONAR ANTERIOR
+    --==================================================
+
     if self.SelectedButton
     and self.SelectedButton ~= Button then
 
         self.SelectedButton.BackgroundColor3 =
-            self.Theme:GetCurrent().Button
+            CurrentTheme.Button
 
         self.SelectedButton.TextColor3 =
-            self.Theme:GetCurrent().SubText
+            CurrentTheme.Text
 
     end
+
+    --==================================================
+    -- NOVO SELECIONADO
+    --==================================================
 
     self.SelectedButton =
         Button
 
+    --==================================================
+    -- SELECIONADO = SUPERFÍCIE CONTRASTANTE
+    --==================================================
+
     Button.BackgroundColor3 =
-        self.Theme:GetAccent()
+        CurrentTheme.Content
 
     Button.TextColor3 =
-        Color3.fromRGB(
-            255,
-            255,
-            255
-        )
+        CurrentTheme.Text
 
 end
 
@@ -1750,7 +1719,7 @@ function Categories:CreateCategoryButton(
         CategoryName
 
     Button.TextColor3 =
-        CurrentTheme.SubText
+        CurrentTheme.Text
 
     Button.TextSize =
         11
@@ -2043,10 +2012,6 @@ function Categories:SetFilter(
     FilterName
 )
 
-    --==================================================
-    -- FILTER EXISTS?
-    --==================================================
-
     if not self.FilterResolvers[
         FilterName
     ] then
@@ -2055,10 +2020,6 @@ function Categories:SetFilter(
 
     end
 
-    --==================================================
-    -- FILTERS ONLY WORK IN ALL
-    --==================================================
-
     self.CurrentCategory =
         "ALL"
 
@@ -2066,10 +2027,6 @@ function Categories:SetFilter(
         FilterName
 
     self:UpdateFilterButton()
-
-    --==================================================
-    -- SHOW
-    --==================================================
 
     if FilterName ==
         "Favorite" then
@@ -2096,20 +2053,6 @@ end
 
 --==================================================
 -- ADD FUTURE FILTER
---==================================================
--- Essa função existe justamente para facilitar
--- nossas atualizações futuras.
---
--- Exemplo:
---
--- Categories:RegisterFilter(
---     "Dash",
---     function()
---         return Categories:GetSoundsByName("dash")
---     end
--- )
---
--- O Search automaticamente respeitará o filtro.
 --==================================================
 
 function Categories:RegisterFilter(
@@ -2146,10 +2089,6 @@ end
 
 function Categories:RefreshCurrent()
 
-    --==================================================
-    -- NORMAL CATEGORY
-    --==================================================
-
     if self.CurrentCategory ~=
         "ALL" then
 
@@ -2160,10 +2099,6 @@ function Categories:RefreshCurrent()
         return
 
     end
-
-    --==================================================
-    -- FILTER
-    --==================================================
 
     if self.CurrentFilter ==
         "Favorite" then
@@ -2192,10 +2127,6 @@ function Categories:RefreshCurrent()
 
     end
 
-    --==================================================
-    -- ALL
-    --==================================================
-
     self:ShowAll()
 
 end
@@ -2209,6 +2140,10 @@ function Categories:ApplyTheme()
     local CurrentTheme =
         self.Theme:GetCurrent()
 
+    if not CurrentTheme then
+        return
+    end
+
     --==================================================
     -- CATEGORY BUTTONS
     --==================================================
@@ -2221,23 +2156,31 @@ function Categories:ApplyTheme()
         if Button ==
             self.SelectedButton then
 
+            --==================================================
+            -- SELECIONADO
+            --==================================================
+            -- Usa a superfície clara/contrastante.
+            --==================================================
+
             Button.BackgroundColor3 =
-                self.Theme:GetAccent()
+                CurrentTheme.Content
 
             Button.TextColor3 =
-                Color3.fromRGB(
-                    255,
-                    245,
-                    235
-                )
+                CurrentTheme.Text
 
         else
+
+            --==================================================
+            -- NORMAL
+            --==================================================
+            -- Usa a superfície normal dos blocos.
+            --==================================================
 
             Button.BackgroundColor3 =
                 CurrentTheme.Button
 
             Button.TextColor3 =
-                CurrentTheme.SubText
+                CurrentTheme.Text
 
         end
 
@@ -2324,7 +2267,7 @@ function Categories:ApplyTheme()
 end
 
 --==================================================
--- RETURN
+-- RETURN MODULE
 --==================================================
 
 return Categories
