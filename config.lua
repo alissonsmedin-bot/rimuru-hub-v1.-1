@@ -18,7 +18,6 @@ return {
         --==================================================
 
         Animation = true,
-
         --==================================================
         -- LOGO
         --==================================================
@@ -45,7 +44,6 @@ return {
                         150,
                         255
                     ),
-
                 Main =
                     Color3.fromRGB(
                         5,
@@ -66,7 +64,6 @@ return {
                         10,
                         19
                     ),
-
                 Card =
                     Color3.fromRGB(
                         12,
@@ -87,7 +84,6 @@ return {
                         248,
                         255
                     ),
-
                 SubText =
                     Color3.fromRGB(
                         105,
@@ -101,7 +97,6 @@ return {
                         20,
                         40
                     ),
-
                 Close =
                     Color3.fromRGB(
                         12,
@@ -130,7 +125,6 @@ return {
                         210,
                         255
                     ),
-
                 Main =
                     Color3.fromRGB(
                         4,
@@ -151,7 +145,6 @@ return {
                         18,
                         29
                     ),
-
                 Card =
                     Color3.fromRGB(
                         9,
@@ -172,7 +165,6 @@ return {
                         250,
                         255
                     ),
-
                 SubText =
                     Color3.fromRGB(
                         100,
@@ -186,7 +178,6 @@ return {
                         42,
                         58
                     ),
-
                 Close =
                     Color3.fromRGB(
                         10,
@@ -211,10 +202,9 @@ return {
                 Accent =
                     Color3.fromRGB(
                         145,
-                        90,
+                                               90,
                         255
                     ),
-
                 Main =
                     Color3.fromRGB(
                         3,
@@ -235,7 +225,6 @@ return {
                         4,
                         8
                     ),
-
                 Card =
                     Color3.fromRGB(
                         12,
@@ -256,7 +245,6 @@ return {
                         240,
                         255
                     ),
-
                 SubText =
                     Color3.fromRGB(
                         125,
@@ -270,7 +258,6 @@ return {
                         10,
                         35
                     ),
-
                 Close =
                     Color3.fromRGB(
                         25,
@@ -285,7 +272,6 @@ return {
             --==================================================
 
             ["Blackout"] = {
-
                 Accent =
                     Color3.fromRGB(
                         255,
@@ -306,7 +292,6 @@ return {
                         1,
                         1
                     ),
-
                 Content =
                     Color3.fromRGB(
                         5,
@@ -327,7 +312,6 @@ return {
                         10,
                         10
                     ),
-
                 Text =
                     Color3.fromRGB(
                         255,
@@ -341,7 +325,6 @@ return {
                         150,
                         150
                     ),
-
                 LogoBackground =
                     Color3.fromRGB(
                         8,
@@ -370,7 +353,6 @@ return {
                         145,
                         255
                     ),
-
                 Main =
                     Color3.fromRGB(
                         15,
@@ -391,7 +373,6 @@ return {
                         14,
                         23
                     ),
-
                 Card =
                     Color3.fromRGB(
                         24,
@@ -412,7 +393,6 @@ return {
                         243,
                         250
                     ),
-
                 SubText =
                     Color3.fromRGB(
                         130,
@@ -426,7 +406,6 @@ return {
                         22,
                         48
                     ),
-
                 Close =
                     Color3.fromRGB(
                         35,
@@ -441,7 +420,6 @@ return {
             --==================================================
 
             ["Dourado Neon"] = {
-
                 Accent =
                     Color3.fromRGB(
                         255,
@@ -462,7 +440,6 @@ return {
                         17,
                         9
                     ),
-
                 Content =
                     Color3.fromRGB(
                         20,
@@ -483,7 +460,6 @@ return {
                         27,
                         14
                     ),
-
                 Text =
                     Color3.fromRGB(
                         255,
@@ -497,7 +473,6 @@ return {
                         170,
                         120
                     ),
-
                 LogoBackground =
                     Color3.fromRGB(
                         42,
@@ -526,7 +501,6 @@ return {
                         170,
                         55
                     ),
-
                 Main =
                     Color3.fromRGB(
                         235,
@@ -540,7 +514,6 @@ return {
                         220,
                         216
                     ),
-
                 Content =
                     Color3.fromRGB(
                         225,
@@ -561,7 +534,6 @@ return {
                         235,
                         230
                     ),
-
                 Text =
                     Color3.fromRGB(
                         35,
@@ -575,7 +547,6 @@ return {
                         100,
                         95
                     ),
-
                 LogoBackground =
                     Color3.fromRGB(
                         248,
@@ -604,7 +575,6 @@ return {
                         35,
                         45
                     ),
-
                 Main =
                     Color3.fromRGB(
                         18,
@@ -625,7 +595,6 @@ return {
                         8,
                         10
                     ),
-
                 Card =
                     Color3.fromRGB(
                         35,
@@ -646,7 +615,6 @@ return {
                         235,
                         237
                     ),
-
                 SubText =
                     Color3.fromRGB(
                         160,
@@ -660,7 +628,6 @@ return {
                         8,
                         12
                     ),
-
                 Close =
                     Color3.fromRGB(
                         55,
@@ -675,7 +642,6 @@ return {
             --==================================================
 
             ["Verde"] = {
-
                 Accent =
                     Color3.fromRGB(
                         45,
@@ -696,7 +662,6 @@ return {
                         15,
                         11
                     ),
-
                 Content =
                     Color3.fromRGB(
                         7,
@@ -717,7 +682,6 @@ return {
                         29,
                         20
                     ),
-
                 Text =
                     Color3.fromRGB(
                         230,
@@ -731,7 +695,6 @@ return {
                         165,
                         140
                     ),
-
                 LogoBackground =
                     Color3.fromRGB(
                         6,
@@ -769,7 +732,6 @@ return {
                         8,
                         13
                     ),
-
                 Content =
                     Color3.fromRGB(
                         7,
@@ -790,7 +752,6 @@ return {
                         16,
                         24
                     ),
-
                 Text =
                     Color3.fromRGB(
                         240,
@@ -804,7 +765,6 @@ return {
                         140,
                         160
                     ),
-
                 LogoBackground =
                     Color3.fromRGB(
                         8,
