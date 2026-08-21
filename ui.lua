@@ -1,6 +1,7 @@
 --// 💥 RIMURU HUB
 --// UI System
---// Animated + Transparent Background Version
+--// Animated Stable Version
+--// Background Contained Inside Main
 
 --==================================================
 -- SERVICES
@@ -42,13 +43,6 @@ local OPEN_OFFSET_Y =
 
 local CLOSE_OFFSET_Y =
     10
-
---==================================================
--- BACKGROUND CONFIG
---==================================================
-
-local BACKGROUND_IMAGE_PATH =
-    "RimuruHubBackground.jpg"
 
 --==================================================
 -- INIT
@@ -107,116 +101,6 @@ function UI:RemoveOld()
 end
 
 --==================================================
--- DOWNLOAD BACKGROUND
---==================================================
-
-function UI:LoadBackgroundImage(URL)
-
-    if not URL then
-        return nil
-    end
-
-    if not getcustomasset then
-        return nil
-    end
-
-    local FileName =
-        "RimuruHubBackground_" ..
-        tostring(
-            math.abs(
-                string.len(URL)
-            )
-        ) ..
-        ".jpg"
-
-    if isfile then
-
-        local Success, Exists =
-            pcall(function()
-
-                return isfile(
-                    FileName
-                )
-
-            end)
-
-        if Success
-        and Exists then
-
-            local AssetSuccess, Asset =
-                pcall(function()
-
-                    return getcustomasset(
-                        FileName
-                    )
-
-                end)
-
-            if AssetSuccess then
-                return Asset
-            end
-
-        end
-
-    end
-
-    local Success, Data =
-        pcall(function()
-
-            return game:HttpGet(
-                URL
-            )
-
-        end)
-
-    if not Success
-    or not Data
-    or Data == "" then
-
-        warn(
-            "⚠️ Rimuru Hub: não foi possível baixar o background."
-        )
-
-        return nil
-
-    end
-
-    if not writefile then
-        return nil
-    end
-
-    local WriteSuccess =
-        pcall(function()
-
-            writefile(
-                FileName,
-                Data
-            )
-
-        end)
-
-    if not WriteSuccess then
-        return nil
-    end
-
-    local AssetSuccess, Asset =
-        pcall(function()
-
-            return getcustomasset(
-                FileName
-            )
-
-        end)
-
-    if AssetSuccess then
-        return Asset
-    end
-
-    return nil
-
-end
-
---==================================================
 -- CREATE
 --==================================================
 
@@ -240,7 +124,7 @@ function UI:Create()
     if not CurrentTheme then
 
         warn(
-            "❌ Rimuru Hub UI: tema atual inválido."
+            "❌ Rimuru Hub UI: tema inválido."
         )
 
         return
@@ -274,6 +158,97 @@ function UI:Create()
 
     self.Gui =
         Gui
+
+    --==================================================
+    -- MAIN
+    --==================================================
+
+    local Main =
+        Instance.new("Frame")
+
+    Main.Name =
+        "Main"
+
+    Main.Size =
+        UDim2.new(
+            0,
+            600,
+            0,
+            400
+        )
+
+    Main.Position =
+        UDim2.new(
+            0.5,
+            -300,
+            0.5,
+            -200
+        )
+
+    Main.BackgroundColor3 =
+        CurrentTheme.Main
+
+    Main.BackgroundTransparency =
+        0.10
+
+    Main.BorderSizePixel =
+        0
+
+    Main.Visible =
+        false
+
+    Main.ZIndex =
+        500
+
+    Main.ClipsDescendants =
+        true
+
+    Main.Parent =
+        Gui
+
+    self.Main =
+        Main
+
+    self.OriginalPosition =
+        Main.Position
+
+    self.OriginalSize =
+        Main.Size
+
+    --==================================================
+    -- MAIN SCALE
+    --==================================================
+
+    local MainScale =
+        Instance.new("UIScale")
+
+    MainScale.Name =
+        "MenuScale"
+
+    MainScale.Scale =
+        1
+
+    MainScale.Parent =
+        Main
+
+    self.MainScale =
+        MainScale
+
+    --==================================================
+    -- MAIN CORNER
+    --==================================================
+
+    local MainCorner =
+        Instance.new("UICorner")
+
+    MainCorner.CornerRadius =
+        UDim.new(
+            0,
+            12
+        )
+
+    MainCorner.Parent =
+        Main
 
     --==================================================
     -- BACKGROUND
@@ -310,104 +285,32 @@ function UI:Create()
     Background.ScaleType =
         Enum.ScaleType.Crop
 
+    Background.ImageTransparency =
+        self.Theme:GetBackgroundTransparency()
+
     Background.ZIndex =
-        1
-
-    Background.Parent =
-        Gui
-
-    self.Background =
-        Background
-
-    self:ApplyBackground()
-
-    --==================================================
-    -- MAIN
-    --==================================================
-
-    local Main =
-        Instance.new("Frame")
-
-    Main.Name =
-        "Main"
-
-    Main.Size =
-        UDim2.new(
-            0,
-            600,
-            0,
-            400
-        )
-
-    Main.Position =
-        UDim2.new(
-            0.5,
-            -300,
-            0.5,
-            -200
-        )
-
-    Main.BackgroundColor3 =
-        CurrentTheme.Main
-
-    Main.BackgroundTransparency =
-        self.Theme:GetMainTransparency()
-
-    Main.BorderSizePixel =
-        0
-
-    Main.Visible =
-        false
-
-    Main.ZIndex =
         500
 
-    Main.Parent =
-        Gui
+    Background.Visible =
+        false
 
-    self.Main =
+    Background.Parent =
         Main
 
-    self.OriginalPosition =
-        Main.Position
-
-    self.OriginalSize =
-        Main.Size
-
-    --==================================================
-    -- MAIN SCALE
-    --==================================================
-
-    local MainScale =
-        Instance.new("UIScale")
-
-    MainScale.Name =
-        "MenuScale"
-
-    MainScale.Scale =
-        1
-
-    MainScale.Parent =
-        Main
-
-    self.MainScale =
-        MainScale
-
-    --==================================================
-    -- CORNER
-    --==================================================
-
-    local MainCorner =
+    local BackgroundCorner =
         Instance.new("UICorner")
 
-    MainCorner.CornerRadius =
+    BackgroundCorner.CornerRadius =
         UDim.new(
             0,
             12
         )
 
-    MainCorner.Parent =
-        Main
+    BackgroundCorner.Parent =
+        Background
+
+    self.Background =
+        Background
 
     --==================================================
     -- MAIN STROKE
@@ -422,16 +325,11 @@ function UI:Create()
     MainStroke.Thickness =
         1.5
 
-    MainStroke.Transparency =
-        0
-
     MainStroke.Parent =
         Main
 
     self.MainStroke =
         MainStroke
-
-    self:SetupDrag()
 
     --==================================================
     -- HEADER
@@ -642,9 +540,6 @@ function UI:Create()
     Close.BackgroundColor3 =
         CurrentTheme.Close
 
-    Close.BackgroundTransparency =
-        0
-
     Close.BorderSizePixel =
         0
 
@@ -714,7 +609,7 @@ function UI:Create()
         CurrentTheme.Sidebar
 
     Sidebar.BackgroundTransparency =
-        self.Theme:GetSidebarTransparency()
+        0.10
 
     Sidebar.BorderSizePixel =
         0
@@ -736,24 +631,6 @@ function UI:Create()
 
     SidebarCorner.Parent =
         Sidebar
-
-    local SidebarStroke =
-        Instance.new("UIStroke")
-
-    SidebarStroke.Color =
-        self.Theme:GetAccent()
-
-    SidebarStroke.Thickness =
-        1
-
-    SidebarStroke.Transparency =
-        0.35
-
-    SidebarStroke.Parent =
-        Sidebar
-
-    self.SidebarStroke =
-        SidebarStroke
 
     local SidebarPadding =
         Instance.new("UIPadding")
@@ -827,7 +704,7 @@ function UI:Create()
         CurrentTheme.Content
 
     Content.BackgroundTransparency =
-        self.Theme:GetContentTransparency()
+        0.10
 
     Content.BorderSizePixel =
         0
@@ -849,24 +726,6 @@ function UI:Create()
 
     ContentCorner.Parent =
         Content
-
-    local ContentStroke =
-        Instance.new("UIStroke")
-
-    ContentStroke.Color =
-        self.Theme:GetAccent()
-
-    ContentStroke.Thickness =
-        1
-
-    ContentStroke.Transparency =
-        0.35
-
-    ContentStroke.Parent =
-        Content
-
-    self.ContentStroke =
-        ContentStroke
 
     self.Content =
         Content
@@ -1004,104 +863,47 @@ function UI:Create()
     self.Scroll =
         Scroll
 
-end
+    --==================================================
+    -- CLOSE EVENT
+    --==================================================
 
---==================================================
--- APPLY BACKGROUND
---==================================================
+    Close.MouseButton1Click:Connect(function()
 
-function UI:ApplyBackground()
+        self:SetVisibleAnimated(false)
 
-    if not self.Background
-    or not self.Theme then
-        return
-    end
+    end)
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+    --==================================================
+    -- DRAG
+    --==================================================
 
-    if not CurrentTheme then
-        return
-    end
-
-    local URL =
-        CurrentTheme.BackgroundImage
-
-    if not URL then
-
-        self.Background.Image =
-            ""
-
-        self.Background.BackgroundColor3 =
-            CurrentTheme.Main
-
-        self.Background.BackgroundTransparency =
-            0
-
-        return
-
-    end
-
-    local Asset =
-        self:LoadBackgroundImage(
-            URL
-        )
-
-    if Asset then
-
-        self.Background.Image =
-            Asset
-
-        self.Background.BackgroundTransparency =
-            1
-
-    else
-
-        self.Background.Image =
-            ""
-
-        self.Background.BackgroundColor3 =
-            CurrentTheme.Main
-
-        self.Background.BackgroundTransparency =
-            0
-
-    end
+    self:SetupDrag()
 
 end
 
 --==================================================
--- ANIMATION ENABLED
+-- ANIMATION
 --==================================================
 
 function UI:IsAnimationEnabled()
 
     if not self.Config
     or not self.Config.UI then
+
         return true
+
     end
 
     return self.Config.UI.Animation ~= false
 
 end
 
---==================================================
--- CANCEL ANIMATION
---==================================================
-
 function UI:CancelAnimation()
 
-    self.AnimationToken +=
-        1
-
-    self.AnimationBusy =
-        false
+    self.AnimationToken += 1
+    self.AnimationBusy = false
 
 end
-
---==================================================
--- SET VISIBLE
---==================================================
 
 function UI:SetVisible(Value)
 
@@ -1126,10 +928,6 @@ function UI:SetVisible(Value)
 
 end
 
---==================================================
--- ANIMATED VISIBILITY
---==================================================
-
 function UI:SetVisibleAnimated(Value)
 
     local Main =
@@ -1145,10 +943,7 @@ function UI:SetVisibleAnimated(Value)
 
     if not self:IsAnimationEnabled() then
 
-        self:SetVisible(
-            Value
-        )
-
+        self:SetVisible(Value)
         return
 
     end
@@ -1168,50 +963,37 @@ function UI:SetVisibleAnimated(Value)
 
         Main.Position =
             UDim2.new(
-
                 self.OriginalPosition.X.Scale,
-
                 self.OriginalPosition.X.Offset,
-
                 self.OriginalPosition.Y.Scale,
-
                 self.OriginalPosition.Y.Offset +
                 OPEN_OFFSET_Y
-
             )
 
         local Info =
             TweenInfo.new(
-
                 OPEN_TIME,
-
                 Enum.EasingStyle.Quint,
-
                 Enum.EasingDirection.Out
-
             )
 
         local ScaleTween =
             TweenService:Create(
-
                 Scale,
                 Info,
                 {
                     Scale = 1
                 }
-
             )
 
         local PositionTween =
             TweenService:Create(
-
                 Main,
                 Info,
                 {
                     Position =
                         self.OriginalPosition
                 }
-
             )
 
         self.AnimationBusy =
@@ -1244,49 +1026,34 @@ function UI:SetVisibleAnimated(Value)
 
     local Info =
         TweenInfo.new(
-
             CLOSE_TIME,
-
             Enum.EasingStyle.Quad,
-
             Enum.EasingDirection.In
-
         )
 
     local ScaleTween =
         TweenService:Create(
-
             Scale,
             Info,
             {
                 Scale = CLOSE_SCALE
             }
-
         )
 
     local PositionTween =
         TweenService:Create(
-
             Main,
             Info,
             {
-
                 Position =
                     UDim2.new(
-
                         self.OriginalPosition.X.Scale,
-
                         self.OriginalPosition.X.Offset,
-
                         self.OriginalPosition.Y.Scale,
-
                         self.OriginalPosition.Y.Offset +
                         CLOSE_OFFSET_Y
-
                     )
-
             }
-
         )
 
     self.AnimationBusy =
@@ -1320,10 +1087,6 @@ function UI:SetVisibleAnimated(Value)
 
 end
 
---==================================================
--- TOGGLE
---==================================================
-
 function UI:ToggleAnimated()
 
     if not self.Main then
@@ -1337,16 +1100,13 @@ function UI:ToggleAnimated()
 end
 
 --==================================================
--- MAIN DRAG
+-- DRAG
 --==================================================
 
 function UI:SetupDrag()
 
     local Main =
         self.Main
-
-    local Config =
-        self.Config
 
     if not Main then
         return
@@ -1356,13 +1116,14 @@ function UI:SetupDrag()
         false
 
     local DragStart
+
     local StartPosition
 
     Main.InputBegan:Connect(function(Input)
 
-        if not Config
-        or not Config.UI
-        or not Config.UI.MainMenuDraggable then
+        if not self.Config
+        or not self.Config.UI
+        or not self.Config.UI.MainMenuDraggable then
             return
         end
 
@@ -1403,17 +1164,12 @@ function UI:SetupDrag()
 
             Main.Position =
                 UDim2.new(
-
                     StartPosition.X.Scale,
-
                     StartPosition.X.Offset +
                     Delta.X,
-
                     StartPosition.Y.Scale,
-
                     StartPosition.Y.Offset +
                     Delta.Y
-
                 )
 
         end
@@ -1438,6 +1194,51 @@ function UI:SetupDrag()
 end
 
 --==================================================
+-- APPLY BACKGROUND
+--==================================================
+
+function UI:ApplyBackground()
+
+    if not self.Background then
+        return
+    end
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    if not CurrentTheme then
+        return
+    end
+
+    local Image =
+        CurrentTheme.BackgroundImage
+
+    -- Remove old image first
+    self.Background.Visible =
+        false
+
+    self.Background.Image =
+        ""
+
+    -- No background for this theme
+    if not Image
+    or Image == "" then
+        return
+    end
+
+    self.Background.Image =
+        Image
+
+    self.Background.ImageTransparency =
+        CurrentTheme.BackgroundTransparency
+        or 0.35
+
+    self.Background.Visible =
+        true
+
+end
+
+--==================================================
 -- APPLY THEME
 --==================================================
 
@@ -1455,12 +1256,6 @@ function UI:ApplyTheme()
     end
 
     --==================================================
-    -- BACKGROUND
-    --==================================================
-
-    self:ApplyBackground()
-
-    --==================================================
     -- MAIN
     --==================================================
 
@@ -1469,13 +1264,16 @@ function UI:ApplyTheme()
         self.Main.BackgroundColor3 =
             CurrentTheme.Main
 
-        self.Main.BackgroundTransparency =
-            self.Theme:GetMainTransparency()
-
     end
 
     --==================================================
-    -- MAIN STROKE
+    -- BACKGROUND
+    --==================================================
+
+    self:ApplyBackground()
+
+    --==================================================
+    -- STROKE
     --==================================================
 
     if self.MainStroke then
@@ -1495,10 +1293,6 @@ function UI:ApplyTheme()
             CurrentTheme.Text
 
     end
-
-    --==================================================
-    -- SUBTITLE
-    --==================================================
 
     if self.Subtitle then
 
@@ -1530,16 +1324,6 @@ function UI:ApplyTheme()
         self.Sidebar.BackgroundColor3 =
             CurrentTheme.Sidebar
 
-        self.Sidebar.BackgroundTransparency =
-            self.Theme:GetSidebarTransparency()
-
-    end
-
-    if self.SidebarStroke then
-
-        self.SidebarStroke.Color =
-            self.Theme:GetAccent()
-
     end
 
     --==================================================
@@ -1551,20 +1335,10 @@ function UI:ApplyTheme()
         self.Content.BackgroundColor3 =
             CurrentTheme.Content
 
-        self.Content.BackgroundTransparency =
-            self.Theme:GetContentTransparency()
-
-    end
-
-    if self.ContentStroke then
-
-        self.ContentStroke.Color =
-            self.Theme:GetAccent()
-
     end
 
     --==================================================
-    -- CONTENT TITLE
+    -- TITLE
     --==================================================
 
     if self.ContentTitle then
@@ -1586,9 +1360,5 @@ function UI:ApplyTheme()
     end
 
 end
-
---==================================================
--- RETURN
---==================================================
 
 return UI
