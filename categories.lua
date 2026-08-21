@@ -15,57 +15,14 @@
 --// CLICK = +4 PIXELS
 --// RETURN TO ORIGINAL AFTER 0.34s
 --// CATEGORY CONTRAST SYSTEM
---// NORMAL = BLACK + WHITE TEXT
---// SELECTED = WHITE + BLACK TEXT
+--// THEME AWARE
+--// BLACKOUT = BLACK/WHITE INVERSION
+--// OTHER THEMES = ORIGINAL BEHAVIOR
 
 local TweenService =
     game:GetService("TweenService")
 
 local Categories = {}
-
---==================================================
--- CATEGORY COLORS
---==================================================
--- A aparência das categorias é FIXA.
---
--- NORMAL:
--- Fundo preto
--- Texto branco
---
--- SELECIONADO:
--- Fundo branco
--- Texto preto
---
--- O Theme Accent NÃO interfere aqui.
---==================================================
-
-local NORMAL_CATEGORY_COLOR =
-    Color3.fromRGB(
-        0,
-        0,
-        0
-    )
-
-local NORMAL_CATEGORY_TEXT =
-    Color3.fromRGB(
-        255,
-        255,
-        255
-    )
-
-local SELECTED_CATEGORY_COLOR =
-    Color3.fromRGB(
-        255,
-        255,
-        255
-    )
-
-local SELECTED_CATEGORY_TEXT =
-    Color3.fromRGB(
-        0,
-        0,
-        0
-    )
 
 --==================================================
 -- CATEGORY ICONS
@@ -240,6 +197,18 @@ end
 --==================================================
 -- SET NORMAL CATEGORY STYLE
 --==================================================
+-- IMPORTANTE:
+--
+-- A cor NÃO é mais fixa aqui.
+--
+-- O Theme decide:
+--
+-- Blackout:
+-- preto + branco
+--
+-- Outros temas:
+-- comportamento original
+--==================================================
 
 function Categories:SetNormalStyle(
     Button
@@ -249,16 +218,28 @@ function Categories:SetNormalStyle(
         return
     end
 
+    if not self.Theme then
+        return
+    end
+
     Button.BackgroundColor3 =
-        NORMAL_CATEGORY_COLOR
+        self.Theme:GetNormalColor()
 
     Button.TextColor3 =
-        NORMAL_CATEGORY_TEXT
+        self.Theme:GetNormalTextColor()
 
 end
 
 --==================================================
 -- SET SELECTED CATEGORY STYLE
+--==================================================
+-- IMPORTANTE:
+--
+-- Blackout:
+-- branco + preto
+--
+-- Outros temas:
+-- Accent + Text
 --==================================================
 
 function Categories:SetSelectedStyle(
@@ -269,11 +250,15 @@ function Categories:SetSelectedStyle(
         return
     end
 
+    if not self.Theme then
+        return
+    end
+
     Button.BackgroundColor3 =
-        SELECTED_CATEGORY_COLOR
+        self.Theme:GetSelectedColor()
 
     Button.TextColor3 =
-        SELECTED_CATEGORY_TEXT
+        self.Theme:GetSelectedTextColor()
 
 end
 
@@ -1091,15 +1076,14 @@ function Categories:CreateFilterMenu()
 
     Padding.PaddingBottom =
         UDim.new(
-            0,
-            3
-        )
+        0,
+        3
+    )
 
     Padding.Parent =
         FilterScroll
 
     self:CreateFilterOption(
-
         FilterScroll,
         "All",
         "All",
@@ -1114,11 +1098,9 @@ function Categories:CreateFilterMenu()
             self:CloseFilterMenu()
 
         end
-
     )
 
     self:CreateFilterOption(
-
         FilterScroll,
         "Favorite",
         "★ Favorite",
@@ -1133,11 +1115,9 @@ function Categories:CreateFilterMenu()
             self:CloseFilterMenu()
 
         end
-
     )
 
     self:CreateFilterOption(
-
         FilterScroll,
         "M1",
         "M1",
@@ -1152,11 +1132,9 @@ function Categories:CreateFilterMenu()
             self:CloseFilterMenu()
 
         end
-
     )
 
     self:CreateFilterOption(
-
         FilterScroll,
         "Hit",
         "Hit",
@@ -1171,7 +1149,6 @@ function Categories:CreateFilterMenu()
             self:CloseFilterMenu()
 
         end
-
     )
 
 end
@@ -2072,17 +2049,14 @@ end
 --==================================================
 -- APPLY THEME
 --==================================================
--- IMPORTANTE:
+-- O Theme agora controla o estado das categorias.
 --
--- O tema NÃO muda a lógica das categorias.
+-- Blackout:
+-- NORMAL    = preto + branco
+-- SELECTED  = branco + preto
 --
--- NORMAL:
--- preto + branco
---
--- SELECIONADO:
--- branco + preto
---
--- Isso permanece em todos os temas.
+-- Outros temas:
+-- retornam automaticamente para o comportamento original.
 --==================================================
 
 function Categories:ApplyTheme()
