@@ -14,14 +14,58 @@
 --// CATEGORY CLICK SIZE ANIMATION
 --// CLICK = +4 PIXELS
 --// RETURN TO ORIGINAL AFTER 0.34s
---// CONTRAST SELECTION SYSTEM
---// NORMAL = THEME BUTTON
---// SELECTED = THEME CONTENT
+--// CATEGORY CONTRAST SYSTEM
+--// NORMAL = BLACK + WHITE TEXT
+--// SELECTED = WHITE + BLACK TEXT
 
 local TweenService =
     game:GetService("TweenService")
 
 local Categories = {}
+
+--==================================================
+-- CATEGORY COLORS
+--==================================================
+-- A aparência das categorias é FIXA.
+--
+-- NORMAL:
+-- Fundo preto
+-- Texto branco
+--
+-- SELECIONADO:
+-- Fundo branco
+-- Texto preto
+--
+-- O Theme Accent NÃO interfere aqui.
+--==================================================
+
+local NORMAL_CATEGORY_COLOR =
+    Color3.fromRGB(
+        0,
+        0,
+        0
+    )
+
+local NORMAL_CATEGORY_TEXT =
+    Color3.fromRGB(
+        255,
+        255,
+        255
+    )
+
+local SELECTED_CATEGORY_COLOR =
+    Color3.fromRGB(
+        255,
+        255,
+        255
+    )
+
+local SELECTED_CATEGORY_TEXT =
+    Color3.fromRGB(
+        0,
+        0,
+        0
+    )
 
 --==================================================
 -- CATEGORY ICONS
@@ -194,6 +238,46 @@ function Categories:GetIcon(
 end
 
 --==================================================
+-- SET NORMAL CATEGORY STYLE
+--==================================================
+
+function Categories:SetNormalStyle(
+    Button
+)
+
+    if not Button then
+        return
+    end
+
+    Button.BackgroundColor3 =
+        NORMAL_CATEGORY_COLOR
+
+    Button.TextColor3 =
+        NORMAL_CATEGORY_TEXT
+
+end
+
+--==================================================
+-- SET SELECTED CATEGORY STYLE
+--==================================================
+
+function Categories:SetSelectedStyle(
+    Button
+)
+
+    if not Button then
+        return
+    end
+
+    Button.BackgroundColor3 =
+        SELECTED_CATEGORY_COLOR
+
+    Button.TextColor3 =
+        SELECTED_CATEGORY_TEXT
+
+end
+
+--==================================================
 -- CATEGORY CLICK ANIMATION
 --==================================================
 
@@ -213,6 +297,10 @@ function Categories:AnimateCategoryClick(
         return
 
     end
+
+    --==================================================
+    -- ORIGINAL SIZE
+    --==================================================
 
     local OriginalSize =
         Button.Size
@@ -247,26 +335,7 @@ function Categories:AnimateCategoryClick(
     )
 
     --==================================================
-    -- CANCEL CURRENT TWEEN
-    --==================================================
-
-    local OldTween =
-        Button:GetAttribute(
-            "CategoryAnimationTween"
-        )
-
-    if OldTween then
-
-        pcall(function()
-
-            OldTween:Cancel()
-
-        end)
-
-    end
-
-    --==================================================
-    -- EXPANDED SIZE
+    -- EXPAND
     --==================================================
 
     local ExpandedSize =
@@ -279,10 +348,6 @@ function Categories:AnimateCategoryClick(
             OriginalHeight + ExtraHeight
 
         )
-
-    --==================================================
-    -- EXPAND
-    --==================================================
 
     local ExpandTween =
         TweenService:Create(
@@ -304,17 +369,14 @@ function Categories:AnimateCategoryClick(
 
     ExpandTween:Play()
 
-    Button:SetAttribute(
-        "CategoryAnimationTween",
-        ExpandTween
-    )
-
     --==================================================
     -- RETURN
     --==================================================
 
     task.delay(
+
         Duration,
+
         function()
 
             if not Button
@@ -352,12 +414,8 @@ function Categories:AnimateCategoryClick(
 
             ReturnTween:Play()
 
-            Button:SetAttribute(
-                "CategoryAnimationTween",
-                ReturnTween
-            )
-
         end
+
     )
 
 end
@@ -609,10 +667,6 @@ end
 
 function Categories:GetCurrentSounds()
 
-    --==================================================
-    -- NORMAL CATEGORY
-    --==================================================
-
     if self.CurrentCategory ~= "ALL" then
 
         local Category =
@@ -647,10 +701,6 @@ function Categories:GetCurrentSounds()
 
     end
 
-    --==================================================
-    -- ALL + CURRENT FILTER
-    --==================================================
-
     local Resolver =
         self.FilterResolvers[
             self.CurrentFilter
@@ -672,10 +722,6 @@ function Categories:GetCurrentSounds()
         end
 
     end
-
-    --==================================================
-    -- FALLBACK
-    --==================================================
 
     self:BuildAllSounds()
 
@@ -825,10 +871,6 @@ function Categories:CreateFilterOption(
     Button.Parent =
         Parent
 
-    --==================================================
-    -- PADDING
-    --==================================================
-
     local Padding =
         Instance.new(
             "UIPadding"
@@ -843,10 +885,6 @@ function Categories:CreateFilterOption(
     Padding.Parent =
         Button
 
-    --==================================================
-    -- CORNER
-    --==================================================
-
     local Corner =
         Instance.new(
             "UICorner"
@@ -860,10 +898,6 @@ function Categories:CreateFilterOption(
 
     Corner.Parent =
         Button
-
-    --==================================================
-    -- CLICK
-    --==================================================
 
     Button.MouseButton1Click:Connect(
 
@@ -891,10 +925,6 @@ function Categories:CreateFilterMenu()
 
     local CurrentTheme =
         self.Theme:GetCurrent()
-
-    --==================================================
-    -- MENU
-    --==================================================
 
     local Menu =
         Instance.new(
@@ -938,10 +968,6 @@ function Categories:CreateFilterMenu()
     Menu.Parent =
         self.ContentTitle.Parent
 
-    --==================================================
-    -- CORNER
-    --==================================================
-
     local MenuCorner =
         Instance.new(
             "UICorner"
@@ -955,10 +981,6 @@ function Categories:CreateFilterMenu()
 
     MenuCorner.Parent =
         Menu
-
-    --==================================================
-    -- STROKE
-    --==================================================
 
     local MenuStroke =
         Instance.new(
@@ -979,10 +1001,6 @@ function Categories:CreateFilterMenu()
 
     self.FilterStroke =
         MenuStroke
-
-    --==================================================
-    -- SCROLL FRAME
-    --==================================================
 
     local FilterScroll =
         Instance.new(
@@ -1043,10 +1061,6 @@ function Categories:CreateFilterMenu()
     self.FilterScroll =
         FilterScroll
 
-    --==================================================
-    -- LIST
-    --==================================================
-
     local Layout =
         Instance.new(
             "UIListLayout"
@@ -1063,10 +1077,6 @@ function Categories:CreateFilterMenu()
 
     Layout.Parent =
         FilterScroll
-
-    --==================================================
-    -- PADDING
-    --==================================================
 
     local Padding =
         Instance.new(
@@ -1088,18 +1098,11 @@ function Categories:CreateFilterMenu()
     Padding.Parent =
         FilterScroll
 
-    --==================================================
-    -- ALL
-    --==================================================
-
     self:CreateFilterOption(
 
         FilterScroll,
-
         "All",
-
         "All",
-
         1,
 
         function()
@@ -1114,18 +1117,11 @@ function Categories:CreateFilterMenu()
 
     )
 
-    --==================================================
-    -- FAVORITE
-    --==================================================
-
     self:CreateFilterOption(
 
         FilterScroll,
-
         "Favorite",
-
         "★ Favorite",
-
         2,
 
         function()
@@ -1140,18 +1136,11 @@ function Categories:CreateFilterMenu()
 
     )
 
-    --==================================================
-    -- M1
-    --==================================================
-
     self:CreateFilterOption(
 
         FilterScroll,
-
         "M1",
-
         "M1",
-
         3,
 
         function()
@@ -1166,18 +1155,11 @@ function Categories:CreateFilterMenu()
 
     )
 
-    --==================================================
-    -- HIT
-    --==================================================
-
     self:CreateFilterOption(
 
         FilterScroll,
-
         "Hit",
-
         "Hit",
-
         4,
 
         function()
@@ -1261,10 +1243,6 @@ function Categories:CreateFilterButton()
     Button.Parent =
         Parent
 
-    --==================================================
-    -- CORNER
-    --==================================================
-
     local Corner =
         Instance.new(
             "UICorner"
@@ -1278,10 +1256,6 @@ function Categories:CreateFilterButton()
 
     Corner.Parent =
         Button
-
-    --==================================================
-    -- STROKE
-    --==================================================
 
     local Stroke =
         Instance.new(
@@ -1303,15 +1277,7 @@ function Categories:CreateFilterButton()
     self.FilterStroke =
         Stroke
 
-    --==================================================
-    -- MENU
-    --==================================================
-
     self:CreateFilterMenu()
-
-    --==================================================
-    -- CLICK
-    --==================================================
 
     Button.MouseButton1Click:Connect(
 
@@ -1596,18 +1562,6 @@ end
 --==================================================
 -- SELECT BUTTON
 --==================================================
--- SISTEMA DE CONTRASTE
---
--- NORMAL:
--- Background = Theme.Button
--- Text       = Theme.Text
---
--- SELECIONADO:
--- Background = Theme.Content
--- Text       = Theme.Text
---
--- A seleção NÃO usa Accent como fundo.
---==================================================
 
 function Categories:SelectButton(
     Button
@@ -1617,44 +1571,29 @@ function Categories:SelectButton(
         return
     end
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    if not CurrentTheme then
-        return
-    end
-
     --==================================================
-    -- DESELECIONAR ANTERIOR
+    -- DESELECT OLD
     --==================================================
 
     if self.SelectedButton
     and self.SelectedButton ~= Button then
 
-        self.SelectedButton.BackgroundColor3 =
-            CurrentTheme.Button
-
-        self.SelectedButton.TextColor3 =
-            CurrentTheme.Text
+        self:SetNormalStyle(
+            self.SelectedButton
+        )
 
     end
 
     --==================================================
-    -- NOVO SELECIONADO
+    -- SELECT NEW
     --==================================================
 
     self.SelectedButton =
         Button
 
-    --==================================================
-    -- SELECIONADO = SUPERFÍCIE CONTRASTANTE
-    --==================================================
-
-    Button.BackgroundColor3 =
-        CurrentTheme.Content
-
-    Button.TextColor3 =
-        CurrentTheme.Text
+    self:SetSelectedStyle(
+        Button
+    )
 
 end
 
@@ -1679,9 +1618,6 @@ function Categories:CreateCategoryButton(
 
     end
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
     local Button =
         Instance.new(
             "TextButton"
@@ -1698,8 +1634,13 @@ function Categories:CreateCategoryButton(
             38
         )
 
-    Button.BackgroundColor3 =
-        CurrentTheme.Button
+    --==================================================
+    -- NORMAL STYLE
+    --==================================================
+
+    self:SetNormalStyle(
+        Button
+    )
 
     Button.BorderSizePixel =
         0
@@ -1717,9 +1658,6 @@ function Categories:CreateCategoryButton(
         Icon ..
         "  " ..
         CategoryName
-
-    Button.TextColor3 =
-        CurrentTheme.Text
 
     Button.TextSize =
         11
@@ -2134,15 +2072,20 @@ end
 --==================================================
 -- APPLY THEME
 --==================================================
+-- IMPORTANTE:
+--
+-- O tema NÃO muda a lógica das categorias.
+--
+-- NORMAL:
+-- preto + branco
+--
+-- SELECIONADO:
+-- branco + preto
+--
+-- Isso permanece em todos os temas.
+--==================================================
 
 function Categories:ApplyTheme()
-
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    if not CurrentTheme then
-        return
-    end
 
     --==================================================
     -- CATEGORY BUTTONS
@@ -2156,31 +2099,15 @@ function Categories:ApplyTheme()
         if Button ==
             self.SelectedButton then
 
-            --==================================================
-            -- SELECIONADO
-            --==================================================
-            -- Usa a superfície clara/contrastante.
-            --==================================================
-
-            Button.BackgroundColor3 =
-                CurrentTheme.Content
-
-            Button.TextColor3 =
-                CurrentTheme.Text
+            self:SetSelectedStyle(
+                Button
+            )
 
         else
 
-            --==================================================
-            -- NORMAL
-            --==================================================
-            -- Usa a superfície normal dos blocos.
-            --==================================================
-
-            Button.BackgroundColor3 =
-                CurrentTheme.Button
-
-            Button.TextColor3 =
-                CurrentTheme.Text
+            self:SetNormalStyle(
+                Button
+            )
 
         end
 
@@ -2191,6 +2118,9 @@ function Categories:ApplyTheme()
     --==================================================
 
     if self.FilterButton then
+
+        local CurrentTheme =
+            self.Theme:GetCurrent()
 
         self.FilterButton.BackgroundColor3 =
             CurrentTheme.Button
@@ -2217,6 +2147,9 @@ function Categories:ApplyTheme()
 
     if self.FilterMenu then
 
+        local CurrentTheme =
+            self.Theme:GetCurrent()
+
         self.FilterMenu.BackgroundColor3 =
             CurrentTheme.Content
 
@@ -2242,6 +2175,9 @@ function Categories:ApplyTheme()
 
         self.FilterScroll.ScrollBarImageColor3 =
             self.Theme:GetAccent()
+
+        local CurrentTheme =
+            self.Theme:GetCurrent()
 
         for _, Button in
             ipairs(
