@@ -1,8 +1,41 @@
 --// 💥 RIMURU HUB
 --// Settings System
 --// Theme Popup + Animation Toggle
+--// Fixed 120x82 Theme Selector
+--// Scrollable Theme List
+--// Safe Popup Position
+--// Outside Click Close
 
 local Settings = {}
+
+--==================================================
+-- SERVICES
+--==================================================
+
+local UIS =
+    game:GetService("UserInputService")
+
+local TweenService =
+    game:GetService("TweenService")
+
+--==================================================
+-- POPUP CONFIG
+--==================================================
+
+local POPUP_WIDTH =
+    120
+
+local POPUP_HEIGHT =
+    82
+
+local POPUP_OFFSET =
+    5
+
+local POPUP_OPEN_TIME =
+    0.14
+
+local POPUP_CLOSE_TIME =
+    0.10
 
 --==================================================
 -- INIT
@@ -37,6 +70,9 @@ function Settings:Init(Context)
     self.ThemePopup =
         nil
 
+    self.ThemePopupConnection =
+        nil
+
 end
 
 --==================================================
@@ -44,6 +80,8 @@ end
 --==================================================
 
 function Settings:ClearContent()
+
+    self:CloseThemePopup()
 
     for _, Object in
         ipairs(
@@ -129,6 +167,10 @@ function Settings:CreateToggle(
     Button.Parent =
         self.Scroll
 
+    --==================================================
+    -- PADDING
+    --==================================================
+
     local Padding =
         Instance.new("UIPadding")
 
@@ -141,6 +183,10 @@ function Settings:CreateToggle(
     Padding.Parent =
         Button
 
+    --==================================================
+    -- CORNER
+    --==================================================
+
     local Corner =
         Instance.new("UICorner")
 
@@ -152,6 +198,10 @@ function Settings:CreateToggle(
 
     Corner.Parent =
         Button
+
+    --==================================================
+    -- CLICK
+    --==================================================
 
     Button.MouseButton1Click:Connect(function()
 
@@ -181,14 +231,165 @@ end
 
 function Settings:CloseThemePopup()
 
-    if self.ThemePopup then
+    if self.ThemePopupConnection then
 
-        self.ThemePopup:Destroy()
+        self.ThemePopupConnection:Disconnect()
 
-        self.ThemePopup =
+        self.ThemePopupConnection =
             nil
 
     end
+
+    local Popup =
+        self.ThemePopup
+
+    self.ThemePopup =
+        nil
+
+    if not Popup then
+        return
+    end
+
+    --==================================================
+    -- CLOSE ANIMATION
+    --==================================================
+
+    local Scale =
+        Popup:FindFirstChild(
+            "PopupScale"
+        )
+
+    if Scale then
+
+        local Tween =
+            TweenService:Create(
+
+                Scale,
+
+                TweenInfo.new(
+
+                    POPUP_CLOSE_TIME,
+
+                    Enum.EasingStyle.Quad,
+
+                    Enum.EasingDirection.In
+
+                ),
+
+                {
+                    Scale = 0.92
+                }
+
+            )
+
+        Tween:Play()
+
+        task.spawn(function()
+
+            Tween.Completed:Wait()
+
+            if Popup then
+                Popup:Destroy()
+            end
+
+        end)
+
+    else
+
+        Popup:Destroy()
+
+    end
+
+end
+
+--==================================================
+-- GET SAFE POPUP POSITION
+--==================================================
+
+function Settings:GetPopupPosition(
+    ThemeButton
+)
+
+    local Gui =
+        self.UI.Gui
+
+    if not Gui then
+        return nil
+    end
+
+    local AbsolutePosition =
+        ThemeButton.AbsolutePosition
+
+    local AbsoluteSize =
+        ThemeButton.AbsoluteSize
+
+    local Camera =
+        workspace.CurrentCamera
+
+    if not Camera then
+        return nil
+    end
+
+    local Viewport =
+        Camera.ViewportSize
+
+    local X =
+        AbsolutePosition.X +
+        AbsoluteSize.X -
+        POPUP_WIDTH
+
+    local Y =
+        AbsolutePosition.Y +
+        AbsoluteSize.Y +
+        POPUP_OFFSET
+
+    --==================================================
+    -- RIGHT EDGE
+    --==================================================
+
+    if X +
+        POPUP_WIDTH >
+        Viewport.X then
+
+        X =
+            Viewport.X -
+            POPUP_WIDTH -
+            6
+
+    end
+
+    --==================================================
+    -- LEFT EDGE
+    --==================================================
+
+    if X < 6 then
+        X = 6
+    end
+
+    --==================================================
+    -- BOTTOM EDGE
+    --==================================================
+
+    if Y +
+        POPUP_HEIGHT >
+        Viewport.Y then
+
+        Y =
+            AbsolutePosition.Y -
+            POPUP_HEIGHT -
+            POPUP_OFFSET
+
+    end
+
+    --==================================================
+    -- TOP EDGE
+    --==================================================
+
+    if Y < 6 then
+        Y = 6
+    end
+
+    return X, Y
 
 end
 
@@ -196,7 +397,9 @@ end
 -- CREATE THEME POPUP
 --==================================================
 
-function Settings:CreateThemePopup(ThemeButton)
+function Settings:CreateThemePopup(
+    ThemeButton
+)
 
     self:CloseThemePopup()
 
@@ -204,6 +407,13 @@ function Settings:CreateThemePopup(ThemeButton)
         self.UI.Gui
 
     if not Gui then
+        return
+    end
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    if not CurrentTheme then
         return
     end
 
@@ -220,13 +430,13 @@ function Settings:CreateThemePopup(ThemeButton)
     Popup.Size =
         UDim2.new(
             0,
-            120,
+            POPUP_WIDTH,
             0,
-            82
+            POPUP_HEIGHT
         )
 
     Popup.BackgroundColor3 =
-        self.Theme:GetCurrent().Main
+        CurrentTheme.Main
 
     Popup.BackgroundTransparency =
         0.02
@@ -237,8 +447,34 @@ function Settings:CreateThemePopup(ThemeButton)
     Popup.ZIndex =
         9000
 
+    Popup.ClipsDescendants =
+        true
+
     Popup.Parent =
         Gui
+
+    self.ThemePopup =
+        Popup
+
+    --==================================================
+    -- SCALE
+    --==================================================
+
+    local PopupScale =
+        Instance.new("UIScale")
+
+    PopupScale.Name =
+        "PopupScale"
+
+    PopupScale.Scale =
+        0.92
+
+    PopupScale.Parent =
+        Popup
+
+    --==================================================
+    -- CORNER
+    --==================================================
 
     local Corner =
         Instance.new("UICorner")
@@ -252,6 +488,10 @@ function Settings:CreateThemePopup(ThemeButton)
     Corner.Parent =
         Popup
 
+    --==================================================
+    -- STROKE
+    --==================================================
+
     local Stroke =
         Instance.new("UIStroke")
 
@@ -261,6 +501,9 @@ function Settings:CreateThemePopup(ThemeButton)
     Stroke.Thickness =
         1
 
+    Stroke.Transparency =
+        0.05
+
     Stroke.Parent =
         Popup
 
@@ -268,22 +511,28 @@ function Settings:CreateThemePopup(ThemeButton)
     -- POSITION
     --==================================================
 
-    local AbsolutePosition =
-        ThemeButton.AbsolutePosition
+    local X, Y =
+        self:GetPopupPosition(
+            ThemeButton
+        )
 
-    local AbsoluteSize =
-        ThemeButton.AbsoluteSize
+    if not X then
+
+        Popup:Destroy()
+
+        self.ThemePopup =
+            nil
+
+        return
+
+    end
 
     Popup.Position =
         UDim2.new(
             0,
-            AbsolutePosition.X +
-            AbsoluteSize.X -
-            120,
+            X,
             0,
-            AbsolutePosition.Y +
-            AbsoluteSize.Y +
-            5
+            Y
         )
 
     --==================================================
@@ -324,8 +573,19 @@ function Settings:CreateThemePopup(ThemeButton)
     Scroll.ScrollBarImageColor3 =
         self.Theme:GetAccent()
 
+    Scroll.ScrollBarImageTransparency =
+        0.15
+
     Scroll.AutomaticCanvasSize =
         Enum.AutomaticSize.Y
+
+    Scroll.CanvasSize =
+        UDim2.new(
+            0,
+            0,
+            0,
+            0
+        )
 
     Scroll.ScrollingDirection =
         Enum.ScrollingDirection.Y
@@ -335,6 +595,10 @@ function Settings:CreateThemePopup(ThemeButton)
 
     Scroll.Parent =
         Popup
+
+    --==================================================
+    -- SCROLL PADDING
+    --==================================================
 
     local Padding =
         Instance.new("UIPadding")
@@ -365,6 +629,10 @@ function Settings:CreateThemePopup(ThemeButton)
 
     Padding.Parent =
         Scroll
+
+    --==================================================
+    -- LAYOUT
+    --==================================================
 
     local Layout =
         Instance.new("UIListLayout")
@@ -405,22 +673,26 @@ function Settings:CreateThemePopup(ThemeButton)
     )
 
     --==================================================
-    -- BUTTONS
+    -- CREATE BUTTONS
     --==================================================
 
     for Index, Name in
-        ipairs(ThemeNames) do
-
-        local CurrentTheme =
-            self.Theme:GetCurrent()
+        ipairs(
+            ThemeNames
+        ) do
 
         local ThemeData =
             Themes[Name]
+
+        local IsCurrent =
+            Name ==
+            self.Theme:GetName()
 
         local Button =
             Instance.new("TextButton")
 
         Button.Name =
+            "Theme_" ..
             Name
 
         Button.Size =
@@ -432,27 +704,36 @@ function Settings:CreateThemePopup(ThemeButton)
             )
 
         Button.BackgroundColor3 =
-            ThemeData.Card or
-            CurrentTheme.Card
+            ThemeData.Card
+            or CurrentTheme.Card
 
         Button.BackgroundTransparency =
-            0.05
+            IsCurrent
+            and 0
+            or 0.08
 
         Button.BorderSizePixel =
             0
 
         Button.Text =
-            Name
+            IsCurrent
+            and "●  " .. Name
+            or Name
 
         Button.TextColor3 =
-            ThemeData.Text or
-            CurrentTheme.Text
+            ThemeData.Text
+            or CurrentTheme.Text
 
         Button.TextSize =
             9
 
         Button.Font =
-            Enum.Font.GothamMedium
+            IsCurrent
+            and Enum.Font.GothamBold
+            or Enum.Font.GothamMedium
+
+        Button.TextXAlignment =
+            Enum.TextXAlignment.Left
 
         Button.AutoButtonColor =
             false
@@ -466,6 +747,26 @@ function Settings:CreateThemePopup(ThemeButton)
         Button.Parent =
             Scroll
 
+        --==================================================
+        -- BUTTON PADDING
+        --==================================================
+
+        local ButtonPadding =
+            Instance.new("UIPadding")
+
+        ButtonPadding.PaddingLeft =
+            UDim.new(
+                0,
+                6
+            )
+
+        ButtonPadding.Parent =
+            Button
+
+        --==================================================
+        -- BUTTON CORNER
+        --==================================================
+
         local ButtonCorner =
             Instance.new("UICorner")
 
@@ -478,6 +779,103 @@ function Settings:CreateThemePopup(ThemeButton)
         ButtonCorner.Parent =
             Button
 
+        --==================================================
+        -- CURRENT THEME STROKE
+        --==================================================
+
+        if IsCurrent then
+
+            local CurrentStroke =
+                Instance.new("UIStroke")
+
+            CurrentStroke.Color =
+                self.Theme:GetAccent()
+
+            CurrentStroke.Thickness =
+                1
+
+            CurrentStroke.Transparency =
+                0.15
+
+            CurrentStroke.Parent =
+                Button
+
+        end
+
+        --==================================================
+        -- HOVER
+        --==================================================
+
+        Button.MouseEnter:Connect(function()
+
+            if not Button.Parent then
+                return
+            end
+
+            local HoverTween =
+                TweenService:Create(
+
+                    Button,
+
+                    TweenInfo.new(
+
+                        0.10,
+
+                        Enum.EasingStyle.Quad,
+
+                        Enum.EasingDirection.Out
+
+                    ),
+
+                    {
+                        BackgroundTransparency =
+                            0
+                    }
+
+                )
+
+            HoverTween:Play()
+
+        end)
+
+        Button.MouseLeave:Connect(function()
+
+            if not Button.Parent then
+                return
+            end
+
+            local LeaveTween =
+                TweenService:Create(
+
+                    Button,
+
+                    TweenInfo.new(
+
+                        0.10,
+
+                        Enum.EasingStyle.Quad,
+
+                        Enum.EasingDirection.Out
+
+                    ),
+
+                    {
+                        BackgroundTransparency =
+                            IsCurrent
+                            and 0
+                            or 0.08
+                    }
+
+                )
+
+            LeaveTween:Play()
+
+        end)
+
+        --==================================================
+        -- CLICK
+        --==================================================
+
         Button.MouseButton1Click:Connect(function()
 
             if self.Theme:SetTheme(
@@ -488,8 +886,6 @@ function Settings:CreateThemePopup(ThemeButton)
 
                 self:ApplyTheme()
 
-                -- Rebuild settings so the
-                -- selector shows the new theme
                 task.defer(function()
 
                     if self.Scroll
@@ -507,13 +903,131 @@ function Settings:CreateThemePopup(ThemeButton)
 
     end
 
-    self.ThemePopup =
-        Popup
+    --==================================================
+    -- OPEN ANIMATION
+    --==================================================
+
+    local OpenTween =
+        TweenService:Create(
+
+            PopupScale,
+
+            TweenInfo.new(
+
+                POPUP_OPEN_TIME,
+
+                Enum.EasingStyle.Back,
+
+                Enum.EasingDirection.Out
+
+            ),
+
+            {
+                Scale = 1
+            }
+
+        )
+
+    OpenTween:Play()
+
+    --==================================================
+    -- CLICK OUTSIDE
+    --==================================================
+
+    self.ThemePopupConnection =
+        UIS.InputBegan:Connect(function(
+            Input
+        )
+
+        if not self.ThemePopup then
+            return
+        end
+
+        if Input.UserInputType ~=
+            Enum.UserInputType.MouseButton1
+
+        and Input.UserInputType ~=
+            Enum.UserInputType.Touch then
+
+            return
+
+        end
+
+        local Position =
+            Input.Position
+
+        local PopupPosition =
+            Popup.AbsolutePosition
+
+        local PopupSize =
+            Popup.AbsoluteSize
+
+        local InsidePopup =
+
+            Position.X >=
+            PopupPosition.X
+
+            and
+
+            Position.X <=
+            PopupPosition.X +
+            PopupSize.X
+
+            and
+
+            Position.Y >=
+            PopupPosition.Y
+
+            and
+
+            Position.Y <=
+            PopupPosition.Y +
+            PopupSize.Y
+
+        if InsidePopup then
+            return
+        end
+
+        local ButtonPosition =
+            ThemeButton.AbsolutePosition
+
+        local ButtonSize =
+            ThemeButton.AbsoluteSize
+
+        local InsideButton =
+
+            Position.X >=
+            ButtonPosition.X
+
+            and
+
+            Position.X <=
+            ButtonPosition.X +
+            ButtonSize.X
+
+            and
+
+            Position.Y >=
+            ButtonPosition.Y
+
+            and
+
+            Position.Y <=
+            ButtonPosition.Y +
+            ButtonSize.Y
+
+        if InsideButton then
+            return
+        end
+
+        self:CloseThemePopup()
+
+    end)
 
 end
 
 --==================================================
--- CREATE THEME SELECTOR BUTTON
+-- CREATE THEME SELECTOR
 --==================================================
 
 function Settings:CreateThemeSelector()
@@ -572,6 +1086,10 @@ function Settings:CreateThemeSelector()
     ThemeButton.Parent =
         self.Scroll
 
+    --==================================================
+    -- PADDING
+    --==================================================
+
     local Padding =
         Instance.new("UIPadding")
 
@@ -584,6 +1102,10 @@ function Settings:CreateThemeSelector()
     Padding.Parent =
         ThemeButton
 
+    --==================================================
+    -- CORNER
+    --==================================================
+
     local Corner =
         Instance.new("UICorner")
 
@@ -595,6 +1117,68 @@ function Settings:CreateThemeSelector()
 
     Corner.Parent =
         ThemeButton
+
+    --==================================================
+    -- HOVER
+    --==================================================
+
+    ThemeButton.MouseEnter:Connect(function()
+
+        local Tween =
+            TweenService:Create(
+
+                ThemeButton,
+
+                TweenInfo.new(
+
+                    0.10,
+
+                    Enum.EasingStyle.Quad,
+
+                    Enum.EasingDirection.Out
+
+                ),
+
+                {
+                    BackgroundTransparency = 0
+                }
+
+            )
+
+        Tween:Play()
+
+    end)
+
+    ThemeButton.MouseLeave:Connect(function()
+
+        local Tween =
+            TweenService:Create(
+
+                ThemeButton,
+
+                TweenInfo.new(
+
+                    0.10,
+
+                    Enum.EasingStyle.Quad,
+
+                    Enum.EasingDirection.Out
+
+                ),
+
+                {
+                    BackgroundTransparency = 0.12
+                }
+
+            )
+
+        Tween:Play()
+
+    end)
+
+    --==================================================
+    -- CLICK
+    --==================================================
 
     ThemeButton.MouseButton1Click:Connect(function()
 
@@ -679,9 +1263,13 @@ function Settings:Show()
             self.Config.UI.ShowLogo =
                 Value
 
-            self.Logo:SetVisible(
-                Value
-            )
+            if self.Logo then
+
+                self.Logo:SetVisible(
+                    Value
+                )
+
+            end
 
         end,
 
@@ -751,7 +1339,11 @@ function Settings:ApplyTheme()
     -- MAIN UI
     --==================================================
 
-    self.UI:ApplyTheme()
+    if self.UI then
+
+        self.UI:ApplyTheme()
+
+    end
 
     --==================================================
     -- LOGO
@@ -774,14 +1366,17 @@ function Settings:ApplyTheme()
     end
 
     --==================================================
-    -- SETTINGS OBJECTS
+    -- SETTINGS
     --==================================================
 
     local CurrentTheme =
         self.Theme:GetCurrent()
 
-    if not self.Scroll then
+    if not CurrentTheme
+    or not self.Scroll then
+
         return
+
     end
 
     for _, Object in
@@ -847,6 +1442,45 @@ function Settings:ApplyTheme()
 
     end
 
+    --==================================================
+    -- UPDATE OPEN POPUP
+    --==================================================
+
+    if self.ThemePopup then
+
+        self.ThemePopup.BackgroundColor3 =
+            CurrentTheme.Main
+
+        local Stroke =
+            self.ThemePopup:FindFirstChildOfClass(
+                "UIStroke"
+            )
+
+        if Stroke then
+
+            Stroke.Color =
+                self.Theme:GetAccent()
+
+        end
+
+        local ThemeScroll =
+            self.ThemePopup:FindFirstChild(
+                "ThemeScroll"
+            )
+
+        if ThemeScroll then
+
+            ThemeScroll.ScrollBarImageColor3 =
+                self.Theme:GetAccent()
+
+        end
+
+    end
+
 end
+
+--==================================================
+-- RETURN
+--==================================================
 
 return Settings
