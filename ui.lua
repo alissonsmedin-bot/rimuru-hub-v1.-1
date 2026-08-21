@@ -2,6 +2,8 @@
 --// UI System
 --// Animated Stable Version
 --// Background Contained Inside Main
+--// SAFE THEME INTEGRATION
+--// BLACKOUT CATEGORY LOGIC REMAINS IN categories.lua
 
 --==================================================
 -- SERVICES
@@ -43,6 +45,27 @@ local OPEN_OFFSET_Y =
 
 local CLOSE_OFFSET_Y =
     10
+
+--==================================================
+-- SAFE THEME VALUE
+--==================================================
+
+local function ThemeColor(
+    Theme,
+    Key,
+    Fallback
+)
+
+    if Theme
+    and Theme[Key] then
+
+        return Theme[Key]
+
+    end
+
+    return Fallback
+
+end
 
 --==================================================
 -- INIT
@@ -93,7 +116,9 @@ function UI:RemoveOld()
             )
 
         if Old then
+
             Old:Destroy()
+
         end
 
     end)
@@ -186,7 +211,16 @@ function UI:Create()
         )
 
     Main.BackgroundColor3 =
-        CurrentTheme.Main
+        ThemeColor(
+            CurrentTheme,
+            "Main",
+            CurrentTheme.Background
+                or Color3.fromRGB(
+                    10,
+                    10,
+                    15
+                )
+        )
 
     Main.BackgroundTransparency =
         0.10
@@ -538,7 +572,17 @@ function UI:Create()
         )
 
     Close.BackgroundColor3 =
-        CurrentTheme.Close
+        ThemeColor(
+            CurrentTheme,
+            "Close",
+            CurrentTheme.Button
+                or CurrentTheme.Card
+                or Color3.fromRGB(
+                    30,
+                    30,
+                    30
+                )
+        )
 
     Close.BorderSizePixel =
         0
@@ -606,7 +650,17 @@ function UI:Create()
         )
 
     Sidebar.BackgroundColor3 =
-        CurrentTheme.Sidebar
+        ThemeColor(
+            CurrentTheme,
+            "Sidebar",
+            CurrentTheme.Content
+                or CurrentTheme.Background
+                or Color3.fromRGB(
+                    15,
+                    15,
+                    20
+                )
+        )
 
     Sidebar.BackgroundTransparency =
         0.10
@@ -702,6 +756,12 @@ function UI:Create()
 
     Content.BackgroundColor3 =
         CurrentTheme.Content
+        or CurrentTheme.Background
+        or Color3.fromRGB(
+            15,
+            15,
+            20
+        )
 
     Content.BackgroundTransparency =
         0.10
@@ -867,11 +927,17 @@ function UI:Create()
     -- CLOSE EVENT
     --==================================================
 
-    Close.MouseButton1Click:Connect(function()
+    Close.MouseButton1Click:Connect(
 
-        self:SetVisibleAnimated(false)
+        function()
 
-    end)
+            self:SetVisibleAnimated(
+                false
+            )
+
+        end
+
+    )
 
     --==================================================
     -- DRAG
@@ -882,7 +948,7 @@ function UI:Create()
 end
 
 --==================================================
--- ANIMATION
+-- ANIMATION ENABLED
 --==================================================
 
 function UI:IsAnimationEnabled()
@@ -898,12 +964,22 @@ function UI:IsAnimationEnabled()
 
 end
 
+--==================================================
+-- CANCEL ANIMATION
+--==================================================
+
 function UI:CancelAnimation()
 
     self.AnimationToken += 1
-    self.AnimationBusy = false
+
+    self.AnimationBusy =
+        false
 
 end
+
+--==================================================
+-- SET VISIBLE
+--==================================================
 
 function UI:SetVisible(Value)
 
@@ -928,6 +1004,10 @@ function UI:SetVisible(Value)
 
 end
 
+--==================================================
+-- SET VISIBLE ANIMATED
+--==================================================
+
 function UI:SetVisibleAnimated(Value)
 
     local Main =
@@ -938,12 +1018,17 @@ function UI:SetVisibleAnimated(Value)
 
     if not Main
     or not Scale then
+
         return
+
     end
 
     if not self:IsAnimationEnabled() then
 
-        self:SetVisible(Value)
+        self:SetVisible(
+            Value
+        )
+
         return
 
     end
@@ -952,6 +1037,10 @@ function UI:SetVisibleAnimated(Value)
 
     local Token =
         self.AnimationToken
+
+    --==================================================
+    -- OPEN
+    --==================================================
 
     if Value then
 
@@ -963,37 +1052,54 @@ function UI:SetVisibleAnimated(Value)
 
         Main.Position =
             UDim2.new(
+
                 self.OriginalPosition.X.Scale,
+
                 self.OriginalPosition.X.Offset,
+
                 self.OriginalPosition.Y.Scale,
-                self.OriginalPosition.Y.Offset +
-                OPEN_OFFSET_Y
+
+                self.OriginalPosition.Y.Offset
+                    + OPEN_OFFSET_Y
+
             )
 
         local Info =
             TweenInfo.new(
+
                 OPEN_TIME,
+
                 Enum.EasingStyle.Quint,
+
                 Enum.EasingDirection.Out
+
             )
 
         local ScaleTween =
             TweenService:Create(
+
                 Scale,
+
                 Info,
+
                 {
                     Scale = 1
                 }
+
             )
 
         local PositionTween =
             TweenService:Create(
+
                 Main,
+
                 Info,
+
                 {
                     Position =
                         self.OriginalPosition
                 }
+
             )
 
         self.AnimationBusy =
@@ -1002,23 +1108,31 @@ function UI:SetVisibleAnimated(Value)
         ScaleTween:Play()
         PositionTween:Play()
 
-        task.spawn(function()
+        task.spawn(
 
-            PositionTween.Completed:Wait()
+            function()
 
-            if self.AnimationToken ==
-                Token then
+                PositionTween.Completed:Wait()
 
-                self.AnimationBusy =
-                    false
+                if self.AnimationToken ==
+                    Token then
+
+                    self.AnimationBusy =
+                        false
+
+                end
 
             end
 
-        end)
+        )
 
         return
 
     end
+
+    --==================================================
+    -- CLOSE
+    --==================================================
 
     if not Main.Visible then
         return
@@ -1026,34 +1140,53 @@ function UI:SetVisibleAnimated(Value)
 
     local Info =
         TweenInfo.new(
+
             CLOSE_TIME,
+
             Enum.EasingStyle.Quad,
+
             Enum.EasingDirection.In
+
         )
 
     local ScaleTween =
         TweenService:Create(
+
             Scale,
+
             Info,
+
             {
                 Scale = CLOSE_SCALE
             }
+
         )
 
     local PositionTween =
         TweenService:Create(
+
             Main,
+
             Info,
+
             {
+
                 Position =
                     UDim2.new(
+
                         self.OriginalPosition.X.Scale,
+
                         self.OriginalPosition.X.Offset,
+
                         self.OriginalPosition.Y.Scale,
-                        self.OriginalPosition.Y.Offset +
-                        CLOSE_OFFSET_Y
+
+                        self.OriginalPosition.Y.Offset
+                            + CLOSE_OFFSET_Y
+
                     )
+
             }
+
         )
 
     self.AnimationBusy =
@@ -1062,30 +1195,40 @@ function UI:SetVisibleAnimated(Value)
     ScaleTween:Play()
     PositionTween:Play()
 
-    task.spawn(function()
+    task.spawn(
 
-        PositionTween.Completed:Wait()
+        function()
 
-        if self.AnimationToken ~=
-            Token then
-            return
+            PositionTween.Completed:Wait()
+
+            if self.AnimationToken ~=
+                Token then
+
+                return
+
+            end
+
+            Main.Visible =
+                false
+
+            Scale.Scale =
+                1
+
+            Main.Position =
+                self.OriginalPosition
+
+            self.AnimationBusy =
+                false
+
         end
 
-        Main.Visible =
-            false
-
-        Scale.Scale =
-            1
-
-        Main.Position =
-            self.OriginalPosition
-
-        self.AnimationBusy =
-            false
-
-    end)
+    )
 
 end
+
+--==================================================
+-- TOGGLE
+--==================================================
 
 function UI:ToggleAnimated()
 
@@ -1094,7 +1237,9 @@ function UI:ToggleAnimated()
     end
 
     self:SetVisibleAnimated(
+
         not self.Main.Visible
+
     )
 
 end
@@ -1119,77 +1264,96 @@ function UI:SetupDrag()
 
     local StartPosition
 
-    Main.InputBegan:Connect(function(Input)
+    Main.InputBegan:Connect(
 
-        if not self.Config
-        or not self.Config.UI
-        or not self.Config.UI.MainMenuDraggable then
-            return
-        end
+        function(Input)
 
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseButton1
+            if not self.Config
+            or not self.Config.UI
+            or not self.Config.UI.MainMenuDraggable then
 
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
+                return
 
-            Dragging =
-                true
+            end
 
-            DragStart =
-                Input.Position
+            if Input.UserInputType ==
+                Enum.UserInputType.MouseButton1
 
-            StartPosition =
-                Main.Position
+            or Input.UserInputType ==
+                Enum.UserInputType.Touch then
 
-        end
+                Dragging =
+                    true
 
-    end)
+                DragStart =
+                    Input.Position
 
-    UIS.InputChanged:Connect(function(Input)
+                StartPosition =
+                    Main.Position
 
-        if not Dragging then
-            return
-        end
-
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseMovement
-
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
-
-            local Delta =
-                Input.Position -
-                DragStart
-
-            Main.Position =
-                UDim2.new(
-                    StartPosition.X.Scale,
-                    StartPosition.X.Offset +
-                    Delta.X,
-                    StartPosition.Y.Scale,
-                    StartPosition.Y.Offset +
-                    Delta.Y
-                )
+            end
 
         end
 
-    end)
+    )
 
-    UIS.InputEnded:Connect(function(Input)
+    UIS.InputChanged:Connect(
 
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseButton1
+        function(Input)
 
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
+            if not Dragging then
+                return
+            end
 
-            Dragging =
-                false
+            if Input.UserInputType ==
+                Enum.UserInputType.MouseMovement
+
+            or Input.UserInputType ==
+                Enum.UserInputType.Touch then
+
+                local Delta =
+                    Input.Position -
+                    DragStart
+
+                Main.Position =
+                    UDim2.new(
+
+                        StartPosition.X.Scale,
+
+                        StartPosition.X.Offset
+                            + Delta.X,
+
+                        StartPosition.Y.Scale,
+
+                        StartPosition.Y.Offset
+                            + Delta.Y
+
+                    )
+
+            end
 
         end
 
-    end)
+    )
+
+    UIS.InputEnded:Connect(
+
+        function(Input)
+
+            if Input.UserInputType ==
+                Enum.UserInputType.MouseButton1
+
+            or Input.UserInputType ==
+                Enum.UserInputType.Touch then
+
+                Dragging =
+                    false
+
+            end
+
+        end
+
+    )
 
 end
 
@@ -1213,18 +1377,30 @@ function UI:ApplyBackground()
     local Image =
         CurrentTheme.BackgroundImage
 
-    -- Remove old image first
+    --==================================================
+    -- REMOVE OLD IMAGE
+    --==================================================
+
     self.Background.Visible =
         false
 
     self.Background.Image =
         ""
 
-    -- No background for this theme
+    --==================================================
+    -- NO IMAGE
+    --==================================================
+
     if not Image
     or Image == "" then
+
         return
+
     end
+
+    --==================================================
+    -- APPLY IMAGE
+    --==================================================
 
     self.Background.Image =
         Image
@@ -1262,7 +1438,20 @@ function UI:ApplyTheme()
     if self.Main then
 
         self.Main.BackgroundColor3 =
-            CurrentTheme.Main
+            ThemeColor(
+
+                CurrentTheme,
+
+                "Main",
+
+                CurrentTheme.Background
+                    or Color3.fromRGB(
+                        10,
+                        10,
+                        15
+                    )
+
+            )
 
     end
 
@@ -1273,7 +1462,7 @@ function UI:ApplyTheme()
     self:ApplyBackground()
 
     --==================================================
-    -- STROKE
+    -- MAIN STROKE
     --==================================================
 
     if self.MainStroke then
@@ -1284,7 +1473,7 @@ function UI:ApplyTheme()
     end
 
     --==================================================
-    -- TITLE
+    -- HEADER TITLE
     --==================================================
 
     if self.Title then
@@ -1293,6 +1482,10 @@ function UI:ApplyTheme()
             CurrentTheme.Text
 
     end
+
+    --==================================================
+    -- SUBTITLE
+    --==================================================
 
     if self.Subtitle then
 
@@ -1308,7 +1501,21 @@ function UI:ApplyTheme()
     if self.Close then
 
         self.Close.BackgroundColor3 =
-            CurrentTheme.Close
+            ThemeColor(
+
+                CurrentTheme,
+
+                "Close",
+
+                CurrentTheme.Button
+                    or CurrentTheme.Card
+                    or Color3.fromRGB(
+                        30,
+                        30,
+                        30
+                    )
+
+            )
 
         self.Close.TextColor3 =
             CurrentTheme.Text
@@ -1322,7 +1529,21 @@ function UI:ApplyTheme()
     if self.Sidebar then
 
         self.Sidebar.BackgroundColor3 =
-            CurrentTheme.Sidebar
+            ThemeColor(
+
+                CurrentTheme,
+
+                "Sidebar",
+
+                CurrentTheme.Content
+                    or CurrentTheme.Background
+                    or Color3.fromRGB(
+                        15,
+                        15,
+                        20
+                    )
+
+            )
 
     end
 
@@ -1334,11 +1555,17 @@ function UI:ApplyTheme()
 
         self.Content.BackgroundColor3 =
             CurrentTheme.Content
+            or CurrentTheme.Background
+            or Color3.fromRGB(
+                15,
+                15,
+                20
+            )
 
     end
 
     --==================================================
-    -- TITLE
+    -- CONTENT TITLE
     --==================================================
 
     if self.ContentTitle then
@@ -1359,6 +1586,32 @@ function UI:ApplyTheme()
 
     end
 
+    --==================================================
+    -- HEADER LOGO BORDER
+    --==================================================
+    -- Caso exista UIStroke no logo,
+    -- atualiza automaticamente.
+
+    if self.HeaderLogo then
+
+        local LogoStroke =
+            self.HeaderLogo:FindFirstChildOfClass(
+                "UIStroke"
+            )
+
+        if LogoStroke then
+
+            LogoStroke.Color =
+                self.Theme:GetLogoBorder()
+
+        end
+
+    end
+
 end
+
+--==================================================
+-- RETURN
+--==================================================
 
 return UI
