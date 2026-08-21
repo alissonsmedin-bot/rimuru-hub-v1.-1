@@ -3,39 +3,33 @@
 --// SEARCH VERSION
 --// Modular Remote Architecture
 --// Future Updates Compatible
+--// NO FAVORITES MODULE DEPENDENCY
 
 --==================================================
 -- SERVICES
 --==================================================
 
 local Players =
-game:GetService("Players")
+    game:GetService("Players")
 
 --==================================================
 -- PLAYER
 --==================================================
 
 local Player =
-Players.LocalPlayer
+    Players.LocalPlayer
 
 local PlayerGui =
-Player:WaitForChild(
-"PlayerGui"
-)
+    Player:WaitForChild(
+        "PlayerGui"
+    )
 
 --==================================================
 -- BASE URL
 --==================================================
 
--- IMPORTANTE:
--- Mantém "main" para que futuras atualizações
--- dos módulos sejam carregadas normalmente.
-
--- O commit 2bf022d foi usado apenas para
--- recuperar a versão antiga dos módulos.
-
 local BaseURL =
-"https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/"
+    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/"
 
 --==================================================
 -- LOAD MODULE
@@ -43,57 +37,59 @@ local BaseURL =
 
 local function Load(FileName)
 
-local URL =  
-    BaseURL ..  
-    FileName  
+    local URL =
+        BaseURL ..
+        FileName
 
-local Success, Result =  
-    pcall(function()  
+    local Success, Result =
+        pcall(function()
 
-        local Source =  
-            game:HttpGet(URL)  
+            local Source =
+                game:HttpGet(URL)
 
-        local Module =  
-            loadstring(Source)  
+            local Module =
+                loadstring(Source)
 
-        if not Module then  
-            error(  
-                "loadstring retornou nil"  
-            )  
-        end  
+            if not Module then
 
-        return Module()  
+                error(
+                    "loadstring retornou nil"
+                )
 
-    end)  
+            end
 
-if not Success then  
+            return Module()
 
-    warn(  
-        "❌ Rimuru Hub: erro ao carregar " ..  
-        FileName  
-    )  
+        end)
 
-    warn(  
-        tostring(Result)  
-    )  
+    if not Success then
 
-    return nil  
+        warn(
+            "❌ Rimuru Hub: erro ao carregar " ..
+            FileName
+        )
 
-end  
+        warn(
+            tostring(Result)
+        )
 
-if Result == nil then  
+        return nil
 
-    warn(  
-        "❌ Rimuru Hub: " ..  
-        FileName ..  
-        " não retornou um módulo válido."  
-    )  
+    end
 
-    return nil  
+    if Result == nil then
 
-end  
+        warn(
+            "❌ Rimuru Hub: " ..
+            FileName ..
+            " não retornou um módulo válido."
+        )
 
-return Result
+        return nil
+
+    end
+
+    return Result
 
 end
 
@@ -102,11 +98,16 @@ end
 --==================================================
 
 local Config =
-Load("config.lua")
+    Load("config.lua")
 
 if not Config then
-warn("❌ Rimuru Hub: Config não carregado.")
-return
+
+    warn(
+        "❌ Rimuru Hub: Config não carregado."
+    )
+
+    return
+
 end
 
 --==================================================
@@ -114,11 +115,16 @@ end
 --==================================================
 
 local Sounds =
-Load("sound.lua")
+    Load("sound.lua")
 
 if not Sounds then
-warn("❌ Rimuru Hub: Sounds não carregado.")
-return
+
+    warn(
+        "❌ Rimuru Hub: Sounds não carregado."
+    )
+
+    return
+
 end
 
 --==================================================
@@ -126,31 +132,28 @@ end
 --==================================================
 
 local Theme =
-Load("theme.lua")
+    Load("theme.lua")
 
 local UI =
-Load("ui.lua")
+    Load("ui.lua")
 
 local Logo =
-Load("logo.lua")
+    Load("logo.lua")
 
 local Cards =
-Load("cards.lua")
-
-local Favorites =
-Load("favorites.lua")
+    Load("cards.lua")
 
 local Search =
-Load("search.lua")
+    Load("search.lua")
 
 local Categories =
-Load("categories.lua")
+    Load("categories.lua")
 
 local Settings =
-Load("settings.lua")
+    Load("settings.lua")
 
 local RGB =
-Load("RGB.lua")
+    Load("RGB.lua")
 
 --==================================================
 -- VERIFY MODULES
@@ -158,30 +161,45 @@ Load("RGB.lua")
 
 local Modules = {
 
-Theme = Theme,  
-UI = UI,  
-Logo = Logo,  
-Cards = Cards,  
-Favorites = Favorites,
-Search = Search,  
-Categories = Categories,  
-Settings = Settings,  
-RGB = RGB
+    Theme =
+        Theme,
+
+    UI =
+        UI,
+
+    Logo =
+        Logo,
+
+    Cards =
+        Cards,
+
+    Search =
+        Search,
+
+    Categories =
+        Categories,
+
+    Settings =
+        Settings,
+
+    RGB =
+        RGB
 
 }
 
-for Name, Module in pairs(Modules) do
+for Name, Module in
+    pairs(Modules) do
 
-if not Module then  
+    if not Module then
 
-    warn(  
-        "❌ Rimuru Hub: módulo ausente -> " ..  
-        Name  
-    )  
+        warn(
+            "❌ Rimuru Hub: módulo ausente -> " ..
+            Name
+        )
 
-    return  
+        return
 
-end
+    end
 
 end
 
@@ -191,44 +209,41 @@ end
 
 local Context = {
 
-Player =  
-    Player,  
+    Player =
+        Player,
 
-PlayerGui =  
-    PlayerGui,  
+    PlayerGui =
+        PlayerGui,
 
-Config =  
-    Config,  
+    Config =
+        Config,
 
-Sounds =  
-    Sounds,  
+    Sounds =
+        Sounds,
 
-Theme =  
-    Theme,  
+    Theme =
+        Theme,
 
-UI =  
-    UI,  
+    UI =
+        UI,
 
-Logo =  
-    Logo,  
+    Logo =
+        Logo,
 
-Cards =  
-    Cards,  
+    Cards =
+        Cards,
 
-Favorites =
-    Favorites,
+    Search =
+        Search,
 
-Search =  
-    Search,  
+    Categories =
+        Categories,
 
-Categories =  
-    Categories,  
+    Settings =
+        Settings,
 
-Settings =  
-    Settings,  
-
-RGB =  
-    RGB
+    RGB =
+        RGB
 
 }
 
@@ -237,7 +252,7 @@ RGB =
 --==================================================
 
 Theme:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -245,7 +260,7 @@ Context
 --==================================================
 
 UI:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -253,7 +268,7 @@ Context
 --==================================================
 
 Logo:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -261,7 +276,7 @@ Context
 --==================================================
 
 Cards:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -269,7 +284,7 @@ Context
 --==================================================
 
 Categories:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -277,7 +292,7 @@ Context
 --==================================================
 
 Search:Init(
-Context
+    Context
 )
 
 Search:Connect()
@@ -287,7 +302,7 @@ Search:Connect()
 --==================================================
 
 Settings:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -295,7 +310,7 @@ Context
 --==================================================
 
 RGB:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -309,15 +324,19 @@ Categories:CreateCategories()
 --==================================================
 
 local ConfigButton =
-Categories.ConfigButton
+    Categories.ConfigButton
 
 if ConfigButton then
 
-ConfigButton.MouseButton1Click:Connect(function()  
+    ConfigButton.MouseButton1Click:Connect(
 
-    Settings:Show()  
+        function()
 
-end)
+            Settings:Show()
+
+        end
+
+    )
 
 end
 
@@ -333,17 +352,25 @@ Categories:SetDefaultCategory()
 
 if UI.Close then
 
-    UI.Close.MouseButton1Click:Connect(function()
+    UI.Close.MouseButton1Click:Connect(
 
-        UI:SetVisibleAnimated(false)
+        function()
 
-        if Config.UI.ShowLogo then
+            UI:SetVisibleAnimated(
+                false
+            )
 
-            Logo:SetVisible(true)
+            if Config.UI.ShowLogo then
+
+                Logo:SetVisible(
+                    true
+                )
+
+            end
 
         end
 
-    end)
+    )
 
 end
 
@@ -352,11 +379,11 @@ end
 --==================================================
 
 UI:SetVisible(
-false
+    false
 )
 
 Logo:SetVisible(
-Config.UI.ShowLogo
+    Config.UI.ShowLogo
 )
 
 --==================================================
@@ -376,5 +403,5 @@ Search:ApplyTheme()
 --==================================================
 
 print(
-"💥 Rimuru Hub carregado."
+    "💥 Rimuru Hub carregado."
 )
