@@ -8,7 +8,7 @@
 --// Card Color Cycling
 --// Background Safe
 --// RGB Compatible
---// BLACKOUT SELECTED STATE
+--// BLACKOUT SELECTED STATe
 --// SAFE THEME FALLBACKS
 
 local RunService =
