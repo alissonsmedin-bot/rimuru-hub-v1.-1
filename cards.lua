@@ -7,6 +7,7 @@
 --// PREMIUM THEME COMPATIBLE
 --// SAFE THEME COLORS
 --// RGB ACCENT COMPATIBLE
+--// BLACKOUT COPY CONTRAST
 
 local Cards = {}
 
@@ -54,6 +55,34 @@ local CLICK_TIME =
     0.34
 
 --==================================================
+-- BLACKOUT COPY COLORS
+--==================================================
+-- SOMENTE o tema Blackout utiliza:
+--
+-- Fundo: branco
+-- Texto: preto
+--
+-- Todos os outros temas continuam usando:
+--
+-- Fundo: Accent
+-- Texto: branco
+--==================================================
+
+local BLACKOUT_COPY_BACKGROUND =
+    Color3.fromRGB(
+        255,
+        255,
+        255
+    )
+
+local BLACKOUT_COPY_TEXT =
+    Color3.fromRGB(
+        0,
+        0,
+        0
+    )
+
+--==================================================
 -- SAFE THEME COLOR
 --==================================================
 
@@ -71,6 +100,71 @@ local function GetThemeColor(
     end
 
     return Fallback
+
+end
+
+--==================================================
+-- CHECK BLACKOUT
+--==================================================
+
+function Cards:IsBlackout()
+
+    if not self.Theme then
+        return false
+    end
+
+    if self.Theme.GetName then
+
+        return self.Theme:GetName()
+            == "Blackout"
+
+    end
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    return CurrentTheme
+        and CurrentTheme.Name
+        == "Blackout"
+
+end
+
+--==================================================
+-- APPLY COPY STYLE
+--==================================================
+-- Mantém o comportamento original em todos
+-- os temas, alterando somente o Blackout.
+--==================================================
+
+function Cards:ApplyCopyStyle(
+    CopyButton
+)
+
+    if not CopyButton then
+        return
+    end
+
+    if self:IsBlackout() then
+
+        CopyButton.BackgroundColor3 =
+            BLACKOUT_COPY_BACKGROUND
+
+        CopyButton.TextColor3 =
+            BLACKOUT_COPY_TEXT
+
+    else
+
+        CopyButton.BackgroundColor3 =
+            self.Theme:GetAccent()
+
+        CopyButton.TextColor3 =
+            Color3.fromRGB(
+                255,
+                255,
+                255
+            )
+
+    end
 
 end
 
@@ -630,21 +724,11 @@ function Cards:CreateSoundCard(
             -14
         )
 
-    CopyButton.BackgroundColor3 =
-        self.Theme:GetAccent()
-
     CopyButton.BorderSizePixel =
         0
 
     CopyButton.Text =
         "Copy"
-
-    CopyButton.TextColor3 =
-        Color3.fromRGB(
-            255,
-            255,
-            255
-        )
 
     CopyButton.TextSize =
         10
@@ -660,6 +744,20 @@ function Cards:CreateSoundCard(
 
     CopyButton.Parent =
         Card
+
+    --==================================================
+    -- COPY STYLE
+    --==================================================
+    -- Blackout:
+    -- branco + preto
+    --
+    -- Outros temas:
+    -- Accent + branco
+    --==================================================
+
+    self:ApplyCopyStyle(
+        CopyButton
+    )
 
     --==================================================
     -- COPY CORNER
@@ -859,19 +957,21 @@ function Cards:ApplyTheme()
 
             if CopyButton then
 
-                CopyButton.BackgroundColor3 =
-                    self.Theme:GetAccent()
+                --==================================================
+                -- BLACKOUT ONLY
+                --==================================================
+                -- No Blackout:
+                -- fundo branco
+                -- texto preto
+                --
+                -- Nos outros temas:
+                -- Accent
+                -- texto branco
+                --==================================================
 
-                -- O botão Copy continua branco
-                -- porque o Accent pode variar
-                -- entre temas.
-
-                CopyButton.TextColor3 =
-                    Color3.fromRGB(
-                        255,
-                        255,
-                        255
-                    )
+                self:ApplyCopyStyle(
+                    CopyButton
+                )
 
             end
 
