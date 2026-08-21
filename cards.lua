@@ -4,6 +4,9 @@
 --// Copy + Favorite System
 --// CLICK SIZE ANIMATION
 --// STABLE LAYOUT VERSION
+--// PREMIUM THEME COMPATIBLE
+--// SAFE THEME COLORS
+--// RGB ACCENT COMPATIBLE
 
 local Cards = {}
 
@@ -51,51 +54,63 @@ local CLICK_TIME =
     0.34
 
 --==================================================
+-- SAFE THEME COLOR
+--==================================================
+
+local function GetThemeColor(
+    Theme,
+    Key,
+    Fallback
+)
+
+    if Theme
+    and Theme[Key] then
+
+        return Theme[Key]
+
+    end
+
+    return Fallback
+
+end
+
+--==================================================
 -- CLICK SIZE ANIMATION
 --==================================================
--- Cresce exatamente 4 pixels no tamanho do bloco
--- e retorna para o tamanho original após 0.34s.
---
+-- Cresce exatamente 4 pixels.
+-- Retorna ao tamanho original após 0.34s.
 -- Não utiliza UIScale.
--- Não altera a posição dos outros elementos.
 --==================================================
 
 function Cards:ClickAnimation(Button)
 
     if not Button
     or not Button.Parent then
-        return
-    end
 
-    --==================================================
-    -- ORIGINAL SIZE
-    --==================================================
+        return
+
+    end
 
     local OriginalSize =
         Button.Size
 
-    --==================================================
-    -- NOVO TAMANHO
-    --==================================================
-
     local ExpandedSize =
         UDim2.new(
-            OriginalSize.X.Scale,
-            OriginalSize.X.Offset + CLICK_GROW,
-            OriginalSize.Y.Scale,
-            OriginalSize.Y.Offset + CLICK_GROW
-        )
 
-    --==================================================
-    -- CRESCER
-    --==================================================
+            OriginalSize.X.Scale,
+
+            OriginalSize.X.Offset
+                + CLICK_GROW,
+
+            OriginalSize.Y.Scale,
+
+            OriginalSize.Y.Offset
+                + CLICK_GROW
+
+        )
 
     Button.Size =
         ExpandedSize
-
-    --==================================================
-    -- RETORNAR À ORIGEM
-    --==================================================
 
     task.delay(
 
@@ -128,7 +143,9 @@ function Cards:Copy(ID)
         local Success =
             pcall(function()
 
-                setclipboard(ID)
+                setclipboard(
+                    tostring(ID)
+                )
 
             end)
 
@@ -143,7 +160,9 @@ function Cards:Copy(ID)
         local Success =
             pcall(function()
 
-                toclipboard(ID)
+                toclipboard(
+                    tostring(ID)
+                )
 
             end)
 
@@ -177,7 +196,9 @@ function Cards:IsFavorite(ID)
         end)
 
     if Success then
+
         return Result == true
+
     end
 
     return false
@@ -194,6 +215,13 @@ function Cards:UpdateFavoriteButton(
 )
 
     if not Button then
+        return
+    end
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    if not CurrentTheme then
         return
     end
 
@@ -214,7 +242,8 @@ function Cards:UpdateFavoriteButton(
             "☆"
 
         Button.TextColor3 =
-            self.Theme:GetCurrent().SubText
+            CurrentTheme.SubText
+            or CurrentTheme.Text
 
     end
 
@@ -252,6 +281,9 @@ function Cards:ToggleFavorite(
 
     end
 
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
     if Result then
 
         Button.Text =
@@ -266,7 +298,8 @@ function Cards:ToggleFavorite(
             "☆"
 
         Button.TextColor3 =
-            self.Theme:GetCurrent().SubText
+            CurrentTheme.SubText
+            or CurrentTheme.Text
 
     end
 
@@ -281,24 +314,40 @@ function Cards:CreateSoundCard(
     Data
 )
 
+    if type(Data) ~= "table" then
+        return
+    end
+
     local CurrentTheme =
         self.Theme:GetCurrent()
 
+    if not CurrentTheme then
+        return
+    end
+
     local Name =
-        Data[1]
+        tostring(
+            Data[1]
+            or "Unknown"
+        )
 
     local ID =
-        Data[2]
+        tostring(
+            Data[2]
+            or ""
+        )
 
     --==================================================
     -- CARD
     --==================================================
 
     local Card =
-        Instance.new("Frame")
+        Instance.new(
+            "Frame"
+        )
 
     Card.Name =
-        "Sound_" .. Index
+        "Sound_" .. tostring(Index)
 
     Card.Size =
         UDim2.new(
@@ -328,7 +377,9 @@ function Cards:CreateSoundCard(
     --==================================================
 
     local CardCorner =
-        Instance.new("UICorner")
+        Instance.new(
+            "UICorner"
+        )
 
     CardCorner.CornerRadius =
         UDim.new(
@@ -344,7 +395,9 @@ function Cards:CreateSoundCard(
     --==================================================
 
     local NameLabel =
-        Instance.new("TextLabel")
+        Instance.new(
+            "TextLabel"
+        )
 
     NameLabel.Name =
         "Name"
@@ -397,7 +450,9 @@ function Cards:CreateSoundCard(
     --==================================================
 
     local IDLabel =
-        Instance.new("TextLabel")
+        Instance.new(
+            "TextLabel"
+        )
 
     IDLabel.Name =
         "ID"
@@ -426,6 +481,7 @@ function Cards:CreateSoundCard(
 
     IDLabel.TextColor3 =
         CurrentTheme.SubText
+        or CurrentTheme.Text
 
     IDLabel.TextSize =
         10
@@ -447,7 +503,9 @@ function Cards:CreateSoundCard(
     --==================================================
 
     local FavoriteButton =
-        Instance.new("TextButton")
+        Instance.new(
+            "TextButton"
+        )
 
     FavoriteButton.Name =
         "Favorite"
@@ -470,6 +528,7 @@ function Cards:CreateSoundCard(
 
     FavoriteButton.BackgroundColor3 =
         CurrentTheme.Button
+        or CurrentTheme.Card
 
     FavoriteButton.BorderSizePixel =
         0
@@ -494,7 +553,9 @@ function Cards:CreateSoundCard(
     --==================================================
 
     local FavoriteCorner =
-        Instance.new("UICorner")
+        Instance.new(
+            "UICorner"
+        )
 
     FavoriteCorner.CornerRadius =
         UDim.new(
@@ -506,7 +567,7 @@ function Cards:CreateSoundCard(
         FavoriteButton
 
     --==================================================
-    -- INITIAL FAVORITE STATE
+    -- FAVORITE STATE
     --==================================================
 
     self:UpdateFavoriteButton(
@@ -525,12 +586,10 @@ function Cards:CreateSoundCard(
 
         function()
 
-            -- Clique visual
             self:ClickAnimation(
                 FavoriteButton
             )
 
-            -- Favorito
             self:ToggleFavorite(
 
                 ID,
@@ -548,7 +607,9 @@ function Cards:CreateSoundCard(
     --==================================================
 
     local CopyButton =
-        Instance.new("TextButton")
+        Instance.new(
+            "TextButton"
+        )
 
     CopyButton.Name =
         "Copy"
@@ -605,7 +666,9 @@ function Cards:CreateSoundCard(
     --==================================================
 
     local CopyCorner =
-        Instance.new("UICorner")
+        Instance.new(
+            "UICorner"
+        )
 
     CopyCorner.CornerRadius =
         UDim.new(
@@ -624,14 +687,9 @@ function Cards:CreateSoundCard(
 
         function()
 
-            -- Clique visual
             self:ClickAnimation(
                 CopyButton
             )
-
-            --==================================================
-            -- COPY
-            --==================================================
 
             if self:Copy(ID) then
 
@@ -644,7 +702,8 @@ function Cards:CreateSoundCard(
 
                     function()
 
-                        if CopyButton.Parent then
+                        if CopyButton
+                        and CopyButton.Parent then
 
                             CopyButton.Text =
                                 "Copy"
@@ -666,7 +725,8 @@ function Cards:CreateSoundCard(
 
                     function()
 
-                        if CopyButton.Parent then
+                        if CopyButton
+                        and CopyButton.Parent then
 
                             CopyButton.Text =
                                 "Copy"
@@ -682,10 +742,6 @@ function Cards:CreateSoundCard(
         end
 
     )
-
-    --==================================================
-    -- RETURN
-    --==================================================
 
     return Card
 
@@ -723,57 +779,7 @@ function Cards:ApplyTheme()
 
             Card.BackgroundColor3 =
                 CurrentTheme.Card
-
-            --==================================================
-            -- FAVORITE
-            --==================================================
-
-            local FavoriteButton =
-                Card:FindFirstChild(
-                    "Favorite"
-                )
-
-            if FavoriteButton then
-
-                FavoriteButton.BackgroundColor3 =
-                    CurrentTheme.Button
-
-                self:UpdateFavoriteButton(
-
-                    FavoriteButton,
-
-                    Card:FindFirstChild(
-                        "ID"
-                    ) and
-                    Card.ID.Text
-                    or ""
-
-                )
-
-            end
-
-            --==================================================
-            -- COPY
-            --==================================================
-
-            local CopyButton =
-                Card:FindFirstChild(
-                    "Copy"
-                )
-
-            if CopyButton then
-
-                CopyButton.BackgroundColor3 =
-                    self.Theme:GetAccent()
-
-                CopyButton.TextColor3 =
-                    Color3.fromRGB(
-                        255,
-                        255,
-                        255
-                    )
-
-            end
+                or CurrentTheme.Content
 
             --==================================================
             -- NAME
@@ -804,8 +810,137 @@ function Cards:ApplyTheme()
 
                 IDLabel.TextColor3 =
                     CurrentTheme.SubText
+                    or CurrentTheme.Text
 
             end
+
+            --==================================================
+            -- FAVORITE
+            --==================================================
+
+            local FavoriteButton =
+                Card:FindFirstChild(
+                    "Favorite"
+                )
+
+            if FavoriteButton then
+
+                FavoriteButton.BackgroundColor3 =
+                    CurrentTheme.Button
+                    or CurrentTheme.Card
+
+                local StoredID = ""
+
+                if IDLabel then
+
+                    StoredID =
+                        IDLabel.Text
+
+                end
+
+                self:UpdateFavoriteButton(
+
+                    FavoriteButton,
+
+                    StoredID
+
+                )
+
+            end
+
+            --==================================================
+            -- COPY
+            --==================================================
+
+            local CopyButton =
+                Card:FindFirstChild(
+                    "Copy"
+                )
+
+            if CopyButton then
+
+                CopyButton.BackgroundColor3 =
+                    self.Theme:GetAccent()
+
+                -- O botão Copy continua branco
+                -- porque o Accent pode variar
+                -- entre temas.
+
+                CopyButton.TextColor3 =
+                    Color3.fromRGB(
+                        255,
+                        255,
+                        255
+                    )
+
+            end
+
+        end
+
+    end
+
+end
+
+--==================================================
+-- REFRESH CARD
+--==================================================
+
+function Cards:RefreshCard(
+    Card
+)
+
+    if not Card
+    or not Card.Parent then
+        return
+    end
+
+    local IDLabel =
+        Card:FindFirstChild(
+            "ID"
+        )
+
+    local FavoriteButton =
+        Card:FindFirstChild(
+            "Favorite"
+        )
+
+    if IDLabel
+    and FavoriteButton then
+
+        self:UpdateFavoriteButton(
+
+            FavoriteButton,
+
+            IDLabel.Text
+
+        )
+
+    end
+
+end
+
+--==================================================
+-- REFRESH ALL CARDS
+--==================================================
+
+function Cards:Refresh()
+
+    if not self.Scroll then
+        return
+    end
+
+    for _, Object in
+        ipairs(
+            self.Scroll:GetChildren()
+        ) do
+
+        if Object:IsA("Frame")
+        and Object.Name:sub(1, 6) ==
+            "Sound_" then
+
+            self:RefreshCard(
+                Object
+            )
 
         end
 
