@@ -1,4 +1,4 @@
---// 💥 RIMURU HUB
+--// ðŸ’¥ RIMURU HUB
 --// Sound Cards System
 --// Favorites Compatible
 --// Copy + Favorite System
@@ -132,7 +132,7 @@ end
 --==================================================
 -- APPLY COPY STYLE
 --==================================================
--- Mantém o comportamento original em todos
+-- MantÃ©m o comportamento original em todos
 -- os temas, alterando somente o Blackout.
 --==================================================
 
@@ -172,8 +172,8 @@ end
 -- CLICK SIZE ANIMATION
 --==================================================
 -- Cresce exatamente 4 pixels.
--- Retorna ao tamanho original após 0.34s.
--- Não utiliza UIScale.
+-- Retorna ao tamanho original apÃ³s 0.34s.
+-- NÃ£o utiliza UIScale.
 --==================================================
 
 function Cards:ClickAnimation(Button)
@@ -325,7 +325,7 @@ function Cards:UpdateFavoriteButton(
     if IsFavorite then
 
         Button.Text =
-            "★"
+            "â˜…"
 
         Button.TextColor3 =
             self.Theme:GetAccent()
@@ -333,7 +333,7 @@ function Cards:UpdateFavoriteButton(
     else
 
         Button.Text =
-            "☆"
+            "â˜†"
 
         Button.TextColor3 =
             CurrentTheme.SubText
@@ -368,7 +368,7 @@ function Cards:ToggleFavorite(
     if not Success then
 
         warn(
-            "⚠️ Rimuru Hub: erro ao alterar favorito."
+            "âš ï¸ Rimuru Hub: erro ao alterar favorito."
         )
 
         return
@@ -381,7 +381,7 @@ function Cards:ToggleFavorite(
     if Result then
 
         Button.Text =
-            "★"
+            "â˜…"
 
         Button.TextColor3 =
             self.Theme:GetAccent()
@@ -389,7 +389,7 @@ function Cards:ToggleFavorite(
     else
 
         Button.Text =
-            "☆"
+            "â˜†"
 
         Button.TextColor3 =
             CurrentTheme.SubText
