@@ -20,7 +20,7 @@ Players.LocalPlayer
 
 local PlayerGui =
 Player:WaitForChild(
-"PlayerGui"
+    "PlayerGui"
 )
 
 --==================================================
@@ -43,55 +43,55 @@ local BaseURL =
 
 local function Load(FileName)
 
-local URL =  
-    BaseURL ..  
-    FileName  
+local URL =
+    BaseURL ..
+    FileName
 
-local Success, Result =  
-    pcall(function()  
+local Success, Result =
+    pcall(function()
 
-        local Source =  
-            game:HttpGet(URL)  
+        local Source =
+            game:HttpGet(URL)
 
-        local Module =  
-            loadstring(Source)  
+        local Module =
+            loadstring(Source)
 
-        if not Module then  
-            error(  
-                "loadstring retornou nil"  
-            )  
-        end  
+        if not Module then
+            error(
+                "loadstring retornou nil"
+            )
+        end
 
-        return Module()  
+        return Module()
 
-    end)  
+    end)
 
-if not Success then  
+if not Success then
 
-    warn(  
-        "❌ Rimuru Hub: erro ao carregar " ..  
-        FileName  
-    )  
+    warn(
+        "❌ Rimuru Hub: erro ao carregar " ..
+        FileName
+    )
 
-    warn(  
-        tostring(Result)  
-    )  
+    warn(
+        tostring(Result)
+    )
 
-    return nil  
+    return nil
 
-end  
+end
 
-if Result == nil then  
+if Result == nil then
 
-    warn(  
-        "❌ Rimuru Hub: " ..  
-        FileName ..  
-        " não retornou um módulo válido."  
-    )  
+    warn(
+        "❌ Rimuru Hub: " ..
+        FileName ..
+        " não retornou um módulo válido."
+    )
 
-    return nil  
+    return nil
 
-end  
+end
 
 return Result
 
@@ -102,11 +102,11 @@ end
 --==================================================
 
 local Config =
-Load("config.lua")
+    Load("config.lua")
 
 if not Config then
-warn("❌ Rimuru Hub: Config não carregado.")
-return
+    warn("❌ Rimuru Hub: Config não carregado.")
+    return
 end
 
 --==================================================
@@ -114,11 +114,11 @@ end
 --==================================================
 
 local Sounds =
-Load("sound.lua")
+    Load("sound.lua")
 
 if not Sounds then
-warn("❌ Rimuru Hub: Sounds não carregado.")
-return
+    warn("❌ Rimuru Hub: Sounds não carregado.")
+    return
 end
 
 --==================================================
@@ -126,31 +126,31 @@ end
 --==================================================
 
 local Theme =
-Load("theme.lua")
+    Load("theme.lua")
 
 local UI =
-Load("ui.lua")
+    Load("ui.lua")
 
 local Logo =
-Load("logo.lua")
+    Load("logo.lua")
 
 local Cards =
-Load("cards.lua")
+    Load("cards.lua")
 
 local Favorites =
-Load("favorites.lua")
+    Load("favorites.lua")
 
 local Search =
-Load("search.lua")
+    Load("search.lua")
 
 local Categories =
-Load("categories.lua")
+    Load("categories.lua")
 
 local Settings =
-Load("settings.lua")
+    Load("settings.lua")
 
 local RGB =
-Load("RGB.lua")
+    Load("RGB.lua")
 
 --==================================================
 -- VERIFY MODULES
@@ -158,28 +158,28 @@ Load("RGB.lua")
 
 local Modules = {
 
-Theme = Theme,  
-UI = UI,  
-Logo = Logo,  
-Cards = Cards,  
-Favorites = Favorites,
-Search = Search,  
-Categories = Categories,  
-Settings = Settings,  
-RGB = RGB
+    Theme = Theme,
+    UI = UI,
+    Logo = Logo,
+    Cards = Cards,
+    Favorites = Favorites,
+    Search = Search,
+    Categories = Categories,
+    Settings = Settings,
+    RGB = RGB
 
 }
 
 for Name, Module in pairs(Modules) do
 
-if not Module then  
+if not Module then
 
-    warn(  
-        "❌ Rimuru Hub: módulo ausente -> " ..  
-        Name  
-    )  
+    warn(
+        "❌ Rimuru Hub: módulo ausente -> " ..
+        Name
+    )
 
-    return  
+    return
 
 end
 
@@ -191,44 +191,44 @@ end
 
 local Context = {
 
-Player =  
-    Player,  
+    Player =
+        Player,
 
-PlayerGui =  
-    PlayerGui,  
+    PlayerGui =
+        PlayerGui,
 
-Config =  
-    Config,  
+    Config =
+        Config,
 
-Sounds =  
-    Sounds,  
+    Sounds =
+        Sounds,
 
-Theme =  
-    Theme,  
+    Theme =
+        Theme,
 
-UI =  
-    UI,  
+    UI =
+        UI,
 
-Logo =  
-    Logo,  
+    Logo =
+        Logo,
 
-Cards =  
-    Cards,  
+    Cards =
+        Cards,
 
-Favorites =
-    Favorites,
+    Favorites =
+        Favorites,
 
-Search =  
-    Search,  
+    Search =
+        Search,
 
-Categories =  
-    Categories,  
+    Categories =
+        Categories,
 
-Settings =  
-    Settings,  
+    Settings =
+        Settings,
 
-RGB =  
-    RGB
+    RGB =
+        RGB
 
 }
 
@@ -237,7 +237,7 @@ RGB =
 --==================================================
 
 Theme:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -245,7 +245,7 @@ Context
 --==================================================
 
 UI:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -253,7 +253,7 @@ Context
 --==================================================
 
 Logo:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -261,7 +261,7 @@ Context
 --==================================================
 
 Cards:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -269,7 +269,7 @@ Context
 --==================================================
 
 Categories:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -277,7 +277,7 @@ Context
 --==================================================
 
 Search:Init(
-Context
+    Context
 )
 
 Search:Connect()
@@ -287,7 +287,7 @@ Search:Connect()
 --==================================================
 
 Settings:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -295,7 +295,7 @@ Context
 --==================================================
 
 RGB:Init(
-Context
+    Context
 )
 
 --==================================================
@@ -313,11 +313,11 @@ Categories.ConfigButton
 
 if ConfigButton then
 
-ConfigButton.MouseButton1Click:Connect(function()  
+    ConfigButton.MouseButton1Click:Connect(function()
 
-    Settings:Show()  
+        Settings:Show()
 
-end)
+    end)
 
 end
 
@@ -352,11 +352,11 @@ end
 --==================================================
 
 UI:SetVisible(
-false
+    false
 )
 
 Logo:SetVisible(
-Config.UI.ShowLogo
+    Config.UI.ShowLogo
 )
 
 --==================================================
@@ -376,5 +376,5 @@ Search:ApplyTheme()
 --==================================================
 
 print(
-"💥 Rimuru Hub carregado."
+    "💥 Rimuru Hub carregado."
 )
