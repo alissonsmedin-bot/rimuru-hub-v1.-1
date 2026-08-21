@@ -18,6 +18,9 @@
 --// THEME AWARE
 --// BLACKOUT = BLACK/WHITE INVERSION
 --// OTHER THEMES = ORIGINAL BEHAVIOR
+--// SUBTLE CATEGORY STROKES
+--// THEME TEXT STROKE SUPPORT
+--// PREMIUM VISUAL FINISH
 
 local TweenService =
     game:GetService("TweenService")
@@ -43,6 +46,22 @@ local CategoryIcons = {
         "⚙️"
 
 }
+
+--==================================================
+-- VISUAL CONFIG
+--==================================================
+
+local NORMAL_STROKE_TRANSPARENCY =
+    0.78
+
+local SELECTED_STROKE_TRANSPARENCY =
+    0.05
+
+local FILTER_STROKE_TRANSPARENCY =
+    0.20
+
+local FILTER_OPTION_STROKE_TRANSPARENCY =
+    0.78
 
 --==================================================
 -- INIT
@@ -87,6 +106,9 @@ function Categories:Init(Context)
         nil
 
     self.CategoryButtons =
+        {}
+
+    self.CategoryStrokes =
         {}
 
     --==================================================
@@ -195,19 +217,139 @@ function Categories:GetIcon(
 end
 
 --==================================================
--- SET NORMAL CATEGORY STYLE
+-- GET TEXT STROKE
 --==================================================
--- IMPORTANTE:
---
--- A cor NÃO é mais fixa aqui.
---
--- O Theme decide:
---
--- Blackout:
--- preto + branco
---
--- Outros temas:
--- comportamento original
+
+function Categories:ApplyTextStroke(
+    Button
+)
+
+    if not Button
+    or not self.Theme then
+
+        return
+
+    end
+
+    local StrokeColor =
+        self.Theme:GetTextStroke()
+
+    local StrokeTransparency =
+        self.Theme:GetTextStrokeTransparency()
+
+    Button.TextStrokeColor3 =
+        StrokeColor
+
+    Button.TextStrokeTransparency =
+        StrokeTransparency
+
+end
+
+--==================================================
+-- CREATE CATEGORY STROKE
+--==================================================
+
+function Categories:CreateCategoryStroke(
+    Button
+)
+
+    if not Button then
+        return nil
+    end
+
+    local Stroke =
+        Instance.new(
+            "UIStroke"
+        )
+
+    Stroke.Name =
+        "CategoryStroke"
+
+    Stroke.Thickness =
+        1
+
+    Stroke.Color =
+        self.Theme:GetAccent()
+
+    Stroke.Transparency =
+        NORMAL_STROKE_TRANSPARENCY
+
+    Stroke.ApplyStrokeMode =
+        Enum.ApplyStrokeMode.Border
+
+    Stroke.Parent =
+        Button
+
+    self.CategoryStrokes[
+        Button
+    ] =
+        Stroke
+
+    return Stroke
+
+end
+
+--==================================================
+-- UPDATE CATEGORY STROKE
+--==================================================
+
+function Categories:UpdateCategoryStroke(
+    Button,
+    Selected
+)
+
+    if not Button
+    or not self.Theme then
+
+        return
+
+    end
+
+    local Stroke =
+        self.CategoryStrokes[
+            Button
+        ]
+
+    if not Stroke then
+
+        Stroke =
+            Button:FindFirstChild(
+                "CategoryStroke"
+            )
+
+    end
+
+    if not Stroke then
+        return
+    end
+
+    if Selected then
+
+        Stroke.Color =
+            self.Theme:GetAccent()
+
+        -- Blackout naturally becomes white.
+        -- Void becomes purple.
+        -- Crimson becomes red.
+        -- Golden becomes gold.
+
+        Stroke.Transparency =
+            SELECTED_STROKE_TRANSPARENCY
+
+    else
+
+        Stroke.Color =
+            self.Theme:GetAccent()
+
+        Stroke.Transparency =
+            NORMAL_STROKE_TRANSPARENCY
+
+    end
+
+end
+
+--==================================================
+-- SET NORMAL CATEGORY STYLE
 --==================================================
 
 function Categories:SetNormalStyle(
@@ -228,18 +370,19 @@ function Categories:SetNormalStyle(
     Button.TextColor3 =
         self.Theme:GetNormalTextColor()
 
+    self:ApplyTextStroke(
+        Button
+    )
+
+    self:UpdateCategoryStroke(
+        Button,
+        false
+    )
+
 end
 
 --==================================================
 -- SET SELECTED CATEGORY STYLE
---==================================================
--- IMPORTANTE:
---
--- Blackout:
--- branco + preto
---
--- Outros temas:
--- Accent + Text
 --==================================================
 
 function Categories:SetSelectedStyle(
@@ -259,6 +402,15 @@ function Categories:SetSelectedStyle(
 
     Button.TextColor3 =
         self.Theme:GetSelectedTextColor()
+
+    self:ApplyTextStroke(
+        Button
+    )
+
+    self:UpdateCategoryStroke(
+        Button,
+        true
+    )
 
 end
 
@@ -283,10 +435,6 @@ function Categories:AnimateCategoryClick(
 
     end
 
-    --==================================================
-    -- ORIGINAL SIZE
-    --==================================================
-
     local OriginalSize =
         Button.Size
 
@@ -305,10 +453,6 @@ function Categories:AnimateCategoryClick(
     local ReturnTime =
         self.CategoryClickReturnTime or 0.10
 
-    --==================================================
-    -- TOKEN
-    --==================================================
-
     local Token =
         (Button:GetAttribute(
             "CategoryAnimationToken"
@@ -318,10 +462,6 @@ function Categories:AnimateCategoryClick(
         "CategoryAnimationToken",
         Token
     )
-
-    --==================================================
-    -- EXPAND
-    --==================================================
 
     local ExpandedSize =
         UDim2.new(
@@ -353,10 +493,6 @@ function Categories:AnimateCategoryClick(
         )
 
     ExpandTween:Play()
-
-    --==================================================
-    -- RETURN
-    --==================================================
 
     task.delay(
 
@@ -856,6 +992,38 @@ function Categories:CreateFilterOption(
     Button.Parent =
         Parent
 
+    --==================================================
+    -- TEXT STROKE
+    --==================================================
+
+    self:ApplyTextStroke(
+        Button
+    )
+
+    --==================================================
+    -- OPTION STROKE
+    --==================================================
+
+    local OptionStroke =
+        Instance.new(
+            "UIStroke"
+        )
+
+    OptionStroke.Name =
+        "OptionStroke"
+
+    OptionStroke.Color =
+        self.Theme:GetAccent()
+
+    OptionStroke.Thickness =
+        1
+
+    OptionStroke.Transparency =
+        FILTER_OPTION_STROKE_TRANSPARENCY
+
+    OptionStroke.Parent =
+        Button
+
     local Padding =
         Instance.new(
             "UIPadding"
@@ -972,11 +1140,17 @@ function Categories:CreateFilterMenu()
             "UIStroke"
         )
 
+    MenuStroke.Name =
+        "FilterMenuStroke"
+
     MenuStroke.Color =
         self.Theme:GetAccent()
 
     MenuStroke.Thickness =
         1
+
+    MenuStroke.Transparency =
+        FILTER_STROKE_TRANSPARENCY
 
     MenuStroke.Parent =
         Menu
@@ -1076,9 +1250,9 @@ function Categories:CreateFilterMenu()
 
     Padding.PaddingBottom =
         UDim.new(
-        0,
-        3
-    )
+            0,
+            3
+        )
 
     Padding.Parent =
         FilterScroll
@@ -1220,6 +1394,10 @@ function Categories:CreateFilterButton()
     Button.Parent =
         Parent
 
+    self:ApplyTextStroke(
+        Button
+    )
+
     local Corner =
         Instance.new(
             "UICorner"
@@ -1239,11 +1417,17 @@ function Categories:CreateFilterButton()
             "UIStroke"
         )
 
+    Stroke.Name =
+        "FilterButtonStroke"
+
     Stroke.Color =
         self.Theme:GetAccent()
 
     Stroke.Thickness =
         1
+
+    Stroke.Transparency =
+        FILTER_STROKE_TRANSPARENCY
 
     Stroke.Parent =
         Button
@@ -1548,10 +1732,6 @@ function Categories:SelectButton(
         return
     end
 
-    --==================================================
-    -- DESELECT OLD
-    --==================================================
-
     if self.SelectedButton
     and self.SelectedButton ~= Button then
 
@@ -1560,10 +1740,6 @@ function Categories:SelectButton(
         )
 
     end
-
-    --==================================================
-    -- SELECT NEW
-    --==================================================
 
     self.SelectedButton =
         Button
@@ -1694,6 +1870,21 @@ function Categories:CreateCategoryButton(
         Button
 
     --==================================================
+    -- STROKE
+    --==================================================
+
+    self:CreateCategoryStroke(
+        Button
+    )
+
+    -- Reaplica depois do stroke para garantir
+    -- que o estado inicial fique correto.
+
+    self:SetNormalStyle(
+        Button
+    )
+
+    --==================================================
     -- CLICK
     --==================================================
 
@@ -1701,25 +1892,13 @@ function Categories:CreateCategoryButton(
 
         function()
 
-            --==================================================
-            -- SELECT
-            --==================================================
-
             self:SelectButton(
                 Button
             )
 
-            --==================================================
-            -- SIZE ANIMATION
-            --==================================================
-
             self:AnimateCategoryClick(
                 Button
             )
-
-            --==================================================
-            -- CATEGORY
-            --==================================================
 
             if ShowSoundCategory then
 
@@ -2049,17 +2228,12 @@ end
 --==================================================
 -- APPLY THEME
 --==================================================
--- O Theme agora controla o estado das categorias.
---
--- Blackout:
--- NORMAL    = preto + branco
--- SELECTED  = branco + preto
---
--- Outros temas:
--- retornam automaticamente para o comportamento original.
---==================================================
 
 function Categories:ApplyTheme()
+
+    if not self.Theme then
+        return
+    end
 
     --==================================================
     -- CATEGORY BUTTONS
@@ -2102,6 +2276,10 @@ function Categories:ApplyTheme()
         self.FilterButton.TextColor3 =
             CurrentTheme.Text
 
+        self:ApplyTextStroke(
+            self.FilterButton
+        )
+
     end
 
     --==================================================
@@ -2128,8 +2306,8 @@ function Categories:ApplyTheme()
             CurrentTheme.Content
 
         local MenuStroke =
-            self.FilterMenu:FindFirstChildOfClass(
-                "UIStroke"
+            self.FilterMenu:FindFirstChild(
+                "FilterMenuStroke"
             )
 
         if MenuStroke then
@@ -2167,6 +2345,22 @@ function Categories:ApplyTheme()
 
                 Button.TextColor3 =
                     CurrentTheme.Text
+
+                self:ApplyTextStroke(
+                    Button
+                )
+
+                local Stroke =
+                    Button:FindFirstChild(
+                        "OptionStroke"
+                    )
+
+                if Stroke then
+
+                    Stroke.Color =
+                        self.Theme:GetAccent()
+
+                end
 
             end
 
