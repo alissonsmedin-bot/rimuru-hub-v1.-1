@@ -6,7 +6,8 @@
 --// Visible Theme Contrast
 --// Text Stroke Support
 --// Logo Border Support
---// BLACKOUT CATEGORY LOGIC REMAINS IN categories.lua
+--// SAFE THEME COMPATIBILITY
+--// BLACKOUT COMPATIBLE
 
 --==================================================
 -- SERVICES
@@ -50,7 +51,7 @@ local CLOSE_OFFSET_Y =
     10
 
 --==================================================
--- THEME HELPERS
+-- SAFE THEME COLOR
 --==================================================
 
 local function ThemeColor(
@@ -60,7 +61,7 @@ local function ThemeColor(
 )
 
     if Theme
-    and Theme[Key] then
+    and Theme[Key] ~= nil then
 
         return Theme[Key]
 
@@ -69,6 +70,10 @@ local function ThemeColor(
     return Fallback
 
 end
+
+--==================================================
+-- SAFE THEME NUMBER
+--==================================================
 
 local function ThemeNumber(
     Theme,
@@ -79,7 +84,14 @@ local function ThemeNumber(
     if Theme
     and Theme[Key] ~= nil then
 
-        return Theme[Key]
+        local Value =
+            tonumber(
+                Theme[Key]
+            )
+
+        if Value ~= nil then
+            return Value
+        end
 
     end
 
@@ -136,9 +148,7 @@ function UI:RemoveOld()
             )
 
         if Old then
-
             Old:Destroy()
-
         end
 
     end)
@@ -242,21 +252,12 @@ function UI:Create()
                 )
         )
 
-    --==================================================
-    -- THEME TRANSPARENCY
-    --==================================================
-    -- Mantém o tema visível sem deixar a interface
-    -- transparente demais.
-
-    local MainTransparency =
+    Main.BackgroundTransparency =
         ThemeNumber(
             CurrentTheme,
             "MainTransparency",
             0.04
         )
-
-    Main.BackgroundTransparency =
-        MainTransparency
 
     Main.BorderSizePixel =
         0
@@ -332,14 +333,6 @@ function UI:Create()
             1,
             0,
             1,
-            0
-        )
-
-    Background.Position =
-        UDim2.new(
-            0,
-            0,
-            0,
             0
         )
 
@@ -508,7 +501,7 @@ function UI:Create()
         "Rimuru Hub"
 
     Title.TextColor3 =
-        CurrentTheme.Text
+        self.Theme:GetText()
 
     Title.TextSize =
         19
@@ -583,7 +576,7 @@ function UI:Create()
         "Sound Library"
 
     Subtitle.TextColor3 =
-        CurrentTheme.SubText
+        self.Theme:GetSubText()
 
     Subtitle.TextSize =
         11
@@ -615,7 +608,8 @@ function UI:Create()
 
     SubtitleStroke.Transparency =
         math.clamp(
-            self.Theme:GetTextStrokeTransparency() + 0.15,
+            self.Theme:GetTextStrokeTransparency()
+                + 0.15,
             0,
             1
         )
@@ -659,13 +653,7 @@ function UI:Create()
         ThemeColor(
             CurrentTheme,
             "Close",
-            CurrentTheme.Button
-                or CurrentTheme.Card
-                or Color3.fromRGB(
-                    30,
-                    30,
-                    30
-                )
+            self.Theme:GetButtonColor()
         )
 
     Close.BackgroundTransparency =
@@ -678,7 +666,7 @@ function UI:Create()
         "X"
 
     Close.TextColor3 =
-        CurrentTheme.Text
+        self.Theme:GetText()
 
     Close.TextSize =
         12
@@ -758,14 +746,7 @@ function UI:Create()
         ThemeColor(
             CurrentTheme,
             "Sidebar",
-            CurrentTheme.CardDark
-                or CurrentTheme.Content
-                or CurrentTheme.Background
-                or Color3.fromRGB(
-                    15,
-                    15,
-                    20
-                )
+            self.Theme:GetDarkButtonColor()
         )
 
     Sidebar.BackgroundTransparency =
@@ -883,12 +864,10 @@ function UI:Create()
         )
 
     Content.BackgroundColor3 =
-        CurrentTheme.Content
-        or CurrentTheme.Background
-        or Color3.fromRGB(
-            15,
-            15,
-            20
+        ThemeColor(
+            CurrentTheme,
+            "Content",
+            CurrentTheme.Background
         )
 
     Content.BackgroundTransparency =
@@ -973,7 +952,7 @@ function UI:Create()
         "Principal"
 
     ContentTitle.TextColor3 =
-        CurrentTheme.Text
+        self.Theme:GetText()
 
     ContentTitle.TextSize =
         17
@@ -1193,16 +1172,12 @@ function UI:SetVisibleAnimated(Value)
 
     if not Main
     or not Scale then
-
         return
-
     end
 
     if not self:IsAnimationEnabled() then
 
-        self:SetVisible(
-            Value
-        )
+        self:SetVisible(Value)
 
         return
 
@@ -1378,9 +1353,7 @@ function UI:SetVisibleAnimated(Value)
 
             if self.AnimationToken ~=
                 Token then
-
                 return
-
             end
 
             Main.Visible =
@@ -1412,9 +1385,7 @@ function UI:ToggleAnimated()
     end
 
     self:SetVisibleAnimated(
-
         not self.Main.Visible
-
     )
 
 end
@@ -1436,7 +1407,6 @@ function UI:SetupDrag()
         false
 
     local DragStart
-
     local StartPosition
 
     Main.InputBegan:Connect(
@@ -1552,19 +1522,11 @@ function UI:ApplyBackground()
     local Image =
         CurrentTheme.BackgroundImage
 
-    --==================================================
-    -- REMOVE OLD IMAGE
-    --==================================================
-
     self.Background.Visible =
         false
 
     self.Background.Image =
         ""
-
-    --==================================================
-    -- NO IMAGE
-    --==================================================
 
     if not Image
     or Image == "" then
@@ -1573,16 +1535,11 @@ function UI:ApplyBackground()
 
     end
 
-    --==================================================
-    -- APPLY IMAGE
-    --==================================================
-
     self.Background.Image =
         Image
 
     self.Background.ImageTransparency =
-        CurrentTheme.BackgroundTransparency
-        or 0.35
+        self.Theme:GetBackgroundTransparency()
 
     self.Background.Visible =
         true
@@ -1614,18 +1571,9 @@ function UI:ApplyTheme()
 
         self.Main.BackgroundColor3 =
             ThemeColor(
-
                 CurrentTheme,
-
                 "Main",
-
                 CurrentTheme.Background
-                    or Color3.fromRGB(
-                        10,
-                        10,
-                        15
-                    )
-
             )
 
         self.Main.BackgroundTransparency =
@@ -1658,13 +1606,13 @@ function UI:ApplyTheme()
     end
 
     --==================================================
-    -- HEADER TITLE
+    -- TITLE
     --==================================================
 
     if self.Title then
 
         self.Title.TextColor3 =
-            CurrentTheme.Text
+            self.Theme:GetText()
 
     end
 
@@ -1685,7 +1633,7 @@ function UI:ApplyTheme()
     if self.Subtitle then
 
         self.Subtitle.TextColor3 =
-            CurrentTheme.SubText
+            self.Theme:GetSubText()
 
     end
 
@@ -1696,7 +1644,8 @@ function UI:ApplyTheme()
 
         self.SubtitleStroke.Transparency =
             math.clamp(
-                self.Theme:GetTextStrokeTransparency() + 0.15,
+                self.Theme:GetTextStrokeTransparency()
+                    + 0.15,
                 0,
                 1
             )
@@ -1711,23 +1660,13 @@ function UI:ApplyTheme()
 
         self.Close.BackgroundColor3 =
             ThemeColor(
-
                 CurrentTheme,
-
                 "Close",
-
-                CurrentTheme.Button
-                    or CurrentTheme.Card
-                    or Color3.fromRGB(
-                        30,
-                        30,
-                        30
-                    )
-
+                self.Theme:GetButtonColor()
             )
 
         self.Close.TextColor3 =
-            CurrentTheme.Text
+            self.Theme:GetText()
 
     end
 
@@ -1746,20 +1685,9 @@ function UI:ApplyTheme()
 
         self.Sidebar.BackgroundColor3 =
             ThemeColor(
-
                 CurrentTheme,
-
                 "Sidebar",
-
-                CurrentTheme.CardDark
-                    or CurrentTheme.Content
-                    or CurrentTheme.Background
-                    or Color3.fromRGB(
-                        15,
-                        15,
-                        20
-                    )
-
+                self.Theme:GetDarkButtonColor()
             )
 
         self.Sidebar.BackgroundTransparency =
@@ -1785,12 +1713,10 @@ function UI:ApplyTheme()
     if self.Content then
 
         self.Content.BackgroundColor3 =
-            CurrentTheme.Content
-            or CurrentTheme.Background
-            or Color3.fromRGB(
-                15,
-                15,
-                20
+            ThemeColor(
+                CurrentTheme,
+                "Content",
+                CurrentTheme.Background
             )
 
         self.Content.BackgroundTransparency =
@@ -1816,7 +1742,7 @@ function UI:ApplyTheme()
     if self.ContentTitle then
 
         self.ContentTitle.TextColor3 =
-            CurrentTheme.Text
+            self.Theme:GetText()
 
     end
 
