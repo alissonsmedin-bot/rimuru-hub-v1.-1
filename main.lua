@@ -2,8 +2,8 @@
 --// Main Loader / Connector
 --// SEARCH VERSION
 --// Modular Remote Architecture
+--// Favorites Integrated
 --// Future Updates Compatible
---// NO FAVORITES MODULE DEPENDENCY
 
 --==================================================
 -- SERVICES
@@ -156,6 +156,13 @@ local RGB =
     Load("RGB.lua")
 
 --==================================================
+-- LOAD FAVORITES
+--==================================================
+
+local Favorites =
+    Load("favorites.lua")
+
+--==================================================
 -- VERIFY MODULES
 --==================================================
 
@@ -183,7 +190,10 @@ local Modules = {
         Settings,
 
     RGB =
-        RGB
+        RGB,
+
+    Favorites =
+        Favorites
 
 }
 
@@ -243,7 +253,10 @@ local Context = {
         Settings,
 
     RGB =
-        RGB
+        RGB,
+
+    Favorites =
+        Favorites
 
 }
 
@@ -268,6 +281,14 @@ UI:Init(
 --==================================================
 
 Logo:Init(
+    Context
+)
+
+--==================================================
+-- FAVORITES
+--==================================================
+
+Favorites:Init(
     Context
 )
 
