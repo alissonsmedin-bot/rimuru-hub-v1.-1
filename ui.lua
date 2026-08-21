@@ -2,7 +2,10 @@
 --// UI System
 --// Animated Stable Version
 --// Background Contained Inside Main
---// SAFE THEME INTEGRATION
+--// PREMIUM THEME INTEGRATION
+--// Visible Theme Contrast
+--// Text Stroke Support
+--// Logo Border Support
 --// BLACKOUT CATEGORY LOGIC REMAINS IN categories.lua
 
 --==================================================
@@ -47,7 +50,7 @@ local CLOSE_OFFSET_Y =
     10
 
 --==================================================
--- SAFE THEME VALUE
+-- THEME HELPERS
 --==================================================
 
 local function ThemeColor(
@@ -58,6 +61,23 @@ local function ThemeColor(
 
     if Theme
     and Theme[Key] then
+
+        return Theme[Key]
+
+    end
+
+    return Fallback
+
+end
+
+local function ThemeNumber(
+    Theme,
+    Key,
+    Fallback
+)
+
+    if Theme
+    and Theme[Key] ~= nil then
 
         return Theme[Key]
 
@@ -222,8 +242,21 @@ function UI:Create()
                 )
         )
 
+    --==================================================
+    -- THEME TRANSPARENCY
+    --==================================================
+    -- Mantém o tema visível sem deixar a interface
+    -- transparente demais.
+
+    local MainTransparency =
+        ThemeNumber(
+            CurrentTheme,
+            "MainTransparency",
+            0.04
+        )
+
     Main.BackgroundTransparency =
-        0.10
+        MainTransparency
 
     Main.BorderSizePixel =
         0
@@ -357,7 +390,10 @@ function UI:Create()
         self.Theme:GetAccent()
 
     MainStroke.Thickness =
-        1.5
+        1.8
+
+    MainStroke.Transparency =
+        0.05
 
     MainStroke.Parent =
         Main
@@ -493,6 +529,28 @@ function UI:Create()
         Title
 
     --==================================================
+    -- TITLE STROKE
+    --==================================================
+
+    local TitleStroke =
+        Instance.new("UIStroke")
+
+    TitleStroke.Color =
+        self.Theme:GetTextStroke()
+
+    TitleStroke.Transparency =
+        self.Theme:GetTextStrokeTransparency()
+
+    TitleStroke.Thickness =
+        0.65
+
+    TitleStroke.Parent =
+        Title
+
+    self.TitleStroke =
+        TitleStroke
+
+    --==================================================
     -- SUBTITLE
     --==================================================
 
@@ -546,6 +604,32 @@ function UI:Create()
         Subtitle
 
     --==================================================
+    -- SUBTITLE STROKE
+    --==================================================
+
+    local SubtitleStroke =
+        Instance.new("UIStroke")
+
+    SubtitleStroke.Color =
+        self.Theme:GetTextStroke()
+
+    SubtitleStroke.Transparency =
+        math.clamp(
+            self.Theme:GetTextStrokeTransparency() + 0.15,
+            0,
+            1
+        )
+
+    SubtitleStroke.Thickness =
+        0.45
+
+    SubtitleStroke.Parent =
+        Subtitle
+
+    self.SubtitleStroke =
+        SubtitleStroke
+
+    --==================================================
     -- CLOSE
     --==================================================
 
@@ -584,6 +668,9 @@ function UI:Create()
                 )
         )
 
+    Close.BackgroundTransparency =
+        0
+
     Close.BorderSizePixel =
         0
 
@@ -620,8 +707,26 @@ function UI:Create()
     CloseCorner.Parent =
         Close
 
+    local CloseStroke =
+        Instance.new("UIStroke")
+
+    CloseStroke.Color =
+        self.Theme:GetAccent()
+
+    CloseStroke.Thickness =
+        1
+
+    CloseStroke.Transparency =
+        0.15
+
+    CloseStroke.Parent =
+        Close
+
     self.Close =
         Close
+
+    self.CloseStroke =
+        CloseStroke
 
     --==================================================
     -- SIDEBAR
@@ -653,7 +758,8 @@ function UI:Create()
         ThemeColor(
             CurrentTheme,
             "Sidebar",
-            CurrentTheme.Content
+            CurrentTheme.CardDark
+                or CurrentTheme.Content
                 or CurrentTheme.Background
                 or Color3.fromRGB(
                     15,
@@ -663,7 +769,11 @@ function UI:Create()
         )
 
     Sidebar.BackgroundTransparency =
-        0.10
+        ThemeNumber(
+            CurrentTheme,
+            "SidebarTransparency",
+            0
+        )
 
     Sidebar.BorderSizePixel =
         0
@@ -685,6 +795,24 @@ function UI:Create()
 
     SidebarCorner.Parent =
         Sidebar
+
+    local SidebarStroke =
+        Instance.new("UIStroke")
+
+    SidebarStroke.Color =
+        self.Theme:GetAccent()
+
+    SidebarStroke.Thickness =
+        1
+
+    SidebarStroke.Transparency =
+        0.72
+
+    SidebarStroke.Parent =
+        Sidebar
+
+    self.SidebarStroke =
+        SidebarStroke
 
     local SidebarPadding =
         Instance.new("UIPadding")
@@ -764,7 +892,11 @@ function UI:Create()
         )
 
     Content.BackgroundTransparency =
-        0.10
+        ThemeNumber(
+            CurrentTheme,
+            "ContentTransparency",
+            0
+        )
 
     Content.BorderSizePixel =
         0
@@ -786,6 +918,24 @@ function UI:Create()
 
     ContentCorner.Parent =
         Content
+
+    local ContentStroke =
+        Instance.new("UIStroke")
+
+    ContentStroke.Color =
+        self.Theme:GetAccent()
+
+    ContentStroke.Thickness =
+        1
+
+    ContentStroke.Transparency =
+        0.78
+
+    ContentStroke.Parent =
+        Content
+
+    self.ContentStroke =
+        ContentStroke
 
     self.Content =
         Content
@@ -844,6 +994,28 @@ function UI:Create()
         ContentTitle
 
     --==================================================
+    -- CONTENT TITLE STROKE
+    --==================================================
+
+    local ContentTitleStroke =
+        Instance.new("UIStroke")
+
+    ContentTitleStroke.Color =
+        self.Theme:GetTextStroke()
+
+    ContentTitleStroke.Transparency =
+        self.Theme:GetTextStrokeTransparency()
+
+    ContentTitleStroke.Thickness =
+        0.55
+
+    ContentTitleStroke.Parent =
+        ContentTitle
+
+    self.ContentTitleStroke =
+        ContentTitleStroke
+
+    --==================================================
     -- SCROLL
     --==================================================
 
@@ -880,6 +1052,9 @@ function UI:Create()
 
     Scroll.ScrollBarImageColor3 =
         self.Theme:GetAccent()
+
+    Scroll.ScrollBarImageTransparency =
+        0.15
 
     Scroll.AutomaticCanvasSize =
         Enum.AutomaticSize.Y
@@ -1453,6 +1628,13 @@ function UI:ApplyTheme()
 
             )
 
+        self.Main.BackgroundTransparency =
+            ThemeNumber(
+                CurrentTheme,
+                "MainTransparency",
+                0.04
+            )
+
     end
 
     --==================================================
@@ -1470,6 +1652,9 @@ function UI:ApplyTheme()
         self.MainStroke.Color =
             self.Theme:GetAccent()
 
+        self.MainStroke.Transparency =
+            0.05
+
     end
 
     --==================================================
@@ -1483,6 +1668,16 @@ function UI:ApplyTheme()
 
     end
 
+    if self.TitleStroke then
+
+        self.TitleStroke.Color =
+            self.Theme:GetTextStroke()
+
+        self.TitleStroke.Transparency =
+            self.Theme:GetTextStrokeTransparency()
+
+    end
+
     --==================================================
     -- SUBTITLE
     --==================================================
@@ -1491,6 +1686,20 @@ function UI:ApplyTheme()
 
         self.Subtitle.TextColor3 =
             CurrentTheme.SubText
+
+    end
+
+    if self.SubtitleStroke then
+
+        self.SubtitleStroke.Color =
+            self.Theme:GetTextStroke()
+
+        self.SubtitleStroke.Transparency =
+            math.clamp(
+                self.Theme:GetTextStrokeTransparency() + 0.15,
+                0,
+                1
+            )
 
     end
 
@@ -1522,6 +1731,13 @@ function UI:ApplyTheme()
 
     end
 
+    if self.CloseStroke then
+
+        self.CloseStroke.Color =
+            self.Theme:GetAccent()
+
+    end
+
     --==================================================
     -- SIDEBAR
     --==================================================
@@ -1535,7 +1751,8 @@ function UI:ApplyTheme()
 
                 "Sidebar",
 
-                CurrentTheme.Content
+                CurrentTheme.CardDark
+                    or CurrentTheme.Content
                     or CurrentTheme.Background
                     or Color3.fromRGB(
                         15,
@@ -1544,6 +1761,20 @@ function UI:ApplyTheme()
                     )
 
             )
+
+        self.Sidebar.BackgroundTransparency =
+            ThemeNumber(
+                CurrentTheme,
+                "SidebarTransparency",
+                0
+            )
+
+    end
+
+    if self.SidebarStroke then
+
+        self.SidebarStroke.Color =
+            self.Theme:GetAccent()
 
     end
 
@@ -1562,6 +1793,20 @@ function UI:ApplyTheme()
                 20
             )
 
+        self.Content.BackgroundTransparency =
+            ThemeNumber(
+                CurrentTheme,
+                "ContentTransparency",
+                0
+            )
+
+    end
+
+    if self.ContentStroke then
+
+        self.ContentStroke.Color =
+            self.Theme:GetAccent()
+
     end
 
     --==================================================
@@ -1572,6 +1817,16 @@ function UI:ApplyTheme()
 
         self.ContentTitle.TextColor3 =
             CurrentTheme.Text
+
+    end
+
+    if self.ContentTitleStroke then
+
+        self.ContentTitleStroke.Color =
+            self.Theme:GetTextStroke()
+
+        self.ContentTitleStroke.Transparency =
+            self.Theme:GetTextStrokeTransparency()
 
     end
 
@@ -1589,8 +1844,6 @@ function UI:ApplyTheme()
     --==================================================
     -- HEADER LOGO BORDER
     --==================================================
-    -- Caso exista UIStroke no logo,
-    -- atualiza automaticamente.
 
     if self.HeaderLogo then
 
