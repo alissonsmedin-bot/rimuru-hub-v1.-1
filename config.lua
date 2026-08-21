@@ -1,8 +1,7 @@
 --// 💥 RIMURU HUB
 --// Configuration
---// Theme System
---// Background Images
---// Transparent UI
+--// Theme + Background System
+--// Transparent UI Compatible
 
 return {
 
@@ -12,10 +11,7 @@ return {
 
     UI = {
 
-        --==================================================
-        -- TEMA INICIAL
-        --==================================================
-
+        -- Tema inicial
         Theme = "Rimuru Dark",
 
         --==================================================
@@ -29,10 +25,22 @@ return {
         --==================================================
 
         ShowLogo = true,
-
         LogoDraggable = true,
-
         MainMenuDraggable = true,
+
+        --==================================================
+        -- UI TRANSPARENCY
+        --==================================================
+
+        -- Transparência das caixas principais.
+        -- 0 = totalmente sólido
+        -- 1 = totalmente invisível
+
+        MainTransparency = 0.08,
+        SidebarTransparency = 0.12,
+        ContentTransparency = 0.12,
+        CardTransparency = 0.18,
+        ButtonTransparency = 0.15,
 
         --==================================================
         -- TEMAS
@@ -41,97 +49,84 @@ return {
         Themes = {
 
             --==================================================
-            -- 🌊 RIMURU DARK
+            -- 🌑 RIMURU DARK
             --==================================================
 
             ["Rimuru Dark"] = {
 
                 Accent =
                     Color3.fromRGB(
-                        45,
-                        170,
+                        25,
+                        145,
                         255
                     ),
 
                 Main =
                     Color3.fromRGB(
-                        10,
-                        16,
-                        28
+                        4,
+                        9,
+                        17
                     ),
 
                 Sidebar =
                     Color3.fromRGB(
+                        3,
                         7,
-                        12,
-                        22
+                        14
                     ),
 
                 Content =
                     Color3.fromRGB(
-                        8,
-                        14,
-                        24
+                        5,
+                        10,
+                        19
                     ),
 
                 Card =
                     Color3.fromRGB(
-                        18,
-                        30,
-                        48
+                        8,
+                        19,
+                        34
                     ),
 
                 Button =
                     Color3.fromRGB(
-                        15,
-                        25,
-                        40
+                        7,
+                        16,
+                        29
                     ),
 
                 Text =
                     Color3.fromRGB(
-                        240,
-                        248,
+                        238,
+                        247,
                         255
                     ),
 
                 SubText =
                     Color3.fromRGB(
-                        130,
-                        160,
-                        185
+                        105,
+                        145,
+                        180
                     ),
 
                 LogoBackground =
                     Color3.fromRGB(
-                        7,
-                        30,
-                        58
+                        4,
+                        25,
+                        52
                     ),
 
                 Close =
                     Color3.fromRGB(
-                        25,
-                        45,
-                        65
+                        8,
+                        22,
+                        39
                     ),
 
-                --==================================================
-                -- BACKGROUND
-                --==================================================
-
+                -- Fundo
                 BackgroundImage =
-                    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/images%20(2).jpeg",
-
-                --==================================================
-                -- TRANSPARENCY
-                --==================================================
-
-                Transparency =
-                    0.22,
-
-                BorderTransparency =
-                    0
+                    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/images%20(2).jpeg"
 
             },
 
@@ -143,90 +138,76 @@ return {
 
                 Accent =
                     Color3.fromRGB(
-                        55,
-                        205,
+                        0,
+                        210,
                         255
                     ),
 
                 Main =
                     Color3.fromRGB(
-                        8,
-                        18,
-                        28
+                        3,
+                        10,
+                        15
                     ),
 
                 Sidebar =
                     Color3.fromRGB(
-                        5,
-                        13,
-                        22
+                        2,
+                        7,
+                        11
                     ),
 
                 Content =
                     Color3.fromRGB(
-                        7,
-                        16,
-                        26
+                        3,
+                        11,
+                        17
                     ),
 
                 Card =
                     Color3.fromRGB(
-                        15,
-                        40,
-                        55
+                        5,
+                        22,
+                        30
                     ),
 
                 Button =
                     Color3.fromRGB(
-                        12,
-                        32,
-                        45
+                        4,
+                        17,
+                        24
                     ),
 
                 Text =
                     Color3.fromRGB(
                         235,
-                        250,
+                        252,
                         255
                     ),
 
                 SubText =
                     Color3.fromRGB(
-                        120,
-                        175,
-                        195
+                        100,
+                        165,
+                        180
                     ),
 
                 LogoBackground =
                     Color3.fromRGB(
-                        5,
-                        38,
-                        55
+                        3,
+                        36,
+                        48
                     ),
 
                 Close =
                     Color3.fromRGB(
-                        20,
-                        55,
-                        70
+                        6,
+                        27,
+                        35
                     ),
 
-                --==================================================
-                -- BACKGROUND
-                --==================================================
-
                 BackgroundImage =
-                    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/images%20(3).jpeg",
-
-                --==================================================
-                -- TRANSPARENCY
-                --==================================================
-
-                Transparency =
-                    0.22,
-
-                BorderTransparency =
-                    0
+                    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/images%20(3).jpeg"
 
             },
 
@@ -239,43 +220,43 @@ return {
                 Accent =
                     Color3.fromRGB(
                         145,
-                        80,
+                        90,
                         255
                     ),
 
                 Main =
-                    Color3.fromRGB(
-                        7,
-                        5,
-                        12
-                    ),
-
-                Sidebar =
                     Color3.fromRGB(
                         4,
                         3,
                         8
                     ),
 
+                Sidebar =
+                    Color3.fromRGB(
+                        2,
+                        2,
+                        5
+                    ),
+
                 Content =
                     Color3.fromRGB(
-                        6,
+                        5,
                         4,
                         10
                     ),
 
                 Card =
                     Color3.fromRGB(
-                        18,
-                        12,
-                        30
+                        15,
+                        10,
+                        24
                     ),
 
                 Button =
                     Color3.fromRGB(
-                        14,
-                        9,
-                        23
+                        11,
+                        8,
+                        18
                     ),
 
                 Text =
@@ -288,45 +269,28 @@ return {
                 SubText =
                     Color3.fromRGB(
                         145,
-                        130,
-                        170
+                        125,
+                        175
                     ),
 
                 LogoBackground =
                     Color3.fromRGB(
-                        20,
-                        8,
-                        35
+                        25,
+                        12,
+                        45
                     ),
 
                 Close =
                     Color3.fromRGB(
-                        35,
-                        20,
-                        50
-                    ),
-
-                --==================================================
-                -- NO BACKGROUND IMAGE
-                --==================================================
-
-                BackgroundImage =
-                    nil,
-
-                --==================================================
-                -- TRANSPARENCY
-                --==================================================
-
-                Transparency =
-                    0.08,
-
-                BorderTransparency =
-                    0
+                        25,
+                        17,
+                        38
+                    )
 
             },
 
             --==================================================
-            -- ⚫ BLACKOUT
+            -- ⬛ BLACKOUT
             --==================================================
 
             ["Blackout"] = {
@@ -361,16 +325,16 @@ return {
 
                 Card =
                     Color3.fromRGB(
-                        12,
-                        12,
-                        12
+                        15,
+                        15,
+                        15
                     ),
 
                 Button =
                     Color3.fromRGB(
-                        8,
-                        8,
-                        8
+                        10,
+                        10,
+                        10
                     ),
 
                 Text =
@@ -382,16 +346,16 @@ return {
 
                 SubText =
                     Color3.fromRGB(
-                        160,
-                        160,
-                        160
+                        155,
+                        155,
+                        155
                     ),
 
                 LogoBackground =
                     Color3.fromRGB(
-                        5,
-                        5,
-                        5
+                        12,
+                        12,
+                        12
                     ),
 
                 Close =
@@ -399,24 +363,7 @@ return {
                         25,
                         25,
                         25
-                    ),
-
-                --==================================================
-                -- NO BACKGROUND IMAGE
-                --==================================================
-
-                BackgroundImage =
-                    nil,
-
-                --==================================================
-                -- TRANSPARENCY
-                --==================================================
-
-                Transparency =
-                    0.04,
-
-                BorderTransparency =
-                    0
+                    )
 
             },
 
@@ -494,16 +441,7 @@ return {
                         35,
                         40,
                         55
-                    ),
-
-                BackgroundImage =
-                    nil,
-
-                Transparency =
-                    0,
-
-                BorderTransparency =
-                    0
+                    )
 
             },
 
@@ -581,16 +519,7 @@ return {
                         55,
                         44,
                         18
-                    ),
-
-                BackgroundImage =
-                    nil,
-
-                Transparency =
-                    0,
-
-                BorderTransparency =
-                    0
+                    )
 
             },
 
@@ -668,16 +597,7 @@ return {
                         205,
                         195,
                         170
-                    ),
-
-                BackgroundImage =
-                    nil,
-
-                Transparency =
-                    0,
-
-                BorderTransparency =
-                    0
+                    )
 
             },
 
@@ -755,16 +675,7 @@ return {
                         55,
                         20,
                         24
-                    ),
-
-                BackgroundImage =
-                    nil,
-
-                Transparency =
-                    0,
-
-                BorderTransparency =
-                    0
+                    )
 
             },
 
@@ -842,16 +753,7 @@ return {
                         20,
                         55,
                         35
-                    ),
-
-                BackgroundImage =
-                    nil,
-
-                Transparency =
-                    0,
-
-                BorderTransparency =
-                    0
+                    )
 
             },
 
@@ -861,42 +763,41 @@ return {
 
             ["RGB"] = {
 
-                RGB =
-                    true,
+                RGB = true,
 
                 Main =
                     Color3.fromRGB(
-                        15,
-                        18,
-                        28
+                        8,
+                        10,
+                        16
                     ),
 
                 Sidebar =
                     Color3.fromRGB(
-                        11,
-                        14,
-                        23
+                        5,
+                        7,
+                        12
                     ),
 
                 Content =
                     Color3.fromRGB(
-                        11,
-                        14,
-                        23
+                        7,
+                        9,
+                        15
                     ),
 
                 Card =
                     Color3.fromRGB(
-                        24,
-                        28,
-                        40
+                        15,
+                        18,
+                        27
                     ),
 
                 Button =
                     Color3.fromRGB(
-                        20,
-                        24,
-                        35
+                        11,
+                        14,
+                        22
                     ),
 
                 Text =
@@ -922,19 +823,10 @@ return {
 
                 Close =
                     Color3.fromRGB(
-                        35,
-                        40,
-                        55
-                    ),
-
-                BackgroundImage =
-                    nil,
-
-                Transparency =
-                    0,
-
-                BorderTransparency =
-                    0
+                        25,
+                        28,
+                        38
+                    )
 
             }
 
