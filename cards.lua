@@ -2,6 +2,8 @@
 --// Sound Cards System
 --// Favorites Compatible
 --// Copy + Favorite System
+--// CLICK SIZE ANIMATION
+--// STABLE LAYOUT VERSION
 
 local Cards = {}
 
@@ -35,6 +37,83 @@ function Cards:Init(Context)
 
     self.Favorites =
         Context.Favorites
+
+end
+
+--==================================================
+-- CLICK ANIMATION CONFIG
+--==================================================
+
+local CLICK_GROW =
+    4
+
+local CLICK_TIME =
+    0.34
+
+--==================================================
+-- CLICK SIZE ANIMATION
+--==================================================
+-- Cresce exatamente 4 pixels no tamanho do bloco
+-- e retorna para o tamanho original após 0.34s.
+--
+-- Não utiliza UIScale.
+-- Não altera a posição dos outros elementos.
+--==================================================
+
+function Cards:ClickAnimation(Button)
+
+    if not Button
+    or not Button.Parent then
+        return
+    end
+
+    --==================================================
+    -- ORIGINAL SIZE
+    --==================================================
+
+    local OriginalSize =
+        Button.Size
+
+    --==================================================
+    -- NOVO TAMANHO
+    --==================================================
+
+    local ExpandedSize =
+        UDim2.new(
+            OriginalSize.X.Scale,
+            OriginalSize.X.Offset + CLICK_GROW,
+            OriginalSize.Y.Scale,
+            OriginalSize.Y.Offset + CLICK_GROW
+        )
+
+    --==================================================
+    -- CRESCER
+    --==================================================
+
+    Button.Size =
+        ExpandedSize
+
+    --==================================================
+    -- RETORNAR À ORIGEM
+    --==================================================
+
+    task.delay(
+
+        CLICK_TIME,
+
+        function()
+
+            if Button
+            and Button.Parent then
+
+                Button.Size =
+                    OriginalSize
+
+            end
+
+        end
+
+    )
 
 end
 
@@ -267,6 +346,9 @@ function Cards:CreateSoundCard(
     local NameLabel =
         Instance.new("TextLabel")
 
+    NameLabel.Name =
+        "Name"
+
     NameLabel.Position =
         UDim2.new(
             0,
@@ -316,6 +398,9 @@ function Cards:CreateSoundCard(
 
     local IDLabel =
         Instance.new("TextLabel")
+
+    IDLabel.Name =
+        "ID"
 
     IDLabel.Position =
         UDim2.new(
@@ -440,6 +525,12 @@ function Cards:CreateSoundCard(
 
         function()
 
+            -- Clique visual
+            self:ClickAnimation(
+                FavoriteButton
+            )
+
+            -- Favorito
             self:ToggleFavorite(
 
                 ID,
@@ -533,6 +624,15 @@ function Cards:CreateSoundCard(
 
         function()
 
+            -- Clique visual
+            self:ClickAnimation(
+                CopyButton
+            )
+
+            --==================================================
+            -- COPY
+            --==================================================
+
             if self:Copy(ID) then
 
                 CopyButton.Text =
@@ -617,8 +717,16 @@ function Cards:ApplyTheme()
         and Card.Name:sub(1, 6) ==
             "Sound_" then
 
+            --==================================================
+            -- CARD
+            --==================================================
+
             Card.BackgroundColor3 =
                 CurrentTheme.Card
+
+            --==================================================
+            -- FAVORITE
+            --==================================================
 
             local FavoriteButton =
                 Card:FindFirstChild(
@@ -630,17 +738,72 @@ function Cards:ApplyTheme()
                 FavoriteButton.BackgroundColor3 =
                     CurrentTheme.Button
 
+                self:UpdateFavoriteButton(
+
+                    FavoriteButton,
+
+                    Card:FindFirstChild(
+                        "ID"
+                    ) and
+                    Card.ID.Text
+                    or ""
+
+                )
+
             end
+
+            --==================================================
+            -- COPY
+            --==================================================
+
+            local CopyButton =
+                Card:FindFirstChild(
+                    "Copy"
+                )
+
+            if CopyButton then
+
+                CopyButton.BackgroundColor3 =
+                    self.Theme:GetAccent()
+
+                CopyButton.TextColor3 =
+                    Color3.fromRGB(
+                        255,
+                        255,
+                        255
+                    )
+
+            end
+
+            --==================================================
+            -- NAME
+            --==================================================
 
             local NameLabel =
                 Card:FindFirstChild(
-                    "TextLabel"
+                    "Name"
                 )
 
             if NameLabel then
 
                 NameLabel.TextColor3 =
                     CurrentTheme.Text
+
+            end
+
+            --==================================================
+            -- ID
+            --==================================================
+
+            local IDLabel =
+                Card:FindFirstChild(
+                    "ID"
+                )
+
+            if IDLabel then
+
+                IDLabel.TextColor3 =
+                    CurrentTheme.SubText
 
             end
 
