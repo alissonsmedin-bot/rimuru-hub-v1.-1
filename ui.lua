@@ -1,12 +1,6 @@
 --// 💥 RIMURU HUB
 --// UI System
---// ANIMATED STABLE VERSION
---// Modular UI Core
---// Background Image System
---// Transparent Interface System
---// Logo Animation Compatible
---// Safe Menu Animation
---// NO BackgroundTransparency Animation
+--// Animated + Transparent Background Version
 
 --==================================================
 -- SERVICES
@@ -53,54 +47,8 @@ local CLOSE_OFFSET_Y =
 -- BACKGROUND CONFIG
 --==================================================
 
-local BACKGROUND_IMAGES = {
-
-    ["Rimuru Dark"] =
-        "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/images%20(2).jpeg",
-
-    ["Slime"] =
-        "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/images%20(3).jpeg",
-
-    ["Void"] =
-        nil,
-
-    ["Blackout"] =
-        nil,
-
-    ["RGB"] =
-        nil,
-
-    ["Azul Escuro"] =
-        nil,
-
-    ["Dourado Neon"] =
-        nil,
-
-    ["Branco Dourado"] =
-        nil,
-
-    ["Vermelho"] =
-        nil,
-
-    ["Verde"] =
-        nil
-
-}
-
---==================================================
--- TRANSPARENCY CONFIG
---==================================================
-
--- Quanto maior, mais o fundo aparece.
-
-local MAIN_TRANSPARENCY =
-    0.12
-
-local SIDEBAR_TRANSPARENCY =
-    0.16
-
-local CONTENT_TRANSPARENCY =
-    0.16
+local BACKGROUND_IMAGE_PATH =
+    "RimuruHubBackground.jpg"
 
 --==================================================
 -- INIT
@@ -127,19 +75,11 @@ function UI:Init(Context)
     self.Theme =
         Context.Theme
 
-    --==================================================
-    -- ANIMATION STATE
-    --==================================================
-
     self.AnimationBusy =
         false
 
     self.AnimationToken =
         0
-
-    --==================================================
-    -- CREATE UI
-    --==================================================
 
     self:Create()
 
@@ -159,9 +99,7 @@ function UI:RemoveOld()
             )
 
         if Old then
-
             Old:Destroy()
-
         end
 
     end)
@@ -169,137 +107,122 @@ function UI:RemoveOld()
 end
 
 --==================================================
--- GET BACKGROUND IMAGE
+-- DOWNLOAD BACKGROUND
 --==================================================
 
-function UI:GetBackgroundImage()
+function UI:LoadBackgroundImage(URL)
 
-    if not self.Theme then
+    if not URL then
         return nil
     end
 
-    local ThemeName =
-        self.Theme:GetName()
+    if not getcustomasset then
+        return nil
+    end
 
-    --==================================================
-    -- CONFIG OVERRIDE
-    --==================================================
+    local FileName =
+        "RimuruHubBackground_" ..
+        tostring(
+            math.abs(
+                string.len(URL)
+            )
+        ) ..
+        ".jpg"
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+    if isfile then
 
-    if CurrentTheme
-    and CurrentTheme.BackgroundImage then
+        local Success, Exists =
+            pcall(function()
 
-        return CurrentTheme.BackgroundImage
+                return isfile(
+                    FileName
+                )
+
+            end)
+
+        if Success
+        and Exists then
+
+            local AssetSuccess, Asset =
+                pcall(function()
+
+                    return getcustomasset(
+                        FileName
+                    )
+
+                end)
+
+            if AssetSuccess then
+                return Asset
+            end
+
+        end
 
     end
 
-    --==================================================
-    -- DEFAULT IMAGE TABLE
-    --==================================================
+    local Success, Data =
+        pcall(function()
 
-    return BACKGROUND_IMAGES[
-        ThemeName
-    ]
+            return game:HttpGet(
+                URL
+            )
+
+        end)
+
+    if not Success
+    or not Data
+    or Data == "" then
+
+        warn(
+            "⚠️ Rimuru Hub: não foi possível baixar o background."
+        )
+
+        return nil
+
+    end
+
+    if not writefile then
+        return nil
+    end
+
+    local WriteSuccess =
+        pcall(function()
+
+            writefile(
+                FileName,
+                Data
+            )
+
+        end)
+
+    if not WriteSuccess then
+        return nil
+    end
+
+    local AssetSuccess, Asset =
+        pcall(function()
+
+            return getcustomasset(
+                FileName
+            )
+
+        end)
+
+    if AssetSuccess then
+        return Asset
+    end
+
+    return nil
 
 end
 
 --==================================================
--- CREATE BACKGROUND
---==================================================
-
-function UI:CreateBackground(
-    Main,
-    CurrentTheme
-)
-
-    --==================================================
-    -- BACKGROUND IMAGE
-    --==================================================
-
-    local Background =
-        Instance.new("ImageLabel")
-
-    Background.Name =
-        "ThemeBackground"
-
-    Background.Size =
-        UDim2.new(
-            1,
-            0,
-            1,
-            0
-        )
-
-    Background.Position =
-        UDim2.new(
-            0,
-            0,
-            0,
-            0
-        )
-
-    Background.BackgroundColor3 =
-        CurrentTheme.Main
-
-    Background.BackgroundTransparency =
-        0
-
-    Background.BorderSizePixel =
-        0
-
-    Background.Image =
-        self:GetBackgroundImage()
-        or ""
-
-    Background.ImageTransparency =
-        0
-
-    Background.ScaleType =
-        Enum.ScaleType.Crop
-
-    Background.ZIndex =
-        500
-
-    Background.ClipsDescendants =
-        true
-
-    Background.Parent =
-        Main
-
-    --==================================================
-    -- CORNER
-    --==================================================
-
-    local Corner =
-        Instance.new("UICorner")
-
-    Corner.CornerRadius =
-        UDim.new(
-            0,
-            12
-        )
-
-    Corner.Parent =
-        Background
-
-    self.Background =
-        Background
-
-end
-
---==================================================
--- CREATE GUI
+-- CREATE
 --==================================================
 
 function UI:Create()
 
     self:RemoveOld()
-
-    --==================================================
-    -- THEME SAFETY
-    --==================================================
 
     if not self.Theme then
 
@@ -311,21 +234,13 @@ function UI:Create()
 
     end
 
-    local CurrentTheme
+    local CurrentTheme =
+        self.Theme:GetCurrent()
 
-    local Success =
-        pcall(function()
-
-            CurrentTheme =
-                self.Theme:GetCurrent()
-
-        end)
-
-    if not Success
-    or not CurrentTheme then
+    if not CurrentTheme then
 
         warn(
-            "❌ Rimuru Hub UI: não foi possível obter o tema atual."
+            "❌ Rimuru Hub UI: tema atual inválido."
         )
 
         return
@@ -361,6 +276,52 @@ function UI:Create()
         Gui
 
     --==================================================
+    -- BACKGROUND
+    --==================================================
+
+    local Background =
+        Instance.new("ImageLabel")
+
+    Background.Name =
+        "ThemeBackground"
+
+    Background.Size =
+        UDim2.new(
+            1,
+            0,
+            1,
+            0
+        )
+
+    Background.Position =
+        UDim2.new(
+            0,
+            0,
+            0,
+            0
+        )
+
+    Background.BackgroundTransparency =
+        1
+
+    Background.BorderSizePixel =
+        0
+
+    Background.ScaleType =
+        Enum.ScaleType.Crop
+
+    Background.ZIndex =
+        1
+
+    Background.Parent =
+        Gui
+
+    self.Background =
+        Background
+
+    self:ApplyBackground()
+
+    --==================================================
     -- MAIN
     --==================================================
 
@@ -390,7 +351,7 @@ function UI:Create()
         CurrentTheme.Main
 
     Main.BackgroundTransparency =
-        MAIN_TRANSPARENCY
+        self.Theme:GetMainTransparency()
 
     Main.BorderSizePixel =
         0
@@ -401,27 +362,11 @@ function UI:Create()
     Main.ZIndex =
         500
 
-    Main.ClipsDescendants =
-        true
-
     Main.Parent =
         Gui
 
     self.Main =
         Main
-
-    --==================================================
-    -- BACKGROUND IMAGE
-    --==================================================
-
-    self:CreateBackground(
-        Main,
-        CurrentTheme
-    )
-
-    --==================================================
-    -- SAVE ORIGINAL POSITION
-    --==================================================
 
     self.OriginalPosition =
         Main.Position
@@ -449,7 +394,7 @@ function UI:Create()
         MainScale
 
     --==================================================
-    -- MAIN CORNER
+    -- CORNER
     --==================================================
 
     local MainCorner =
@@ -477,15 +422,14 @@ function UI:Create()
     MainStroke.Thickness =
         1.5
 
+    MainStroke.Transparency =
+        0
+
     MainStroke.Parent =
         Main
 
     self.MainStroke =
         MainStroke
-
-    --==================================================
-    -- MAIN DRAG
-    --==================================================
 
     self:SetupDrag()
 
@@ -670,7 +614,7 @@ function UI:Create()
         Subtitle
 
     --==================================================
-    -- CLOSE BUTTON
+    -- CLOSE
     --==================================================
 
     local Close =
@@ -770,7 +714,7 @@ function UI:Create()
         CurrentTheme.Sidebar
 
     Sidebar.BackgroundTransparency =
-        SIDEBAR_TRANSPARENCY
+        self.Theme:GetSidebarTransparency()
 
     Sidebar.BorderSizePixel =
         0
@@ -792,6 +736,24 @@ function UI:Create()
 
     SidebarCorner.Parent =
         Sidebar
+
+    local SidebarStroke =
+        Instance.new("UIStroke")
+
+    SidebarStroke.Color =
+        self.Theme:GetAccent()
+
+    SidebarStroke.Thickness =
+        1
+
+    SidebarStroke.Transparency =
+        0.35
+
+    SidebarStroke.Parent =
+        Sidebar
+
+    self.SidebarStroke =
+        SidebarStroke
 
     local SidebarPadding =
         Instance.new("UIPadding")
@@ -865,7 +827,7 @@ function UI:Create()
         CurrentTheme.Content
 
     Content.BackgroundTransparency =
-        CONTENT_TRANSPARENCY
+        self.Theme:GetContentTransparency()
 
     Content.BorderSizePixel =
         0
@@ -887,6 +849,24 @@ function UI:Create()
 
     ContentCorner.Parent =
         Content
+
+    local ContentStroke =
+        Instance.new("UIStroke")
+
+    ContentStroke.Color =
+        self.Theme:GetAccent()
+
+    ContentStroke.Thickness =
+        1
+
+    ContentStroke.Transparency =
+        0.35
+
+    ContentStroke.Parent =
+        Content
+
+    self.ContentStroke =
+        ContentStroke
 
     self.Content =
         Content
@@ -945,7 +925,7 @@ function UI:Create()
         ContentTitle
 
     --==================================================
-    -- CONTENT SCROLL
+    -- SCROLL
     --==================================================
 
     local Scroll =
@@ -1027,16 +1007,78 @@ function UI:Create()
 end
 
 --==================================================
--- ANIMATION ENABLED?
+-- APPLY BACKGROUND
+--==================================================
+
+function UI:ApplyBackground()
+
+    if not self.Background
+    or not self.Theme then
+        return
+    end
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    if not CurrentTheme then
+        return
+    end
+
+    local URL =
+        CurrentTheme.BackgroundImage
+
+    if not URL then
+
+        self.Background.Image =
+            ""
+
+        self.Background.BackgroundColor3 =
+            CurrentTheme.Main
+
+        self.Background.BackgroundTransparency =
+            0
+
+        return
+
+    end
+
+    local Asset =
+        self:LoadBackgroundImage(
+            URL
+        )
+
+    if Asset then
+
+        self.Background.Image =
+            Asset
+
+        self.Background.BackgroundTransparency =
+            1
+
+    else
+
+        self.Background.Image =
+            ""
+
+        self.Background.BackgroundColor3 =
+            CurrentTheme.Main
+
+        self.Background.BackgroundTransparency =
+            0
+
+    end
+
+end
+
+--==================================================
+-- ANIMATION ENABLED
 --==================================================
 
 function UI:IsAnimationEnabled()
 
     if not self.Config
     or not self.Config.UI then
-
         return true
-
     end
 
     return self.Config.UI.Animation ~= false
@@ -1044,13 +1086,13 @@ function UI:IsAnimationEnabled()
 end
 
 --==================================================
--- CANCEL CURRENT ANIMATION
+-- CANCEL ANIMATION
 --==================================================
 
 function UI:CancelAnimation()
 
-    self.AnimationToken =
-        self.AnimationToken + 1
+    self.AnimationToken +=
+        1
 
     self.AnimationBusy =
         false
@@ -1058,7 +1100,7 @@ function UI:CancelAnimation()
 end
 
 --==================================================
--- SHOW / HIDE
+-- SET VISIBLE
 --==================================================
 
 function UI:SetVisible(Value)
@@ -1098,14 +1140,8 @@ function UI:SetVisibleAnimated(Value)
 
     if not Main
     or not Scale then
-
         return
-
     end
-
-    --==================================================
-    -- NO ANIMATION
-    --==================================================
 
     if not self:IsAnimationEnabled() then
 
@@ -1117,18 +1153,10 @@ function UI:SetVisibleAnimated(Value)
 
     end
 
-    --==================================================
-    -- CANCEL PREVIOUS
-    --==================================================
-
     self:CancelAnimation()
 
     local Token =
         self.AnimationToken
-
-    --==================================================
-    -- OPEN
-    --==================================================
 
     if Value then
 
@@ -1152,7 +1180,7 @@ function UI:SetVisibleAnimated(Value)
 
             )
 
-        local OpenInfo =
+        local Info =
             TweenInfo.new(
 
                 OPEN_TIME,
@@ -1167,9 +1195,7 @@ function UI:SetVisibleAnimated(Value)
             TweenService:Create(
 
                 Scale,
-
-                OpenInfo,
-
+                Info,
                 {
                     Scale = 1
                 }
@@ -1180,9 +1206,7 @@ function UI:SetVisibleAnimated(Value)
             TweenService:Create(
 
                 Main,
-
-                OpenInfo,
-
+                Info,
                 {
                     Position =
                         self.OriginalPosition
@@ -1214,15 +1238,11 @@ function UI:SetVisibleAnimated(Value)
 
     end
 
-    --==================================================
-    -- CLOSE
-    --==================================================
-
     if not Main.Visible then
         return
     end
 
-    local CloseInfo =
+    local Info =
         TweenInfo.new(
 
             CLOSE_TIME,
@@ -1237,9 +1257,7 @@ function UI:SetVisibleAnimated(Value)
         TweenService:Create(
 
             Scale,
-
-            CloseInfo,
-
+            Info,
             {
                 Scale = CLOSE_SCALE
             }
@@ -1250,9 +1268,7 @@ function UI:SetVisibleAnimated(Value)
         TweenService:Create(
 
             Main,
-
-            CloseInfo,
-
+            Info,
             {
 
                 Position =
@@ -1285,9 +1301,7 @@ function UI:SetVisibleAnimated(Value)
 
         if self.AnimationToken ~=
             Token then
-
             return
-
         end
 
         Main.Visible =
@@ -1307,7 +1321,7 @@ function UI:SetVisibleAnimated(Value)
 end
 
 --==================================================
--- TOGGLE ANIMATED
+-- TOGGLE
 --==================================================
 
 function UI:ToggleAnimated()
@@ -1342,7 +1356,6 @@ function UI:SetupDrag()
         false
 
     local DragStart
-
     local StartPosition
 
     Main.InputBegan:Connect(function(Input)
@@ -1350,9 +1363,7 @@ function UI:SetupDrag()
         if not Config
         or not Config.UI
         or not Config.UI.MainMenuDraggable then
-
             return
-
         end
 
         if Input.UserInputType ==
@@ -1427,32 +1438,6 @@ function UI:SetupDrag()
 end
 
 --==================================================
--- APPLY BACKGROUND
---==================================================
-
-function UI:ApplyBackground(
-    CurrentTheme
-)
-
-    if not self.Background then
-        return
-    end
-
-    local Image =
-        self:GetBackgroundImage()
-
-    self.Background.BackgroundColor3 =
-        CurrentTheme.Main
-
-    self.Background.Image =
-        Image or ""
-
-    self.Background.ImageTransparency =
-        0
-
-end
-
---==================================================
 -- APPLY THEME
 --==================================================
 
@@ -1462,30 +1447,18 @@ function UI:ApplyTheme()
         return
     end
 
-    local CurrentTheme
+    local CurrentTheme =
+        self.Theme:GetCurrent()
 
-    local Success =
-        pcall(function()
-
-            CurrentTheme =
-                self.Theme:GetCurrent()
-
-        end)
-
-    if not Success
-    or not CurrentTheme then
-
+    if not CurrentTheme then
         return
-
     end
 
     --==================================================
     -- BACKGROUND
     --==================================================
 
-    self:ApplyBackground(
-        CurrentTheme
-    )
+    self:ApplyBackground()
 
     --==================================================
     -- MAIN
@@ -1497,7 +1470,7 @@ function UI:ApplyTheme()
             CurrentTheme.Main
 
         self.Main.BackgroundTransparency =
-            MAIN_TRANSPARENCY
+            self.Theme:GetMainTransparency()
 
     end
 
@@ -1509,17 +1482,6 @@ function UI:ApplyTheme()
 
         self.MainStroke.Color =
             self.Theme:GetAccent()
-
-    end
-
-    --==================================================
-    -- HEADER
-    --==================================================
-
-    if self.Header then
-
-        self.Header.BackgroundTransparency =
-            1
 
     end
 
@@ -1554,9 +1516,6 @@ function UI:ApplyTheme()
         self.Close.BackgroundColor3 =
             CurrentTheme.Close
 
-        self.Close.BackgroundTransparency =
-            0
-
         self.Close.TextColor3 =
             CurrentTheme.Text
 
@@ -1572,7 +1531,14 @@ function UI:ApplyTheme()
             CurrentTheme.Sidebar
 
         self.Sidebar.BackgroundTransparency =
-            SIDEBAR_TRANSPARENCY
+            self.Theme:GetSidebarTransparency()
+
+    end
+
+    if self.SidebarStroke then
+
+        self.SidebarStroke.Color =
+            self.Theme:GetAccent()
 
     end
 
@@ -1586,7 +1552,14 @@ function UI:ApplyTheme()
             CurrentTheme.Content
 
         self.Content.BackgroundTransparency =
-            CONTENT_TRANSPARENCY
+            self.Theme:GetContentTransparency()
+
+    end
+
+    if self.ContentStroke then
+
+        self.ContentStroke.Color =
+            self.Theme:GetAccent()
 
     end
 
@@ -1615,7 +1588,7 @@ function UI:ApplyTheme()
 end
 
 --==================================================
--- RETURN MODULE
+-- RETURN
 --==================================================
 
 return UI
