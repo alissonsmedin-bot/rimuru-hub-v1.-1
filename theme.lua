@@ -8,6 +8,8 @@
 --// Card Color Cycling
 --// Background Safe
 --// RGB Compatible
+--// BLACKOUT SELECTED STATE
+--// SAFE THEME FALLBACKS
 
 local RunService =
     game:GetService("RunService")
@@ -133,92 +135,144 @@ local PremiumPresets = {
 
     ["Blackout"] = {
 
+        --==================================================
+        -- BASE
+        --==================================================
+
         Background =
-            Color3.fromRGB(
-                248,
-                248,
-                248
-            ),
-
-        Content =
-            Color3.fromRGB(
-                255,
-                255,
-                255
-            ),
-
-        Card =
-            Color3.fromRGB(
-                238,
-                238,
-                238
-            ),
-
-        CardDark =
-            Color3.fromRGB(
-                222,
-                222,
-                222
-            ),
-
-        Button =
-            Color3.fromRGB(
-                230,
-                230,
-                230
-            ),
-
-        ButtonDark =
-            Color3.fromRGB(
-                210,
-                210,
-                210
-            ),
-
-        Accent =
-            Color3.fromRGB(
-                20,
-                20,
-                20
-            ),
-
-        AccentLight =
-            Color3.fromRGB(
-                60,
-                60,
-                60
-            ),
-
-        LogoBorder =
             Color3.fromRGB(
                 0,
                 0,
                 0
             ),
 
-        Text =
+        Content =
+            Color3.fromRGB(
+                0,
+                0,
+                0
+            ),
+
+        Card =
+            Color3.fromRGB(
+                0,
+                0,
+                0
+            ),
+
+        CardDark =
+            Color3.fromRGB(
+                8,
+                8,
+                8
+            ),
+
+        Button =
+            Color3.fromRGB(
+                0,
+                0,
+                0
+            ),
+
+        ButtonDark =
             Color3.fromRGB(
                 10,
                 10,
                 10
             ),
 
-        SubText =
-            Color3.fromRGB(
-                65,
-                65,
-                65
-            ),
+        --==================================================
+        -- ACCENT
+        --==================================================
 
-        TextStroke =
+        Accent =
             Color3.fromRGB(
                 255,
                 255,
                 255
             ),
 
+        AccentLight =
+            Color3.fromRGB(
+                255,
+                255,
+                255
+            ),
+
+        LogoBorder =
+            Color3.fromRGB(
+                255,
+                255,
+                255
+            ),
+
+        --==================================================
+        -- TEXT
+        --==================================================
+
+        Text =
+            Color3.fromRGB(
+                255,
+                255,
+                255
+            ),
+
+        SubText =
+            Color3.fromRGB(
+                180,
+                180,
+                180
+            ),
+
+        TextStroke =
+            Color3.fromRGB(
+                0,
+                0,
+                0
+            ),
+
         TextStrokeTransparency =
-            0,
+            0.15,
+
+        --==================================================
+        -- BLACKOUT STATE COLORS
+        --==================================================
+        -- NORMAL:
+        -- preto + texto branco
+        --
+        -- SELECTED:
+        -- branco + texto preto
+        --==================================================
+
+        Normal =
+            Color3.fromRGB(
+                0,
+                0,
+                0
+            ),
+
+        NormalText =
+            Color3.fromRGB(
+                255,
+                255,
+                255
+            ),
+
+        Selected =
+            Color3.fromRGB(
+                255,
+                255,
+                255
+            ),
+
+        SelectedText =
+            Color3.fromRGB(
+                0,
+                0,
+                0
+            ),
+
+        --==================================================
 
         Animated =
             false,
@@ -821,12 +875,6 @@ end
 --==================================================
 -- LIGHT PULSE
 --==================================================
--- Faz:
---
--- escuro → claro → escuro
---
--- sem ficar piscando.
---==================================================
 
 function Theme:GetLightPulse()
 
@@ -874,11 +922,13 @@ function Theme:GetCardColor(Index)
         self.Current.CardDark
 
     if not Card then
+
         return Color3.new(
             1,
             1,
             1
         )
+
     end
 
     if not Dark
@@ -890,9 +940,6 @@ function Theme:GetCardColor(Index)
 
     --==================================================
     -- CARD WAVE
-    --==================================================
-    -- Cada card recebe uma pequena diferença.
-    -- Não vira RGB; apenas cria profundidade.
     --==================================================
 
     local Offset =
@@ -1061,6 +1108,150 @@ function Theme:GetDarkButtonColor()
 
     return self.Current.ButtonDark
         or self.Current.Button
+
+end
+
+--==================================================
+-- NORMAL STATE COLOR
+--==================================================
+-- Usado por categorias/blocos quando NÃO estão selecionados.
+--
+-- Apenas temas que definirem "Normal" terão comportamento
+-- específico.
+--
+-- Nos demais temas:
+-- Normal → comportamento original.
+--==================================================
+
+function Theme:GetNormalColor()
+
+    if not self.Current then
+
+        return Color3.new(
+            0,
+            0,
+            0
+        )
+
+    end
+
+    return self.Current.Normal
+        or self.Current.Card
+        or self.Current.Button
+        or Color3.new(
+            0,
+            0,
+            0
+        )
+
+end
+
+--==================================================
+-- NORMAL STATE TEXT
+--==================================================
+
+function Theme:GetNormalTextColor()
+
+    if not self.Current then
+
+        return Color3.new(
+            1,
+            1,
+            1
+        )
+
+    end
+
+    return self.Current.NormalText
+        or self.Current.Text
+        or Color3.new(
+            1,
+            1,
+            1
+        )
+
+end
+
+--==================================================
+-- SELECTED STATE COLOR
+--==================================================
+-- Apenas o Blackout possui uma cor Selected própria.
+--
+-- Outros temas continuam usando Accent.
+--==================================================
+
+function Theme:GetSelectedColor()
+
+    if not self.Current then
+
+        return Color3.new(
+            1,
+            1,
+            1
+        )
+
+    end
+
+    if self.Current.Selected then
+
+        return self.Current.Selected
+
+    end
+
+    -- Comportamento ORIGINAL dos outros temas
+    return self:GetAccent()
+
+end
+
+--==================================================
+-- SELECTED STATE TEXT
+--==================================================
+-- Apenas o Blackout possui SelectedText própria.
+--
+-- Outros temas continuam usando Text.
+--==================================================
+
+function Theme:GetSelectedTextColor()
+
+    if not self.Current then
+
+        return Color3.new(
+            0,
+            0,
+            0
+        )
+
+    end
+
+    if self.Current.SelectedText then
+
+        return self.Current.SelectedText
+
+    end
+
+    -- Comportamento ORIGINAL dos outros temas
+    return self:GetText()
+
+end
+
+--==================================================
+-- HAS CUSTOM STATE COLORS
+--==================================================
+-- Permite que outros módulos descubram se o tema possui
+-- estados especiais.
+--==================================================
+
+function Theme:HasCustomStateColors()
+
+    if not self.Current then
+        return false
+    end
+
+    return
+        self.Current.Normal ~= nil
+        or self.Current.NormalText ~= nil
+        or self.Current.Selected ~= nil
+        or self.Current.SelectedText ~= nil
 
 end
 
