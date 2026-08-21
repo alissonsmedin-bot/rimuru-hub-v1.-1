@@ -11,6 +11,12 @@
 --// Scrollable Filter Menu
 --// SEARCH CONTEXT COMPATIBLE
 --// FUTURE FILTER READY
+--// CATEGORY CLICK SIZE ANIMATION
+--// CLICK = +4 PIXELS
+--// RETURN TO ORIGINAL AFTER 0.34s
+
+local TweenService =
+    game:GetService("TweenService")
 
 local Categories = {}
 
@@ -32,6 +38,9 @@ local CategoryIcons = {
     ["Configuração"] =
         "⚙️"
 
+    ["GoJo"] =
+      "🌓"
+    
 }
 
 --==================================================
@@ -117,6 +126,29 @@ function Categories:Init(Context)
         nil
 
     --==================================================
+    -- CATEGORY CLICK ANIMATION
+    --==================================================
+
+    self.CategoryClickAnimation =
+        true
+
+    -- Quantos pixels o bloco aumenta
+    self.CategoryClickHeight =
+        4
+
+    -- Tempo até começar a voltar
+    self.CategoryClickDuration =
+        0.34
+
+    -- Tempo da expansão
+    self.CategoryClickExpandTime =
+        0.07
+
+    -- Tempo da volta
+    self.CategoryClickReturnTime =
+        0.10
+
+    --==================================================
     -- FILTER RESOLVERS
     --==================================================
     -- Cada filtro retorna o conjunto de sons
@@ -168,6 +200,181 @@ function Categories:GetIcon(
 
     return CategoryIcons[CategoryName]
         or "📁"
+
+end
+
+--==================================================
+-- CATEGORY CLICK ANIMATION
+--==================================================
+-- A animação NÃO usa UIScale.
+--
+-- O tamanho físico do botão aumenta exatamente
+-- 4 pixels na altura e depois retorna ao tamanho
+-- original.
+--
+-- Exemplo:
+--
+-- 38px -> 42px -> 38px
+--
+-- O UIListLayout continua responsável pela posição.
+--==================================================
+
+function Categories:AnimateCategoryClick(
+    Button
+)
+
+    if not Button
+    or not Button.Parent then
+
+        return
+
+    end
+
+    if self.CategoryClickAnimation == false then
+
+        return
+
+    end
+
+    --==================================================
+    -- ORIGINAL SIZE
+    --==================================================
+
+    local OriginalSize =
+        Button.Size
+
+    local OriginalHeight =
+        OriginalSize.Y.Offset
+
+    local ExtraHeight =
+        self.CategoryClickHeight or 4
+
+    local Duration =
+        self.CategoryClickDuration or 0.34
+
+    local ExpandTime =
+        self.CategoryClickExpandTime or 0.07
+
+    local ReturnTime =
+        self.CategoryClickReturnTime or 0.10
+
+    --==================================================
+    -- TOKEN
+    --==================================================
+    -- Impede que uma animação antiga devolva o
+    -- botão para um tamanho incorreto depois de
+    -- vários cliques rápidos.
+    --==================================================
+
+    local Token =
+        (Button:GetAttribute(
+            "CategoryAnimationToken"
+        ) or 0) + 1
+
+    Button:SetAttribute(
+        "CategoryAnimationToken",
+        Token
+    )
+
+    --==================================================
+    -- CANCEL CURRENT TWEEN
+    --==================================================
+
+    local OldTween =
+        Button:GetAttribute(
+            "CategoryAnimationTween"
+        )
+
+    if OldTween then
+
+        pcall(function()
+
+            OldTween:Cancel()
+
+        end)
+
+    end
+
+    --==================================================
+    -- EXPAND
+    --==================================================
+
+    local ExpandedSize =
+        UDim2.new(
+
+            OriginalSize.X.Scale,
+            OriginalSize.X.Offset,
+
+            OriginalSize.Y.Scale,
+            OriginalHeight + ExtraHeight
+
+        )
+
+    local ExpandTween =
+        TweenService:Create(
+
+            Button,
+
+            TweenInfo.new(
+                ExpandTime,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
+
+            {
+                Size =
+                    ExpandedSize
+            }
+
+        )
+
+    ExpandTween:Play()
+
+    --==================================================
+    -- RETURN
+    --==================================================
+
+    task.delay(
+        Duration,
+        function()
+
+            if not Button
+            or not Button.Parent then
+
+                return
+
+            end
+
+            if Button:GetAttribute(
+                "CategoryAnimationToken"
+            ) ~= Token then
+
+                return
+
+            end
+
+            local ReturnTween =
+                TweenService:Create(
+
+                    Button,
+
+                    TweenInfo.new(
+                        ReturnTime,
+                        Enum.EasingStyle.Quad,
+                        Enum.EasingDirection.Out
+                    ),
+
+                    {
+                        Size =
+                            OriginalSize
+                    }
+
+                )
+
+            ReturnTween:Play()
+
+        end
+    )
 
 end
 
@@ -1613,9 +1820,25 @@ function Categories:CreateCategoryButton(
 
         function()
 
+            --==================================================
+            -- SELECT
+            --==================================================
+
             self:SelectButton(
                 Button
             )
+
+            --==================================================
+            -- SIZE ANIMATION
+            --==================================================
+
+            self:AnimateCategoryClick(
+                Button
+            )
+
+            --==================================================
+            -- CATEGORY
+            --==================================================
 
             if ShowSoundCategory then
 
