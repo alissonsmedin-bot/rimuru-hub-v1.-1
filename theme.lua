@@ -12,6 +12,7 @@
 --// BACKGROUND SAFE
 --// RGB COMPATIBLE
 --// BLACKOUT SELECTED STATE
+--// UI FIELD COMPATIBILITY
 
 local Theme = {}
 
@@ -500,7 +501,7 @@ function Theme:NormalizeTheme(Data)
     end
 
     --==================================================
-    -- CORES PRINCIPAIS
+    -- MAIN UI COLORS
     --==================================================
 
     Data.Background =
@@ -532,6 +533,61 @@ function Theme:NormalizeTheme(Data)
         or Data.Button
         or DARK
 
+    -- Compatibilidade com UI
+    Data.Main =
+        Data.Main
+        or Data.Background
+
+    Data.Sidebar =
+        Data.Sidebar
+        or Data.CardDark
+        or Data.Content
+
+    Data.Close =
+        Data.Close
+        or Data.Button
+
+    --==================================================
+    -- TRANSPARENCY
+    --==================================================
+
+    Data.MainTransparency =
+        tonumber(Data.MainTransparency)
+        or 0.04
+
+    Data.SidebarTransparency =
+        tonumber(Data.SidebarTransparency)
+        or 0
+
+    Data.ContentTransparency =
+        tonumber(Data.ContentTransparency)
+        or 0
+
+    Data.MainTransparency =
+        math.clamp(
+            Data.MainTransparency,
+            0,
+            1
+        )
+
+    Data.SidebarTransparency =
+        math.clamp(
+            Data.SidebarTransparency,
+            0,
+            1
+        )
+
+    Data.ContentTransparency =
+        math.clamp(
+            Data.ContentTransparency,
+            0,
+            1
+        )
+
+    --==================================================
+    -- ACCENT
+    --==================================================
+
     Data.Accent =
         Data.Accent
         or WHITE
@@ -562,16 +618,12 @@ function Theme:NormalizeTheme(Data)
         Data.TextStroke
         or BLACK
 
-    -- IMPORTANTE:
-    -- Quanto maior, mais fino o stroke.
     Data.TextStrokeTransparency =
         tonumber(
             Data.TextStrokeTransparency
         )
         or 0.78
 
-    -- Impede stroke extremamente grosso
-    -- mesmo em configurações antigas.
     Data.TextStrokeTransparency =
         math.clamp(
             Data.TextStrokeTransparency,
@@ -594,11 +646,24 @@ function Theme:NormalizeTheme(Data)
         )
         or 0.35
 
+    Data.GlowTransparency =
+        math.clamp(
+            Data.GlowTransparency,
+            0,
+            1
+        )
+
     Data.GlowThickness =
         tonumber(
             Data.GlowThickness
         )
         or 1
+
+    Data.GlowThickness =
+        math.max(
+            Data.GlowThickness,
+            0
+        )
 
     Data.HoverColor =
         Data.HoverColor
@@ -612,39 +677,51 @@ function Theme:NormalizeTheme(Data)
         )
         or 0
 
+    Data.HoverTransparency =
+        math.clamp(
+            Data.HoverTransparency,
+            0,
+            1
+        )
+
     --==================================================
     -- ANIMATION
     --==================================================
 
     Data.FadeTime =
-        tonumber(
-            Data.FadeTime
-        )
+        tonumber(Data.FadeTime)
         or 0.20
+
+    Data.FadeTime =
+        math.max(
+            Data.FadeTime,
+            0
+        )
 
     if Data.Animated == nil then
         Data.Animated = true
     end
 
     Data.AnimationSpeed =
-        tonumber(
-            Data.AnimationSpeed
-        )
+        tonumber(Data.AnimationSpeed)
         or 1
+
+    Data.AnimationSpeed =
+        math.max(
+            Data.AnimationSpeed,
+            0
+        )
 
     if Data.CardAnimation == nil then
         Data.CardAnimation = true
     end
 
     --==================================================
-    -- BACKGROUND TRANSPARENCY
+    -- BACKGROUND
     --==================================================
 
     if Data.BackgroundTransparency == nil then
-
-        Data.BackgroundTransparency =
-            0.16
-
+        Data.BackgroundTransparency = 0.16
     end
 
     Data.BackgroundTransparency =
@@ -656,6 +733,26 @@ function Theme:NormalizeTheme(Data)
             0.65
         )
 
+    --==================================================
+    -- CUSTOM STATE
+    --==================================================
+
+    if Data.Normal == nil then
+        Data.Normal = Data.Button
+    end
+
+    if Data.NormalText == nil then
+        Data.NormalText = Data.Text
+    end
+
+    if Data.Selected == nil then
+        Data.Selected = Data.Accent
+    end
+
+    if Data.SelectedText == nil then
+        Data.SelectedText = Data.Text
+    end
+
     return Data
 
 end
@@ -665,6 +762,9 @@ end
 --==================================================
 
 function Theme:Init(Context)
+
+    self.Context =
+        Context
 
     self.Config =
         Context.Config
@@ -678,16 +778,14 @@ function Theme:Init(Context)
         or {}
 
     --==================================================
-    -- ADD / MERGE PREMIUM THEMES
+    -- MERGE PREMIUM THEMES
     --==================================================
 
     for Name, Preset in
         pairs(PremiumPresets) do
 
         if type(self.Themes[Name]) ~= "table" then
-
             self.Themes[Name] = {}
-
         end
 
         for Key, Value in
@@ -701,21 +799,19 @@ function Theme:Init(Context)
     end
 
     --==================================================
-    -- NORMALIZE EVERY THEME
+    -- NORMALIZE
     --==================================================
 
     for Name, Data in
         pairs(self.Themes) do
 
         self.Themes[Name] =
-            self:NormalizeTheme(
-                Data
-            )
+            self:NormalizeTheme(Data)
 
     end
 
     --==================================================
-    -- CURRENT THEME
+    -- CURRENT
     --==================================================
 
     self.Name =
@@ -723,10 +819,8 @@ function Theme:Init(Context)
         or "Rimuru Dark"
 
     if not self.Themes[self.Name] then
-
         self.Name =
             "Rimuru Dark"
-
     end
 
     self.Current =
@@ -825,7 +919,7 @@ function Theme:GetAccent()
 end
 
 --==================================================
--- GET LIGHT PULSE
+-- LIGHT PULSE
 --==================================================
 
 function Theme:GetLightPulse()
@@ -851,7 +945,7 @@ function Theme:GetLightPulse()
 end
 
 --==================================================
--- GET GLOW
+-- GLOW
 --==================================================
 
 function Theme:GetGlowColor()
@@ -877,10 +971,7 @@ function Theme:GetGlowTransparency()
 
     local Base =
         self.Current.GlowTransparency
-
-    if Base == nil then
-        Base = 0.35
-    end
+        or 0.35
 
     if self.Current.Animated then
 
@@ -1200,9 +1291,7 @@ function Theme:UpdateRGB()
 
     if not self.Current
     or not self.Current.RGB then
-
         return nil
-
     end
 
     self.RGBHue += 0.0025
@@ -1261,6 +1350,7 @@ end
 function Theme:GetThemes()
 
     return self.Themes
+        or {}
 
 end
 
