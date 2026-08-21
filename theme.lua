@@ -1,29 +1,57 @@
 --// 🎨 RIMURU HUB
 --// Theme System
 --// PREMIUM THEME ENGINE
---// Dynamic Colors
---// Animated Lighting
---// Visible Glow System
---// Fade Support
---// Logo Border Support
---// Text Stroke Support
---// Card Color Cycling
---// Background Safe
---// RGB Compatible
+--// SAFE THEME NORMALIZATION
+--// DYNAMIC COLORS
+--// ANIMATED LIGHTING
+--// VISIBLE GLOW SYSTEM
+--// FADE SUPPORT
+--// LOGO BORDER SUPPORT
+--// THIN TEXT STROKE
+--// CARD COLOR CYCLING
+--// BACKGROUND SAFE
+--// RGB COMPATIBLE
 --// BLACKOUT SELECTED STATE
---// SAFE THEME FALLBACKS
 
 local Theme = {}
+
+--==================================================
+-- SAFE COLOR
+--==================================================
+
+local WHITE =
+    Color3.fromRGB(
+        255,
+        250,
+        255
+    )
+
+local BLACK =
+    Color3.fromRGB(
+        0,
+        0,
+        0
+    )
+
+local DARK =
+    Color3.fromRGB(
+        10,
+        10,
+        15
+    )
+
+local SUBTEXT =
+    Color3.fromRGB(
+        160,
+        160,
+        175
+    )
 
 --==================================================
 -- PREMIUM THEME PRESETS
 --==================================================
 
 local PremiumPresets = {
-
-    --==================================================
-    -- 🌌 RIMURU DARK
-    --==================================================
 
     ["Rimuru Dark"] = {
 
@@ -44,10 +72,9 @@ local PremiumPresets = {
         Text = Color3.fromRGB(245, 250, 255),
         SubText = Color3.fromRGB(165, 190, 215),
 
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.15,
+        TextStroke = BLACK,
+        TextStrokeTransparency = 0.78,
 
-        -- VISUAL
         GlowColor = Color3.fromRGB(50, 165, 255),
         GlowTransparency = 0.30,
         GlowThickness = 2,
@@ -62,12 +89,8 @@ local PremiumPresets = {
 
         CardAnimation = true,
 
-        BackgroundTransparency = 0.05
+        BackgroundTransparency = 0.16
     },
-
-    --==================================================
-    -- 🟢 SLIME
-    --==================================================
 
     ["Slime"] = {
 
@@ -89,7 +112,7 @@ local PremiumPresets = {
         SubText = Color3.fromRGB(135, 205, 190),
 
         TextStroke = Color3.fromRGB(0, 20, 18),
-        TextStrokeTransparency = 0.10,
+        TextStrokeTransparency = 0.78,
 
         GlowColor = Color3.fromRGB(40, 255, 190),
         GlowTransparency = 0.25,
@@ -105,37 +128,32 @@ local PremiumPresets = {
 
         CardAnimation = true,
 
-        BackgroundTransparency = 0.05
+        BackgroundTransparency = 0.16
     },
-
-    --==================================================
-    -- ⬛ BLACKOUT
-    --==================================================
 
     ["Blackout"] = {
 
-        Background = Color3.fromRGB(0, 0, 0),
-        Content = Color3.fromRGB(0, 0, 0),
+        Background = BLACK,
+        Content = BLACK,
 
-        Card = Color3.fromRGB(0, 0, 0),
+        Card = BLACK,
         CardDark = Color3.fromRGB(8, 8, 8),
 
-        Button = Color3.fromRGB(0, 0, 0),
+        Button = BLACK,
         ButtonDark = Color3.fromRGB(10, 10, 10),
 
-        Accent = Color3.fromRGB(255, 255, 255),
-        AccentLight = Color3.fromRGB(255, 255, 255),
+        Accent = WHITE,
+        AccentLight = WHITE,
 
-        LogoBorder = Color3.fromRGB(255, 255, 255),
+        LogoBorder = WHITE,
 
-        Text = Color3.fromRGB(255, 255, 255),
+        Text = WHITE,
         SubText = Color3.fromRGB(180, 180, 180),
 
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.15,
+        TextStroke = BLACK,
+        TextStrokeTransparency = 0.80,
 
-        -- BLACKOUT NÃO USA GLOW FORTE
-        GlowColor = Color3.fromRGB(255, 255, 255),
+        GlowColor = WHITE,
         GlowTransparency = 0.70,
         GlowThickness = 1,
 
@@ -144,21 +162,17 @@ local PremiumPresets = {
 
         FadeTime = 0.14,
 
-        Normal = Color3.fromRGB(0, 0, 0),
-        NormalText = Color3.fromRGB(255, 255, 255),
+        Normal = BLACK,
+        NormalText = WHITE,
 
-        Selected = Color3.fromRGB(255, 255, 255),
-        SelectedText = Color3.fromRGB(0, 0, 0),
+        Selected = WHITE,
+        SelectedText = BLACK,
 
         Animated = false,
         CardAnimation = false,
 
-        BackgroundTransparency = 0
+        BackgroundTransparency = 0.18
     },
-
-    --==================================================
-    -- 🕳️ VOID
-    --==================================================
 
     ["Void"] = {
 
@@ -179,10 +193,9 @@ local PremiumPresets = {
         Text = Color3.fromRGB(245, 240, 255),
         SubText = Color3.fromRGB(165, 150, 190),
 
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.20,
+        TextStroke = BLACK,
+        TextStrokeTransparency = 0.80,
 
-        -- VOID
         GlowColor = Color3.fromRGB(155, 85, 255),
         GlowTransparency = 0.18,
         GlowThickness = 2.2,
@@ -197,12 +210,8 @@ local PremiumPresets = {
 
         CardAnimation = true,
 
-        BackgroundTransparency = 0.08
+        BackgroundTransparency = 0.18
     },
-
-    --==================================================
-    -- 🩸 CRIMSON
-    --==================================================
 
     ["Crimson"] = {
 
@@ -223,8 +232,8 @@ local PremiumPresets = {
         Text = Color3.fromRGB(255, 245, 245),
         SubText = Color3.fromRGB(205, 160, 165),
 
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.15,
+        TextStroke = BLACK,
+        TextStrokeTransparency = 0.78,
 
         GlowColor = Color3.fromRGB(255, 35, 55),
         GlowTransparency = 0.20,
@@ -240,12 +249,8 @@ local PremiumPresets = {
 
         CardAnimation = true,
 
-        BackgroundTransparency = 0.04
+        BackgroundTransparency = 0.16
     },
-
-    --==================================================
-    -- 💎 CRYSTAL
-    --==================================================
 
     ["Crystal"] = {
 
@@ -266,8 +271,8 @@ local PremiumPresets = {
         Text = Color3.fromRGB(20, 30, 40),
         SubText = Color3.fromRGB(75, 95, 115),
 
-        TextStroke = Color3.fromRGB(255, 255, 255),
-        TextStrokeTransparency = 0.10,
+        TextStroke = WHITE,
+        TextStrokeTransparency = 0.82,
 
         GlowColor = Color3.fromRGB(70, 180, 240),
         GlowTransparency = 0.35,
@@ -283,12 +288,8 @@ local PremiumPresets = {
 
         CardAnimation = true,
 
-        BackgroundTransparency = 0
+        BackgroundTransparency = 0.14
     },
-
-    --==================================================
-    -- 🥇 GOLDEN NEON
-    --==================================================
 
     ["Golden Neon"] = {
 
@@ -309,8 +310,8 @@ local PremiumPresets = {
         Text = Color3.fromRGB(255, 248, 220),
         SubText = Color3.fromRGB(200, 180, 125),
 
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.10,
+        TextStroke = BLACK,
+        TextStrokeTransparency = 0.80,
 
         GlowColor = Color3.fromRGB(255, 190, 45),
         GlowTransparency = 0.20,
@@ -326,12 +327,8 @@ local PremiumPresets = {
 
         CardAnimation = true,
 
-        BackgroundTransparency = 0.03
+        BackgroundTransparency = 0.16
     },
-
-    --==================================================
-    -- 🔵 AZUL ESCURO
-    --==================================================
 
     ["Azul Escuro"] = {
 
@@ -352,8 +349,8 @@ local PremiumPresets = {
         Text = Color3.fromRGB(235, 242, 255),
         SubText = Color3.fromRGB(145, 165, 205),
 
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.18,
+        TextStroke = BLACK,
+        TextStrokeTransparency = 0.80,
 
         GlowColor = Color3.fromRGB(45, 105, 255),
         GlowTransparency = 0.22,
@@ -369,12 +366,8 @@ local PremiumPresets = {
 
         CardAnimation = true,
 
-        BackgroundTransparency = 0.05
+        BackgroundTransparency = 0.16
     },
-
-    --==================================================
-    -- 🤍 BRANCO DOURADO
-    --==================================================
 
     ["Branco Dourado"] = {
 
@@ -395,8 +388,8 @@ local PremiumPresets = {
         Text = Color3.fromRGB(35, 31, 22),
         SubText = Color3.fromRGB(105, 95, 75),
 
-        TextStroke = Color3.fromRGB(255, 255, 255),
-        TextStrokeTransparency = 0.15,
+        TextStroke = WHITE,
+        TextStrokeTransparency = 0.82,
 
         GlowColor = Color3.fromRGB(210, 165, 55),
         GlowTransparency = 0.32,
@@ -412,12 +405,8 @@ local PremiumPresets = {
 
         CardAnimation = true,
 
-        BackgroundTransparency = 0
+        BackgroundTransparency = 0.14
     },
-
-    --==================================================
-    -- 🔴 VERMELHO
-    --==================================================
 
     ["Vermelho"] = {
 
@@ -438,8 +427,8 @@ local PremiumPresets = {
         Text = Color3.fromRGB(255, 240, 240),
         SubText = Color3.fromRGB(205, 150, 155),
 
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.15,
+        TextStroke = BLACK,
+        TextStrokeTransparency = 0.80,
 
         GlowColor = Color3.fromRGB(255, 30, 45),
         GlowTransparency = 0.18,
@@ -455,12 +444,8 @@ local PremiumPresets = {
 
         CardAnimation = true,
 
-        BackgroundTransparency = 0.04
+        BackgroundTransparency = 0.16
     },
-
-    --==================================================
-    -- 🌈 RGB
-    --==================================================
 
     ["RGB"] = {
 
@@ -474,15 +459,15 @@ local PremiumPresets = {
         ButtonDark = Color3.fromRGB(9, 9, 14),
 
         Accent = Color3.fromRGB(255, 0, 255),
-        AccentLight = Color3.fromRGB(255, 255, 255),
+        AccentLight = WHITE,
 
-        LogoBorder = Color3.fromRGB(255, 255, 255),
+        LogoBorder = WHITE,
 
         Text = Color3.fromRGB(245, 245, 255),
         SubText = Color3.fromRGB(165, 165, 185),
 
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.15,
+        TextStroke = BLACK,
+        TextStrokeTransparency = 0.78,
 
         GlowColor = Color3.fromRGB(255, 0, 255),
         GlowTransparency = 0.18,
@@ -498,11 +483,182 @@ local PremiumPresets = {
 
         CardAnimation = true,
 
-        BackgroundTransparency = 0.05,
+        BackgroundTransparency = 0.16,
 
         RGB = true
     }
 }
+
+--==================================================
+-- NORMALIZE THEME
+--==================================================
+
+function Theme:NormalizeTheme(Data)
+
+    if type(Data) ~= "table" then
+        Data = {}
+    end
+
+    --==================================================
+    -- CORES PRINCIPAIS
+    --==================================================
+
+    Data.Background =
+        Data.Background
+        or DARK
+
+    Data.Content =
+        Data.Content
+        or Data.Background
+        or DARK
+
+    Data.Card =
+        Data.Card
+        or Data.Content
+        or DARK
+
+    Data.CardDark =
+        Data.CardDark
+        or Data.Card
+        or DARK
+
+    Data.Button =
+        Data.Button
+        or Data.Card
+        or DARK
+
+    Data.ButtonDark =
+        Data.ButtonDark
+        or Data.Button
+        or DARK
+
+    Data.Accent =
+        Data.Accent
+        or WHITE
+
+    Data.AccentLight =
+        Data.AccentLight
+        or Data.Accent
+        or WHITE
+
+    Data.LogoBorder =
+        Data.LogoBorder
+        or Data.Accent
+        or WHITE
+
+    --==================================================
+    -- TEXT
+    --==================================================
+
+    Data.Text =
+        Data.Text
+        or WHITE
+
+    Data.SubText =
+        Data.SubText
+        or SUBTEXT
+
+    Data.TextStroke =
+        Data.TextStroke
+        or BLACK
+
+    -- IMPORTANTE:
+    -- Quanto maior, mais fino o stroke.
+    Data.TextStrokeTransparency =
+        tonumber(
+            Data.TextStrokeTransparency
+        )
+        or 0.78
+
+    -- Impede stroke extremamente grosso
+    -- mesmo em configurações antigas.
+    Data.TextStrokeTransparency =
+        math.clamp(
+            Data.TextStrokeTransparency,
+            0.65,
+            1
+        )
+
+    --==================================================
+    -- GLOW
+    --==================================================
+
+    Data.GlowColor =
+        Data.GlowColor
+        or Data.Accent
+        or WHITE
+
+    Data.GlowTransparency =
+        tonumber(
+            Data.GlowTransparency
+        )
+        or 0.35
+
+    Data.GlowThickness =
+        tonumber(
+            Data.GlowThickness
+        )
+        or 1
+
+    Data.HoverColor =
+        Data.HoverColor
+        or Data.Button
+        or Data.Card
+        or DARK
+
+    Data.HoverTransparency =
+        tonumber(
+            Data.HoverTransparency
+        )
+        or 0
+
+    --==================================================
+    -- ANIMATION
+    --==================================================
+
+    Data.FadeTime =
+        tonumber(
+            Data.FadeTime
+        )
+        or 0.20
+
+    if Data.Animated == nil then
+        Data.Animated = true
+    end
+
+    Data.AnimationSpeed =
+        tonumber(
+            Data.AnimationSpeed
+        )
+        or 1
+
+    if Data.CardAnimation == nil then
+        Data.CardAnimation = true
+    end
+
+    --==================================================
+    -- BACKGROUND TRANSPARENCY
+    --==================================================
+
+    if Data.BackgroundTransparency == nil then
+
+        Data.BackgroundTransparency =
+            0.16
+
+    end
+
+    Data.BackgroundTransparency =
+        math.clamp(
+            tonumber(
+                Data.BackgroundTransparency
+            ) or 0.16,
+            0,
+            0.65
+        )
+
+    return Data
+
+end
 
 --==================================================
 -- INIT
@@ -513,17 +669,22 @@ function Theme:Init(Context)
     self.Config =
         Context.Config
 
+    self.Config.UI =
+        self.Config.UI
+        or {}
+
     self.Themes =
-        self.Config.UI.Themes or {}
+        self.Config.UI.Themes
+        or {}
 
     --==================================================
-    -- ADD PREMIUM THEMES
+    -- ADD / MERGE PREMIUM THEMES
     --==================================================
 
     for Name, Preset in
         pairs(PremiumPresets) do
 
-        if not self.Themes[Name] then
+        if type(self.Themes[Name]) ~= "table" then
 
             self.Themes[Name] = {}
 
@@ -539,6 +700,24 @@ function Theme:Init(Context)
 
     end
 
+    --==================================================
+    -- NORMALIZE EVERY THEME
+    --==================================================
+
+    for Name, Data in
+        pairs(self.Themes) do
+
+        self.Themes[Name] =
+            self:NormalizeTheme(
+                Data
+            )
+
+    end
+
+    --==================================================
+    -- CURRENT THEME
+    --==================================================
+
     self.Name =
         self.Config.UI.Theme
         or "Rimuru Dark"
@@ -551,7 +730,12 @@ function Theme:Init(Context)
     end
 
     self.Current =
-        self.Themes[self.Name]
+        self:NormalizeTheme(
+            self.Themes[self.Name]
+        )
+
+    self.Themes[self.Name] =
+        self.Current
 
     self.RGBHue =
         0
@@ -586,6 +770,11 @@ function Theme:ApplyPremiumPreset()
 
     end
 
+    self.Current =
+        self:NormalizeTheme(
+            self.Current
+        )
+
 end
 
 --==================================================
@@ -595,9 +784,7 @@ end
 function Theme:GetAccent()
 
     if not self.Current then
-
-        return Color3.new(1, 1, 1)
-
+        return WHITE
     end
 
     if self.Current.RGB then
@@ -612,10 +799,7 @@ function Theme:GetAccent()
 
     local Base =
         self.Current.Accent
-
-    if not Base then
-        return Color3.new(1, 1, 1)
-    end
+        or WHITE
 
     if self.Current.Animated then
 
@@ -667,31 +851,23 @@ function Theme:GetLightPulse()
 end
 
 --==================================================
--- GET GLOW COLOR
+-- GET GLOW
 --==================================================
 
 function Theme:GetGlowColor()
 
     if not self.Current then
-
-        return Color3.new(1, 1, 1)
-
+        return WHITE
     end
 
     if self.Current.RGB then
-
         return self:GetAccent()
-
     end
 
     return self.Current.GlowColor
         or self:GetAccent()
 
 end
-
---==================================================
--- GET GLOW TRANSPARENCY
---==================================================
 
 function Theme:GetGlowTransparency()
 
@@ -703,7 +879,7 @@ function Theme:GetGlowTransparency()
         self.Current.GlowTransparency
 
     if Base == nil then
-        return 0.35
+        Base = 0.35
     end
 
     if self.Current.Animated then
@@ -723,10 +899,6 @@ function Theme:GetGlowTransparency()
 
 end
 
---==================================================
--- GET GLOW THICKNESS
---==================================================
-
 function Theme:GetGlowThickness()
 
     if not self.Current then
@@ -739,15 +911,13 @@ function Theme:GetGlowThickness()
 end
 
 --==================================================
--- GET HOVER COLOR
+-- HOVER
 --==================================================
 
 function Theme:GetHoverColor()
 
     if not self.Current then
-
-        return Color3.new(0.2, 0.2, 0.2)
-
+        return DARK
     end
 
     return self.Current.HoverColor
@@ -756,7 +926,7 @@ function Theme:GetHoverColor()
 end
 
 --==================================================
--- GET FADE TIME
+-- FADE
 --==================================================
 
 function Theme:GetFadeTime()
@@ -771,34 +941,25 @@ function Theme:GetFadeTime()
 end
 
 --==================================================
--- GET CARD COLOR
+-- CARD
 --==================================================
 
 function Theme:GetCardColor(Index)
 
     if not self.Current then
-
-        return Color3.new(1, 1, 1)
-
+        return DARK
     end
 
     local Card =
         self.Current.Card
+        or DARK
 
-    local Dark =
+    local DarkCard =
         self.Current.CardDark
+        or Card
 
-    if not Card then
-
-        return Color3.new(1, 1, 1)
-
-    end
-
-    if not Dark
-    or not self.Current.CardAnimation then
-
+    if not self.Current.CardAnimation then
         return Card
-
     end
 
     local Offset =
@@ -812,22 +973,20 @@ function Theme:GetCardColor(Index)
         ) / 2
 
     return Card:Lerp(
-        Dark,
+        DarkCard,
         Wave * 0.35
     )
 
 end
 
 --==================================================
--- GET LOGO BORDER
+-- LOGO
 --==================================================
 
 function Theme:GetLogoBorder()
 
     if not self.Current then
-
-        return Color3.new(1, 1, 1)
-
+        return WHITE
     end
 
     return self.Current.LogoBorder
@@ -836,36 +995,24 @@ function Theme:GetLogoBorder()
 end
 
 --==================================================
--- GET TEXT
+-- TEXT
 --==================================================
 
 function Theme:GetText()
 
     if not self.Current then
-
-        return Color3.new(1, 1, 1)
-
+        return WHITE
     end
 
     return self.Current.Text
-        or Color3.new(1, 1, 1)
+        or WHITE
 
 end
-
---==================================================
--- GET SUB TEXT
---==================================================
 
 function Theme:GetSubText()
 
     if not self.Current then
-
-        return Color3.new(
-            0.7,
-            0.7,
-            0.7
-        )
-
+        return SUBTEXT
     end
 
     return self.Current.SubText
@@ -873,69 +1020,59 @@ function Theme:GetSubText()
 
 end
 
---==================================================
--- GET TEXT STROKE
---==================================================
-
 function Theme:GetTextStroke()
 
     if not self.Current then
-
-        return Color3.new(0, 0, 0)
-
+        return BLACK
     end
 
     return self.Current.TextStroke
-        or Color3.new(0, 0, 0)
+        or BLACK
 
 end
-
---==================================================
--- GET TEXT STROKE TRANSPARENCY
---==================================================
 
 function Theme:GetTextStrokeTransparency()
 
     if not self.Current then
-        return 0
+        return 0.78
     end
 
-    return self.Current.TextStrokeTransparency
-        or 0
+    return math.clamp(
+        tonumber(
+            self.Current.TextStrokeTransparency
+        ) or 0.78,
+        0.65,
+        1
+    )
 
 end
 
 --==================================================
--- GET BUTTON COLOR
+-- BUTTON
 --==================================================
 
 function Theme:GetButtonColor()
 
     if not self.Current then
-
-        return Color3.new(1, 1, 1)
-
+        return DARK
     end
 
     return self.Current.Button
         or self.Current.Card
+        or DARK
 
 end
-
---==================================================
--- GET DARK BUTTON COLOR
---==================================================
 
 function Theme:GetDarkButtonColor()
 
     if not self.Current then
-
-        return Color3.new(0, 0, 0)
-
+        return BLACK
     end
 
     return self.Current.ButtonDark
         or self.Current.Button
+        or self.Current.Card
+        or BLACK
 
 end
 
@@ -946,29 +1083,25 @@ end
 function Theme:GetNormalColor()
 
     if not self.Current then
-
-        return Color3.new(0, 0, 0)
-
+        return BLACK
     end
 
     return self.Current.Normal
         or self.Current.Card
         or self.Current.Button
-        or Color3.new(0, 0, 0)
+        or BLACK
 
 end
 
 function Theme:GetNormalTextColor()
 
     if not self.Current then
-
-        return Color3.new(1, 1, 1)
-
+        return WHITE
     end
 
     return self.Current.NormalText
         or self.Current.Text
-        or Color3.new(1, 1, 1)
+        or WHITE
 
 end
 
@@ -979,36 +1112,23 @@ end
 function Theme:GetSelectedColor()
 
     if not self.Current then
-
-        return Color3.new(1, 1, 1)
-
+        return WHITE
     end
 
-    if self.Current.Selected then
-
-        return self.Current.Selected
-
-    end
-
-    return self:GetAccent()
+    return self.Current.Selected
+        or self:GetAccent()
 
 end
 
 function Theme:GetSelectedTextColor()
 
     if not self.Current then
-
-        return Color3.new(0, 0, 0)
-
+        return BLACK
     end
 
-    if self.Current.SelectedText then
-
-        return self.Current.SelectedText
-
-    end
-
-    return self:GetText()
+    return self.Current.SelectedText
+        or self.Current.Text
+        or WHITE
 
 end
 
@@ -1037,27 +1157,32 @@ end
 function Theme:SetTheme(Name)
 
     if not self.Themes[Name] then
-
         return false
-
     end
 
     self.Name =
         Name
 
     self.Current =
-        self.Themes[Name]
+        self:NormalizeTheme(
+            self.Themes[Name]
+        )
+
+    self.Themes[Name] =
+        self.Current
 
     self.Config.UI.Theme =
         Name
 
     self:ApplyPremiumPreset()
 
+    self.Current =
+        self:NormalizeTheme(
+            self.Current
+        )
+
     if self.Current.RGB then
-
-        self.RGBHue =
-            0
-
+        self.RGBHue = 0
     end
 
     self.AnimationTime =
@@ -1083,10 +1208,7 @@ function Theme:UpdateRGB()
     self.RGBHue += 0.0025
 
     if self.RGBHue >= 1 then
-
-        self.RGBHue =
-            0
-
+        self.RGBHue = 0
     end
 
     return Color3.fromHSV(
@@ -1118,6 +1240,13 @@ end
 
 function Theme:GetCurrent()
 
+    if not self.Current then
+
+        self.Current =
+            self:NormalizeTheme({})
+
+    end
+
     return self.Current
 
 end
@@ -1125,6 +1254,7 @@ end
 function Theme:GetName()
 
     return self.Name
+        or "Rimuru Dark"
 
 end
 
@@ -1147,11 +1277,16 @@ end
 function Theme:GetBackgroundTransparency()
 
     if not self.Current then
-        return 1
+        return 0.16
     end
 
-    return self.Current.BackgroundTransparency
-        or 1
+    return math.clamp(
+        tonumber(
+            self.Current.BackgroundTransparency
+        ) or 0.16,
+        0,
+        0.65
+    )
 
 end
 
