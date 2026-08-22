@@ -1,12 +1,12 @@
 --// 💥 RIMURU HUB
 --// UI System
 --// PREMIUM NEON UI
---// TRUE BORDER SNAKE
---// PERFECT PERIMETER FLOW
---// NATURAL NEON MOTION
---// SOFT PULSING GLOW
+--// TRUE PERIMETER SNAKE
+--// THIN LINE BORDER FLOW
 --// ROUNDED CORNERS
---// SMOOTH ANIMATIONS
+--// NATURAL PULSE
+--// SOFT GLOW
+--// CONTAINED BORDER
 --// SAFE THEME INTEGRATION
 --// BLACKOUT COMPATIBLE
 
@@ -65,30 +65,34 @@ local SMALL_CORNER_RADIUS =
     10
 
 --==================================================
--- MAIN BORDER
+-- BORDER
 --==================================================
 
 local BORDER_THICKNESS =
-    1.7
+    1.35
+
+local SNAKE_THICKNESS =
+    2
 
 --==================================================
 -- SNAKE
 --==================================================
 
+-- Quantidade de segmentos usados para desenhar
+-- a linha ao redor da interface.
+
 local SNAKE_SEGMENTS =
-    26
+    128
+
+-- Quantos segmentos ficam iluminados ao mesmo tempo.
 
 local SNAKE_LENGTH =
-    7
+    17
 
-local SNAKE_THICKNESS =
-    2.2
+-- Velocidade do deslocamento.
 
 local SNAKE_SPEED =
-    105
-
-local SNAKE_GLOW =
-    0.15
+    42
 
 --==================================================
 -- GLOW
@@ -98,10 +102,10 @@ local GLOW_THICKNESS =
     7
 
 local GLOW_MIN_TRANSPARENCY =
-    0.88
+    0.84
 
 local GLOW_MAX_TRANSPARENCY =
-    0.96
+    0.95
 
 --==================================================
 -- SAFE THEME VALUE
@@ -117,27 +121,6 @@ local function ThemeColor(
     and Theme[Key] ~= nil then
 
         return Theme[Key]
-
-    end
-
-    return Fallback
-
-end
-
---==================================================
--- SAFE THEME BOOLEAN
---==================================================
-
-local function ThemeBoolean(
-    Theme,
-    Key,
-    Fallback
-)
-
-    if Theme
-    and Theme[Key] ~= nil then
-
-        return Theme[Key] == true
 
     end
 
@@ -199,14 +182,6 @@ local function GetThemeName(
 
     end
 
-    if Theme.Name then
-
-        return tostring(
-            Theme.Name
-        )
-
-    end
-
     return ""
 
 end
@@ -248,7 +223,7 @@ function UI:Init(Context)
     self.NeonTime =
         0
 
-    self.SnakeDistance =
+    self.SnakePosition =
         0
 
     self.SnakeParts =
@@ -339,6 +314,83 @@ function UI:Create()
 
     self.Gui =
         Gui
+
+    --==================================================
+    -- OUTER GLOW
+    --==================================================
+
+    -- O glow agora fica FORA do Main.
+    -- Assim ele não é cortado pelo ClipsDescendants.
+
+    local OuterGlow =
+        Instance.new("Frame")
+
+    OuterGlow.Name =
+        "OuterGlow"
+
+    OuterGlow.Size =
+        UDim2.new(
+            0,
+            600,
+            0,
+            400
+        )
+
+    OuterGlow.Position =
+        UDim2.new(
+            0.5,
+            -300,
+            0.5,
+            -200
+        )
+
+    OuterGlow.BackgroundTransparency =
+        1
+
+    OuterGlow.BorderSizePixel =
+        0
+
+    OuterGlow.ZIndex =
+        490
+
+    OuterGlow.Parent =
+        Gui
+
+    local OuterGlowCorner =
+        Instance.new("UICorner")
+
+    OuterGlowCorner.CornerRadius =
+        UDim.new(
+            0,
+            CORNER_RADIUS
+        )
+
+    OuterGlowCorner.Parent =
+        OuterGlow
+
+    local OuterGlowStroke =
+        Instance.new("UIStroke")
+
+    OuterGlowStroke.Name =
+        "OuterGlowStroke"
+
+    OuterGlowStroke.Color =
+        self.Theme:GetGlowColor()
+
+    OuterGlowStroke.Thickness =
+        GLOW_THICKNESS
+
+    OuterGlowStroke.Transparency =
+        0.92
+
+    OuterGlowStroke.Parent =
+        OuterGlow
+
+    self.OuterGlow =
+        OuterGlow
+
+    self.OuterGlowStroke =
+        OuterGlowStroke
 
     --==================================================
     -- MAIN
@@ -444,14 +496,14 @@ function UI:Create()
         MainCorner
 
     --==================================================
-    -- MAIN BORDER
+    -- DARK BASE BORDER
     --==================================================
 
     local MainStroke =
         Instance.new("UIStroke")
 
     MainStroke.Name =
-        "NeonBorder"
+        "BaseBorder"
 
     MainStroke.Color =
         self.Theme:GetAccent()
@@ -460,7 +512,7 @@ function UI:Create()
         BORDER_THICKNESS
 
     MainStroke.Transparency =
-        0.08
+        0.32
 
     MainStroke.ApplyStrokeMode =
         Enum.ApplyStrokeMode.Border
@@ -470,86 +522,6 @@ function UI:Create()
 
     self.MainStroke =
         MainStroke
-
-    --==================================================
-    -- OUTER GLOW
-    --==================================================
-
-    local Glow =
-        Instance.new("Frame")
-
-    Glow.Name =
-        "NeonGlow"
-
-    Glow.Size =
-        UDim2.new(
-            1,
-            0,
-            1,
-            0
-        )
-
-    Glow.Position =
-        UDim2.new(
-            0,
-            0,
-            0,
-            0
-        )
-
-    Glow.BackgroundTransparency =
-        1
-
-    Glow.BorderSizePixel =
-        0
-
-    Glow.ZIndex =
-        499
-
-    Glow.ClipsDescendants =
-        false
-
-    Glow.Parent =
-        Main
-
-    local GlowCorner =
-        Instance.new("UICorner")
-
-    GlowCorner.CornerRadius =
-        UDim.new(
-            0,
-            CORNER_RADIUS
-        )
-
-    GlowCorner.Parent =
-        Glow
-
-    local GlowStroke =
-        Instance.new("UIStroke")
-
-    GlowStroke.Name =
-        "GlowStroke"
-
-    GlowStroke.Color =
-        self.Theme:GetGlowColor()
-
-    GlowStroke.Thickness =
-        GLOW_THICKNESS
-
-    GlowStroke.Transparency =
-        0.94
-
-    GlowStroke.ApplyStrokeMode =
-        Enum.ApplyStrokeMode.Border
-
-    GlowStroke.Parent =
-        Glow
-
-    self.Glow =
-        Glow
-
-    self.GlowStroke =
-        GlowStroke
 
     --==================================================
     -- SNAKE CONTAINER
@@ -608,10 +580,10 @@ function UI:Create()
         Flow
 
     --==================================================
-    -- CREATE SNAKE SEGMENTS
+    -- CREATE SNAKE PARTS
     --==================================================
 
-    self:CreateSnake()
+    self:CreateSnakeParts()
 
     --==================================================
     -- BACKGROUND
@@ -750,7 +722,7 @@ function UI:Create()
         HeaderLogo
 
     --==================================================
-    -- LOGO BORDER
+    -- LOGO STROKE
     --==================================================
 
     local LogoStroke =
@@ -763,13 +735,10 @@ function UI:Create()
         self.Theme:GetLogoBorder()
 
     LogoStroke.Thickness =
-        1.4
+        1.2
 
     LogoStroke.Transparency =
-        0.15
-
-    LogoStroke.ApplyStrokeMode =
-        Enum.ApplyStrokeMode.Border
+        0.2
 
     LogoStroke.Parent =
         HeaderLogo
@@ -968,7 +937,7 @@ function UI:Create()
         1
 
     CloseStroke.Transparency =
-        0.35
+        0.45
 
     CloseStroke.Parent =
         Close
@@ -1052,7 +1021,7 @@ function UI:Create()
         1
 
     SidebarStroke.Transparency =
-        0.65
+        0.72
 
     SidebarStroke.Parent =
         Sidebar
@@ -1171,7 +1140,7 @@ function UI:Create()
         1
 
     ContentStroke.Transparency =
-        0.65
+        0.72
 
     ContentStroke.Parent =
         Content
@@ -1346,20 +1315,22 @@ function UI:Create()
 end
 
 --==================================================
--- CREATE SNAKE
+-- CREATE SNAKE PARTS
 --==================================================
 
-function UI:CreateSnake()
+function UI:CreateSnakeParts()
 
     if not self.Flow then
         return
     end
 
     for _, Part in
-        ipairs(self.SnakeParts or {}) do
+        ipairs(self.SnakeParts) do
 
         if Part then
+
             Part:Destroy()
+
         end
 
     end
@@ -1367,22 +1338,13 @@ function UI:CreateSnake()
     self.SnakeParts =
         {}
 
-    for Index = 1,
-        SNAKE_SEGMENTS do
+    for Index = 1, SNAKE_SEGMENTS do
 
         local Segment =
             Instance.new("Frame")
 
         Segment.Name =
             "SnakeSegment_" .. Index
-
-        Segment.Size =
-            UDim2.new(
-                0,
-                SNAKE_THICKNESS + 1,
-                0,
-                SNAKE_THICKNESS + 1
-            )
 
         Segment.AnchorPoint =
             Vector2.new(
@@ -1394,10 +1356,18 @@ function UI:CreateSnake()
             self.Theme:GetAccent()
 
         Segment.BackgroundTransparency =
-            0.25
+            1
 
         Segment.BorderSizePixel =
             0
+
+        Segment.Size =
+            UDim2.new(
+                0,
+                8,
+                0,
+                SNAKE_THICKNESS
+            )
 
         Segment.ZIndex =
             502
@@ -1405,39 +1375,7 @@ function UI:CreateSnake()
         Segment.Parent =
             self.Flow
 
-        local Corner =
-            Instance.new("UICorner")
-
-        Corner.CornerRadius =
-            UDim.new(
-                1,
-                0
-            )
-
-        Corner.Parent =
-            Segment
-
-        local Stroke =
-            Instance.new("UIStroke")
-
-        Stroke.Name =
-            "SegmentGlow"
-
-        Stroke.Color =
-            self.Theme:GetAccent()
-
-        Stroke.Thickness =
-            1.5
-
-        Stroke.Transparency =
-            0.55
-
-        Stroke.Parent =
-            Segment
-
-        self.SnakeParts[
-            Index
-        ] =
+        self.SnakeParts[Index] =
             Segment
 
     end
@@ -1445,497 +1383,363 @@ function UI:CreateSnake()
 end
 
 --==================================================
--- BORDER PATH
+-- ROUNDED RECTANGLE PATH
 --==================================================
 
 function UI:GetBorderPoint(
-    Distance,
+    Index,
     Width,
-    Height,
-    Radius
+    Height
 )
 
-    local Left =
-        Radius
+    local Radius =
+        math.min(
+            CORNER_RADIUS,
+            math.min(
+                Width,
+                Height
+            ) * 0.5
+        )
 
-    local Right =
-        Width - Radius
-
-    local Top =
-        Radius
-
-    local Bottom =
-        Height - Radius
-
-    local Horizontal =
+    local StraightWidth =
         Width
-        - (
-            Radius
-            * 2
-        )
+        - Radius * 2
 
-    local Vertical =
+    local StraightHeight =
         Height
-        - (
-            Radius
-            * 2
-        )
+        - Radius * 2
 
     local CornerLength =
         math.pi
         * Radius
         * 0.5
 
-    local TopLength =
-        Horizontal
-
-    local RightLength =
-        Vertical
-
-    local BottomLength =
-        Horizontal
-
-    local LeftLength =
-        Vertical
-
     local TotalLength =
-        TopLength
-        + RightLength
-        + BottomLength
-        + LeftLength
-        + (
+        (
+            StraightWidth
+            * 2
+        )
+        +
+        (
+            StraightHeight
+            * 2
+        )
+        +
+        (
             CornerLength
             * 4
         )
 
-    Distance =
-        Distance
-        % TotalLength
-
-    local D =
-        Distance
+    local Distance =
+        (
+            Index
+            /
+            SNAKE_SEGMENTS
+        )
+        *
+        TotalLength
 
     --==================================================
     -- TOP
     --==================================================
 
-    if D <= TopLength then
+    if Distance <= StraightWidth then
 
-        return Vector2.new(
-            Left + D,
+        return
+            Distance + Radius,
+            0,
             0
-        )
 
     end
 
-    D -=
-        TopLength
+    Distance -=
+        StraightWidth
 
     --==================================================
     -- TOP RIGHT CORNER
     --==================================================
 
-    if D <= CornerLength then
+    if Distance <= CornerLength then
 
-        local A =
+        local T =
+            Distance
+            /
+            CornerLength
+
+        local Angle =
             -math.pi / 2
-            + (
-                D
-                / Radius
+            +
+            T
+            *
+            math.pi / 2
+
+        local CX =
+            Width - Radius
+
+        local CY =
+            Radius
+
+        local X =
+            CX
+            +
+            math.cos(Angle)
+            *
+            Radius
+
+        local Y =
+            CY
+            +
+            math.sin(Angle)
+            *
+            Radius
+
+        local DX =
+            -math.sin(Angle)
+
+        local DY =
+            math.cos(Angle)
+
+        return X, Y,
+            math.deg(
+                math.atan2(
+                    DY,
+                    DX
+                )
             )
-
-        return Vector2.new(
-            Right
-                + math.cos(A)
-                * Radius,
-
-            Top
-                + math.sin(A)
-                * Radius
-        )
 
     end
 
-    D -=
+    Distance -=
         CornerLength
 
     --==================================================
     -- RIGHT
     --==================================================
 
-    if D <= RightLength then
+    if Distance <= StraightHeight then
 
-        return Vector2.new(
+        return
             Width,
-            Top + D
-        )
+            Distance + Radius,
+            90
 
     end
 
-    D -=
-        RightLength
+    Distance -=
+        StraightHeight
 
     --==================================================
-    -- BOTTOM RIGHT CORNER
+    -- BOTTOM RIGHT
     --==================================================
 
-    if D <= CornerLength then
+    if Distance <= CornerLength then
 
-        local A =
+        local T =
+            Distance
+            /
+            CornerLength
+
+        local Angle =
             0
-            + (
-                D
-                / Radius
+            +
+            T
+            *
+            math.pi / 2
+
+        local CX =
+            Width - Radius
+
+        local CY =
+            Height - Radius
+
+        local X =
+            CX
+            +
+            math.cos(Angle)
+            *
+            Radius
+
+        local Y =
+            CY
+            +
+            math.sin(Angle)
+            *
+            Radius
+
+        local DX =
+            -math.sin(Angle)
+
+        local DY =
+            math.cos(Angle)
+
+        return X, Y,
+            math.deg(
+                math.atan2(
+                    DY,
+                    DX
+                )
             )
 
-        return Vector2.new(
-            Right
-                + math.cos(A)
-                * Radius,
-
-            Bottom
-                + math.sin(A)
-                * Radius
-        )
-
     end
 
-    D -=
+    Distance -=
         CornerLength
 
     --==================================================
     -- BOTTOM
     --==================================================
 
-    if D <= BottomLength then
+    if Distance <= StraightWidth then
 
-        return Vector2.new(
-            Right - D,
-            Height
-        )
+        return
+            Width
+            -
+            Radius
+            -
+            Distance,
+            Height,
+            180
 
     end
 
-    D -=
-        BottomLength
+    Distance -=
+        StraightWidth
 
     --==================================================
-    -- BOTTOM LEFT CORNER
+    -- BOTTOM LEFT
     --==================================================
 
-    if D <= CornerLength then
+    if Distance <= CornerLength then
 
-        local A =
+        local T =
+            Distance
+            /
+            CornerLength
+
+        local Angle =
             math.pi / 2
-            + (
-                D
-                / Radius
+            +
+            T
+            *
+            math.pi / 2
+
+        local CX =
+            Radius
+
+        local CY =
+            Height - Radius
+
+        local X =
+            CX
+            +
+            math.cos(Angle)
+            *
+            Radius
+
+        local Y =
+            CY
+            +
+            math.sin(Angle)
+            *
+            Radius
+
+        local DX =
+            -math.sin(Angle)
+
+        local DY =
+            math.cos(Angle)
+
+        return X, Y,
+            math.deg(
+                math.atan2(
+                    DY,
+                    DX
+                )
             )
 
-        return Vector2.new(
-            Left
-                + math.cos(A)
-                * Radius,
-
-            Bottom
-                + math.sin(A)
-                * Radius
-        )
-
     end
 
-    D -=
+    Distance -=
         CornerLength
 
     --==================================================
     -- LEFT
     --==================================================
 
-    if D <= LeftLength then
+    if Distance <= StraightHeight then
 
-        return Vector2.new(
+        return
             0,
-            Bottom - D
-        )
+            Height
+            -
+            Radius
+            -
+            Distance,
+            270
 
     end
 
-    D -=
-        LeftLength
+    Distance -=
+        StraightHeight
 
     --==================================================
-    -- TOP LEFT CORNER
+    -- TOP LEFT
     --==================================================
 
-    local A =
+    local T =
+        math.clamp(
+            Distance
+            /
+            CornerLength,
+            0,
+            1
+        )
+
+    local Angle =
         math.pi
-        + (
-            D
-            / Radius
-        )
+        +
+        T
+        *
+        math.pi / 2
 
-    return Vector2.new(
-        Left
-            + math.cos(A)
-            * Radius,
+    local CX =
+        Radius
 
-        Top
-            + math.sin(A)
-            * Radius
-    )
+    local CY =
+        Radius
 
-end
+    local X =
+        CX
+        +
+        math.cos(Angle)
+        *
+        Radius
 
---==================================================
--- GET BORDER LENGTH
---==================================================
+    local Y =
+        CY
+        +
+        math.sin(Angle)
+        *
+        Radius
 
-function UI:GetBorderLength(
-    Width,
-    Height,
-    Radius
-)
+    local DX =
+        -math.sin(Angle)
 
-    local Horizontal =
-        Width
-        - (
-            Radius
-            * 2
-        )
+    local DY =
+        math.cos(Angle)
 
-    local Vertical =
-        Height
-        - (
-            Radius
-            * 2
-        )
-
-    local CornerLength =
-        math.pi
-        * Radius
-        * 0.5
-
-    return
-        Horizontal
-        + Vertical
-        + Horizontal
-        + Vertical
-        + (
-            CornerLength
-            * 4
+    return X, Y,
+        math.deg(
+            math.atan2(
+                DY,
+                DX
+            )
         )
 
 end
 
 --==================================================
--- UPDATE SNAKE
---==================================================
-
-function UI:UpdateSnake(
-    DeltaTime,
-    Accent,
-    GlowEnabled,
-    Pulse
-)
-
-    if not self.Flow
-    or not self.Flow.Parent then
-
-        return
-
-    end
-
-    local Absolute =
-        self.Flow.AbsoluteSize
-
-    local Width =
-        Absolute.X
-
-    local Height =
-        Absolute.Y
-
-    if Width <= 0
-    or Height <= 0 then
-
-        return
-
-    end
-
-    local Radius =
-        math.min(
-            CORNER_RADIUS,
-            Width * 0.15,
-            Height * 0.15
-        )
-
-    local BorderLength =
-        self:GetBorderLength(
-            Width,
-            Height,
-            Radius
-        )
-
-    self.SnakeDistance =
-        (
-            self.SnakeDistance
-            +
-            SNAKE_SPEED
-            * DeltaTime
-        )
-        % BorderLength
-
-    for Index, Segment in
-        ipairs(self.SnakeParts) do
-
-        if Segment then
-
-            local Offset =
-                (
-                    Index - 1
-                )
-                *
-                (
-                    SNAKE_LENGTH
-                    * 1.7
-                )
-
-            local Distance =
-                self.SnakeDistance
-                -
-                Offset
-
-            local Point =
-                self:GetBorderPoint(
-                    Distance,
-                    Width,
-                    Height,
-                    Radius
-                )
-
-            Segment.Position =
-                UDim2.fromOffset(
-                    Point.X,
-                    Point.Y
-                )
-
-            local Center =
-                (
-                    SNAKE_SEGMENTS
-                    + 1
-                )
-                * 0.5
-
-            local DistanceFromCenter =
-                math.abs(
-                    Index
-                    - Center
-                )
-
-            local Tail =
-                math.clamp(
-                    1
-                    -
-                    (
-                        DistanceFromCenter
-                        /
-                        (
-                            Center
-                        )
-                    ),
-                    0,
-                    1
-                )
-
-            Tail =
-                Tail
-                *
-                Tail
-                *
-                (
-                    3
-                    -
-                    2
-                    * Tail
-                )
-
-            if GlowEnabled then
-
-                Segment.BackgroundColor3 =
-                    Accent
-
-                Segment.BackgroundTransparency =
-                    0.10
-                    +
-                    (
-                        0.62
-                        * (
-                            1
-                            - Tail
-                        )
-                    )
-
-                local Stroke =
-                    Segment:FindFirstChild(
-                        "SegmentGlow"
-                    )
-
-                if Stroke then
-
-                    Stroke.Color =
-                        Accent
-
-                    Stroke.Transparency =
-                        0.25
-                        +
-                        (
-                            0.55
-                            * (
-                                1
-                                - Tail
-                            )
-                        )
-
-                    Stroke.Thickness =
-                        1.2
-                        +
-                        (
-                            Pulse
-                            * Tail
-                            * 1.8
-                        )
-
-                end
-
-            else
-
-                Segment.BackgroundColor3 =
-                    Accent
-
-                Segment.BackgroundTransparency =
-                    0.75
-
-                local Stroke =
-                    Segment:FindFirstChild(
-                        "SegmentGlow"
-                    )
-
-                if Stroke then
-
-                    Stroke.Transparency =
-                        0.9
-
-                end
-
-            end
-
-        end
-
-    end
-
-end
-
---==================================================
--- SHOULD USE PREMIUM GLOW
+-- SHOULD USE GLOW
 --==================================================
 
 function UI:ShouldUseGlow()
@@ -1949,28 +1753,9 @@ function UI:ShouldUseGlow()
 
     if CurrentTheme.GlowEnabled ~= nil then
 
-        return CurrentTheme.GlowEnabled == true
-
-    end
-
-    if self.Theme.GetGlowEnabled then
-
-        local Success,
-            Result =
-            pcall(
-                function()
-
-                    return self.Theme:GetGlowEnabled()
-
-                end
-            )
-
-        if Success
-        and Result ~= nil then
-
-            return Result == true
-
-        end
+        return
+            CurrentTheme.GlowEnabled
+            == true
 
     end
 
@@ -2009,7 +1794,203 @@ function UI:ShouldUseGlow()
 end
 
 --==================================================
--- START NEON
+-- UPDATE SNAKE
+--==================================================
+
+function UI:UpdateSnake(
+    DeltaTime,
+    Accent,
+    GlowEnabled,
+    Pulse
+)
+
+    if not self.Flow then
+        return
+    end
+
+    local Width =
+        self.Flow.AbsoluteSize.X
+
+    local Height =
+        self.Flow.AbsoluteSize.Y
+
+    if Width <= 0
+    or Height <= 0 then
+
+        return
+
+    end
+
+    self.SnakePosition +=
+        SNAKE_SPEED
+        *
+        DeltaTime
+
+    self.SnakePosition =
+        self.SnakePosition
+        %
+        SNAKE_SEGMENTS
+
+    for Index, Segment in
+        ipairs(self.SnakeParts) do
+
+        local Offset =
+            (
+                Index
+                -
+                self.SnakePosition
+            )
+            %
+            SNAKE_SEGMENTS
+
+        local Distance =
+            math.min(
+                Offset,
+                SNAKE_SEGMENTS
+                -
+                Offset
+            )
+
+        --==================================================
+        -- LINE TAIL
+        --==================================================
+
+        local Strength =
+            0
+
+        if Offset <= SNAKE_LENGTH then
+
+            Strength =
+                1
+                -
+                (
+                    Offset
+                    /
+                    SNAKE_LENGTH
+                )
+
+        end
+
+        --==================================================
+        -- SOFT CURVE
+        --==================================================
+
+        Strength =
+            Strength
+            *
+            Strength
+            *
+            (
+                3
+                -
+                2
+                *
+                Strength
+            )
+
+        --==================================================
+        -- BASE VISIBILITY
+        --==================================================
+
+        if not GlowEnabled then
+
+            Strength *=
+                0.48
+
+        end
+
+        local X,
+            Y,
+            Rotation =
+            self:GetBorderPoint(
+                Index - 1,
+                Width,
+                Height
+            )
+
+        Segment.Position =
+            UDim2.new(
+                0,
+                X,
+                0,
+                Y
+            )
+
+        Segment.Rotation =
+            Rotation
+
+        --==================================================
+        -- SEGMENT LENGTH
+        --==================================================
+
+        local SegmentLength =
+            8
+
+        if Strength > 0.01 then
+
+            Segment.Size =
+                UDim2.new(
+                    0,
+                    SegmentLength,
+                    0,
+                    SNAKE_THICKNESS
+                )
+
+        else
+
+            Segment.Size =
+                UDim2.new(
+                    0,
+                    5,
+                    0,
+                    SNAKE_THICKNESS
+                )
+
+        end
+
+        --==================================================
+        -- BRIGHTNESS
+        --==================================================
+
+        local BrightAccent =
+            Accent:Lerp(
+                Color3.new(
+                    1,
+                    1,
+                    1
+                ),
+                0.18
+                +
+                (
+                    Strength
+                    * 0.32
+                )
+            )
+
+        Segment.BackgroundColor3 =
+            BrightAccent
+
+        Segment.BackgroundTransparency =
+            1
+            -
+            (
+                Strength
+                *
+                (
+                    0.78
+                    +
+                    Pulse
+                    *
+                    0.16
+                )
+            )
+
+    end
+
+end
+
+--==================================================
+-- START NEON ANIMATION
 --==================================================
 
 function UI:StartNeonAnimation()
@@ -2026,7 +2007,7 @@ function UI:StartNeonAnimation()
     self.NeonTime =
         0
 
-    self.SnakeDistance =
+    self.SnakePosition =
         0
 
     self.NeonConnection =
@@ -2044,29 +2025,21 @@ function UI:StartNeonAnimation()
                 end
 
                 if not self.Theme then
-
                     return
-
                 end
 
                 local Current =
                     self.Theme:GetCurrent()
 
                 if not Current then
-
                     return
-
                 end
-
-                --==================================================
-                -- TIME
-                --==================================================
 
                 self.NeonTime +=
                     DeltaTime
 
                 --==================================================
-                -- ACCENT
+                -- COLORS
                 --==================================================
 
                 local Accent =
@@ -2112,28 +2085,26 @@ function UI:StartNeonAnimation()
                     (
                         math.sin(
                             self.NeonTime
-                            * 1.35
+                            *
+                            1.35
                         )
                         + 1
                     )
-                    * 0.5
-
-                Wave =
-                    Wave
-                    * Wave
                     *
-                    (
-                        3
-                        - 2
-                        * Wave
-                    )
+                    0.5
 
                 local Pulse =
                     Wave
-
-                --==================================================
-                -- THEME BORDER PULSE
-                --==================================================
+                    *
+                    Wave
+                    *
+                    (
+                        3
+                        -
+                        2
+                        *
+                        Wave
+                    )
 
                 if self.Theme.GetBorderPulse then
 
@@ -2163,7 +2134,7 @@ function UI:StartNeonAnimation()
                 end
 
                 --==================================================
-                -- MAIN BORDER
+                -- BASE BORDER
                 --==================================================
 
                 if self.MainStroke then
@@ -2171,48 +2142,57 @@ function UI:StartNeonAnimation()
                     self.MainStroke.Color =
                         Accent
 
+                    -- A borda fica propositalmente
+                    -- mais escura que a cobra.
+
                     if GlowEnabled then
 
                         self.MainStroke.Transparency =
-                            0.045
-                            +
+                            0.32
+                            -
                             (
-                                (1 - Pulse)
-                                * 0.15
+                                Pulse
+                                *
+                                0.10
                             )
 
                         self.MainStroke.Thickness =
                             BORDER_THICKNESS
-                            +
-                            (
-                                Pulse
-                                * 0.30
-                            )
 
                     else
 
                         self.MainStroke.Transparency =
-                            0.12
+                            0.42
 
                         self.MainStroke.Thickness =
-                            BORDER_THICKNESS
+                            1.2
 
                     end
 
                 end
 
                 --==================================================
-                -- GLOW PULSE
+                -- OUTER GLOW
                 --==================================================
 
-                if self.GlowStroke then
+                if self.OuterGlow then
 
-                    self.GlowStroke.Color =
+                    self.OuterGlow.Position =
+                        self.Main.Position
+
+                    self.OuterGlow.Size =
+                        self.Main.Size
+
+                end
+
+                if self.OuterGlowStroke then
+
+                    self.OuterGlowStroke.Color =
                         GlowColor
 
                     if GlowEnabled then
 
-                        self.GlowStroke.Transparency =
+                        self.OuterGlowStroke.Transparency =
                             GLOW_MAX_TRANSPARENCY
                             -
                             (
@@ -2225,17 +2205,17 @@ function UI:StartNeonAnimation()
                                 )
                             )
 
-                        self.GlowStroke.Thickness =
+                        self.OuterGlowStroke.Thickness =
                             GLOW_THICKNESS
                             +
                             (
                                 Pulse
-                                * 2.0
+                                * 2
                             )
 
                     else
 
-                        self.GlowStroke.Transparency =
+                        self.OuterGlowStroke.Transparency =
                             1
 
                     end
@@ -2254,7 +2234,7 @@ function UI:StartNeonAnimation()
                 )
 
                 --==================================================
-                -- CLOSE
+                -- CLOSE BUTTON
                 --==================================================
 
                 if self.CloseStroke then
@@ -2263,39 +2243,12 @@ function UI:StartNeonAnimation()
                         Accent
 
                     self.CloseStroke.Transparency =
-                        0.30
-                        +
+                        0.38
+                        -
                         (
-                            (1 - Pulse)
-                            * 0.12
-                        )
-
-                end
-
-                --==================================================
-                -- LOGO
-                --==================================================
-
-                if self.LogoStroke then
-
-                    if self.Theme.GetLogoBorder then
-
-                        self.LogoStroke.Color =
-                            self.Theme:GetLogoBorder()
-
-                    else
-
-                        self.LogoStroke.Color =
-                            Accent
-
-                    end
-
-                    self.LogoStroke.Transparency =
-                        0.10
-                        +
-                        (
-                            (1 - Pulse)
-                            * 0.20
+                            Pulse
+                            *
+                            0.08
                         )
 
                 end
@@ -2309,22 +2262,14 @@ function UI:StartNeonAnimation()
                     self.SidebarStroke.Color =
                         Accent
 
-                    if GlowEnabled then
-
-                        self.SidebarStroke.Transparency =
-                            0.57
-                            +
-                            (
-                                (1 - Pulse)
-                                * 0.14
-                            )
-
-                    else
-
-                        self.SidebarStroke.Transparency =
-                            0.70
-
-                    end
+                    self.SidebarStroke.Transparency =
+                        0.72
+                        -
+                        (
+                            Pulse
+                            *
+                            0.08
+                        )
 
                 end
 
@@ -2337,55 +2282,25 @@ function UI:StartNeonAnimation()
                     self.ContentStroke.Color =
                         Accent
 
-                    if GlowEnabled then
-
-                        self.ContentStroke.Transparency =
-                            0.57
-                            +
-                            (
-                                (1 - Pulse)
-                                * 0.14
-                            )
-
-                    else
-
-                        self.ContentStroke.Transparency =
-                            0.70
-
-                    end
+                    self.ContentStroke.Transparency =
+                        0.72
+                        -
+                        (
+                            Pulse
+                            *
+                            0.08
+                        )
 
                 end
 
                 --==================================================
-                -- SUBTLE INTERFACE LIGHTING
+                -- LOGO
                 --==================================================
 
-                if self.Main
-                and GlowEnabled then
+                if self.LogoStroke then
 
-                    local BaseTransparency =
-                        Current.BackgroundTransparency
-
-                    if type(
-                        BaseTransparency
-                    ) ~= "number" then
-
-                        BaseTransparency =
-                            0.10
-
-                    end
-
-                    local Lighting =
-                        Pulse
-                        * 0.035
-
-                    self.Main.BackgroundTransparency =
-                        math.clamp(
-                            BaseTransparency
-                            - Lighting,
-                            0,
-                            0.95
-                        )
+                    self.LogoStroke.Color =
+                        self.Theme:GetLogoBorder()
 
                 end
 
@@ -2419,7 +2334,9 @@ function UI:IsAnimationEnabled()
 
     end
 
-    return self.Config.UI.Animation ~= false
+    return
+        self.Config.UI.Animation
+        ~= false
 
 end
 
@@ -2446,15 +2363,20 @@ function UI:SetVisible(
 )
 
     if not self.Main then
-
         return
-
     end
 
     self:CancelAnimation()
 
     self.Main.Visible =
         Value
+
+    if self.OuterGlow then
+
+        self.OuterGlow.Visible =
+            Value
+
+    end
 
     if Value then
 
@@ -2463,6 +2385,13 @@ function UI:SetVisible(
 
         self.Main.Position =
             self.OriginalPosition
+
+        if self.OuterGlow then
+
+            self.OuterGlow.Position =
+                self.Main.Position
+
+        end
 
     end
 
@@ -2513,6 +2442,13 @@ function UI:SetVisibleAnimated(
         Main.Visible =
             true
 
+        if self.OuterGlow then
+
+            self.OuterGlow.Visible =
+                true
+
+        end
+
         Scale.Scale =
             OPEN_SCALE
 
@@ -2529,6 +2465,13 @@ function UI:SetVisibleAnimated(
                     + OPEN_OFFSET_Y
 
             )
+
+        if self.OuterGlow then
+
+            self.OuterGlow.Position =
+                Main.Position
+
+        end
 
         local Info =
             TweenInfo.new(
@@ -2602,9 +2545,7 @@ function UI:SetVisibleAnimated(
     --==================================================
 
     if not Main.Visible then
-
         return
-
     end
 
     local Info =
@@ -2681,6 +2622,13 @@ function UI:SetVisibleAnimated(
             Main.Visible =
                 false
 
+            if self.OuterGlow then
+
+                self.OuterGlow.Visible =
+                    false
+
+            end
+
             Scale.Scale =
                 1
 
@@ -2703,9 +2651,7 @@ end
 function UI:ToggleAnimated()
 
     if not self.Main then
-
         return
-
     end
 
     self:SetVisibleAnimated(
@@ -2726,16 +2672,13 @@ function UI:SetupDrag()
         self.Main
 
     if not Main then
-
         return
-
     end
 
     local Dragging =
         false
 
     local DragStart
-
     local StartPosition
 
     Main.InputBegan:Connect(
@@ -2776,9 +2719,7 @@ function UI:SetupDrag()
         function(Input)
 
             if not Dragging then
-
                 return
-
             end
 
             if Input.UserInputType ==
@@ -2788,7 +2729,8 @@ function UI:SetupDrag()
                 Enum.UserInputType.Touch then
 
                 local Delta =
-                    Input.Position -
+                    Input.Position
+                    -
                     DragStart
 
                 Main.Position =
@@ -2840,18 +2782,14 @@ end
 function UI:ApplyBackground()
 
     if not self.Background then
-
         return
-
     end
 
     local CurrentTheme =
         self.Theme:GetCurrent()
 
     if not CurrentTheme then
-
         return
-
     end
 
     local Image =
@@ -2889,18 +2827,14 @@ end
 function UI:ApplyTheme()
 
     if not self.Theme then
-
         return
-
     end
 
     local CurrentTheme =
         self.Theme:GetCurrent()
 
     if not CurrentTheme then
-
         return
-
     end
 
     --==================================================
@@ -2928,7 +2862,7 @@ function UI:ApplyTheme()
     end
 
     --==================================================
-    -- CORNERS
+    -- MAIN CORNER
     --==================================================
 
     if self.MainCorner then
@@ -2941,10 +2875,14 @@ function UI:ApplyTheme()
 
     end
 
-    if self.Glow then
+    --==================================================
+    -- OUTER GLOW CORNER
+    --==================================================
+
+    if self.OuterGlow then
 
         local Corner =
-            self.Glow:FindFirstChildOfClass(
+            self.OuterGlow:FindFirstChildOfClass(
                 "UICorner"
             )
 
@@ -2959,6 +2897,10 @@ function UI:ApplyTheme()
         end
 
     end
+
+    --==================================================
+    -- FLOW CORNER
+    --==================================================
 
     if self.Flow then
 
@@ -2986,7 +2928,7 @@ function UI:ApplyTheme()
     self:ApplyBackground()
 
     --==================================================
-    -- MAIN BORDER
+    -- BORDER
     --==================================================
 
     if self.MainStroke then
@@ -2997,42 +2939,13 @@ function UI:ApplyTheme()
     end
 
     --==================================================
-    -- GLOW
+    -- OUTER GLOW
     --==================================================
 
-    if self.GlowStroke then
+    if self.OuterGlowStroke then
 
-        if self.Theme.GetGlowColor then
-
-            local Success,
-                Result =
-                pcall(
-                    function()
-
-                        return self.Theme:GetGlowColor()
-
-                    end
-                )
-
-            if Success
-            and Result then
-
-                self.GlowStroke.Color =
-                    Result
-
-            else
-
-                self.GlowStroke.Color =
-                    self.Theme:GetAccent()
-
-            end
-
-        else
-
-            self.GlowStroke.Color =
-                self.Theme:GetAccent()
-
-        end
+        self.OuterGlowStroke.Color =
+            self.Theme:GetGlowColor()
 
     end
 
@@ -3041,26 +2954,21 @@ function UI:ApplyTheme()
     --==================================================
 
     for _, Segment in
-        ipairs(self.SnakeParts or {}) do
+        ipairs(self.SnakeParts) do
 
-        if Segment then
+        Segment.BackgroundColor3 =
+            self.Theme:GetAccent()
 
-            Segment.BackgroundColor3 =
-                self.Theme:GetAccent()
+    end
 
-            local Stroke =
-                Segment:FindFirstChild(
-                    "SegmentGlow"
-                )
+    --==================================================
+    -- LOGO
+    --==================================================
 
-            if Stroke then
+    if self.LogoStroke then
 
-                Stroke.Color =
-                    self.Theme:GetAccent()
-
-            end
-
-        end
+        self.LogoStroke.Color =
+            self.Theme:GetLogoBorder()
 
     end
 
@@ -3118,26 +3026,6 @@ function UI:ApplyTheme()
 
         self.CloseStroke.Color =
             self.Theme:GetAccent()
-
-    end
-
-    --==================================================
-    -- LOGO
-    --==================================================
-
-    if self.LogoStroke then
-
-        if self.Theme.GetLogoBorder then
-
-            self.LogoStroke.Color =
-                self.Theme:GetLogoBorder()
-
-        else
-
-            self.LogoStroke.Color =
-                self.Theme:GetAccent()
-
-        end
 
     end
 
