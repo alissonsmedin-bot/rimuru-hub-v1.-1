@@ -6,6 +6,8 @@
 --// Natural Neon Pulse
 --// Neon Glow Support
 --// Border Glow Support
+--// Smooth Glow Breathing
+--// Smooth Border Flow Support
 --// Logo Border Support
 --// Text Stroke Support
 --// Card Color Cycling
@@ -13,6 +15,8 @@
 --// RGB Compatible
 --// BLACKOUT SELECTED STATE
 --// SAFE THEME FALLBACKS
+--// PREMIUM GLOW PROFILES
+--// NATURAL ANIMATION SYSTEM
 
 local RunService =
     game:GetService("RunService")
@@ -118,6 +122,10 @@ local PremiumPresets = {
         TextStrokeTransparency =
             0.15,
 
+        --==================================================
+        -- GENERAL ANIMATION
+        --==================================================
+
         Animated =
             true,
 
@@ -126,6 +134,41 @@ local PremiumPresets = {
 
         CardAnimation =
             true,
+
+        --==================================================
+        -- INTERFACE GLOW
+        --==================================================
+
+        GlowAnimated =
+            true,
+
+        GlowSpeed =
+            0.82,
+
+        GlowMin =
+            0.72,
+
+        GlowMax =
+            1.00,
+
+        GlowStrength =
+            1.00,
+
+        GlowColorMix =
+            0.35,
+
+        --==================================================
+        -- BORDER FLOW
+        --==================================================
+
+        BorderAnimated =
+            true,
+
+        BorderSpeed =
+            0.75,
+
+        BorderStrength =
+            1.00,
 
         BackgroundTransparency =
             0.05
@@ -258,12 +301,56 @@ local PremiumPresets = {
             ),
 
         --==================================================
+        -- GENERAL ANIMATION
+        --==================================================
+
+        -- Continua falso para não alterar
+        -- a lógica antiga das categorias/cards.
 
         Animated =
             false,
 
         CardAnimation =
             false,
+
+        --==================================================
+        -- INTERFACE GLOW
+        --==================================================
+
+        -- O Glow possui animação própria.
+        -- Portanto o Blackout pode continuar com
+        -- Animated = false sem perder o efeito.
+
+        GlowAnimated =
+            true,
+
+        GlowSpeed =
+            0.42,
+
+        GlowMin =
+            0.84,
+
+        GlowMax =
+            1.00,
+
+        GlowStrength =
+            0.58,
+
+        GlowColorMix =
+            0.05,
+
+        --==================================================
+        -- BORDER FLOW
+        --==================================================
+
+        BorderAnimated =
+            true,
+
+        BorderSpeed =
+            0.34,
+
+        BorderStrength =
+            0.55,
 
         BackgroundTransparency =
             0
@@ -363,6 +450,10 @@ local PremiumPresets = {
         TextStrokeTransparency =
             0.25,
 
+        --==================================================
+        -- GENERAL ANIMATION
+        --==================================================
+
         Animated =
             true,
 
@@ -371,6 +462,41 @@ local PremiumPresets = {
 
         CardAnimation =
             true,
+
+        --==================================================
+        -- INTERFACE GLOW
+        --==================================================
+
+        GlowAnimated =
+            true,
+
+        GlowSpeed =
+            0.58,
+
+        GlowMin =
+            0.68,
+
+        GlowMax =
+            1.00,
+
+        GlowStrength =
+            0.95,
+
+        GlowColorMix =
+            0.42,
+
+        --==================================================
+        -- BORDER FLOW
+        --==================================================
+
+        BorderAnimated =
+            true,
+
+        BorderSpeed =
+            0.58,
+
+        BorderStrength =
+            0.90,
 
         BackgroundTransparency =
             0.08
@@ -479,6 +605,33 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
+        GlowAnimated =
+            true,
+
+        GlowSpeed =
+            0.52,
+
+        GlowMin =
+            0.72,
+
+        GlowMax =
+            1.00,
+
+        GlowStrength =
+            0.85,
+
+        GlowColorMix =
+            0.30,
+
+        BorderAnimated =
+            true,
+
+        BorderSpeed =
+            0.52,
+
+        BorderStrength =
+            0.82,
+
         BackgroundTransparency =
             0.04
 
@@ -585,6 +738,33 @@ local PremiumPresets = {
 
         CardAnimation =
             true,
+
+        GlowAnimated =
+            true,
+
+        GlowSpeed =
+            0.35,
+
+        GlowMin =
+            0.82,
+
+        GlowMax =
+            1.00,
+
+        GlowStrength =
+            0.48,
+
+        GlowColorMix =
+            0.20,
+
+        BorderAnimated =
+            true,
+
+        BorderSpeed =
+            0.38,
+
+        BorderStrength =
+            0.45,
 
         BackgroundTransparency =
             0
@@ -693,6 +873,33 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
+        GlowAnimated =
+            true,
+
+        GlowSpeed =
+            0.46,
+
+        GlowMin =
+            0.74,
+
+        GlowMax =
+            1.00,
+
+        GlowStrength =
+            0.80,
+
+        GlowColorMix =
+            0.32,
+
+        BorderAnimated =
+            true,
+
+        BorderSpeed =
+            0.48,
+
+        BorderStrength =
+            0.78,
+
         BackgroundTransparency =
             0.03
 
@@ -741,23 +948,10 @@ function Theme:Init(Context)
         self.Themes[self.Name]
 
     --==================================================
-    -- APPLY PREMIUM PRESET
+    -- PREMIUM PRESET
     --==================================================
 
-    if PremiumPresets[self.Name] then
-
-        local Preset =
-            PremiumPresets[self.Name]
-
-        for Key, Value in
-            pairs(Preset) do
-
-            self.Current[Key] =
-                Value
-
-        end
-
-    end
+    self:ApplyPremiumPreset()
 
     --==================================================
     -- ANIMATION STATE
@@ -795,6 +989,51 @@ function Theme:ApplyPremiumPreset()
             Value
 
     end
+
+end
+
+--==================================================
+-- SMOOTH WAVE
+--==================================================
+
+function Theme:SmoothWave(
+    Speed,
+    Offset
+)
+
+    Speed =
+        Speed
+        or 1
+
+    Offset =
+        Offset
+        or 0
+
+    local Time =
+        os.clock()
+        * Speed
+        + Offset
+
+    local Wave =
+        (
+            math.sin(Time)
+            + 1
+        )
+        / 2
+
+    --==================================================
+    -- SMOOTHSTEP
+    --==================================================
+
+    Wave =
+        Wave
+        * Wave
+        * (
+            3
+            - 2 * Wave
+        )
+
+    return Wave
 
 end
 
@@ -846,7 +1085,7 @@ function Theme:GetAccent()
     end
 
     --==================================================
-    -- NATURAL ANIMATED ACCENT
+    -- NATURAL ACCENT
     --==================================================
 
     if self.Current.Animated then
@@ -892,29 +1131,61 @@ function Theme:GetLightPulse()
         self.Current.AnimationSpeed
         or 1
 
-    local Time =
-        os.clock() * Speed
-
-    local Wave =
-        math.sin(Time)
-
-    local Smooth =
-        (Wave + 1) / 2
-
-    --==================================================
-    -- SMOOTHSTEP
-    --==================================================
-
-    Smooth =
-        Smooth * Smooth *
-        (3 - 2 * Smooth)
-
-    return Smooth
+    return self:SmoothWave(
+        Speed,
+        0
+    )
 
 end
 
 --==================================================
--- GLOW COLOR
+-- GET GLOW PULSE
+--==================================================
+
+function Theme:GetGlowPulse()
+
+    if not self.Current then
+
+        return 0
+
+    end
+
+    if self.Current.GlowAnimated == false then
+
+        return 0.5
+
+    end
+
+    local Speed =
+        self.Current.GlowSpeed
+        or 0.5
+
+    return self:SmoothWave(
+        Speed,
+        0
+    )
+
+end
+
+--==================================================
+-- GET GLOW STRENGTH
+--==================================================
+
+function Theme:GetGlowStrength()
+
+    if not self.Current then
+
+        return 0.5
+
+    end
+
+    return self.Current.GlowStrength
+        or 0.5
+
+end
+
+--==================================================
+-- GET GLOW COLOR
 --==================================================
 
 function Theme:GetGlowColor()
@@ -937,11 +1208,15 @@ function Theme:GetGlowColor()
 
     if Light then
 
+        local Mix =
+            self.Current.GlowColorMix
+            or 0.35
+
         return Accent:Lerp(
 
             Light,
 
-            0.35
+            Mix
 
         )
 
@@ -952,7 +1227,7 @@ function Theme:GetGlowColor()
 end
 
 --==================================================
--- GLOW TRANSPARENCY
+-- GET GLOW TRANSPARENCY
 --==================================================
 
 function Theme:GetGlowTransparency()
@@ -963,53 +1238,135 @@ function Theme:GetGlowTransparency()
 
     end
 
-    if not self.Current.Animated then
-
-        return 0.82
-
-    end
-
     local Pulse =
-        self:GetLightPulse()
+        self:GetGlowPulse()
 
-    return 0.78 -
-        (Pulse * 0.16)
+    local Min =
+        self.Current.GlowMin
+        or 0.75
+
+    local Max =
+        self.Current.GlowMax
+        or 1
+
+    local Strength =
+        self.Current.GlowStrength
+        or 1
+
+    --==================================================
+    -- CONVERT PULSE TO TRANSPARENCY
+    --==================================================
+
+    local Visibility =
+        Min
+        + (
+            (Max - Min)
+            * Pulse
+        )
+
+    Visibility =
+        Visibility
+        * Strength
+
+    local Transparency =
+        1
+        - Visibility
+
+    return math.clamp(
+        Transparency,
+        0.05,
+        0.95
+    )
 
 end
 
 --==================================================
--- BORDER PULSE
+-- GET BORDER PULSE
 --==================================================
 
 function Theme:GetBorderPulse()
 
-    if not self.Current
-    or not self.Current.Animated then
+    if not self.Current then
+
+        return 0.35
+
+    end
+
+    if self.Current.BorderAnimated == false then
 
         return 0.35
 
     end
 
     local Speed =
-        (self.Current.AnimationSpeed or 1)
-        * 0.72
-
-    local Time =
-        os.clock() * Speed
+        self.Current.BorderSpeed
+        or (
+            (
+                self.Current.AnimationSpeed
+                or 1
+            )
+            * 0.72
+        )
 
     local Wave =
-        (math.sin(Time) + 1) / 2
+        self:SmoothWave(
+            Speed,
+            0
+        )
 
-    --==================================================
-    -- SMOOTHSTEP
-    --==================================================
+    local Strength =
+        self.Current.BorderStrength
+        or 1
 
-    Wave =
-        Wave * Wave *
-        (3 - 2 * Wave)
+    return 0.22
+        + (
+            Wave
+            * 0.58
+            * Strength
+        )
 
-    return 0.28 +
-        (Wave * 0.52)
+end
+
+--==================================================
+-- GET BORDER SPEED
+--==================================================
+
+function Theme:GetBorderSpeed()
+
+    if not self.Current then
+
+        return 0.5
+
+    end
+
+    return self.Current.BorderSpeed
+        or 0.5
+
+end
+
+--==================================================
+-- GET FLOW PULSE
+--==================================================
+
+function Theme:GetFlowPulse()
+
+    if not self.Current then
+
+        return 0.5
+
+    end
+
+    local Speed =
+        self.Current.BorderSpeed
+        or 0.5
+
+    local Wave =
+        self:SmoothWave(
+            Speed * 1.15,
+            math.pi * 0.35
+        )
+
+    return Wave
 
 end
 
@@ -1057,25 +1414,17 @@ function Theme:GetCardColor(Index)
     --==================================================
 
     local Offset =
-        (Index or 1) * 0.55
+        (Index or 1)
+        * 0.55
+
+    local Speed =
+        0.9
 
     local Wave =
-        (
-            math.sin(
-                os.clock()
-                * 0.9
-                + Offset
-            )
-            + 1
-        ) / 2
-
-    --==================================================
-    -- SMOOTHSTEP
-    --==================================================
-
-    Wave =
-        Wave * Wave *
-        (3 - 2 * Wave)
+        self:SmoothWave(
+            Speed,
+            Offset
+        )
 
     return Card:Lerp(
 
@@ -1385,7 +1734,7 @@ function Theme:SetTheme(Name)
         Name
 
     --==================================================
-    -- PREMIUM PRESET
+    -- APPLY PREMIUM PRESET
     --==================================================
 
     self:ApplyPremiumPreset()
@@ -1551,6 +1900,38 @@ function Theme:IsAnimated()
     end
 
     return self.Current.Animated == true
+
+end
+
+--==================================================
+-- IS GLOW ANIMATED
+--==================================================
+
+function Theme:IsGlowAnimated()
+
+    if not self.Current then
+
+        return false
+
+    end
+
+    return self.Current.GlowAnimated == true
+
+end
+
+--==================================================
+-- IS BORDER ANIMATED
+--==================================================
+
+function Theme:IsBorderAnimated()
+
+    if not self.Current then
+
+        return false
+
+    end
+
+    return self.Current.BorderAnimated == true
 
 end
 
