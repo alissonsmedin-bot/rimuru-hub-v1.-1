@@ -2,12 +2,12 @@
 --// Theme System
 --// PREMIUM THEME ENGINE
 --// Dynamic Colors
---// Animated Lighting
 --// Natural Neon Pulse
---// Neon Glow Support
---// Border Glow Support
---// Smooth Glow Breathing
---// Smooth Border Flow Support
+--// Interface Glow
+--// Border Glow
+--// Animated Border Snake
+--// Smooth Snake Motion
+--// Rounded Border Support
 --// Logo Border Support
 --// Text Stroke Support
 --// Card Color Cycling
@@ -15,11 +15,6 @@
 --// RGB Compatible
 --// BLACKOUT SELECTED STATE
 --// SAFE THEME FALLBACKS
---// PREMIUM GLOW PROFILES
---// NATURAL ANIMATION SYSTEM
-
-local RunService =
-    game:GetService("RunService")
 
 local Theme = {}
 
@@ -123,7 +118,7 @@ local PremiumPresets = {
             0.15,
 
         --==================================================
-        -- GENERAL ANIMATION
+        -- ANIMATION
         --==================================================
 
         Animated =
@@ -139,40 +134,44 @@ local PremiumPresets = {
         -- INTERFACE GLOW
         --==================================================
 
-        GlowAnimated =
+        GlowEnabled =
             true,
 
         GlowSpeed =
-            0.82,
-
-        GlowMin =
-            0.72,
-
-        GlowMax =
-            1.00,
+            1.05,
 
         GlowStrength =
-            1.00,
+            0.85,
 
-        GlowColorMix =
-            0.35,
+        GlowMinTransparency =
+            0.82,
+
+        GlowMaxTransparency =
+            0.55,
 
         --==================================================
-        -- BORDER FLOW
+        -- BORDER SNAKE
         --==================================================
 
-        BorderAnimated =
+        SnakeEnabled =
             true,
 
-        BorderSpeed =
-            0.75,
+        SnakeSpeed =
+            0.22,
 
-        BorderStrength =
-            1.00,
+        SnakeSize =
+            5,
+
+        SnakeGlow =
+            0.90,
+
+        SnakeTransparency =
+            0.08,
+
+        --==================================================
 
         BackgroundTransparency =
             0.05
-
     },
 
     --==================================================
@@ -269,7 +268,7 @@ local PremiumPresets = {
             0.15,
 
         --==================================================
-        -- BLACKOUT STATE COLORS
+        -- BLACKOUT STATE
         --==================================================
 
         Normal =
@@ -301,60 +300,60 @@ local PremiumPresets = {
             ),
 
         --==================================================
-        -- GENERAL ANIMATION
+        -- ANIMATION
         --==================================================
 
-        -- Continua falso para não alterar
-        -- a lógica antiga das categorias/cards.
-
         Animated =
-            false,
+            true,
+
+        AnimationSpeed =
+            0.78,
 
         CardAnimation =
             false,
 
         --==================================================
-        -- INTERFACE GLOW
+        -- WHITE NEON GLOW
         --==================================================
 
-        -- O Glow possui animação própria.
-        -- Portanto o Blackout pode continuar com
-        -- Animated = false sem perder o efeito.
-
-        GlowAnimated =
+        GlowEnabled =
             true,
 
         GlowSpeed =
-            0.42,
-
-        GlowMin =
-            0.84,
-
-        GlowMax =
-            1.00,
+            0.72,
 
         GlowStrength =
-            0.58,
+            0.68,
 
-        GlowColorMix =
+        GlowMinTransparency =
+            0.86,
+
+        GlowMaxTransparency =
+            0.60,
+
+        --==================================================
+        -- BORDER SNAKE
+        --==================================================
+
+        SnakeEnabled =
+            true,
+
+        SnakeSpeed =
+            0.16,
+
+        SnakeSize =
+            5,
+
+        SnakeGlow =
+            0.82,
+
+        SnakeTransparency =
             0.05,
 
         --==================================================
-        -- BORDER FLOW
-        --==================================================
-
-        BorderAnimated =
-            true,
-
-        BorderSpeed =
-            0.34,
-
-        BorderStrength =
-            0.55,
 
         BackgroundTransparency =
             0
-
     },
 
     --==================================================
@@ -451,7 +450,7 @@ local PremiumPresets = {
             0.25,
 
         --==================================================
-        -- GENERAL ANIMATION
+        -- ANIMATION
         --==================================================
 
         Animated =
@@ -464,43 +463,47 @@ local PremiumPresets = {
             true,
 
         --==================================================
-        -- INTERFACE GLOW
+        -- PURPLE GLOW
         --==================================================
 
-        GlowAnimated =
+        GlowEnabled =
             true,
 
         GlowSpeed =
-            0.58,
-
-        GlowMin =
             0.68,
 
-        GlowMax =
-            1.00,
-
         GlowStrength =
-            0.95,
+            0.90,
 
-        GlowColorMix =
-            0.42,
+        GlowMinTransparency =
+            0.83,
+
+        GlowMaxTransparency =
+            0.50,
 
         --==================================================
-        -- BORDER FLOW
+        -- BORDER SNAKE
         --==================================================
 
-        BorderAnimated =
+        SnakeEnabled =
             true,
 
-        BorderSpeed =
-            0.58,
+        SnakeSpeed =
+            0.19,
 
-        BorderStrength =
-            0.90,
+        SnakeSize =
+            5,
+
+        SnakeGlow =
+            0.95,
+
+        SnakeTransparency =
+            0.06,
+
+        --==================================================
 
         BackgroundTransparency =
             0.08
-
     },
 
     --==================================================
@@ -605,36 +608,42 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
-        GlowAnimated =
+        --==================================================
+        -- RED GLOW
+        --==================================================
+
+        GlowEnabled =
             true,
 
         GlowSpeed =
-            0.52,
-
-        GlowMin =
-            0.72,
-
-        GlowMax =
-            1.00,
+            0.62,
 
         GlowStrength =
-            0.85,
+            0.78,
 
-        GlowColorMix =
-            0.30,
+        GlowMinTransparency =
+            0.84,
 
-        BorderAnimated =
+        GlowMaxTransparency =
+            0.58,
+
+        SnakeEnabled =
             true,
 
-        BorderSpeed =
-            0.52,
+        SnakeSpeed =
+            0.18,
 
-        BorderStrength =
-            0.82,
+        SnakeSize =
+            5,
+
+        SnakeGlow =
+            0.88,
+
+        SnakeTransparency =
+            0.08,
 
         BackgroundTransparency =
             0.04
-
     },
 
     --==================================================
@@ -739,36 +748,42 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
-        GlowAnimated =
+        --==================================================
+        -- SOFT CRYSTAL GLOW
+        --==================================================
+
+        GlowEnabled =
             true,
 
         GlowSpeed =
-            0.35,
-
-        GlowMin =
-            0.82,
-
-        GlowMax =
-            1.00,
+            0.42,
 
         GlowStrength =
-            0.48,
+            0.35,
 
-        GlowColorMix =
-            0.20,
+        GlowMinTransparency =
+            0.90,
 
-        BorderAnimated =
+        GlowMaxTransparency =
+            0.76,
+
+        SnakeEnabled =
             true,
 
-        BorderSpeed =
-            0.38,
+        SnakeSpeed =
+            0.14,
 
-        BorderStrength =
+        SnakeSize =
+            4,
+
+        SnakeGlow =
             0.45,
+
+        SnakeTransparency =
+            0.15,
 
         BackgroundTransparency =
             0
-
     },
 
     --==================================================
@@ -873,36 +888,42 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
-        GlowAnimated =
+        --==================================================
+        -- GOLD GLOW
+        --==================================================
+
+        GlowEnabled =
             true,
 
         GlowSpeed =
-            0.46,
-
-        GlowMin =
-            0.74,
-
-        GlowMax =
-            1.00,
+            0.55,
 
         GlowStrength =
-            0.80,
+            0.72,
 
-        GlowColorMix =
-            0.32,
+        GlowMinTransparency =
+            0.86,
 
-        BorderAnimated =
+        GlowMaxTransparency =
+            0.57,
+
+        SnakeEnabled =
             true,
 
-        BorderSpeed =
-            0.48,
+        SnakeSpeed =
+            0.17,
 
-        BorderStrength =
-            0.78,
+        SnakeSize =
+            5,
+
+        SnakeGlow =
+            0.85,
+
+        SnakeTransparency =
+            0.08,
 
         BackgroundTransparency =
             0.03
-
     }
 
 }
@@ -948,7 +969,7 @@ function Theme:Init(Context)
         self.Themes[self.Name]
 
     --==================================================
-    -- PREMIUM PRESET
+    -- APPLY PREMIUM PRESET
     --==================================================
 
     self:ApplyPremiumPreset()
@@ -993,51 +1014,6 @@ function Theme:ApplyPremiumPreset()
 end
 
 --==================================================
--- SMOOTH WAVE
---==================================================
-
-function Theme:SmoothWave(
-    Speed,
-    Offset
-)
-
-    Speed =
-        Speed
-        or 1
-
-    Offset =
-        Offset
-        or 0
-
-    local Time =
-        os.clock()
-        * Speed
-        + Offset
-
-    local Wave =
-        (
-            math.sin(Time)
-            + 1
-        )
-        / 2
-
-    --==================================================
-    -- SMOOTHSTEP
-    --==================================================
-
-    Wave =
-        Wave
-        * Wave
-        * (
-            3
-            - 2 * Wave
-        )
-
-    return Wave
-
-end
-
---==================================================
 -- GET ACCENT
 --==================================================
 
@@ -1060,13 +1036,9 @@ function Theme:GetAccent()
     if self.Current.RGB then
 
         return Color3.fromHSV(
-
             self.RGBHue,
-
             0.9,
-
             1
-
         )
 
     end
@@ -1085,7 +1057,7 @@ function Theme:GetAccent()
     end
 
     --==================================================
-    -- NATURAL ACCENT
+    -- NATURAL ANIMATED ACCENT
     --==================================================
 
     if self.Current.Animated then
@@ -1099,11 +1071,8 @@ function Theme:GetAccent()
         if AccentLight then
 
             return Base:Lerp(
-
                 AccentLight,
-
                 Pulse * 0.72
-
             )
 
         end
@@ -1131,10 +1100,26 @@ function Theme:GetLightPulse()
         self.Current.AnimationSpeed
         or 1
 
-    return self:SmoothWave(
-        Speed,
-        0
-    )
+    local Time =
+        os.clock()
+        * Speed
+
+    local Wave =
+        math.sin(Time)
+
+    local Smooth =
+        (Wave + 1) / 2
+
+    --==================================================
+    -- SMOOTHSTEP
+    --==================================================
+
+    Smooth =
+        Smooth
+        * Smooth
+        * (3 - 2 * Smooth)
+
+    return Smooth
 
 end
 
@@ -1144,48 +1129,37 @@ end
 
 function Theme:GetGlowPulse()
 
-    if not self.Current then
+    if not self.Current
+    or not self.Current.GlowEnabled then
 
         return 0
 
     end
 
-    if self.Current.GlowAnimated == false then
-
-        return 0.5
-
-    end
-
     local Speed =
         self.Current.GlowSpeed
-        or 0.5
+        or 1
 
-    return self:SmoothWave(
-        Speed,
-        0
-    )
+    local Time =
+        os.clock()
+        * Speed
 
-end
+    local Wave =
+        (math.sin(Time) + 1) / 2
 
---==================================================
--- GET GLOW STRENGTH
---==================================================
+    --==================================================
+    -- EXTRA SMOOTHNESS
+    --==================================================
 
-function Theme:GetGlowStrength()
-
-    if not self.Current then
-
-        return 0.5
-
-    end
-
-    return self.Current.GlowStrength
-        or 0.5
+    return
+        Wave
+        * Wave
+        * (3 - 2 * Wave)
 
 end
 
 --==================================================
--- GET GLOW COLOR
+-- GLOW COLOR
 --==================================================
 
 function Theme:GetGlowColor()
@@ -1208,16 +1182,9 @@ function Theme:GetGlowColor()
 
     if Light then
 
-        local Mix =
-            self.Current.GlowColorMix
-            or 0.35
-
         return Accent:Lerp(
-
             Light,
-
-            Mix
-
+            0.35
         )
 
     end
@@ -1227,146 +1194,227 @@ function Theme:GetGlowColor()
 end
 
 --==================================================
--- GET GLOW TRANSPARENCY
+-- GLOW TRANSPARENCY
 --==================================================
 
 function Theme:GetGlowTransparency()
 
-    if not self.Current then
+    if not self.Current
+    or not self.Current.GlowEnabled then
 
-        return 0.8
+        return 1
 
     end
 
     local Pulse =
         self:GetGlowPulse()
 
-    local Min =
-        self.Current.GlowMin
-        or 0.75
+    local MinTransparency =
+        self.Current.GlowMinTransparency
+        or 0.80
 
-    local Max =
-        self.Current.GlowMax
-        or 1
+    local MaxTransparency =
+        self.Current.GlowMaxTransparency
+        or 0.55
 
-    local Strength =
-        self.Current.GlowStrength
-        or 1
-
-    --==================================================
-    -- CONVERT PULSE TO TRANSPARENCY
-    --==================================================
-
-    local Visibility =
-        Min
-        + (
-            (Max - Min)
-            * Pulse
+    return
+        MinTransparency
+        - (
+            Pulse
+            * (
+                MinTransparency
+                - MaxTransparency
+            )
         )
-
-    Visibility =
-        Visibility
-        * Strength
-
-    local Transparency =
-        1
-        - Visibility
-
-    return math.clamp(
-        Transparency,
-        0.05,
-        0.95
-    )
 
 end
 
 --==================================================
--- GET BORDER PULSE
+-- GLOW STRENGTH
+--==================================================
+
+function Theme:GetGlowStrength()
+
+    if not self.Current
+    or not self.Current.GlowEnabled then
+
+        return 0
+
+    end
+
+    local Strength =
+        self.Current.GlowStrength
+        or 0.7
+
+    local Pulse =
+        self:GetGlowPulse()
+
+    -- Nunca apaga completamente.
+    -- O glow respira.
+
+    return
+        Strength
+        * (
+            0.72
+            + Pulse * 0.28
+        )
+
+end
+
+--==================================================
+-- BORDER PULSE
 --==================================================
 
 function Theme:GetBorderPulse()
 
-    if not self.Current then
-
-        return 0.35
-
-    end
-
-    if self.Current.BorderAnimated == false then
+    if not self.Current
+    or not self.Current.Animated then
 
         return 0.35
 
     end
 
     local Speed =
-        self.Current.BorderSpeed
-        or (
-            (
-                self.Current.AnimationSpeed
-                or 1
-            )
-            * 0.72
+        (
+            self.Current.AnimationSpeed
+            or 1
         )
+        * 0.72
+
+    local Time =
+        os.clock()
+        * Speed
 
     local Wave =
-        self:SmoothWave(
-            Speed,
-            0
-        )
+        (math.sin(Time) + 1) / 2
 
-    local Strength =
-        self.Current.BorderStrength
-        or 1
+    Wave =
+        Wave
+        * Wave
+        * (3 - 2 * Wave)
 
-    return 0.22
-        + (
-            Wave
-            * 0.58
-            * Strength
-        )
+    return
+        0.28
+        + (Wave * 0.52)
 
 end
 
 --==================================================
--- GET BORDER SPEED
+-- SNAKE ENABLED
 --==================================================
 
-function Theme:GetBorderSpeed()
+function Theme:IsSnakeEnabled()
 
     if not self.Current then
-
-        return 0.5
-
+        return false
     end
 
-    return self.Current.BorderSpeed
-        or 0.5
+    return
+        self.Current.SnakeEnabled
+        == true
 
 end
 
 --==================================================
--- GET FLOW PULSE
+-- SNAKE SPEED
 --==================================================
 
-function Theme:GetFlowPulse()
+function Theme:GetSnakeSpeed()
+
+    if not self.Current then
+        return 0.15
+    end
+
+    return
+        self.Current.SnakeSpeed
+        or 0.18
+
+end
+
+--==================================================
+-- SNAKE SIZE
+--==================================================
+
+function Theme:GetSnakeSize()
+
+    if not self.Current then
+        return 5
+    end
+
+    return
+        self.Current.SnakeSize
+        or 5
+
+end
+
+--==================================================
+-- SNAKE GLOW
+--==================================================
+
+function Theme:GetSnakeGlow()
+
+    if not self.Current then
+        return 0.8
+    end
+
+    return
+        self.Current.SnakeGlow
+        or 0.8
+
+end
+
+--==================================================
+-- SNAKE TRANSPARENCY
+--==================================================
+
+function Theme:GetSnakeTransparency()
+
+    if not self.Current then
+        return 0.1
+    end
+
+    return
+        self.Current.SnakeTransparency
+        or 0.1
+
+end
+
+--==================================================
+-- GET SNAKE COLOR
+--==================================================
+
+function Theme:GetSnakeColor()
 
     if not self.Current then
 
-        return 0.5
+        return Color3.new(
+            1,
+            1,
+            1
+        )
 
     end
 
-    local Speed =
-        self.Current.BorderSpeed
-        or 0.5
+    local Accent =
+        self:GetAccent()
 
-    local Wave =
-        self:SmoothWave(
-            Speed * 1.15,
-            math.pi * 0.35
+    local Light =
+        self.Current.AccentLight
+
+    if Light then
+
+        local Pulse =
+            self:GetGlowPulse()
+
+        return Accent:Lerp(
+            Light,
+            0.45
+            + Pulse * 0.25
         )
 
-    return Wave
+    end
+
+    return Accent
 
 end
 
@@ -1417,21 +1465,24 @@ function Theme:GetCardColor(Index)
         (Index or 1)
         * 0.55
 
-    local Speed =
-        0.9
-
     local Wave =
-        self:SmoothWave(
-            Speed,
-            Offset
-        )
+        (
+            math.sin(
+                os.clock()
+                * 0.9
+                + Offset
+            )
+            + 1
+        ) / 2
+
+    Wave =
+        Wave
+        * Wave
+        * (3 - 2 * Wave)
 
     return Card:Lerp(
-
         Dark,
-
         Wave * 0.35
-
     )
 
 end
@@ -1452,7 +1503,8 @@ function Theme:GetLogoBorder()
 
     end
 
-    return self.Current.LogoBorder
+    return
+        self.Current.LogoBorder
         or self:GetAccent()
 
 end
@@ -1473,7 +1525,8 @@ function Theme:GetText()
 
     end
 
-    return self.Current.Text
+    return
+        self.Current.Text
         or Color3.new(
             1,
             1,
@@ -1498,7 +1551,8 @@ function Theme:GetSubText()
 
     end
 
-    return self.Current.SubText
+    return
+        self.Current.SubText
         or self:GetText()
 
 end
@@ -1519,7 +1573,8 @@ function Theme:GetTextStroke()
 
     end
 
-    return self.Current.TextStroke
+    return
+        self.Current.TextStroke
         or Color3.new(
             0,
             0,
@@ -1535,12 +1590,11 @@ end
 function Theme:GetTextStrokeTransparency()
 
     if not self.Current then
-
         return 0
-
     end
 
-    return self.Current.TextStrokeTransparency
+    return
+        self.Current.TextStrokeTransparency
         or 0
 
 end
@@ -1561,7 +1615,8 @@ function Theme:GetButtonColor()
 
     end
 
-    return self.Current.Button
+    return
+        self.Current.Button
         or self.Current.Card
 
 end
@@ -1582,7 +1637,8 @@ function Theme:GetDarkButtonColor()
 
     end
 
-    return self.Current.ButtonDark
+    return
+        self.Current.ButtonDark
         or self.Current.Button
 
 end
@@ -1603,7 +1659,8 @@ function Theme:GetNormalColor()
 
     end
 
-    return self.Current.Normal
+    return
+        self.Current.Normal
         or self.Current.Card
         or self.Current.Button
         or Color3.new(
@@ -1630,7 +1687,8 @@ function Theme:GetNormalTextColor()
 
     end
 
-    return self.Current.NormalText
+    return
+        self.Current.NormalText
         or self.Current.Text
         or Color3.new(
             1,
@@ -1699,9 +1757,7 @@ end
 function Theme:HasCustomStateColors()
 
     if not self.Current then
-
         return false
-
     end
 
     return
@@ -1734,7 +1790,7 @@ function Theme:SetTheme(Name)
         Name
 
     --==================================================
-    -- APPLY PREMIUM PRESET
+    -- PREMIUM PRESET
     --==================================================
 
     self:ApplyPremiumPreset()
@@ -1764,15 +1820,11 @@ end
 function Theme:UpdateRGB()
 
     if not self.Current then
-
         return nil
-
     end
 
     if not self.Current.RGB then
-
         return nil
-
     end
 
     self.RGBHue +=
@@ -1786,13 +1838,9 @@ function Theme:UpdateRGB()
     end
 
     return Color3.fromHSV(
-
         self.RGBHue,
-
         0.9,
-
         1
-
     )
 
 end
@@ -1804,9 +1852,7 @@ end
 function Theme:Update()
 
     if not self.Current then
-
         return
-
     end
 
     self.AnimationTime =
@@ -1851,9 +1897,7 @@ end
 function Theme:GetBackground()
 
     if not self.Current then
-
         return nil
-
     end
 
     return self.Current.BackgroundImage
@@ -1867,12 +1911,11 @@ end
 function Theme:GetBackgroundTransparency()
 
     if not self.Current then
-
         return 1
-
     end
 
-    return self.Current.BackgroundTransparency
+    return
+        self.Current.BackgroundTransparency
         or 1
 
 end
@@ -1894,44 +1937,28 @@ end
 function Theme:IsAnimated()
 
     if not self.Current then
-
         return false
-
     end
 
-    return self.Current.Animated == true
+    return
+        self.Current.Animated
+        == true
 
 end
 
 --==================================================
--- IS GLOW ANIMATED
+-- IS GLOW ENABLED
 --==================================================
 
-function Theme:IsGlowAnimated()
+function Theme:IsGlowEnabled()
 
     if not self.Current then
-
         return false
-
     end
 
-    return self.Current.GlowAnimated == true
-
-end
-
---==================================================
--- IS BORDER ANIMATED
---==================================================
-
-function Theme:IsBorderAnimated()
-
-    if not self.Current then
-
-        return false
-
-    end
-
-    return self.Current.BorderAnimated == true
+    return
+        self.Current.GlowEnabled
+        == true
 
 end
 
