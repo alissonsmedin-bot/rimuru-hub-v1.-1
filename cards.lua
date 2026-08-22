@@ -1,4 +1,4 @@
---// ðŸ’¥ RIMURU HUB
+--// 💥 RIMURU HUB
 --// Sound Cards System
 --// Favorites Compatible
 --// Copy + Favorite System
@@ -83,27 +83,6 @@ local BLACKOUT_COPY_TEXT =
     )
 
 --==================================================
--- SAFE THEME COLOR
---==================================================
-
-local function GetThemeColor(
-    Theme,
-    Key,
-    Fallback
-)
-
-    if Theme
-    and Theme[Key] then
-
-        return Theme[Key]
-
-    end
-
-    return Fallback
-
-end
-
---==================================================
 -- CHECK BLACKOUT
 --==================================================
 
@@ -113,27 +92,63 @@ function Cards:IsBlackout()
         return false
     end
 
-    if self.Theme.GetName then
+    --==================================================
+    -- GET NAME
+    --==================================================
 
-        return self.Theme:GetName()
-            == "Blackout"
+    if type(self.Theme.GetName) == "function" then
+
+        local Success, Name =
+            pcall(function()
+
+                return self.Theme:GetName()
+
+            end)
+
+        if Success then
+
+            return Name ==
+                "Blackout"
+
+        end
 
     end
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+    --==================================================
+    -- FALLBACK CURRENT THEME
+    --==================================================
 
-    return CurrentTheme
-        and CurrentTheme.Name
-        == "Blackout"
+    if type(self.Theme.GetCurrent) ~= "function" then
+        return false
+    end
+
+    local Success, CurrentTheme =
+        pcall(function()
+
+            return self.Theme:GetCurrent()
+
+        end)
+
+    if not Success
+    or not CurrentTheme then
+
+        return false
+
+    end
+
+    return CurrentTheme.Name ==
+        "Blackout"
 
 end
 
 --==================================================
 -- APPLY COPY STYLE
 --==================================================
--- MantÃ©m o comportamento original em todos
--- os temas, alterando somente o Blackout.
+-- Blackout:
+-- branco + preto
+--
+-- Outros temas:
+-- Accent + branco
 --==================================================
 
 function Cards:ApplyCopyStyle(
@@ -141,6 +156,10 @@ function Cards:ApplyCopyStyle(
 )
 
     if not CopyButton then
+        return
+    end
+
+    if not self.Theme then
         return
     end
 
@@ -154,8 +173,23 @@ function Cards:ApplyCopyStyle(
 
     else
 
-        CopyButton.BackgroundColor3 =
-            self.Theme:GetAccent()
+        local Accent
+
+        local Success =
+            pcall(function()
+
+                Accent =
+                    self.Theme:GetAccent()
+
+            end)
+
+        if Success
+        and Accent then
+
+            CopyButton.BackgroundColor3 =
+                Accent
+
+        end
 
         CopyButton.TextColor3 =
             Color3.fromRGB(
@@ -172,8 +206,8 @@ end
 -- CLICK SIZE ANIMATION
 --==================================================
 -- Cresce exatamente 4 pixels.
--- Retorna ao tamanho original apÃ³s 0.34s.
--- NÃ£o utiliza UIScale.
+-- Retorna ao tamanho original após 0.34s.
+-- Não utiliza UIScale.
 --==================================================
 
 function Cards:ClickAnimation(Button)
@@ -302,6 +336,9 @@ end
 --==================================================
 -- UPDATE FAVORITE BUTTON
 --==================================================
+-- Esta é a ÚNICA função responsável pelo
+-- visual do botão de favorito.
+--==================================================
 
 function Cards:UpdateFavoriteButton(
     Button,
@@ -312,26 +349,67 @@ function Cards:UpdateFavoriteButton(
         return
     end
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    if not CurrentTheme then
+    if not self.Theme then
         return
+    end
+
+    local Success, CurrentTheme =
+        pcall(function()
+
+            return self.Theme:GetCurrent()
+
+        end)
+
+    if not Success
+    or not CurrentTheme then
+
+        return
+
     end
 
     local IsFavorite =
         self:IsFavorite(ID)
 
+    --==================================================
+    -- FAVORITADO
+    --==================================================
+
     if IsFavorite then
 
-        Button.Text = "★"
+        Button.Text =
+            "★"
 
-        Button.TextColor3 =
-            self.Theme:GetAccent()
+        local Accent
+
+        local AccentSuccess =
+            pcall(function()
+
+                Accent =
+                    self.Theme:GetAccent()
+
+            end)
+
+        if AccentSuccess
+        and Accent then
+
+            Button.TextColor3 =
+                Accent
+
+        else
+
+            Button.TextColor3 =
+                CurrentTheme.Text
+
+        end
+
+    --==================================================
+    -- NÃO FAVORITADO
+    --==================================================
 
     else
 
-        Button.Text = "☆"
+        Button.Text =
+            "☆"
 
         Button.TextColor3 =
             CurrentTheme.SubText
@@ -344,6 +422,11 @@ end
 --==================================================
 -- TOGGLE FAVORITE
 --==================================================
+-- O Favorites.lua controla o estado.
+-- Esta função apenas altera o estado e depois
+-- pede para UpdateFavoriteButton atualizar
+-- o visual.
+--==================================================
 
 function Cards:ToggleFavorite(
     ID,
@@ -351,6 +434,16 @@ function Cards:ToggleFavorite(
 )
 
     if not self.Favorites then
+
+        warn(
+            "⚠️ Rimuru Hub: módulo Favorites não encontrado."
+        )
+
+        return
+
+    end
+
+    if not Button then
         return
     end
 
@@ -366,34 +459,30 @@ function Cards:ToggleFavorite(
     if not Success then
 
         warn(
-            "âš ï¸ Rimuru Hub: erro ao alterar favorito."
+            "⚠️ Rimuru Hub: erro ao alterar favorito:",
+            Result
         )
 
         return
 
     end
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+    --==================================================
+    -- RESULTADO
+    --==================================================
+    -- Result:
+    -- true  = adicionado
+    -- false = removido
+    --
+    -- Não usamos Result para desenhar a estrela.
+    -- A função UpdateFavoriteButton consulta
+    -- diretamente o Favorites.lua.
+    --==================================================
 
-    if Result then
-
-        Button.Text =
-            "â˜…"
-
-        Button.TextColor3 =
-            self.Theme:GetAccent()
-
-    else
-
-        Button.Text =
-            "â˜†"
-
-        Button.TextColor3 =
-            CurrentTheme.SubText
-            or CurrentTheme.Text
-
-    end
+    self:UpdateFavoriteButton(
+        Button,
+        ID
+    )
 
 end
 
@@ -407,6 +496,10 @@ function Cards:CreateSoundCard(
 )
 
     if type(Data) ~= "table" then
+        return
+    end
+
+    if not self.Theme then
         return
     end
 
@@ -451,6 +544,7 @@ function Cards:CreateSoundCard(
 
     Card.BackgroundColor3 =
         CurrentTheme.Card
+        or CurrentTheme.Content
 
     Card.BorderSizePixel =
         0
@@ -722,6 +816,9 @@ function Cards:CreateSoundCard(
             -14
         )
 
+    CopyButton.BackgroundTransparency =
+        0
+
     CopyButton.BorderSizePixel =
         0
 
@@ -745,12 +842,6 @@ function Cards:CreateSoundCard(
 
     --==================================================
     -- COPY STYLE
-    --==================================================
-    -- Blackout:
-    -- branco + preto
-    --
-    -- Outros temas:
-    -- Accent + branco
     --==================================================
 
     self:ApplyCopyStyle(
@@ -850,6 +941,10 @@ end
 function Cards:ApplyTheme()
 
     if not self.Scroll then
+        return
+    end
+
+    if not self.Theme then
         return
     end
 
@@ -955,18 +1050,6 @@ function Cards:ApplyTheme()
 
             if CopyButton then
 
-                --==================================================
-                -- BLACKOUT ONLY
-                --==================================================
-                -- No Blackout:
-                -- fundo branco
-                -- texto preto
-                --
-                -- Nos outros temas:
-                -- Accent
-                -- texto branco
-                --==================================================
-
                 self:ApplyCopyStyle(
                     CopyButton
                 )
@@ -989,7 +1072,9 @@ function Cards:RefreshCard(
 
     if not Card
     or not Card.Parent then
+
         return
+
     end
 
     local IDLabel =
