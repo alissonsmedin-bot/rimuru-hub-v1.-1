@@ -1,9 +1,7 @@
 --// 💥 RIMURU HUB
 --// UI SYSTEM
 --// PREMIUM NEON UI
---// SMOOTH BORDER FLOW
---// SINGLE MOVING LINE
---// CONTAINED BORDER ANIMATION
+--// STABLE BORDER SYSTEM
 --// NATURAL PULSING GLOW
 --// ROUNDED CORNERS
 --// SOFT ANIMATIONS
@@ -49,16 +47,29 @@ local SMALL_CORNER_RADIUS = 10
 -- BORDER
 --==================================================
 
--- Borda normal.
--- Mais escura para a linha se destacar.
+-- Borda normal propositalmente mais escura.
 
-local BORDER_THICKNESS = 1.7
-local BORDER_TRANSPARENCY = 0.38
+local BORDER_THICKNESS = 1.6
+local BORDER_TRANSPARENCY = 0.42
 
--- Linha que percorre a interface.
+--==================================================
+-- PULSE
+--==================================================
 
-local FLOW_THICKNESS = 2.4
-local FLOW_TRANSPARENCY = 0.02
+-- Intensidade do pulsar.
+-- Quanto menor a transparência,
+-- mais forte a borda aparece.
+
+local PULSE_MIN_TRANSPARENCY = 0.16
+local PULSE_MAX_TRANSPARENCY = 0.48
+
+local PULSE_MIN_THICKNESS = 1.5
+local PULSE_MAX_THICKNESS = 2.15
+
+-- Velocidade do pulsar.
+-- Mais baixo = mais lento.
+
+local PULSE_SPEED = 1.15
 
 --==================================================
 -- GLOW
@@ -66,17 +77,8 @@ local FLOW_TRANSPARENCY = 0.02
 
 local GLOW_THICKNESS = 6
 
-local GLOW_MIN_TRANSPARENCY = 0.82
-local GLOW_MAX_TRANSPARENCY = 0.95
-
---==================================================
--- FLOW SPEED
---==================================================
-
--- Antes estava rápido demais.
--- Agora o movimento é bem mais lento.
-
-local FLOW_SPEED = 18
+local GLOW_MIN_TRANSPARENCY = 0.78
+local GLOW_MAX_TRANSPARENCY = 0.94
 
 --==================================================
 -- SAFE COLOR
@@ -140,29 +142,27 @@ end
 
 function UI:Init(Context)
 
-    self.Context = Context
+    self.Context = Context or {}
 
     self.Player =
-        Context.Player
+        self.Context.Player
         or Players.LocalPlayer
 
     self.PlayerGui =
-        Context.PlayerGui
+        self.Context.PlayerGui
         or self.Player:WaitForChild("PlayerGui")
 
     self.Config =
-        Context.Config
+        self.Context.Config
 
     self.Theme =
-        Context.Theme
+        self.Context.Theme
 
     self.AnimationBusy = false
     self.AnimationToken = 0
 
     self.NeonConnection = nil
-
     self.NeonTime = 0
-    self.FlowPosition = 0
 
     self:Create()
 
@@ -218,7 +218,8 @@ function UI:Create()
     -- SCREEN GUI
     --==================================================
 
-    local Gui = Instance.new("ScreenGui")
+    local Gui =
+        Instance.new("ScreenGui")
 
     Gui.Name = "RimuruHub"
     Gui.ResetOnSpawn = false
@@ -234,7 +235,8 @@ function UI:Create()
     -- MAIN
     --==================================================
 
-    local Main = Instance.new("Frame")
+    local Main =
+        Instance.new("Frame")
 
     Main.Name = "Main"
 
@@ -256,7 +258,11 @@ function UI:Create()
 
     Main.BackgroundColor3 =
         CurrentTheme.Background
-        or Color3.fromRGB(10, 10, 15)
+        or Color3.fromRGB(
+            10,
+            10,
+            15
+        )
 
     Main.BackgroundTransparency = 0.10
     Main.BorderSizePixel = 0
@@ -264,18 +270,17 @@ function UI:Create()
     Main.Visible = false
     Main.ZIndex = 500
 
-    -- IMPORTANTE:
-    -- Tudo que pertence à interface fica preso
-    -- dentro dela.
-
     Main.ClipsDescendants = true
 
     Main.Parent = Gui
 
     self.Main = Main
 
-    self.OriginalPosition = Main.Position
-    self.OriginalSize = Main.Size
+    self.OriginalPosition =
+        Main.Position
+
+    self.OriginalSize =
+        Main.Size
 
     --==================================================
     -- SCALE
@@ -309,13 +314,14 @@ function UI:Create()
     self.MainCorner = MainCorner
 
     --==================================================
-    -- NORMAL BORDER
+    -- MAIN BORDER
     --==================================================
 
     local MainStroke =
         Instance.new("UIStroke")
 
-    MainStroke.Name = "NormalBorder"
+    MainStroke.Name =
+        "NormalBorder"
 
     MainStroke.Color =
         self.Theme:GetAccent()
@@ -331,16 +337,18 @@ function UI:Create()
 
     MainStroke.Parent = Main
 
-    self.MainStroke = MainStroke
+    self.MainStroke =
+        MainStroke
 
     --==================================================
-    -- SOFT GLOW
+    -- GLOW
     --==================================================
 
     local Glow =
         Instance.new("Frame")
 
-    Glow.Name = "NeonGlow"
+    Glow.Name =
+        "NeonGlow"
 
     Glow.Size =
         UDim2.new(
@@ -362,6 +370,7 @@ function UI:Create()
     Glow.BorderSizePixel = 0
 
     Glow.ZIndex = 499
+
     Glow.ClipsDescendants = true
 
     Glow.Parent = Main
@@ -375,12 +384,14 @@ function UI:Create()
             CORNER_RADIUS
         )
 
-    GlowCorner.Parent = Glow
+    GlowCorner.Parent =
+        Glow
 
     local GlowStroke =
         Instance.new("UIStroke")
 
-    GlowStroke.Name = "GlowStroke"
+    GlowStroke.Name =
+        "GlowStroke"
 
     GlowStroke.Color =
         self.Theme:GetGlowColor()
@@ -393,180 +404,14 @@ function UI:Create()
     GlowStroke.ApplyStrokeMode =
         Enum.ApplyStrokeMode.Border
 
-    GlowStroke.Parent = Glow
+    GlowStroke.Parent =
+        Glow
 
-    self.Glow = Glow
-    self.GlowStroke = GlowStroke
+    self.Glow =
+        Glow
 
-    --==================================================
-    -- MOVING BORDER
-    --==================================================
-
-    local Flow =
-        Instance.new("Frame")
-
-    Flow.Name = "NeonFlow"
-
-    Flow.Size =
-        UDim2.new(
-            1,
-            0,
-            1,
-            0
-        )
-
-    Flow.Position =
-        UDim2.new(
-            0,
-            0,
-            0,
-            0
-        )
-
-    Flow.BackgroundTransparency = 1
-    Flow.BorderSizePixel = 0
-
-    Flow.ZIndex = 501
-
-    -- Mantém a linha presa dentro dos limites.
-
-    Flow.ClipsDescendants = true
-
-    Flow.Parent = Main
-
-    local FlowCorner =
-        Instance.new("UICorner")
-
-    FlowCorner.CornerRadius =
-        UDim.new(
-            0,
-            CORNER_RADIUS
-        )
-
-    FlowCorner.Parent = Flow
-
-    --==================================================
-    -- FLOW STROKE
-    --==================================================
-
-    local FlowStroke =
-        Instance.new("UIStroke")
-
-    FlowStroke.Name = "MovingBorder"
-
-    FlowStroke.Color =
-        self.Theme:GetAccent()
-
-    FlowStroke.Thickness =
-        FLOW_THICKNESS
-
-    FlowStroke.Transparency =
-        FLOW_TRANSPARENCY
-
-    FlowStroke.ApplyStrokeMode =
-        Enum.ApplyStrokeMode.Border
-
-    FlowStroke.Parent = Flow
-
-    self.Flow = Flow
-    self.FlowStroke = FlowStroke
-
-    --==================================================
-    -- SINGLE LINE GRADIENT
-    --==================================================
-
-    local FlowGradient =
-        Instance.new("UIGradient")
-
-    FlowGradient.Name = "MovingLine"
-
-    -- Uma única faixa luminosa.
-    --
-    -- O restante fica praticamente transparente,
-    -- então não aparecem várias bolinhas.
-
-    FlowGradient.Color =
-        ColorSequence.new({
-
-            ColorSequenceKeypoint.new(
-                0.00,
-                self.Theme:GetAccent()
-            ),
-
-            ColorSequenceKeypoint.new(
-                0.40,
-                self.Theme:GetAccent()
-            ),
-
-            ColorSequenceKeypoint.new(
-                0.47,
-                self.Theme:GetGlowColor()
-            ),
-
-            ColorSequenceKeypoint.new(
-                0.53,
-                self.Theme:GetGlowColor()
-            ),
-
-            ColorSequenceKeypoint.new(
-                0.60,
-                self.Theme:GetAccent()
-            ),
-
-            ColorSequenceKeypoint.new(
-                1.00,
-                self.Theme:GetAccent()
-            )
-
-        })
-
-    FlowGradient.Transparency =
-        NumberSequence.new({
-
-            NumberSequenceKeypoint.new(
-                0.00,
-                0.95
-            ),
-
-            NumberSequenceKeypoint.new(
-                0.38,
-                0.95
-            ),
-
-            NumberSequenceKeypoint.new(
-                0.46,
-                0.20
-            ),
-
-            NumberSequenceKeypoint.new(
-                0.50,
-                0.00
-            ),
-
-            NumberSequenceKeypoint.new(
-                0.54,
-                0.20
-            ),
-
-            NumberSequenceKeypoint.new(
-                0.62,
-                0.95
-            ),
-
-            NumberSequenceKeypoint.new(
-                1.00,
-                0.95
-            )
-
-        })
-
-    FlowGradient.Rotation = 0
-
-    FlowGradient.Parent =
-        FlowStroke
-
-    self.FlowGradient =
-        FlowGradient
+    self.GlowStroke =
+        GlowStroke
 
     --==================================================
     -- BACKGROUND IMAGE
@@ -645,7 +490,8 @@ function UI:Create()
 
     Header.Parent = Main
 
-    self.Header = Header
+    self.Header =
+        Header
 
     --==================================================
     -- LOGO
@@ -683,9 +529,11 @@ function UI:Create()
 
     HeaderLogo.ZIndex = 502
 
-    HeaderLogo.Parent = Header
+    HeaderLogo.Parent =
+        Header
 
-    self.HeaderLogo = HeaderLogo
+    self.HeaderLogo =
+        HeaderLogo
 
     --==================================================
     -- LOGO BORDER
@@ -736,22 +584,26 @@ function UI:Create()
 
     Title.BackgroundTransparency = 1
 
-    Title.Text = "Rimuru Hub"
+    Title.Text =
+        "Rimuru Hub"
 
     Title.TextColor3 =
         CurrentTheme.Text
 
     Title.TextSize = 19
-    Title.Font = Enum.Font.GothamBold
+    Title.Font =
+        Enum.Font.GothamBold
 
     Title.TextXAlignment =
         Enum.TextXAlignment.Left
 
     Title.ZIndex = 502
 
-    Title.Parent = Header
+    Title.Parent =
+        Header
 
-    self.Title = Title
+    self.Title =
+        Title
 
     --==================================================
     -- SUBTITLE
@@ -760,7 +612,8 @@ function UI:Create()
     local Subtitle =
         Instance.new("TextLabel")
 
-    Subtitle.Name = "Subtitle"
+    Subtitle.Name =
+        "Subtitle"
 
     Subtitle.Position =
         UDim2.new(
@@ -780,22 +633,26 @@ function UI:Create()
 
     Subtitle.BackgroundTransparency = 1
 
-    Subtitle.Text = "Sound Library"
+    Subtitle.Text =
+        "Sound Library"
 
     Subtitle.TextColor3 =
         CurrentTheme.SubText
 
     Subtitle.TextSize = 11
-    Subtitle.Font = Enum.Font.Gotham
+    Subtitle.Font =
+        Enum.Font.Gotham
 
     Subtitle.TextXAlignment =
         Enum.TextXAlignment.Left
 
     Subtitle.ZIndex = 502
 
-    Subtitle.Parent = Header
+    Subtitle.Parent =
+        Header
 
-    self.Subtitle = Subtitle
+    self.Subtitle =
+        Subtitle
 
     --==================================================
     -- CLOSE
@@ -804,7 +661,8 @@ function UI:Create()
     local Close =
         Instance.new("TextButton")
 
-    Close.Name = "Close"
+    Close.Name =
+        "Close"
 
     Close.Size =
         UDim2.new(
@@ -825,7 +683,11 @@ function UI:Create()
     Close.BackgroundColor3 =
         CurrentTheme.Button
         or CurrentTheme.Card
-        or Color3.fromRGB(30, 30, 30)
+        or Color3.fromRGB(
+            30,
+            30,
+            30
+        )
 
     Close.BorderSizePixel = 0
 
@@ -835,13 +697,15 @@ function UI:Create()
         CurrentTheme.Text
 
     Close.TextSize = 12
-    Close.Font = Enum.Font.GothamBold
+    Close.Font =
+        Enum.Font.GothamBold
 
     Close.AutoButtonColor = false
 
     Close.ZIndex = 503
 
-    Close.Parent = Header
+    Close.Parent =
+        Header
 
     local CloseCorner =
         Instance.new("UICorner")
@@ -852,7 +716,8 @@ function UI:Create()
             SMALL_CORNER_RADIUS
         )
 
-    CloseCorner.Parent = Close
+    CloseCorner.Parent =
+        Close
 
     local CloseStroke =
         Instance.new("UIStroke")
@@ -863,10 +728,14 @@ function UI:Create()
     CloseStroke.Thickness = 1
     CloseStroke.Transparency = 0.35
 
-    CloseStroke.Parent = Close
+    CloseStroke.Parent =
+        Close
 
-    self.Close = Close
-    self.CloseStroke = CloseStroke
+    self.Close =
+        Close
+
+    self.CloseStroke =
+        CloseStroke
 
     --==================================================
     -- SIDEBAR
@@ -875,7 +744,8 @@ function UI:Create()
     local Sidebar =
         Instance.new("Frame")
 
-    Sidebar.Name = "Sidebar"
+    Sidebar.Name =
+        "Sidebar"
 
     Sidebar.Position =
         UDim2.new(
@@ -896,14 +766,21 @@ function UI:Create()
     Sidebar.BackgroundColor3 =
         CurrentTheme.Content
         or CurrentTheme.Background
-        or Color3.fromRGB(15, 15, 20)
+        or Color3.fromRGB(
+            15,
+            15,
+            20
+        )
 
-    Sidebar.BackgroundTransparency = 0.10
+    Sidebar.BackgroundTransparency =
+        0.10
+
     Sidebar.BorderSizePixel = 0
 
     Sidebar.ZIndex = 502
 
-    Sidebar.Parent = Main
+    Sidebar.Parent =
+        Main
 
     local SidebarCorner =
         Instance.new("UICorner")
@@ -968,8 +845,11 @@ function UI:Create()
     SidebarLayout.Parent =
         Sidebar
 
-    self.Sidebar = Sidebar
-    self.SidebarStroke = SidebarStroke
+    self.Sidebar =
+        Sidebar
+
+    self.SidebarStroke =
+        SidebarStroke
 
     --==================================================
     -- CONTENT
@@ -978,7 +858,8 @@ function UI:Create()
     local Content =
         Instance.new("Frame")
 
-    Content.Name = "Content"
+    Content.Name =
+        "Content"
 
     Content.Position =
         UDim2.new(
@@ -999,14 +880,21 @@ function UI:Create()
     Content.BackgroundColor3 =
         CurrentTheme.Content
         or CurrentTheme.Background
-        or Color3.fromRGB(15, 15, 20)
+        or Color3.fromRGB(
+            15,
+            15,
+            20
+        )
 
-    Content.BackgroundTransparency = 0.10
+    Content.BackgroundTransparency =
+        0.10
+
     Content.BorderSizePixel = 0
 
     Content.ZIndex = 502
 
-    Content.Parent = Main
+    Content.Parent =
+        Main
 
     local ContentCorner =
         Instance.new("UICorner")
@@ -1032,8 +920,11 @@ function UI:Create()
     ContentStroke.Parent =
         Content
 
-    self.Content = Content
-    self.ContentStroke = ContentStroke
+    self.Content =
+        Content
+
+    self.ContentStroke =
+        ContentStroke
 
     --==================================================
     -- CONTENT TITLE
@@ -1063,13 +954,15 @@ function UI:Create()
 
     ContentTitle.BackgroundTransparency = 1
 
-    ContentTitle.Text = "Principal"
+    ContentTitle.Text =
+        "Principal"
 
     ContentTitle.TextColor3 =
         CurrentTheme.Text
 
     ContentTitle.TextSize = 17
-    ContentTitle.Font = Enum.Font.GothamBold
+    ContentTitle.Font =
+        Enum.Font.GothamBold
 
     ContentTitle.TextXAlignment =
         Enum.TextXAlignment.Left
@@ -1089,7 +982,8 @@ function UI:Create()
     local Scroll =
         Instance.new("ScrollingFrame")
 
-    Scroll.Name = "ContentScroll"
+    Scroll.Name =
+        "ContentScroll"
 
     Scroll.Position =
         UDim2.new(
@@ -1123,7 +1017,8 @@ function UI:Create()
 
     Scroll.ZIndex = 503
 
-    Scroll.Parent = Content
+    Scroll.Parent =
+        Content
 
     local ScrollPadding =
         Instance.new("UIPadding")
@@ -1152,7 +1047,8 @@ function UI:Create()
     ScrollLayout.Parent =
         Scroll
 
-    self.Scroll = Scroll
+    self.Scroll =
+        Scroll
 
     --==================================================
     -- CLOSE EVENT
@@ -1171,7 +1067,7 @@ function UI:Create()
     self:SetupDrag()
 
     --==================================================
-    -- NEON
+    -- NEON / PULSE
     --==================================================
 
     self:StartNeonAnimation()
@@ -1192,7 +1088,9 @@ function UI:ShouldUseGlow()
     end
 
     if CurrentTheme.GlowEnabled ~= nil then
+
         return CurrentTheme.GlowEnabled == true
+
     end
 
     local Name =
@@ -1230,7 +1128,7 @@ function UI:ShouldUseGlow()
 end
 
 --==================================================
--- START NEON
+-- START NEON / PULSE
 --==================================================
 
 function UI:StartNeonAnimation()
@@ -1244,7 +1142,6 @@ function UI:StartNeonAnimation()
     end
 
     self.NeonTime = 0
-    self.FlowPosition = 0
 
     self.NeonConnection =
         RunService.RenderStepped:Connect(
@@ -1252,7 +1149,9 @@ function UI:StartNeonAnimation()
 
                 if not self.Main
                 or not self.Main.Parent then
+
                     return
+
                 end
 
                 if not self.Theme then
@@ -1270,7 +1169,8 @@ function UI:StartNeonAnimation()
                 -- TIME
                 --==================================================
 
-                self.NeonTime += DeltaTime
+                self.NeonTime +=
+                    DeltaTime
 
                 --==================================================
                 -- COLORS
@@ -1286,11 +1186,17 @@ function UI:StartNeonAnimation()
 
                     local Success, Result =
                         pcall(function()
+
                             return self.Theme:GetGlowColor()
+
                         end)
 
-                    if Success and Result then
-                        GlowColor = Result
+                    if Success
+                    and Result then
+
+                        GlowColor =
+                            Result
+
                     end
 
                 end
@@ -1309,7 +1215,8 @@ function UI:StartNeonAnimation()
                 local Wave =
                     (
                         math.sin(
-                            self.NeonTime * 1.25
+                            self.NeonTime
+                            * PULSE_SPEED
                         )
                         + 1
                     )
@@ -1322,19 +1229,22 @@ function UI:StartNeonAnimation()
                     * Wave
                     * (
                         3
-                        - 2
+                        -
+                        2
                         * Wave
                     )
 
                 --==================================================
-                -- THEME BORDER PULSE
+                -- THEME PULSE
                 --==================================================
 
                 if self.Theme.GetBorderPulse then
 
                     local Success, Result =
                         pcall(function()
+
                             return self.Theme:GetBorderPulse()
+
                         end)
 
                     if Success
@@ -1352,7 +1262,7 @@ function UI:StartNeonAnimation()
                 end
 
                 --==================================================
-                -- NORMAL BORDER
+                -- MAIN BORDER
                 --==================================================
 
                 if self.MainStroke then
@@ -1363,15 +1273,30 @@ function UI:StartNeonAnimation()
                     if GlowEnabled then
 
                         self.MainStroke.Transparency =
-                            0.28
-                            +
+                            PULSE_MAX_TRANSPARENCY
+                            -
                             (
-                                (1 - Pulse)
-                                * 0.15
+                                Pulse
+                                *
+                                (
+                                    PULSE_MAX_TRANSPARENCY
+                                    -
+                                    PULSE_MIN_TRANSPARENCY
+                                )
                             )
 
                         self.MainStroke.Thickness =
-                            BORDER_THICKNESS
+                            PULSE_MIN_THICKNESS
+                            +
+                            (
+                                Pulse
+                                *
+                                (
+                                    PULSE_MAX_THICKNESS
+                                    -
+                                    PULSE_MIN_THICKNESS
+                                )
+                            )
 
                     else
 
@@ -1427,101 +1352,7 @@ function UI:StartNeonAnimation()
                 end
 
                 --==================================================
-                -- SINGLE MOVING LINE
-                --==================================================
-
-                if self.FlowGradient then
-
-                    -- Movimento muito mais lento.
-
-                    self.FlowPosition =
-                        (
-                            self.FlowPosition
-                            +
-                            FLOW_SPEED
-                            * DeltaTime
-                        )
-                        % 360
-
-                    self.FlowGradient.Rotation =
-                        self.FlowPosition
-
-                    self.FlowGradient.Color =
-                        ColorSequence.new({
-
-                            ColorSequenceKeypoint.new(
-                                0.00,
-                                Accent
-                            ),
-
-                            ColorSequenceKeypoint.new(
-                                0.40,
-                                Accent
-                            ),
-
-                            ColorSequenceKeypoint.new(
-                                0.47,
-                                GlowColor
-                            ),
-
-                            ColorSequenceKeypoint.new(
-                                0.53,
-                                GlowColor
-                            ),
-
-                            ColorSequenceKeypoint.new(
-                                0.60,
-                                Accent
-                            ),
-
-                            ColorSequenceKeypoint.new(
-                                1.00,
-                                Accent
-                            )
-
-                        })
-
-                end
-
-                --==================================================
-                -- FLOW BORDER
-                --==================================================
-
-                if self.FlowStroke then
-
-                    -- A linha fica claramente mais brilhante
-                    -- que a borda normal.
-
-                    self.FlowStroke.Color =
-                        Accent
-
-                    if GlowEnabled then
-
-                        self.FlowStroke.Transparency =
-                            FLOW_TRANSPARENCY
-                            +
-                            (
-                                (1 - Pulse)
-                                * 0.03
-                            )
-
-                        self.FlowStroke.Thickness =
-                            FLOW_THICKNESS
-
-                    else
-
-                        self.FlowStroke.Transparency =
-                            0.10
-
-                        self.FlowStroke.Thickness =
-                            1.8
-
-                    end
-
-                end
-
-                --==================================================
-                -- CLOSE
+                -- CLOSE BORDER
                 --==================================================
 
                 if self.CloseStroke then
@@ -1530,7 +1361,7 @@ function UI:StartNeonAnimation()
                         Accent
 
                     self.CloseStroke.Transparency =
-                        0.32
+                        0.30
                         +
                         (
                             (1 - Pulse)
@@ -1540,7 +1371,7 @@ function UI:StartNeonAnimation()
                 end
 
                 --==================================================
-                -- SIDEBAR
+                -- SIDEBAR BORDER
                 --==================================================
 
                 if self.SidebarStroke then
@@ -1551,11 +1382,11 @@ function UI:StartNeonAnimation()
                     if GlowEnabled then
 
                         self.SidebarStroke.Transparency =
-                            0.60
+                            0.58
                             +
                             (
                                 (1 - Pulse)
-                                * 0.10
+                                * 0.12
                             )
 
                     else
@@ -1568,7 +1399,7 @@ function UI:StartNeonAnimation()
                 end
 
                 --==================================================
-                -- CONTENT
+                -- CONTENT BORDER
                 --==================================================
 
                 if self.ContentStroke then
@@ -1579,11 +1410,11 @@ function UI:StartNeonAnimation()
                     if GlowEnabled then
 
                         self.ContentStroke.Transparency =
-                            0.60
+                            0.58
                             +
                             (
                                 (1 - Pulse)
-                                * 0.10
+                                * 0.12
                             )
 
                     else
@@ -1663,11 +1494,13 @@ function UI:SetVisible(Value)
 
     self:CancelAnimation()
 
-    self.Main.Visible = Value
+    self.Main.Visible =
+        Value
 
     if Value then
 
         self.MainScale.Scale = 1
+
         self.Main.Position =
             self.OriginalPosition
 
@@ -1687,8 +1520,11 @@ function UI:SetVisibleAnimated(Value)
     local Scale =
         self.MainScale
 
-    if not Main or not Scale then
+    if not Main
+    or not Scale then
+
         return
+
     end
 
     if not self:IsAnimationEnabled() then
@@ -1750,7 +1586,8 @@ function UI:SetVisibleAnimated(Value)
                 }
             )
 
-        self.AnimationBusy = true
+        self.AnimationBusy =
+            true
 
         ScaleTween:Play()
         PositionTween:Play()
@@ -1762,7 +1599,8 @@ function UI:SetVisibleAnimated(Value)
             if self.AnimationToken ==
                 Token then
 
-                self.AnimationBusy = false
+                self.AnimationBusy =
+                    false
 
             end
 
@@ -1792,7 +1630,8 @@ function UI:SetVisibleAnimated(Value)
             Scale,
             Info,
             {
-                Scale = CLOSE_SCALE
+                Scale =
+                    CLOSE_SCALE
             }
         )
 
@@ -1812,7 +1651,8 @@ function UI:SetVisibleAnimated(Value)
             }
         )
 
-    self.AnimationBusy = true
+    self.AnimationBusy =
+        true
 
     ScaleTween:Play()
     PositionTween:Play()
@@ -1821,18 +1661,24 @@ function UI:SetVisibleAnimated(Value)
 
         PositionTween.Completed:Wait()
 
-        if self.AnimationToken ~= Token then
+        if self.AnimationToken ~=
+            Token then
+
             return
+
         end
 
-        Main.Visible = false
+        Main.Visible =
+            false
 
-        Scale.Scale = 1
+        Scale.Scale =
+            1
 
         Main.Position =
             self.OriginalPosition
 
-        self.AnimationBusy = false
+        self.AnimationBusy =
+            false
 
     end)
 
@@ -1965,8 +1811,11 @@ function UI:ApplyBackground()
     local Image =
         CurrentTheme.BackgroundImage
 
-    self.Background.Visible = false
-    self.Background.Image = ""
+    self.Background.Visible =
+        false
+
+    self.Background.Image =
+        ""
 
     if not Image
     or Image == "" then
@@ -1982,7 +1831,8 @@ function UI:ApplyBackground()
         CurrentTheme.BackgroundTransparency
         or 0.35
 
-    self.Background.Visible = true
+    self.Background.Visible =
+        true
 
 end
 
@@ -2057,36 +1907,13 @@ function UI:ApplyTheme()
     end
 
     --==================================================
-    -- FLOW CORNER
-    --==================================================
-
-    if self.Flow then
-
-        local Corner =
-            self.Flow:FindFirstChildOfClass(
-                "UICorner"
-            )
-
-        if Corner then
-
-            Corner.CornerRadius =
-                UDim.new(
-                    0,
-                    CORNER_RADIUS
-                )
-
-        end
-
-    end
-
-    --==================================================
     -- BACKGROUND
     --==================================================
 
     self:ApplyBackground()
 
     --==================================================
-    -- BORDER
+    -- MAIN BORDER
     --==================================================
 
     if self.MainStroke then
@@ -2111,7 +1938,8 @@ function UI:ApplyTheme()
 
                 end)
 
-            if Success and Result then
+            if Success
+            and Result then
 
                 self.GlowStroke.Color =
                     Result
@@ -2129,17 +1957,6 @@ function UI:ApplyTheme()
                 self.Theme:GetAccent()
 
         end
-
-    end
-
-    --==================================================
-    -- FLOW
-    --==================================================
-
-    if self.FlowStroke then
-
-        self.FlowStroke.Color =
-            self.Theme:GetAccent()
 
     end
 
