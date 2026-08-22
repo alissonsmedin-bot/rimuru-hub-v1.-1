@@ -1,808 +1,703 @@
---// 🎨 RIMURU HUB
---// Theme System
+--// 💥 RIMURU HUB
+--// THEME SYSTEM
 --// PREMIUM THEME ENGINE
---// Dynamic Colors
---// Natural Neon Pulse
---// Interface Glow
---// Strong Interface Shadow
---// Border Glow
---// Animated Border Snake
---// Smooth Snake Motion
---// Rounded Border Support
---// Logo Border Support
---// Text Stroke Support
---// Card Color Cycling
---// Background Safe
---// RGB Compatible
---// BLACKOUT SELECTED STATE
---// WHITE GOLD FULL INTERFACE
+--// DYNAMIC COLORS
 --// SAFE THEME FALLBACKS
+--// BACKGROUND SUPPORT
+--// GLOW SUPPORT
+--// BORDER PULSE SUPPORT
+--// LOGO BORDER SUPPORT
+--// BLACKOUT SUPPORT
+--// RGB SUPPORT
+--// UI COMPATIBLE
+--// CONFIG COMPATIBLE
+--// STABLE VERSION
 
 local Theme = {}
 
 --==================================================
--- PREMIUM THEME PRESETS
+-- SERVICES
 --==================================================
 
-local PremiumPresets = {
+local RunService =
+    game:GetService("RunService")
+
+--==================================================
+-- INTERNAL STATE
+--==================================================
+
+Theme.Config = nil
+Theme.CurrentTheme = nil
+Theme.CurrentThemeName = nil
+
+Theme.RGBTime = 0
+Theme.RGBConnection = nil
+
+--==================================================
+-- FALLBACKS
+--==================================================
+
+local DEFAULT_COLOR =
+    Color3.fromRGB(
+        10,
+        10,
+        15
+    )
+
+local DEFAULT_ACCENT =
+    Color3.fromRGB(
+        25,
+        150,
+        255
+    )
+
+local DEFAULT_TEXT =
+    Color3.fromRGB(
+        240,
+        240,
+        245
+    )
+
+local DEFAULT_SUBTEXT =
+    Color3.fromRGB(
+        140,
+        145,
+        155
+    )
+
+--==================================================
+-- SAFE COLOR
+--==================================================
+
+local function SafeColor(
+    Value,
+    Fallback
+)
+
+    if typeof(Value) == "Color3" then
+        return Value
+    end
+
+    return Fallback
+end
+
+--==================================================
+-- SAFE NUMBER
+--==================================================
+
+local function SafeNumber(
+    Value,
+    Fallback
+)
+
+    if type(Value) == "number" then
+        return Value
+    end
+
+    return Fallback
+
+end
+
+--==================================================
+-- SAFE BOOLEAN
+--==================================================
+
+local function SafeBoolean(
+    Value,
+    Fallback
+)
+
+    if type(Value) == "boolean" then
+        return Value
+    end
+
+    return Fallback
+
+end
+
+--==================================================
+-- GET RAW THEME
+--==================================================
+
+local function GetRawTheme(
+    Config,
+    Name
+)
+
+    if not Config then
+        return nil
+    end
+
+    if not Config.UI then
+        return nil
+    end
+
+    if not Config.UI.Themes then
+        return nil
+    end
+
+    return Config.UI.Themes[Name]
+
+end
+
+--==================================================
+-- NORMALIZE THEME
+--==================================================
+
+function Theme:Normalize(
+    Name,
+    RawTheme
+)
+
+    if type(RawTheme) ~= "table" then
+
+        return nil
+
+    end
+
+    local Normalized = {}
 
     --==================================================
-    -- 🌌 RIMURU DARK
+    -- COPY ORIGINAL VALUES
     --==================================================
 
-    ["Rimuru Dark"] = {
+    for Key, Value in pairs(RawTheme) do
 
-        Background = Color3.fromRGB(2, 4, 8),
-        Main = Color3.fromRGB(2, 4, 8),
-        Sidebar = Color3.fromRGB(3, 6, 11),
-        Content = Color3.fromRGB(5, 8, 14),
+        Normalized[Key] =
+            Value
 
-        Card = Color3.fromRGB(8, 16, 25),
-        CardDark = Color3.fromRGB(5, 10, 18),
-
-        Button = Color3.fromRGB(6, 13, 22),
-        ButtonDark = Color3.fromRGB(3, 8, 14),
-
-        Accent = Color3.fromRGB(35, 145, 210),
-        AccentLight = Color3.fromRGB(105, 215, 245),
-
-        LogoBorder = Color3.fromRGB(115, 235, 255),
-        LogoBorderTransparency = 0.14,
-        LogoBorderThickness = 1.65,
-
-        LogoBackground = Color3.fromRGB(4, 18, 30),
-        Close = Color3.fromRGB(8, 18, 30),
-
-        Text = Color3.fromRGB(242, 248, 252),
-        SubText = Color3.fromRGB(145, 170, 190),
-
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.18,
-
-        ShadowEnabled = true,
-        ShadowColor = Color3.fromRGB(0, 0, 0),
-
-        -- Mais forte que antes
-        ShadowTransparency = 0.64,
-        ShadowSize = 12,
-        ShadowSoftness = 0.78,
-
-        ShadowOffset = Vector2.new(0, 2),
-
-        ShadowAnimated = true,
-        ShadowMinTransparency = 0.70,
-        ShadowMaxTransparency = 0.56,
-        ShadowSpeed = 0.55,
-
-        Animated = true,
-        AnimationSpeed = 1.15,
-        CardAnimation = true,
-
-        GlowEnabled = true,
-        GlowSpeed = 0.88,
-        GlowStrength = 0.58,
-        GlowMinTransparency = 0.84,
-        GlowMaxTransparency = 0.68,
-
-        SnakeEnabled = true,
-        SnakeSpeed = 0.20,
-        SnakeSize = 4,
-        SnakeGlow = 0.68,
-        SnakeTransparency = 0.12,
-
-        BackgroundTransparency = 0.08
-    },
+    end
 
     --==================================================
-    -- ⬛ BLACKOUT
+    -- NAME
     --==================================================
 
-    ["Blackout"] = {
-
-        Background = Color3.fromRGB(0, 0, 0),
-        Main = Color3.fromRGB(0, 0, 0),
-        Sidebar = Color3.fromRGB(0, 0, 0),
-        Content = Color3.fromRGB(0, 0, 0),
-
-        Card = Color3.fromRGB(0, 0, 0),
-        CardDark = Color3.fromRGB(8, 8, 8),
-
-        Button = Color3.fromRGB(0, 0, 0),
-        ButtonDark = Color3.fromRGB(10, 10, 10),
-
-        Accent = Color3.fromRGB(255, 255, 255),
-        AccentLight = Color3.fromRGB(255, 255, 255),
-
-        LogoBorder = Color3.fromRGB(255, 255, 255),
-        LogoBorderTransparency = 0.08,
-        LogoBorderThickness = 1.8,
-
-        LogoBackground = Color3.fromRGB(0, 0, 0),
-        Close = Color3.fromRGB(10, 10, 10),
-
-        Text = Color3.fromRGB(255, 255, 255),
-        SubText = Color3.fromRGB(180, 180, 180),
-
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.15,
-
-        Normal = Color3.fromRGB(0, 0, 0),
-        NormalText = Color3.fromRGB(255, 255, 255),
-
-        Selected = Color3.fromRGB(255, 255, 255),
-        SelectedText = Color3.fromRGB(0, 0, 0),
-
-        ShadowEnabled = false,
-
-        Animated = true,
-        AnimationSpeed = 0.78,
-        CardAnimation = false,
-
-        GlowEnabled = true,
-        GlowSpeed = 0.72,
-        GlowStrength = 0.68,
-        GlowMinTransparency = 0.86,
-        GlowMaxTransparency = 0.60,
-
-        SnakeEnabled = true,
-        SnakeSpeed = 0.16,
-        SnakeSize = 5,
-        SnakeGlow = 0.82,
-        SnakeTransparency = 0.05,
-
-        BackgroundTransparency = 0
-    },
+    Normalized.Name =
+        Name
 
     --==================================================
-    -- 🕳️ VOID
+    -- BACKGROUND
     --==================================================
-
-    ["Void"] = {
-
-        Background = Color3.fromRGB(4, 3, 10),
-        Main = Color3.fromRGB(4, 3, 10),
-        Sidebar = Color3.fromRGB(5, 4, 13),
-        Content = Color3.fromRGB(8, 6, 17),
-
-        Card = Color3.fromRGB(15, 11, 30),
-        CardDark = Color3.fromRGB(10, 7, 22),
-
-        Button = Color3.fromRGB(18, 13, 36),
-        ButtonDark = Color3.fromRGB(11, 8, 24),
-
-        Accent = Color3.fromRGB(145, 85, 255),
-        AccentLight = Color3.fromRGB(190, 135, 255),
-
-        LogoBorder = Color3.fromRGB(205, 150, 255),
-        LogoBorderTransparency = 0.12,
-        LogoBorderThickness = 1.7,
-
-        LogoBackground = Color3.fromRGB(18, 10, 35),
-        Close = Color3.fromRGB(25, 20, 35),
-
-        Text = Color3.fromRGB(245, 240, 255),
-        SubText = Color3.fromRGB(165, 150, 190),
-
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.25,
-
-        Animated = true,
-        AnimationSpeed = 0.75,
-        CardAnimation = true,
-
-        GlowEnabled = true,
-        GlowSpeed = 0.68,
-        GlowStrength = 0.90,
-        GlowMinTransparency = 0.83,
-        GlowMaxTransparency = 0.50,
-
-        SnakeEnabled = true,
-        SnakeSpeed = 0.19,
-        SnakeSize = 5,
-        SnakeGlow = 0.95,
-        SnakeTransparency = 0.06,
-
-        ShadowEnabled = false,
-
-        BackgroundTransparency = 0.08
-    },
-
-    --==================================================
-    -- 🩸 CRIMSON
-    --==================================================
-
-    ["Crimson"] = {
-
-        Background = Color3.fromRGB(12, 3, 5),
-        Main = Color3.fromRGB(12, 3, 5),
-        Sidebar = Color3.fromRGB(15, 3, 6),
-        Content = Color3.fromRGB(20, 5, 8),
-
-        Card = Color3.fromRGB(42, 8, 13),
-        CardDark = Color3.fromRGB(27, 5, 9),
-
-        Button = Color3.fromRGB(35, 7, 12),
-        ButtonDark = Color3.fromRGB(22, 4, 8),
-
-        Accent = Color3.fromRGB(220, 35, 55),
-        AccentLight = Color3.fromRGB(255, 75, 90),
-
-        LogoBorder = Color3.fromRGB(255, 105, 115),
-        LogoBorderTransparency = 0.10,
-        LogoBorderThickness = 1.7,
-
-        LogoBackground = Color3.fromRGB(45, 8, 12),
-        Close = Color3.fromRGB(55, 20, 24),
-
-        Text = Color3.fromRGB(255, 245, 245),
-        SubText = Color3.fromRGB(205, 160, 165),
-
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.15,
-
-        Animated = true,
-        AnimationSpeed = 0.65,
-        CardAnimation = true,
-
-        GlowEnabled = true,
-        GlowSpeed = 0.62,
-        GlowStrength = 0.78,
-        GlowMinTransparency = 0.84,
-        GlowMaxTransparency = 0.58,
-
-        SnakeEnabled = true,
-        SnakeSpeed = 0.18,
-        SnakeSize = 5,
-        SnakeGlow = 0.88,
-        SnakeTransparency = 0.08,
-
-        ShadowEnabled = false,
-
-        BackgroundTransparency = 0.04
-    },
-
-    --==================================================
-    -- 💎 CRYSTAL
-    --==================================================
-
-    ["Crystal"] = {
-
-        Background = Color3.fromRGB(235, 242, 248),
-        Main = Color3.fromRGB(235, 242, 248),
-        Sidebar = Color3.fromRGB(230, 239, 247),
-        Content = Color3.fromRGB(248, 251, 255),
-
-        Card = Color3.fromRGB(225, 237, 248),
-        CardDark = Color3.fromRGB(210, 226, 240),
-
-        Button = Color3.fromRGB(220, 235, 248),
-        ButtonDark = Color3.fromRGB(205, 222, 237),
-
-        Accent = Color3.fromRGB(55, 155, 220),
-        AccentLight = Color3.fromRGB(105, 205, 255),
-
-        LogoBorder = Color3.fromRGB(80, 220, 255),
-        LogoBorderTransparency = 0.10,
-        LogoBorderThickness = 1.5,
-
-        LogoBackground = Color3.fromRGB(235, 245, 252),
-        Close = Color3.fromRGB(205, 222, 237),
-
-        Text = Color3.fromRGB(20, 30, 40),
-        SubText = Color3.fromRGB(75, 95, 115),
-
-        TextStroke = Color3.fromRGB(255, 255, 255),
-        TextStrokeTransparency = 0.1,
-
-        Animated = true,
-        AnimationSpeed = 0.45,
-        CardAnimation = true,
-
-        GlowEnabled = true,
-        GlowSpeed = 0.42,
-        GlowStrength = 0.35,
-        GlowMinTransparency = 0.90,
-        GlowMaxTransparency = 0.76,
-
-        SnakeEnabled = true,
-        SnakeSpeed = 0.14,
-        SnakeSize = 4,
-        SnakeGlow = 0.45,
-        SnakeTransparency = 0.15,
-
-        ShadowEnabled = false,
-
-        BackgroundTransparency = 0
-    },
-
-    --==================================================
-    -- 🥇 GOLDEN NEON
-    --==================================================
-
-    ["Golden Neon"] = {
-
-        Background = Color3.fromRGB(8, 7, 4),
-        Main = Color3.fromRGB(8, 7, 4),
-        Sidebar = Color3.fromRGB(10, 8, 4),
-        Content = Color3.fromRGB(15, 13, 7),
-
-        Card = Color3.fromRGB(32, 27, 11),
-        CardDark = Color3.fromRGB(22, 19, 8),
-
-        Button = Color3.fromRGB(28, 24, 10),
-        ButtonDark = Color3.fromRGB(18, 15, 7),
-
-        Accent = Color3.fromRGB(235, 175, 35),
-        AccentLight = Color3.fromRGB(255, 215, 85),
-
-        LogoBorder = Color3.fromRGB(255, 225, 110),
-        LogoBorderTransparency = 0.08,
-        LogoBorderThickness = 1.8,
-
-        LogoBackground = Color3.fromRGB(42, 31, 7),
-        Close = Color3.fromRGB(55, 44, 18),
-
-        Text = Color3.fromRGB(255, 248, 220),
-        SubText = Color3.fromRGB(200, 180, 125),
-
-        TextStroke = Color3.fromRGB(0, 0, 0),
-        TextStrokeTransparency = 0.1,
-
-        Animated = true,
-        AnimationSpeed = 0.55,
-        CardAnimation = true,
-
-        GlowEnabled = true,
-        GlowSpeed = 0.55,
-        GlowStrength = 0.72,
-        GlowMinTransparency = 0.86,
-        GlowMaxTransparency = 0.57,
-
-        SnakeEnabled = true,
-        SnakeSpeed = 0.17,
-        SnakeSize = 5,
-        SnakeGlow = 0.85,
-        SnakeTransparency = 0.08,
-
-        ShadowEnabled = false,
-
-        BackgroundTransparency = 0.03
-    },
-
-    --==================================================
-    -- 🤍✨ BRANCO DOURADO
-    --==================================================
-    -- IMPORTANTE:
-    -- Este preset controla TODA a interface.
+    -- Config usa "Main".
+    -- UI usa "Background".
     --
-    -- Main       = branco
-    -- Sidebar    = branco
-    -- Content    = branco
-    -- Card       = branco
-    -- Button     = branco
-    -- Accent     = dourado
-    -- Logo       = branco/dourado
-    --
-    -- Isso impede partes antigas do Config.lua
-    -- de deixarem o topo preto.
-
-    ["Branco Dourado"] = {
-
-        --==================================================
-        -- FULL WHITE INTERFACE
-        --==================================================
-
-        Background = Color3.fromRGB(245, 245, 242),
-
-        Main = Color3.fromRGB(245, 245, 242),
-
-        Sidebar = Color3.fromRGB(238, 238, 234),
-
-        Content = Color3.fromRGB(248, 248, 245),
-
-        --==================================================
-        -- WHITE CARDS
-        --==================================================
-
-        Card = Color3.fromRGB(255, 255, 252),
-
-        CardDark = Color3.fromRGB(238, 238, 233),
-
-        Button = Color3.fromRGB(250, 250, 247),
-
-        ButtonDark = Color3.fromRGB(232, 232, 226),
-
-        --==================================================
-        -- GOLD ACCENT
-        --==================================================
-
-        Accent = Color3.fromRGB(218, 170, 55),
-
-        AccentLight = Color3.fromRGB(255, 215, 100),
-
-        --==================================================
-        -- LOGO
-        --==================================================
-
-        LogoBorder = Color3.fromRGB(235, 190, 70),
-
-        LogoBorderTransparency = 0.05,
-
-        LogoBorderThickness = 1.9,
-
-        LogoBackground = Color3.fromRGB(255, 253, 242),
-
-        Close = Color3.fromRGB(225, 215, 190),
-
-        --==================================================
-        -- TEXT
-        --==================================================
-
-        Text = Color3.fromRGB(35, 35, 32),
-
-        SubText = Color3.fromRGB(105, 100, 88),
-
-        TextStroke = Color3.fromRGB(255, 255, 255),
-
-        TextStrokeTransparency = 0.25,
-
-        --==================================================
-        -- SELECTED / NORMAL
-        --==================================================
-
-        Normal = Color3.fromRGB(245, 245, 242),
-
-        NormalText = Color3.fromRGB(45, 43, 38),
-
-        Selected = Color3.fromRGB(218, 170, 55),
-
-        SelectedText = Color3.fromRGB(255, 255, 255),
-
-        --==================================================
-        -- ANIMATION
-        --==================================================
-
-        Animated = true,
-
-        AnimationSpeed = 0.52,
-
-        CardAnimation = true,
-
-        --==================================================
-        -- GOLD GLOW
-        --==================================================
-
-        GlowEnabled = true,
-
-        GlowSpeed = 0.52,
-
-        GlowStrength = 0.62,
-
-        GlowMinTransparency = 0.88,
-
-        GlowMaxTransparency = 0.62,
-
-        --==================================================
-        -- GOLD BORDER SNAKE
-        --==================================================
-
-        SnakeEnabled = true,
-
-        SnakeSpeed = 0.17,
-
-        SnakeSize = 5,
-
-        SnakeGlow = 0.78,
-
-        SnakeTransparency = 0.06,
-
-        --==================================================
-        -- SHADOW
-        --==================================================
-
-        ShadowEnabled = true,
-
-        ShadowColor = Color3.fromRGB(90, 75, 40),
-
-        ShadowTransparency = 0.72,
-
-        ShadowSize = 11,
-
-        ShadowSoftness = 0.82,
-
-        ShadowOffset = Vector2.new(0, 2),
-
-        ShadowAnimated = true,
-
-        ShadowMinTransparency = 0.78,
-
-        ShadowMaxTransparency = 0.66,
-
-        ShadowSpeed = 0.48,
-
-        BackgroundTransparency = 0
-    }
-
-}
-
---==================================================
--- INIT
---==================================================
-
-function Theme:Init(Context)
-
-    Context = Context or {}
-
-    self.Config = Context.Config or {}
-
-    self.Config.UI = self.Config.UI or {}
-
-    self.Themes = self.Config.UI.Themes or {}
-
-    self.Name =
-        self.Config.UI.Theme
-        or "Rimuru Dark"
+    -- Mantemos os dois compatíveis.
+
+    Normalized.Background =
+        SafeColor(
+            RawTheme.Background,
+            SafeColor(
+                RawTheme.Main,
+                DEFAULT_COLOR
+            )
+        )
+
+    Normalized.Main =
+        Normalized.Background
 
     --==================================================
-    -- SAFE FALLBACK
+    -- SIDEBAR
     --==================================================
 
-    if not self.Themes[self.Name] then
+    Normalized.Sidebar =
+        SafeColor(
+            RawTheme.Sidebar,
+            Normalized.Background
+        )
 
-        if self.Themes["Rimuru Dark"] then
+    --==================================================
+    -- CONTENT
+    --==================================================
 
-            self.Name = "Rimuru Dark"
+    Normalized.Content =
+        SafeColor(
+            RawTheme.Content,
+            Normalized.Background
+        )
+
+    --==================================================
+    -- CARD
+    --==================================================
+
+    Normalized.Card =
+        SafeColor(
+            RawTheme.Card,
+            Normalized.Content
+        )
+
+    --==================================================
+    -- BUTTON
+    --==================================================
+
+    Normalized.Button =
+        SafeColor(
+            RawTheme.Button,
+            Normalized.Card
+        )
+
+    --==================================================
+    -- ACCENT
+    --==================================================
+
+    Normalized.Accent =
+        SafeColor(
+            RawTheme.Accent,
+            DEFAULT_ACCENT
+        )
+
+    --==================================================
+    -- TEXT
+    --==================================================
+
+    Normalized.Text =
+        SafeColor(
+            RawTheme.Text,
+            DEFAULT_TEXT
+        )
+
+    --==================================================
+    -- SUBTEXT
+    --==================================================
+
+    Normalized.SubText =
+        SafeColor(
+            RawTheme.SubText,
+            DEFAULT_SUBTEXT
+        )
+
+    --==================================================
+    -- LOGO BACKGROUND
+    --==================================================
+
+    Normalized.LogoBackground =
+        SafeColor(
+            RawTheme.LogoBackground,
+            Normalized.Background
+        )
+
+    --==================================================
+    -- CLOSE
+    --==================================================
+
+    Normalized.Close =
+        SafeColor(
+            RawTheme.Close,
+            Normalized.Button
+        )
+
+    --==================================================
+    -- BACKGROUND IMAGE
+    --==================================================
+
+    Normalized.BackgroundImage =
+        RawTheme.BackgroundImage
+
+    --==================================================
+    -- BACKGROUND TRANSPARENCY
+    --==================================================
+
+    Normalized.BackgroundTransparency =
+        math.clamp(
+            SafeNumber(
+                RawTheme.BackgroundTransparency,
+                0.35
+            ),
+            0,
+            1
+        )
+
+    --==================================================
+    -- GLOW
+    --==================================================
+
+    if RawTheme.GlowEnabled ~= nil then
+
+        Normalized.GlowEnabled =
+            SafeBoolean(
+                RawTheme.GlowEnabled,
+                false
+            )
+
+    else
+
+        -- Temas naturalmente neon.
+
+        if Name == "Rimuru Dark"
+        or Name == "Void"
+        or Name == "Blackout" then
+
+            Normalized.GlowEnabled =
+                true
 
         else
 
-            self.Name = next(self.Themes)
+            Normalized.GlowEnabled =
+                false
 
         end
 
     end
 
-    self.Current =
-        self.Themes[self.Name]
-
     --==================================================
-    -- APPLY PREMIUM PRESET
+    -- SHADOW
     --==================================================
 
-    self:ApplyPremiumPreset()
+    if RawTheme.ShadowEnabled ~= nil then
 
-    --==================================================
-    -- ANIMATION STATE
-    --==================================================
+        Normalized.ShadowEnabled =
+            SafeBoolean(
+                RawTheme.ShadowEnabled,
+                false
+            )
 
-    self.RGBHue = 0
+    else
 
-    self.AnimationTime = 0
+        -- Sombra padrão apenas no tema principal.
 
-end
-
---==================================================
--- APPLY PREMIUM PRESET
---==================================================
-
-function Theme:ApplyPremiumPreset()
-
-    if not self.Current then
-        return
-    end
-
-    local Preset =
-        PremiumPresets[self.Name]
-
-    if not Preset then
-        return
-    end
-
-    --==================================================
-    -- PREMIUM VALUES OVERRIDE CONFIG VALUES
-    --==================================================
-
-    for Key, Value in pairs(Preset) do
-
-        self.Current[Key] = Value
+        Normalized.ShadowEnabled =
+            Name == "Rimuru Dark"
 
     end
 
     --==================================================
-    -- IMPORTANT ALIASES
-    --==================================================
-    -- Alguns módulos antigos do Rimuru Hub usam
-    -- Main / Sidebar em vez de Background / Content.
-    --
-    -- Mantemos tudo sincronizado.
-
-    if Preset.Background then
-        self.Current.Main = Preset.Background
-    end
-
-    if Preset.Content then
-        self.Current.Content = Preset.Content
-    end
-
-    --==================================================
-    -- WHITE GOLD FORCE SYNC
+    -- SHADOW TRANSPARENCY
     --==================================================
 
-    if self.Name == "Branco Dourado" then
-
-        local White =
-            Color3.fromRGB(
-                245,
-                245,
-                242
-            )
-
-        local ContentWhite =
-            Color3.fromRGB(
-                248,
-                248,
-                245
-            )
-
-        self.Current.Background =
-            White
-
-        self.Current.Main =
-            White
-
-        self.Current.Sidebar =
-            Color3.fromRGB(
-                238,
-                238,
-                234
-            )
-
-        self.Current.Content =
-            ContentWhite
-
-        self.Current.Card =
-            Color3.fromRGB(
-                255,
-                255,
-                252
-            )
-
-        self.Current.Button =
-            Color3.fromRGB(
-                250,
-                250,
-                247
-            )
-
-        self.Current.Accent =
-            Color3.fromRGB(
-                218,
-                170,
-                55
-            )
-
-        self.Current.AccentLight =
-            Color3.fromRGB(
-                255,
-                215,
-                100
-            )
-
-    end
-
-end
-
---==================================================
--- GET ACCENT
---==================================================
-
-function Theme:GetAccent()
-
-    if not self.Current then
-
-        return Color3.new(1, 1, 1)
-
-    end
+    Normalized.ShadowTransparency =
+        math.clamp(
+            SafeNumber(
+                RawTheme.ShadowTransparency,
+                0.92
+            ),
+            0,
+            1
+        )
 
     --==================================================
     -- RGB
     --==================================================
 
-    if self.Current.RGB then
+    Normalized.RGB =
+        RawTheme.RGB == true
 
-        return Color3.fromHSV(
-            self.RGBHue,
-            0.9,
-            1
+    --==================================================
+    -- BORDER PULSE
+    --==================================================
+
+    Normalized.BorderPulse =
+        SafeBoolean(
+            RawTheme.BorderPulse,
+            Normalized.GlowEnabled
+        )
+
+    return Normalized
+
+end
+
+--==================================================
+-- INIT
+--==================================================
+
+function Theme:Init(
+    Config
+)
+
+    self.Config =
+        Config
+
+    self.RGBTime =
+        0
+
+    --==================================================
+    -- DEFAULT THEME
+    --==================================================
+
+    local DefaultName =
+        "Rimuru Dark"
+
+    if Config
+    and Config.UI
+    and Config.UI.Theme then
+
+        DefaultName =
+            Config.UI.Theme
+
+    end
+
+    --==================================================
+    -- LOAD DEFAULT
+    --==================================================
+
+    self:SetTheme(
+        DefaultName
+    )
+
+end
+
+--==================================================
+-- INITIALIZE
+--==================================================
+
+function Theme:Initialize(
+    Config
+)
+
+    return self:Init(
+        Config
+    )
+
+end
+
+--==================================================
+-- SET THEME
+--==================================================
+
+function Theme:SetTheme(
+    Name
+)
+
+    if not self.Config then
+
+        warn(
+            "❌ Rimuru Hub Theme: Config não encontrada."
+        )
+
+        return false
+
+    end
+
+    if not self.Config.UI then
+
+        warn(
+            "❌ Rimuru Hub Theme: Config.UI não encontrada."
+        )
+
+        return false
+
+    end
+
+    local RawTheme =
+        GetRawTheme(
+            self.Config,
+            Name
+        )
+
+    --==================================================
+    -- FALLBACK
+    --==================================================
+
+    if not RawTheme then
+
+        warn(
+            "⚠️ Rimuru Hub Theme: tema '" ..
+            tostring(Name) ..
+            "' não encontrado. Usando Rimuru Dark."
+        )
+
+        Name =
+            "Rimuru Dark"
+
+        RawTheme =
+            GetRawTheme(
+                self.Config,
+                Name
+            )
+
+    end
+
+    --==================================================
+    -- FINAL FALLBACK
+    --==================================================
+
+    if not RawTheme then
+
+        warn(
+            "❌ Rimuru Hub Theme: nenhum tema válido encontrado."
+        )
+
+        return false
+
+    end
+
+    local Normalized =
+        self:Normalize(
+            Name,
+            RawTheme
+        )
+
+    if not Normalized then
+
+        warn(
+            "❌ Rimuru Hub Theme: falha ao normalizar tema."
+        )
+
+        return false
+
+    end
+
+    self.CurrentTheme =
+        Normalized
+
+    self.CurrentThemeName =
+        Name
+
+    return true
+
+end
+
+--==================================================
+-- CHANGE THEME
+--==================================================
+
+function Theme:ChangeTheme(
+    Name
+)
+
+    return self:SetTheme(
+        Name
+    )
+
+end
+
+--==================================================
+-- GET CURRENT
+--==================================================
+
+function Theme:GetCurrent()
+
+    return self.CurrentTheme
+
+end
+
+--==================================================
+-- GET CURRENT NAME
+--==================================================
+
+function Theme:GetCurrentName()
+
+    return self.CurrentThemeName
+
+end
+
+--==================================================
+-- GET NAME
+--==================================================
+
+function Theme:GetName()
+
+    return self.CurrentThemeName
+
+end
+
+--==================================================
+-- GET THEME
+--==================================================
+
+function Theme:GetTheme(
+    Name
+)
+
+    if not self.Config then
+        return nil
+    end
+
+    local RawTheme =
+        GetRawTheme(
+            self.Config,
+            Name
+        )
+
+    if not RawTheme then
+        return nil
+    end
+
+    return self:Normalize(
+        Name,
+        RawTheme
+    )
+
+end
+
+--==================================================
+-- GET ALL THEMES
+--==================================================
+
+function Theme:GetThemes()
+
+    if not self.Config
+    or not self.Config.UI
+    or not self.Config.UI.Themes then
+
+        return {}
+
+    end
+
+    return self.Config.UI.Themes
+
+end
+
+--==================================================
+-- GET THEME NAMES
+--==================================================
+
+function Theme:GetThemeNames()
+
+    local Names = {}
+
+    if not self.Config
+    or not self.Config.UI
+    or not self.Config.UI.Themes then
+
+        return Names
+
+    end
+
+    for Name in pairs(
+        self.Config.UI.Themes
+    ) do
+
+        table.insert(
+            Names,
+            Name
         )
 
     end
 
-    local Base =
-        self.Current.Accent
+    table.sort(
+        Names
+    )
 
-    if not Base then
-
-        return Color3.new(1, 1, 1)
-
-    end
-
-    if self.Current.Animated then
-
-        local Pulse =
-            self:GetLightPulse()
-
-        local AccentLight =
-            self.Current.AccentLight
-
-        if AccentLight then
-
-            return Base:Lerp(
-                AccentLight,
-                Pulse * 0.72
-            )
-
-        end
-
-    end
-
-    return Base
+    return Names
 
 end
 
 --==================================================
--- LIGHT PULSE
+-- ACCENT
 --==================================================
 
-function Theme:GetLightPulse()
+function Theme:GetAccent()
 
-    if not self.Current
-    or not self.Current.Animated then
+    local Current =
+        self.CurrentTheme
 
-        return 0
+    if not Current then
+
+        return DEFAULT_ACCENT
 
     end
 
-    local Speed =
-        self.Current.AnimationSpeed
-        or 1
+    -- RGB não usa Accent fixo.
 
-    local Time =
-        os.clock() * Speed
+    if Current.RGB then
 
-    local Wave =
-        (math.sin(Time) + 1) / 2
-
-    return
-        Wave
-        * Wave
-        * (3 - 2 * Wave)
-
-end
-
---==================================================
--- GLOW PULSE
---==================================================
-
-function Theme:GetGlowPulse()
-
-    if not self.Current
-    or not self.Current.GlowEnabled then
-
-        return 0
+        return self:GetRGBColor()
 
     end
 
-    local Speed =
-        self.Current.GlowSpeed
-        or 1
-
-    local Wave =
-        (math.sin(os.clock() * Speed) + 1) / 2
-
-    return
-        Wave
-        * Wave
-        * (3 - 2 * Wave)
+    return SafeColor(
+        Current.Accent,
+        DEFAULT_ACCENT
+    )
 
 end
 
@@ -812,459 +707,24 @@ end
 
 function Theme:GetGlowColor()
 
-    if not self.Current then
-        return Color3.new(1, 1, 1)
-    end
+    local Current =
+        self.CurrentTheme
 
-    local Accent =
-        self:GetAccent()
+    if not Current then
 
-    local Light =
-        self.Current.AccentLight
-
-    if Light then
-
-        return Accent:Lerp(
-            Light,
-            0.35
-        )
+        return DEFAULT_ACCENT
 
     end
 
-    return Accent
+    if Current.RGB then
 
-end
-
---==================================================
--- GLOW TRANSPARENCY
---==================================================
-
-function Theme:GetGlowTransparency()
-
-    if not self.Current
-    or not self.Current.GlowEnabled then
-
-        return 1
+        return self:GetRGBColor()
 
     end
 
-    local Pulse =
-        self:GetGlowPulse()
-
-    local Min =
-        self.Current.GlowMinTransparency
-        or 0.80
-
-    local Max =
-        self.Current.GlowMaxTransparency
-        or 0.55
-
-    return
-        Min
-        - (
-            Pulse
-            * (Min - Max)
-        )
-
-end
-
---==================================================
--- GLOW STRENGTH
---==================================================
-
-function Theme:GetGlowStrength()
-
-    if not self.Current
-    or not self.Current.GlowEnabled then
-
-        return 0
-
-    end
-
-    local Strength =
-        self.Current.GlowStrength
-        or 0.7
-
-    local Pulse =
-        self:GetGlowPulse()
-
-    return
-        Strength
-        * (
-            0.72
-            + Pulse * 0.28
-        )
-
-end
-
---==================================================
--- BORDER PULSE
---==================================================
-
-function Theme:GetBorderPulse()
-
-    if not self.Current
-    or not self.Current.Animated then
-
-        return 0.35
-
-    end
-
-    local Speed =
-        (
-            self.Current.AnimationSpeed
-            or 1
-        )
-        * 0.72
-
-    local Wave =
-        (
-            math.sin(
-                os.clock() * Speed
-            )
-            + 1
-        )
-        / 2
-
-    Wave =
-        Wave
-        * Wave
-        * (3 - 2 * Wave)
-
-    return
-        0.28
-        + Wave * 0.52
-
-end
-
---==================================================
--- 🌑 SHADOW SYSTEM
---==================================================
-
-function Theme:IsShadowEnabled()
-
-    if not self.Current then
-        return false
-    end
-
-    return self.Current.ShadowEnabled == true
-
-end
-
---==================================================
--- SHADOW COLOR
---==================================================
-
-function Theme:GetShadowColor()
-
-    if not self.Current then
-
-        return Color3.fromRGB(
-            0,
-            0,
-            0
-        )
-
-    end
-
-    return
-        self.Current.ShadowColor
-        or Color3.fromRGB(
-            0,
-            0,
-            0
-        )
-
-end
-
---==================================================
--- SHADOW TRANSPARENCY
---==================================================
-
-function Theme:GetShadowTransparency()
-
-    if not self.Current
-    or not self.Current.ShadowEnabled then
-
-        return 1
-
-    end
-
-    if not self.Current.ShadowAnimated then
-
-        return
-            self.Current.ShadowTransparency
-            or 0.70
-
-    end
-
-    local Min =
-        self.Current.ShadowMinTransparency
-        or 0.78
-
-    local Max =
-        self.Current.ShadowMaxTransparency
-        or 0.62
-
-    local Speed =
-        self.Current.ShadowSpeed
-        or 0.5
-
-    local Wave =
-        (
-            math.sin(
-                os.clock() * Speed
-            )
-            + 1
-        )
-        / 2
-
-    Wave =
-        Wave
-        * Wave
-        * (3 - 2 * Wave)
-
-    return
-        Min
-        - (
-            Wave
-            * (Min - Max)
-        )
-
-end
-
---==================================================
--- SHADOW SIZE
---==================================================
-
-function Theme:GetShadowSize()
-
-    if not self.Current then
-        return 10
-    end
-
-    return
-        self.Current.ShadowSize
-        or 10
-
-end
-
---==================================================
--- SHADOW SOFTNESS
---==================================================
-
-function Theme:GetShadowSoftness()
-
-    if not self.Current then
-        return 0.82
-    end
-
-    return
-        self.Current.ShadowSoftness
-        or 0.82
-
-end
-
---==================================================
--- SHADOW OFFSET
---==================================================
-
-function Theme:GetShadowOffset()
-
-    if not self.Current then
-
-        return Vector2.new(
-            0,
-            2
-        )
-
-    end
-
-    return
-        self.Current.ShadowOffset
-        or Vector2.new(
-            0,
-            2
-        )
-
-end
-
---==================================================
--- SNAKE ENABLED
---==================================================
-
-function Theme:IsSnakeEnabled()
-
-    return
-        self.Current
-        and self.Current.SnakeEnabled == true
-        or false
-
-end
-
---==================================================
--- SNAKE SPEED
---==================================================
-
-function Theme:GetSnakeSpeed()
-
-    if not self.Current then
-        return 0.15
-    end
-
-    return
-        self.Current.SnakeSpeed
-        or 0.18
-
-end
-
---==================================================
--- SNAKE SIZE
---==================================================
-
-function Theme:GetSnakeSize()
-
-    if not self.Current then
-        return 5
-    end
-
-    return
-        self.Current.SnakeSize
-        or 5
-
-end
-
---==================================================
--- SNAKE GLOW
---==================================================
-
-function Theme:GetSnakeGlow()
-
-    if not self.Current then
-        return 0.8
-    end
-
-    return
-        self.Current.SnakeGlow
-        or 0.8
-
-end
-
---==================================================
--- SNAKE TRANSPARENCY
---==================================================
-
-function Theme:GetSnakeTransparency()
-
-    if not self.Current then
-        return 0.1
-    end
-
-    return
-        self.Current.SnakeTransparency
-        or 0.1
-
-end
-
---==================================================
--- SNAKE COLOR
---==================================================
-
-function Theme:GetSnakeColor()
-
-    if not self.Current then
-
-        return Color3.new(
-            1,
-            1,
-            1
-        )
-
-    end
-
-    local Accent =
-        self:GetAccent()
-
-    local Light =
-        self.Current.AccentLight
-
-    if Light then
-
-        local Pulse =
-            self:GetGlowPulse()
-
-        return Accent:Lerp(
-            Light,
-            0.45
-            + Pulse * 0.25
-        )
-
-    end
-
-    return Accent
-
-end
-
---==================================================
--- GET CARD COLOR
---==================================================
-
-function Theme:GetCardColor(Index)
-
-    if not self.Current then
-
-        return Color3.new(
-            1,
-            1,
-            1
-        )
-
-    end
-
-    local Card =
-        self.Current.Card
-
-    local Dark =
-        self.Current.CardDark
-
-    if not Card then
-
-        return Color3.new(
-            1,
-            1,
-            1
-        )
-
-    end
-
-    if not Dark
-    or not self.Current.CardAnimation then
-
-        return Card
-
-    end
-
-    local Offset =
-        (Index or 1) * 0.55
-
-    local Wave =
-        (
-            math.sin(
-                os.clock() * 0.9
-                + Offset
-            )
-            + 1
-        )
-        / 2
-
-    Wave =
-        Wave
-        * Wave
-        * (3 - 2 * Wave)
-
-    return Card:Lerp(
-        Dark,
-        Wave * 0.35
+    return SafeColor(
+        Current.Accent,
+        DEFAULT_ACCENT
     )
 
 end
@@ -1275,414 +735,43 @@ end
 
 function Theme:GetLogoBorder()
 
-    if not self.Current then
+    local Current =
+        self.CurrentTheme
 
-        return Color3.new(
-            1,
-            1,
-            1
+    if not Current then
+
+        return DEFAULT_ACCENT
+
+    end
+
+    if Current.RGB then
+
+        return self:GetRGBColor()
+
+    end
+
+    if Current.LogoBorder then
+
+        return SafeColor(
+            Current.LogoBorder,
+            Current.Accent
         )
 
     end
 
-    return
-        self.Current.LogoBorder
-        or self:GetAccent()
+    if Current.LogoBackground then
 
-end
-
---==================================================
--- LOGO BORDER TRANSPARENCY
---==================================================
-
-function Theme:GetLogoBorderTransparency()
-
-    if not self.Current then
-        return 0.20
-    end
-
-    return
-        self.Current.LogoBorderTransparency
-        or 0.20
-
-end
-
---==================================================
--- LOGO BORDER THICKNESS
---==================================================
-
-function Theme:GetLogoBorderThickness()
-
-    if not self.Current then
-        return 1.5
-    end
-
-    return
-        self.Current.LogoBorderThickness
-        or 1.5
-
-end
-
---==================================================
--- TEXT
---==================================================
-
-function Theme:GetText()
-
-    if not self.Current then
-        return Color3.new(1, 1, 1)
-    end
-
-    return
-        self.Current.Text
-        or Color3.new(1, 1, 1)
-
-end
-
---==================================================
--- SUB TEXT
---==================================================
-
-function Theme:GetSubText()
-
-    if not self.Current then
-
-        return Color3.new(
-            0.7,
-            0.7,
-            0.7
+        return SafeColor(
+            Current.LogoBackground,
+            Current.Accent
         )
 
     end
 
-    return
-        self.Current.SubText
-        or self:GetText()
-
-end
-
---==================================================
--- TEXT STROKE
---==================================================
-
-function Theme:GetTextStroke()
-
-    if not self.Current then
-
-        return Color3.new(
-            0,
-            0,
-            0
-        )
-
-    end
-
-    return
-        self.Current.TextStroke
-        or Color3.new(
-            0,
-            0,
-            0
-        )
-
-end
-
---==================================================
--- TEXT STROKE TRANSPARENCY
---==================================================
-
-function Theme:GetTextStrokeTransparency()
-
-    if not self.Current then
-        return 0
-    end
-
-    return
-        self.Current.TextStrokeTransparency
-        or 0
-
-end
-
---==================================================
--- BUTTON
---==================================================
-
-function Theme:GetButtonColor()
-
-    if not self.Current then
-
-        return Color3.new(
-            1,
-            1,
-            1
-        )
-
-    end
-
-    return
-        self.Current.Button
-        or self.Current.Card
-
-end
-
---==================================================
--- DARK BUTTON
---==================================================
-
-function Theme:GetDarkButtonColor()
-
-    if not self.Current then
-
-        return Color3.new(
-            0,
-            0,
-            0
-        )
-
-    end
-
-    return
-        self.Current.ButtonDark
-        or self.Current.Button
-
-end
-
---==================================================
--- NORMAL STATE
---==================================================
-
-function Theme:GetNormalColor()
-
-    if not self.Current then
-
-        return Color3.new(
-            0,
-            0,
-            0
-        )
-
-    end
-
-    return
-        self.Current.Normal
-        or self.Current.Card
-        or self.Current.Button
-        or Color3.new(
-            0,
-            0,
-            0
-        )
-
-end
-
---==================================================
--- NORMAL TEXT
---==================================================
-
-function Theme:GetNormalTextColor()
-
-    if not self.Current then
-
-        return Color3.new(
-            1,
-            1,
-            1
-        )
-
-    end
-
-    return
-        self.Current.NormalText
-        or self.Current.Text
-        or Color3.new(
-            1,
-            1,
-            1
-        )
-
-end
-
---==================================================
--- SELECTED
---==================================================
-
-function Theme:GetSelectedColor()
-
-    if not self.Current then
-
-        return Color3.new(
-            1,
-            1,
-            1
-        )
-
-    end
-
-    if self.Current.Selected then
-        return self.Current.Selected
-    end
-
-    return self:GetAccent()
-
-end
-
---==================================================
--- SELECTED TEXT
---==================================================
-
-function Theme:GetSelectedTextColor()
-
-    if not self.Current then
-
-        return Color3.new(
-            0,
-            0,
-            0
-        )
-
-    end
-
-    if self.Current.SelectedText then
-        return self.Current.SelectedText
-    end
-
-    return self:GetText()
-
-end
-
---==================================================
--- CUSTOM STATES
---==================================================
-
-function Theme:HasCustomStateColors()
-
-    if not self.Current then
-        return false
-    end
-
-    return
-        self.Current.Normal ~= nil
-        or self.Current.NormalText ~= nil
-        or self.Current.Selected ~= nil
-        or self.Current.SelectedText ~= nil
-
-end
-
---==================================================
--- SET THEME
---==================================================
-
-function Theme:SetTheme(Name)
-
-    if not self.Themes[Name] then
-        return false
-    end
-
-    self.Name =
-        Name
-
-    self.Current =
-        self.Themes[Name]
-
-    self.Config.UI.Theme =
-        Name
-
-    self:ApplyPremiumPreset()
-
-    if self.Current.RGB then
-        self.RGBHue = 0
-    end
-
-    self.AnimationTime = 0
-
-    return true
-
-end
-
---==================================================
--- RGB
---==================================================
-
-function Theme:UpdateRGB()
-
-    if not self.Current then
-        return nil
-    end
-
-    if not self.Current.RGB then
-        return nil
-    end
-
-    self.RGBHue += 0.0025
-
-    if self.RGBHue >= 1 then
-        self.RGBHue = 0
-    end
-
-    return Color3.fromHSV(
-        self.RGBHue,
-        0.9,
-        1
+    return SafeColor(
+        Current.Accent,
+        DEFAULT_ACCENT
     )
-
-end
-
---==================================================
--- UPDATE
---==================================================
-
-function Theme:Update()
-
-    if not self.Current then
-        return
-    end
-
-    self.AnimationTime =
-        os.clock()
-
-end
-
---==================================================
--- CURRENT
---==================================================
-
-function Theme:GetCurrent()
-
-    return self.Current
-
-end
-
---==================================================
--- NAME
---==================================================
-
-function Theme:GetName()
-
-    return self.Name
-
-end
-
---==================================================
--- THEMES
---==================================================
-
-function Theme:GetThemes()
-
-    return self.Themes
-
-end
-
---==================================================
--- BACKGROUND
---==================================================
-
-function Theme:GetBackground()
-
-    if not self.Current then
-        return nil
-    end
-
-    return self.Current.BackgroundImage
 
 end
 
@@ -1692,38 +781,41 @@ end
 
 function Theme:GetBackgroundTransparency()
 
-    if not self.Current then
-        return 1
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+
+        return 0.35
+
     end
 
-    return
-        self.Current.BackgroundTransparency
-        or 1
+    return math.clamp(
+        SafeNumber(
+            Current.BackgroundTransparency,
+            0.35
+        ),
+        0,
+        1
+    )
 
 end
 
 --==================================================
--- PREMIUM PRESETS
+-- SHADOW ENABLED
 --==================================================
 
-function Theme:GetPremiumPresets()
+function Theme:IsShadowEnabled()
 
-    return PremiumPresets
+    local Current =
+        self.CurrentTheme
 
-end
-
---==================================================
--- ANIMATED
---==================================================
-
-function Theme:IsAnimated()
-
-    if not self.Current then
+    if not Current then
         return false
     end
 
-    return
-        self.Current.Animated == true
+    return Current.ShadowEnabled
+        == true
 
 end
 
@@ -1733,96 +825,444 @@ end
 
 function Theme:IsGlowEnabled()
 
-    if not self.Current then
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
         return false
     end
 
-    return
-        self.Current.GlowEnabled == true
+    return Current.GlowEnabled
+        == true
 
 end
 
 --==================================================
--- MAIN COLOR
+-- BORDER PULSE
 --==================================================
 
-function Theme:GetMainColor()
+function Theme:GetBorderPulse()
 
-    if not self.Current then
-        return Color3.new(0, 0, 0)
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+
+        return 0
+
     end
 
-    return
-        self.Current.Main
-        or self.Current.Background
-        or Color3.new(0, 0, 0)
+    if Current.BorderPulse
+        == false then
 
-end
+        return 0
 
---==================================================
--- SIDEBAR COLOR
---==================================================
-
-function Theme:GetSidebarColor()
-
-    if not self.Current then
-        return Color3.new(0, 0, 0)
     end
 
-    return
-        self.Current.Sidebar
-        or self.Current.Main
-        or self.Current.Background
-        or Color3.new(0, 0, 0)
+    --==================================================
+    -- RGB
+    --==================================================
 
-end
+    if Current.RGB then
 
---==================================================
--- CONTENT COLOR
---==================================================
+        return (
+            math.sin(
+                self.RGBTime * 1.15
+            )
+            + 1
+        ) * 0.5
 
-function Theme:GetContentColor()
-
-    if not self.Current then
-        return Color3.new(0, 0, 0)
     end
 
-    return
-        self.Current.Content
-        or self.Current.Background
-        or Color3.new(0, 0, 0)
+    --==================================================
+    -- NORMAL PULSE
+    --==================================================
+
+    return (
+        math.sin(
+            self.RGBTime * 1.15
+        )
+        + 1
+    ) * 0.5
 
 end
 
 --==================================================
--- LOGO BACKGROUND
+-- RGB COLOR
+--==================================================
+
+function Theme:GetRGBColor()
+
+    local Time =
+        self.RGBTime
+
+    local R =
+        math.sin(
+            Time
+        )
+        * 0.5
+        + 0.5
+
+    local G =
+        math.sin(
+            Time
+            + 2.094
+        )
+        * 0.5
+        + 0.5
+
+    local B =
+        math.sin(
+            Time
+            + 4.188
+        )
+        * 0.5
+        + 0.5
+
+    return Color3.new(
+        R,
+        G,
+        B
+    )
+
+end
+
+--==================================================
+-- START RGB CLOCK
+--==================================================
+
+function Theme:StartRGB()
+
+    if self.RGBConnection then
+
+        self.RGBConnection:Disconnect()
+
+        self.RGBConnection =
+            nil
+
+    end
+
+    self.RGBTime =
+        0
+
+    self.RGBConnection =
+        RunService.RenderStepped:Connect(
+            function(
+                DeltaTime
+            )
+
+                self.RGBTime +=
+                    DeltaTime
+
+            end
+        )
+
+end
+
+--==================================================
+-- STOP RGB CLOCK
+--==================================================
+
+function Theme:StopRGB()
+
+    if self.RGBConnection then
+
+        self.RGBConnection:Disconnect()
+
+        self.RGBConnection =
+            nil
+
+    end
+
+end
+
+--==================================================
+-- IS RGB
+--==================================================
+
+function Theme:IsRGB()
+
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+        return false
+    end
+
+    return Current.RGB
+        == true
+
+end
+
+--==================================================
+-- GET COLOR
+--==================================================
+
+function Theme:GetColor(
+    Key
+)
+
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+
+        return DEFAULT_COLOR
+
+    end
+
+    if Current.RGB
+    and (
+        Key == "Accent"
+        or Key == "Glow"
+        or Key == "LogoBorder"
+    ) then
+
+        return self:GetRGBColor()
+
+    end
+
+    if Current[Key] ~= nil then
+
+        if typeof(
+            Current[Key]
+        ) == "Color3" then
+
+            return Current[Key]
+
+        end
+
+    end
+
+    return DEFAULT_COLOR
+
+end
+
+--==================================================
+-- GET MAIN COLOR
+--==================================================
+
+function Theme:GetMain()
+
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+        return DEFAULT_COLOR
+    end
+
+    return Current.Background
+
+end
+
+--==================================================
+-- GET SIDEBAR COLOR
+--==================================================
+
+function Theme:GetSidebar()
+
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+        return DEFAULT_COLOR
+    end
+
+    return Current.Sidebar
+
+end
+
+--==================================================
+-- GET CONTENT COLOR
+--==================================================
+
+function Theme:GetContent()
+
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+        return DEFAULT_COLOR
+    end
+
+    return Current.Content
+
+end
+
+--==================================================
+-- GET CARD COLOR
+--==================================================
+
+function Theme:GetCard()
+
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+        return DEFAULT_COLOR
+    end
+
+    return Current.Card
+
+end
+
+--==================================================
+-- GET BUTTON COLOR
+--==================================================
+
+function Theme:GetButton()
+
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+        return DEFAULT_COLOR
+    end
+
+    return Current.Button
+
+end
+
+--==================================================
+-- GET TEXT COLOR
+--==================================================
+
+function Theme:GetText()
+
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+        return DEFAULT_TEXT
+    end
+
+    return Current.Text
+
+end
+
+--==================================================
+-- GET SUBTEXT COLOR
+--==================================================
+
+function Theme:GetSubText()
+
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+        return DEFAULT_SUBTEXT
+    end
+
+    return Current.SubText
+
+end
+
+--==================================================
+-- GET CLOSE COLOR
+--==================================================
+
+function Theme:GetClose()
+
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+        return DEFAULT_COLOR
+    end
+
+    return Current.Close
+
+end
+
+--==================================================
+-- GET LOGO BACKGROUND
 --==================================================
 
 function Theme:GetLogoBackground()
 
-    if not self.Current then
-        return self:GetMainColor()
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+        return DEFAULT_COLOR
     end
 
-    return
-        self.Current.LogoBackground
-        or self:GetMainColor()
+    return Current.LogoBackground
 
 end
 
 --==================================================
--- CLOSE COLOR
+-- GET BACKGROUND IMAGE
 --==================================================
 
-function Theme:GetCloseColor()
+function Theme:GetBackgroundImage()
 
-    if not self.Current then
-        return self:GetButtonColor()
+    local Current =
+        self.CurrentTheme
+
+    if not Current then
+        return nil
     end
 
-    return
-        self.Current.Close
-        or self:GetButtonColor()
+    return Current.BackgroundImage
+
+end
+
+--==================================================
+-- REFRESH
+--==================================================
+
+function Theme:Refresh()
+
+    if not self.CurrentThemeName then
+        return false
+    end
+
+    return self:SetTheme(
+        self.CurrentThemeName
+    )
+
+end
+
+--==================================================
+-- APPLY
+--==================================================
+
+function Theme:Apply(
+    Name
+)
+
+    if Name then
+
+        return self:SetTheme(
+            Name
+        )
+
+    end
+
+    return self:Refresh()
+
+end
+
+--==================================================
+-- DESTROY
+--==================================================
+
+function Theme:Destroy()
+
+    self:StopRGB()
+
+    self.Config =
+        nil
+
+    self.CurrentTheme =
+        nil
+
+    self.CurrentThemeName =
+        nil
+
+    self.RGBTime =
+        0
 
 end
 
