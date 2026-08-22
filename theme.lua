@@ -1,14 +1,17 @@
 --// 🎨 RIMURU HUB
---// Theme System
---// PREMIUM THEME ENGINE
+--// PREMIUM NEON THEME ENGINE
 --// Dynamic Colors
 --// Animated Lighting
+--// Neon Glow System
+--// Neon Pulse System
+--// Border Snake Animation
+--// Animated Border Progress
 --// Logo Border Support
 --// Text Stroke Support
 --// Card Color Cycling
 --// Background Safe
 --// RGB Compatible
---// BLACKOUT SELECTED STATe
+--// BLACKOUT SELECTED STATE
 --// SAFE THEME FALLBACKS
 
 local RunService =
@@ -124,9 +127,42 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
+        --==================================================
+        -- NEON
+        --==================================================
+
+        Neon =
+            true,
+
+        NeonStrength =
+            1.15,
+
+        GlowStrength =
+            1.25,
+
+        GlowMin =
+            0.35,
+
+        GlowMax =
+            1,
+
+        SnakeAnimation =
+            true,
+
+        SnakeSpeed =
+            0.28,
+
+        SnakeLength =
+            0.18,
+
+        SnakeGlow =
+            1.35,
+
+        PulseStrength =
+            0.42,
+
         BackgroundTransparency =
             0.05
-
     },
 
     --==================================================
@@ -134,10 +170,6 @@ local PremiumPresets = {
     --==================================================
 
     ["Blackout"] = {
-
-        --==================================================
-        -- BASE
-        --==================================================
 
         Background =
             Color3.fromRGB(
@@ -181,10 +213,6 @@ local PremiumPresets = {
                 10
             ),
 
-        --==================================================
-        -- ACCENT
-        --==================================================
-
         Accent =
             Color3.fromRGB(
                 255,
@@ -205,10 +233,6 @@ local PremiumPresets = {
                 255,
                 255
             ),
-
-        --==================================================
-        -- TEXT
-        --==================================================
 
         Text =
             Color3.fromRGB(
@@ -236,12 +260,6 @@ local PremiumPresets = {
 
         --==================================================
         -- BLACKOUT STATE COLORS
-        --==================================================
-        -- NORMAL:
-        -- preto + texto branco
-        --
-        -- SELECTED:
-        -- branco + texto preto
         --==================================================
 
         Normal =
@@ -273,16 +291,50 @@ local PremiumPresets = {
             ),
 
         --==================================================
+        -- NEON
+        --==================================================
+
+        Neon =
+            true,
+
+        NeonStrength =
+            1.4,
+
+        GlowStrength =
+            1.6,
+
+        GlowMin =
+            0.15,
+
+        GlowMax =
+            1,
+
+        SnakeAnimation =
+            true,
+
+        SnakeSpeed =
+            0.42,
+
+        SnakeLength =
+            0.16,
+
+        SnakeGlow =
+            1.75,
+
+        PulseStrength =
+            0.25,
 
         Animated =
-            false,
+            true,
+
+        AnimationSpeed =
+            0.9,
 
         CardAnimation =
-            false,
+            true,
 
         BackgroundTransparency =
             0
-
     },
 
     --==================================================
@@ -387,9 +439,38 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
+        Neon =
+            true,
+
+        NeonStrength =
+            1.25,
+
+        GlowStrength =
+            1.4,
+
+        GlowMin =
+            0.3,
+
+        GlowMax =
+            1,
+
+        SnakeAnimation =
+            true,
+
+        SnakeSpeed =
+            0.22,
+
+        SnakeLength =
+            0.2,
+
+        SnakeGlow =
+            1.5,
+
+        PulseStrength =
+            0.38,
+
         BackgroundTransparency =
             0.08
-
     },
 
     --==================================================
@@ -494,9 +575,38 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
+        Neon =
+            true,
+
+        NeonStrength =
+            1.3,
+
+        GlowStrength =
+            1.55,
+
+        GlowMin =
+            0.2,
+
+        GlowMax =
+            1,
+
+        SnakeAnimation =
+            true,
+
+        SnakeSpeed =
+            0.34,
+
+        SnakeLength =
+            0.17,
+
+        SnakeGlow =
+            1.7,
+
+        PulseStrength =
+            0.45,
+
         BackgroundTransparency =
             0.04
-
     },
 
     --==================================================
@@ -601,9 +711,38 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
+        Neon =
+            true,
+
+        NeonStrength =
+            0.75,
+
+        GlowStrength =
+            0.8,
+
+        GlowMin =
+            0.55,
+
+        GlowMax =
+            1,
+
+        SnakeAnimation =
+            true,
+
+        SnakeSpeed =
+            0.18,
+
+        SnakeLength =
+            0.14,
+
+        SnakeGlow =
+            1.15,
+
+        PulseStrength =
+            0.18,
+
         BackgroundTransparency =
             0
-
     },
 
     --==================================================
@@ -708,11 +847,39 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
+        Neon =
+            true,
+
+        NeonStrength =
+            1.3,
+
+        GlowStrength =
+            1.45,
+
+        GlowMin =
+            0.25,
+
+        GlowMax =
+            1,
+
+        SnakeAnimation =
+            true,
+
+        SnakeSpeed =
+            0.25,
+
+        SnakeLength =
+            0.18,
+
+        SnakeGlow =
+            1.55,
+
+        PulseStrength =
+            0.35,
+
         BackgroundTransparency =
             0.03
-
     }
-
 }
 
 --==================================================
@@ -773,7 +940,10 @@ function Theme:Init(Context)
         0
 
     self.AnimationTime =
-        0
+        os.clock()
+
+    self.Initialized =
+        true
 
 end
 
@@ -805,6 +975,84 @@ function Theme:ApplyPremiumPreset()
 end
 
 --==================================================
+-- INTERNAL ANIMATION TIME
+--==================================================
+
+function Theme:GetAnimationTime()
+
+    if self.AnimationTime then
+        return self.AnimationTime
+    end
+
+    return os.clock()
+
+end
+
+--==================================================
+-- GET PULSE
+--==================================================
+-- Retorna uma onda suave:
+--
+-- 0 = mínimo
+-- 1 = máximo
+--
+-- Usado por glow, accent e iluminação.
+
+function Theme:GetPulse()
+
+    if not self.Current
+    or not self.Current.Animated then
+
+        return 0.5
+
+    end
+
+    local Speed =
+        self.Current.AnimationSpeed
+        or 1
+
+    local Time =
+        self:GetAnimationTime()
+
+    return (
+        math.sin(
+            Time * Speed
+        ) + 1
+    ) / 2
+
+end
+
+--==================================================
+-- GET NEON PULSE
+--==================================================
+-- Pulso controlado pela intensidade do tema.
+
+function Theme:GetNeonPulse()
+
+    if not self.Current then
+        return 0
+    end
+
+    local Pulse =
+        self:GetPulse()
+
+    local Strength =
+        self.Current.PulseStrength
+        or 0.35
+
+    local Center =
+        0.5
+
+    return math.clamp(
+        Center
+        + ((Pulse - Center) * Strength * 2),
+        0,
+        1
+    )
+
+end
+
+--==================================================
 -- GET ACCENT
 --==================================================
 
@@ -820,16 +1068,16 @@ function Theme:GetAccent()
 
     end
 
+    --==================================================
+    -- RGB
+    --==================================================
+
     if self.Current.RGB then
 
         return Color3.fromHSV(
-
             self.RGBHue,
-
             0.9,
-
             1
-
         )
 
     end
@@ -838,30 +1086,32 @@ function Theme:GetAccent()
         self.Current.Accent
 
     if not Base then
+
         return Color3.new(
             1,
             1,
             1
         )
+
     end
 
     --==================================================
-    -- ANIMATED ACCENT
+    -- ANIMATED NEON ACCENT
     --==================================================
 
     if self.Current.Animated then
-
-        local Light =
-            self:GetLightPulse()
 
         local AccentLight =
             self.Current.AccentLight
 
         if AccentLight then
 
+            local Pulse =
+                self:GetNeonPulse()
+
             return Base:Lerp(
                 AccentLight,
-                Light
+                Pulse
             )
 
         end
@@ -873,29 +1123,231 @@ function Theme:GetAccent()
 end
 
 --==================================================
--- LIGHT PULSE
+-- GET NEON COLOR
+--==================================================
+-- Cor principal usada pelos elementos neon.
+
+function Theme:GetNeonColor()
+
+    local Accent =
+        self:GetAccent()
+
+    if not self.Current then
+        return Accent
+    end
+
+    local Strength =
+        self.Current.NeonStrength
+        or 1
+
+    local Pulse =
+        self:GetNeonPulse()
+
+    local Boost =
+        math.clamp(
+            Pulse * Strength,
+            0,
+            1
+        )
+
+    return Accent:Lerp(
+        Color3.new(
+            1,
+            1,
+            1
+        ),
+        Boost * 0.22
+    )
+
+end
+
+--==================================================
+-- GET SNAKE COLOR
+--==================================================
+-- Núcleo brilhante da cobra.
+
+function Theme:GetSnakeColor()
+
+    local Accent =
+        self:GetAccent()
+
+    if not self.Current then
+        return Accent
+    end
+
+    local Glow =
+        self.Current.SnakeGlow
+        or 1.5
+
+    local Pulse =
+        self:GetNeonPulse()
+
+    local Intensity =
+        math.clamp(
+            0.35
+            + (Pulse * 0.35)
+            + (Glow * 0.15),
+            0,
+            1
+        )
+
+    return Accent:Lerp(
+        Color3.new(
+            1,
+            1,
+            1
+        ),
+        Intensity
+    )
+
+end
+
+--==================================================
+-- GET GLOW STRENGTH
 --==================================================
 
-function Theme:GetLightPulse()
+function Theme:GetGlowStrength()
+
+    if not self.Current then
+        return 0
+    end
+
+    local Strength =
+        self.Current.GlowStrength
+        or 1
+
+    local Pulse =
+        self:GetNeonPulse()
+
+    return math.clamp(
+        Strength
+        * (0.55 + Pulse * 0.45),
+        0,
+        3
+    )
+
+end
+
+--==================================================
+-- GET GLOW TRANSPARENCY
+--==================================================
+
+function Theme:GetGlowTransparency()
+
+    if not self.Current then
+        return 1
+    end
+
+    local Min =
+        self.Current.GlowMin
+        or 0.25
+
+    local Max =
+        self.Current.GlowMax
+        or 1
+
+    local Pulse =
+        self:GetNeonPulse()
+
+    return math.clamp(
+        Max
+        - ((Max - Min) * Pulse),
+        0,
+        1
+    )
+
+end
+
+--==================================================
+-- GET SNAKE PROGRESS
+--==================================================
+-- A posição da cobra percorre a borda:
+--
+-- 0.00 → início
+-- 0.25 → topo/direita
+-- 0.50 → lado oposto
+-- 0.75 → parte inferior
+-- 1.00 → volta ao início
+
+function Theme:GetSnakeProgress()
 
     if not self.Current
-    or not self.Current.Animated then
+    or not self.Current.SnakeAnimation then
 
         return 0
 
     end
 
     local Speed =
-        self.Current.AnimationSpeed
-        or 1
-
-    local Time =
-        os.clock() *
-        Speed
+        self.Current.SnakeSpeed
+        or 0.25
 
     return (
-        math.sin(Time) + 1
-    ) / 2
+        self:GetAnimationTime()
+        * Speed
+    ) % 1
+
+end
+
+--==================================================
+-- GET SNAKE LENGTH
+--==================================================
+
+function Theme:GetSnakeLength()
+
+    if not self.Current then
+        return 0.15
+    end
+
+    return math.clamp(
+        self.Current.SnakeLength
+        or 0.18,
+        0.03,
+        0.5
+    )
+
+end
+
+--==================================================
+-- GET SNAKE HEAD INTENSITY
+--==================================================
+-- Faz a cabeça da cobra ficar mais brilhante.
+
+function Theme:GetSnakeHeadIntensity()
+
+    local Progress =
+        self:GetSnakeProgress()
+
+    local Pulse =
+        self:GetNeonPulse()
+
+    local Wave =
+        (
+            math.sin(
+                Progress
+                * math.pi
+                * 2
+            )
+            + 1
+        ) / 2
+
+    return math.clamp(
+        0.65
+        + (Wave * 0.2)
+        + (Pulse * 0.2),
+        0,
+        1
+    )
+
+end
+
+--==================================================
+-- LIGHT PULSE
+--==================================================
+
+function Theme:GetLightPulse()
+
+    return self:GetPulse()
 
 end
 
@@ -948,7 +1400,7 @@ function Theme:GetCardColor(Index)
     local Wave =
         (
             math.sin(
-                os.clock()
+                self:GetAnimationTime()
                 * 0.9
                 + Offset
             )
@@ -976,6 +1428,10 @@ function Theme:GetLogoBorder()
             1
         )
 
+    end
+
+    if self.Current.Neon then
+        return self:GetNeonColor()
     end
 
     return self.Current.LogoBorder
@@ -1114,14 +1570,6 @@ end
 --==================================================
 -- NORMAL STATE COLOR
 --==================================================
--- Usado por categorias/blocos quando NÃO estão selecionados.
---
--- Apenas temas que definirem "Normal" terão comportamento
--- específico.
---
--- Nos demais temas:
--- Normal → comportamento original.
---==================================================
 
 function Theme:GetNormalColor()
 
@@ -1175,10 +1623,6 @@ end
 --==================================================
 -- SELECTED STATE COLOR
 --==================================================
--- Apenas o Blackout possui uma cor Selected própria.
---
--- Outros temas continuam usando Accent.
---==================================================
 
 function Theme:GetSelectedColor()
 
@@ -1198,17 +1642,12 @@ function Theme:GetSelectedColor()
 
     end
 
-    -- Comportamento ORIGINAL dos outros temas
     return self:GetAccent()
 
 end
 
 --==================================================
 -- SELECTED STATE TEXT
---==================================================
--- Apenas o Blackout possui SelectedText própria.
---
--- Outros temas continuam usando Text.
 --==================================================
 
 function Theme:GetSelectedTextColor()
@@ -1229,16 +1668,12 @@ function Theme:GetSelectedTextColor()
 
     end
 
-    -- Comportamento ORIGINAL dos outros temas
     return self:GetText()
 
 end
 
 --==================================================
 -- HAS CUSTOM STATE COLORS
---==================================================
--- Permite que outros módulos descubram se o tema possui
--- estados especiais.
 --==================================================
 
 function Theme:HasCustomStateColors()
@@ -1294,7 +1729,7 @@ function Theme:SetTheme(Name)
     end
 
     self.AnimationTime =
-        0
+        os.clock()
 
     return true
 
@@ -1325,13 +1760,9 @@ function Theme:UpdateRGB()
     end
 
     return Color3.fromHSV(
-
         self.RGBHue,
-
         0.9,
-
         1
-
     )
 
 end
@@ -1348,6 +1779,40 @@ function Theme:Update()
 
     self.AnimationTime =
         os.clock()
+
+    if self.Current.RGB then
+
+        self:UpdateRGB()
+
+    end
+
+end
+
+--==================================================
+-- IS NEON
+--==================================================
+
+function Theme:IsNeon()
+
+    if not self.Current then
+        return false
+    end
+
+    return self.Current.Neon == true
+
+end
+
+--==================================================
+-- IS SNAKE ENABLED
+--==================================================
+
+function Theme:IsSnakeEnabled()
+
+    if not self.Current then
+        return false
+    end
+
+    return self.Current.SnakeAnimation == true
 
 end
 
