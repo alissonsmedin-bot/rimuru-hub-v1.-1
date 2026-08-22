@@ -4,7 +4,10 @@
 --// Dynamic Colors
 --// Natural Neon Pulse
 --// Interface Glow
+--// Soft Interface Shadow
 --// Border Glow
+--// Animated Border Snake
+--// Smooth Snake Motion
 --// Rounded Border Support
 --// Logo Border Support
 --// Text Stroke Support
@@ -12,7 +15,6 @@
 --// Background Safe
 --// RGB Compatible
 --// BLACKOUT SELECTED STATE
---// RIMURU DARK CUSTOM SHADOW
 --// SAFE THEME FALLBACKS
 
 local Theme = {}
@@ -24,191 +26,74 @@ local Theme = {}
 local PremiumPresets = {
 
     --==================================================
--- 🌌 RIMURU DARK
---==================================================
-
-["Rimuru Dark"] = {
-
-    --==================================================
-    -- DEEP BLACK FOUNDATION
+    -- 🌌 RIMURU DARK
     --==================================================
 
-    Background =
-        Color3.fromRGB(
-            2,
-            3,
-            6
-        ),
+    ["Rimuru Dark"] = {
 
-    Content =
-        Color3.fromRGB(
-            5,
-            7,
-            12
-        ),
+        --==================================================
+        -- DEEP BLACK / BLUE-BLACK
+        --==================================================
 
-    Card =
-        Color3.fromRGB(
-            8,
-            13,
-            21
-        ),
+        Background =
+            Color3.fromRGB(
+                2,
+                4,
+                8
+            ),
 
-    CardDark =
-        Color3.fromRGB(
-            4,
-            8,
-            14
-        ),
+        Content =
+            Color3.fromRGB(
+                5,
+                8,
+                14
+            ),
 
-    Button =
-        Color3.fromRGB(
-            6,
-            10,
-            17
-        ),
+        Card =
+            Color3.fromRGB(
+                8,
+                16,
+                25
+            ),
 
-    ButtonDark =
-        Color3.fromRGB(
-            3,
-            6,
-            11
-        ),
+        CardDark =
+            Color3.fromRGB(
+                5,
+                10,
+                18
+            ),
 
-    --==================================================
-    -- RIMURU ENERGY
-    -- Não é simplesmente azul.
-    -- É um azul frio quase metálico.
-    --==================================================
+        Button =
+            Color3.fromRGB(
+                6,
+                13,
+                22
+            ),
 
-    Accent =
-        Color3.fromRGB(
-            35,
-            145,
-            205
-        ),
+        ButtonDark =
+            Color3.fromRGB(
+                3,
+                8,
+                14
+            ),
 
-    AccentLight =
-        Color3.fromRGB(
-            105,
-            215,
-            245
-        ),
+        --==================================================
+        -- RIMURU ACCENT
+        --==================================================
 
-    --==================================================
-    -- LOGO BORDER
-    -- Mais claro e mais "especial" que a borda normal.
-    --==================================================
+        Accent =
+            Color3.fromRGB(
+                35,
+                145,
+                210
+            ),
 
-    LogoBorder =
-        Color3.fromRGB(
-            115,
-            235,
-            255
-        ),
-
-    --==================================================
-    -- TEXT
-    --==================================================
-
-    Text =
-        Color3.fromRGB(
-            242,
-            248,
-            252
-        ),
-
-    SubText =
-        Color3.fromRGB(
-            145,
-            170,
-            190
-        ),
-
-    TextStroke =
-        Color3.fromRGB(
-            0,
-            0,
-            0
-        ),
-
-    TextStrokeTransparency =
-        0.18,
-
-    --==================================================
-    -- ANIMATION
-    --==================================================
-
-    Animated =
-        true,
-
-    AnimationSpeed =
-        1.05,
-
-    CardAnimation =
-        true,
-
-    --==================================================
-    -- SOFT CYAN GLOW
-    --==================================================
-
-    GlowEnabled =
-        true,
-
-    GlowSpeed =
-        0.82,
-
-    GlowStrength =
-        0.62,
-
-    GlowMinTransparency =
-        0.88,
-
-    GlowMaxTransparency =
-        0.68,
-
-    --==================================================
-    -- BORDER SNAKE
-    --==================================================
-
-    SnakeEnabled =
-        true,
-
-    SnakeSpeed =
-        0.20,
-
-    SnakeSize =
-        4,
-
-    SnakeGlow =
-        0.72,
-
-    SnakeTransparency =
-        0.12,
-
-    --==================================================
-    -- 🌑 SOFT INTERFACE SHADOW
-    --==================================================
-
-    ShadowEnabled =
-        true,
-
-    -- Quanto maior, mais invisível.
-    -- 0.92 = sombra bem discreta.
-    ShadowTransparency =
-        0.92,
-
-    ShadowSize =
-        10,
-
-    ShadowOffset =
-        3,
-
-    --==================================================
-
-    BackgroundTransparency =
-        0.08
-},
+        AccentLight =
+            Color3.fromRGB(
+                105,
+                215,
+                245
+            ),
 
         --==================================================
         -- UNIQUE LOGO BORDER
@@ -216,10 +101,16 @@ local PremiumPresets = {
 
         LogoBorder =
             Color3.fromRGB(
-                90,
-                225,
+                115,
+                235,
                 255
             ),
+
+        LogoBorderTransparency =
+            0.14,
+
+        LogoBorderThickness =
+            1.65,
 
         --==================================================
         -- TEXT
@@ -229,14 +120,14 @@ local PremiumPresets = {
             Color3.fromRGB(
                 242,
                 248,
-                255
+                252
             ),
 
         SubText =
             Color3.fromRGB(
                 145,
                 170,
-                195
+                190
             ),
 
         TextStroke =
@@ -247,43 +138,17 @@ local PremiumPresets = {
             ),
 
         TextStrokeTransparency =
-            0.12,
-
-        --==================================================
-        -- ANIMATION
-        --==================================================
-
-        Animated =
-            true,
-
-        AnimationSpeed =
-            0.78,
-
-        CardAnimation =
-            true,
-
-        --==================================================
-        -- INTERFACE GLOW
-        --==================================================
-
-        GlowEnabled =
-            true,
-
-        GlowSpeed =
-            0.72,
-
-        GlowStrength =
-            0.68,
-
-        GlowMinTransparency =
-            0.88,
-
-        GlowMaxTransparency =
-            0.64,
+            0.18,
 
         --==================================================
         -- RIMURU DARK SHADOW
         --==================================================
+        -- Muito importante:
+        -- Isso NÃO é um quadro preto.
+        --
+        -- A sombra deve ser suave e espalhada.
+        -- O UI.lua usa esses valores para construir
+        -- a sombra ao redor da interface.
 
         ShadowEnabled =
             true,
@@ -296,35 +161,91 @@ local PremiumPresets = {
             ),
 
         ShadowTransparency =
-            0.58,
-
-        ShadowThickness =
-            7,
-
-        ShadowExpansion =
-            8,
-
-        ShadowSoftness =
-            0.72,
-
-        ShadowPulse =
-            true,
-
-        ShadowPulseSpeed =
-            0.55,
-
-        ShadowMinTransparency =
-            0.64,
-
-        ShadowMaxTransparency =
             0.78,
 
+        ShadowSize =
+            10,
+
+        ShadowSoftness =
+            0.88,
+
+        ShadowOffset =
+            Vector2.new(
+                0,
+                2
+            ),
+
         --==================================================
-        -- BACKGROUND
+        -- SHADOW SUBTLE PULSE
+        --==================================================
+
+        ShadowAnimated =
+            true,
+
+        ShadowMinTransparency =
+            0.82,
+
+        ShadowMaxTransparency =
+            0.74,
+
+        ShadowSpeed =
+            0.55,
+
+        --==================================================
+        -- ANIMATION
+        --==================================================
+
+        Animated =
+            true,
+
+        AnimationSpeed =
+            1.15,
+
+        CardAnimation =
+            true,
+
+        --==================================================
+        -- INTERFACE GLOW
+        --==================================================
+
+        GlowEnabled =
+            true,
+
+        GlowSpeed =
+            0.88,
+
+        GlowStrength =
+            0.58,
+
+        GlowMinTransparency =
+            0.84,
+
+        GlowMaxTransparency =
+            0.68,
+
+        --==================================================
+        -- BORDER SNAKE
+        --==================================================
+
+        SnakeEnabled =
+            true,
+
+        SnakeSpeed =
+            0.20,
+
+        SnakeSize =
+            4,
+
+        SnakeGlow =
+            0.68,
+
+        SnakeTransparency =
+            0.12,
+
         --==================================================
 
         BackgroundTransparency =
-            0.10
+            0.08
     },
 
     --==================================================
@@ -453,6 +374,13 @@ local PremiumPresets = {
             ),
 
         --==================================================
+        -- NO DARK SHADOW
+        --==================================================
+
+        ShadowEnabled =
+            false,
+
+        --==================================================
         -- ANIMATION
         --==================================================
 
@@ -464,10 +392,6 @@ local PremiumPresets = {
 
         CardAnimation =
             false,
-
-        --==================================================
-        -- WHITE NEON GLOW
-        --==================================================
 
         GlowEnabled =
             true,
@@ -483,6 +407,21 @@ local PremiumPresets = {
 
         GlowMaxTransparency =
             0.60,
+
+        SnakeEnabled =
+            true,
+
+        SnakeSpeed =
+            0.16,
+
+        SnakeSize =
+            5,
+
+        SnakeGlow =
+            0.82,
+
+        SnakeTransparency =
+            0.05,
 
         BackgroundTransparency =
             0
@@ -581,6 +520,10 @@ local PremiumPresets = {
         TextStrokeTransparency =
             0.25,
 
+        --==================================================
+        -- ANIMATION
+        --==================================================
+
         Animated =
             true,
 
@@ -589,6 +532,10 @@ local PremiumPresets = {
 
         CardAnimation =
             true,
+
+        --==================================================
+        -- PURPLE GLOW
+        --==================================================
 
         GlowEnabled =
             true,
@@ -604,6 +551,28 @@ local PremiumPresets = {
 
         GlowMaxTransparency =
             0.50,
+
+        --==================================================
+        -- BORDER SNAKE
+        --==================================================
+
+        SnakeEnabled =
+            true,
+
+        SnakeSpeed =
+            0.19,
+
+        SnakeSize =
+            5,
+
+        SnakeGlow =
+            0.95,
+
+        SnakeTransparency =
+            0.06,
+
+        ShadowEnabled =
+            false,
 
         BackgroundTransparency =
             0.08
@@ -726,6 +695,24 @@ local PremiumPresets = {
         GlowMaxTransparency =
             0.58,
 
+        SnakeEnabled =
+            true,
+
+        SnakeSpeed =
+            0.18,
+
+        SnakeSize =
+            5,
+
+        SnakeGlow =
+            0.88,
+
+        SnakeTransparency =
+            0.08,
+
+        ShadowEnabled =
+            false,
+
         BackgroundTransparency =
             0.04
     },
@@ -846,6 +833,24 @@ local PremiumPresets = {
 
         GlowMaxTransparency =
             0.76,
+
+        SnakeEnabled =
+            true,
+
+        SnakeSpeed =
+            0.14,
+
+        SnakeSize =
+            4,
+
+        SnakeGlow =
+            0.45,
+
+        SnakeTransparency =
+            0.15,
+
+        ShadowEnabled =
+            false,
 
         BackgroundTransparency =
             0
@@ -968,6 +973,24 @@ local PremiumPresets = {
         GlowMaxTransparency =
             0.57,
 
+        SnakeEnabled =
+            true,
+
+        SnakeSpeed =
+            0.17,
+
+        SnakeSize =
+            5,
+
+        SnakeGlow =
+            0.85,
+
+        SnakeTransparency =
+            0.08,
+
+        ShadowEnabled =
+            false,
+
         BackgroundTransparency =
             0.03
     }
@@ -991,6 +1014,10 @@ function Theme:Init(Context)
         self.Config.UI.Theme
         or "Rimuru Dark"
 
+    --==================================================
+    -- SAFE THEME FALLBACK
+    --==================================================
+
     if not self.Themes[self.Name] then
 
         if self.Themes["Rimuru Dark"] then
@@ -1010,7 +1037,15 @@ function Theme:Init(Context)
     self.Current =
         self.Themes[self.Name]
 
+    --==================================================
+    -- APPLY PREMIUM PRESET
+    --==================================================
+
     self:ApplyPremiumPreset()
+
+    --==================================================
+    -- ANIMATION STATE
+    --==================================================
 
     self.RGBHue =
         0
@@ -1063,6 +1098,10 @@ function Theme:GetAccent()
 
     end
 
+    --==================================================
+    -- RGB
+    --==================================================
+
     if self.Current.RGB then
 
         return Color3.fromHSV(
@@ -1085,6 +1124,10 @@ function Theme:GetAccent()
         )
 
     end
+
+    --==================================================
+    -- NATURAL ANIMATED ACCENT
+    --==================================================
 
     if self.Current.Animated then
 
@@ -1315,7 +1358,7 @@ function Theme:GetBorderPulse()
 end
 
 --==================================================
--- SHADOW ENABLED
+-- 🌑 SHADOW SYSTEM
 --==================================================
 
 function Theme:IsShadowEnabled()
@@ -1369,53 +1412,28 @@ function Theme:GetShadowTransparency()
 
     end
 
-    if not self.Current.ShadowPulse then
+    --==================================================
+    -- STATIC SHADOW
+    --==================================================
+
+    if not self.Current.ShadowAnimated then
 
         return
             self.Current.ShadowTransparency
-            or 0.6
+            or 0.80
 
     end
-
-    local Pulse =
-        self:GetShadowPulse()
 
     local Min =
         self.Current.ShadowMinTransparency
-        or 0.64
+        or 0.82
 
     local Max =
         self.Current.ShadowMaxTransparency
-        or 0.78
-
-    return
-        Min
-        + (
-            Pulse
-            * (
-                Max
-                - Min
-            )
-        )
-
-end
-
---==================================================
--- SHADOW PULSE
---==================================================
-
-function Theme:GetShadowPulse()
-
-    if not self.Current
-    or not self.Current.ShadowEnabled
-    or not self.Current.ShadowPulse then
-
-        return 0
-
-    end
+        or 0.74
 
     local Speed =
-        self.Current.ShadowPulseSpeed
+        self.Current.ShadowSpeed
         or 0.5
 
     local Wave =
@@ -1428,45 +1446,36 @@ function Theme:GetShadowPulse()
         )
         / 2
 
-    return
+    Wave =
         Wave
         * Wave
-        * (
-            3
-            - 2 * Wave
+        * (3 - 2 * Wave)
+
+    return
+        Min
+        - (
+            Wave
+            * (
+                Min
+                - Max
+            )
         )
 
 end
 
 --==================================================
--- SHADOW THICKNESS
+-- SHADOW SIZE
 --==================================================
 
-function Theme:GetShadowThickness()
+function Theme:GetShadowSize()
 
     if not self.Current then
-        return 0
+        return 8
     end
 
     return
-        self.Current.ShadowThickness
-        or 6
-
-end
-
---==================================================
--- SHADOW EXPANSION
---==================================================
-
-function Theme:GetShadowExpansion()
-
-    if not self.Current then
-        return 0
-    end
-
-    return
-        self.Current.ShadowExpansion
-        or 6
+        self.Current.ShadowSize
+        or 8
 
 end
 
@@ -1477,12 +1486,155 @@ end
 function Theme:GetShadowSoftness()
 
     if not self.Current then
-        return 0.7
+        return 0.85
     end
 
     return
         self.Current.ShadowSoftness
-        or 0.7
+        or 0.85
+
+end
+
+--==================================================
+-- SHADOW OFFSET
+--==================================================
+
+function Theme:GetShadowOffset()
+
+    if not self.Current then
+
+        return Vector2.new(
+            0,
+            2
+        )
+
+    end
+
+    return
+        self.Current.ShadowOffset
+        or Vector2.new(
+            0,
+            2
+        )
+
+end
+
+--==================================================
+-- SNAKE ENABLED
+--==================================================
+
+function Theme:IsSnakeEnabled()
+
+    if not self.Current then
+        return false
+    end
+
+    return
+        self.Current.SnakeEnabled
+        == true
+
+end
+
+--==================================================
+-- SNAKE SPEED
+--==================================================
+
+function Theme:GetSnakeSpeed()
+
+    if not self.Current then
+        return 0.15
+    end
+
+    return
+        self.Current.SnakeSpeed
+        or 0.18
+
+end
+
+--==================================================
+-- SNAKE SIZE
+--==================================================
+
+function Theme:GetSnakeSize()
+
+    if not self.Current then
+        return 5
+    end
+
+    return
+        self.Current.SnakeSize
+        or 5
+
+end
+
+--==================================================
+-- SNAKE GLOW
+--==================================================
+
+function Theme:GetSnakeGlow()
+
+    if not self.Current then
+        return 0.8
+    end
+
+    return
+        self.Current.SnakeGlow
+        or 0.8
+
+end
+
+--==================================================
+-- SNAKE TRANSPARENCY
+--==================================================
+
+function Theme:GetSnakeTransparency()
+
+    if not self.Current then
+        return 0.1
+    end
+
+    return
+        self.Current.SnakeTransparency
+        or 0.1
+
+end
+
+--==================================================
+-- GET SNAKE COLOR
+--==================================================
+
+function Theme:GetSnakeColor()
+
+    if not self.Current then
+
+        return Color3.new(
+            1,
+            1,
+            1
+        )
+
+    end
+
+    local Accent =
+        self:GetAccent()
+
+    local Light =
+        self.Current.AccentLight
+
+    if Light then
+
+        local Pulse =
+            self:GetGlowPulse()
+
+        return Accent:Lerp(
+            Light,
+            0.45
+            + Pulse * 0.25
+        )
+
+    end
+
+    return Accent
 
 end
 
@@ -1524,6 +1676,10 @@ function Theme:GetCardColor(Index)
         return Card
 
     end
+
+    --==================================================
+    -- CARD WAVE
+    --==================================================
 
     local Offset =
         (Index or 1)
@@ -1570,6 +1726,38 @@ function Theme:GetLogoBorder()
     return
         self.Current.LogoBorder
         or self:GetAccent()
+
+end
+
+--==================================================
+-- GET LOGO BORDER TRANSPARENCY
+--==================================================
+
+function Theme:GetLogoBorderTransparency()
+
+    if not self.Current then
+        return 0.20
+    end
+
+    return
+        self.Current.LogoBorderTransparency
+        or 0.20
+
+end
+
+--==================================================
+-- GET LOGO BORDER THICKNESS
+--==================================================
+
+function Theme:GetLogoBorderThickness()
+
+    if not self.Current then
+        return 1.5
+    end
+
+    return
+        self.Current.LogoBorderThickness
+        or 1.5
 
 end
 
@@ -1839,7 +2027,9 @@ end
 function Theme:SetTheme(Name)
 
     if not self.Themes[Name] then
+
         return false
+
     end
 
     self.Name =
@@ -1851,7 +2041,15 @@ function Theme:SetTheme(Name)
     self.Config.UI.Theme =
         Name
 
+    --==================================================
+    -- PREMIUM PRESET
+    --==================================================
+
     self:ApplyPremiumPreset()
+
+    --==================================================
+    -- RGB RESET
+    --==================================================
 
     if self.Current.RGB then
 
@@ -1900,7 +2098,7 @@ function Theme:UpdateRGB()
 end
 
 --==================================================
--- UPDATE
+-- UPDATE ANIMATION
 --==================================================
 
 function Theme:Update()
