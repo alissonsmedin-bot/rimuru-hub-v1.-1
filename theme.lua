@@ -24,77 +24,191 @@ local Theme = {}
 local PremiumPresets = {
 
     --==================================================
-    -- 🌌 RIMURU DARK
+-- 🌌 RIMURU DARK
+--==================================================
+
+["Rimuru Dark"] = {
+
+    --==================================================
+    -- DEEP BLACK FOUNDATION
     --==================================================
 
-    ["Rimuru Dark"] = {
+    Background =
+        Color3.fromRGB(
+            2,
+            3,
+            6
+        ),
 
-        --==================================================
-        -- DEEP DARK BACKGROUND
-        --==================================================
+    Content =
+        Color3.fromRGB(
+            5,
+            7,
+            12
+        ),
 
-        Background =
-            Color3.fromRGB(
-                2,
-                4,
-                8
-            ),
+    Card =
+        Color3.fromRGB(
+            8,
+            13,
+            21
+        ),
 
-        -- Azul extremamente discreto.
-        -- Serve apenas para separar as áreas da interface.
+    CardDark =
+        Color3.fromRGB(
+            4,
+            8,
+            14
+        ),
 
-        Content =
-            Color3.fromRGB(
-                5,
-                8,
-                14
-            ),
+    Button =
+        Color3.fromRGB(
+            6,
+            10,
+            17
+        ),
 
-        Card =
-            Color3.fromRGB(
-                9,
-                15,
-                24
-            ),
+    ButtonDark =
+        Color3.fromRGB(
+            3,
+            6,
+            11
+        ),
 
-        CardDark =
-            Color3.fromRGB(
-                5,
-                10,
-                17
-            ),
+    --==================================================
+    -- RIMURU ENERGY
+    -- Não é simplesmente azul.
+    -- É um azul frio quase metálico.
+    --==================================================
 
-        Button =
-            Color3.fromRGB(
-                7,
-                12,
-                20
-            ),
+    Accent =
+        Color3.fromRGB(
+            35,
+            145,
+            205
+        ),
 
-        ButtonDark =
-            Color3.fromRGB(
-                3,
-                7,
-                12
-            ),
+    AccentLight =
+        Color3.fromRGB(
+            105,
+            215,
+            245
+        ),
 
-        --==================================================
-        -- RIMURU BLUE ACCENT
-        --==================================================
+    --==================================================
+    -- LOGO BORDER
+    -- Mais claro e mais "especial" que a borda normal.
+    --==================================================
 
-        Accent =
-            Color3.fromRGB(
-                35,
-                145,
-                235
-            ),
+    LogoBorder =
+        Color3.fromRGB(
+            115,
+            235,
+            255
+        ),
 
-        AccentLight =
-            Color3.fromRGB(
-                105,
-                215,
-                255
-            ),
+    --==================================================
+    -- TEXT
+    --==================================================
+
+    Text =
+        Color3.fromRGB(
+            242,
+            248,
+            252
+        ),
+
+    SubText =
+        Color3.fromRGB(
+            145,
+            170,
+            190
+        ),
+
+    TextStroke =
+        Color3.fromRGB(
+            0,
+            0,
+            0
+        ),
+
+    TextStrokeTransparency =
+        0.18,
+
+    --==================================================
+    -- ANIMATION
+    --==================================================
+
+    Animated =
+        true,
+
+    AnimationSpeed =
+        1.05,
+
+    CardAnimation =
+        true,
+
+    --==================================================
+    -- SOFT CYAN GLOW
+    --==================================================
+
+    GlowEnabled =
+        true,
+
+    GlowSpeed =
+        0.82,
+
+    GlowStrength =
+        0.62,
+
+    GlowMinTransparency =
+        0.88,
+
+    GlowMaxTransparency =
+        0.68,
+
+    --==================================================
+    -- BORDER SNAKE
+    --==================================================
+
+    SnakeEnabled =
+        true,
+
+    SnakeSpeed =
+        0.20,
+
+    SnakeSize =
+        4,
+
+    SnakeGlow =
+        0.72,
+
+    SnakeTransparency =
+        0.12,
+
+    --==================================================
+    -- 🌑 SOFT INTERFACE SHADOW
+    --==================================================
+
+    ShadowEnabled =
+        true,
+
+    -- Quanto maior, mais invisível.
+    -- 0.92 = sombra bem discreta.
+    ShadowTransparency =
+        0.92,
+
+    ShadowSize =
+        10,
+
+    ShadowOffset =
+        3,
+
+    --==================================================
+
+    BackgroundTransparency =
+        0.08
+},
 
         --==================================================
         -- UNIQUE LOGO BORDER
