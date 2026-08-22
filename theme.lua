@@ -1,11 +1,11 @@
 --// 🎨 RIMURU HUB
---// PREMIUM NEON THEME ENGINE
+--// Theme System
+--// PREMIUM THEME ENGINE
 --// Dynamic Colors
 --// Animated Lighting
---// Neon Glow System
---// Neon Pulse System
---// Border Snake Animation
---// Animated Border Progress
+--// Natural Neon Pulse
+--// Neon Glow Support
+--// Border Glow Support
 --// Logo Border Support
 --// Text Stroke Support
 --// Card Color Cycling
@@ -127,42 +127,9 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
-        --==================================================
-        -- NEON
-        --==================================================
-
-        Neon =
-            true,
-
-        NeonStrength =
-            1.15,
-
-        GlowStrength =
-            1.25,
-
-        GlowMin =
-            0.35,
-
-        GlowMax =
-            1,
-
-        SnakeAnimation =
-            true,
-
-        SnakeSpeed =
-            0.28,
-
-        SnakeLength =
-            0.18,
-
-        SnakeGlow =
-            1.35,
-
-        PulseStrength =
-            0.42,
-
         BackgroundTransparency =
             0.05
+
     },
 
     --==================================================
@@ -291,50 +258,16 @@ local PremiumPresets = {
             ),
 
         --==================================================
-        -- NEON
-        --==================================================
-
-        Neon =
-            true,
-
-        NeonStrength =
-            1.4,
-
-        GlowStrength =
-            1.6,
-
-        GlowMin =
-            0.15,
-
-        GlowMax =
-            1,
-
-        SnakeAnimation =
-            true,
-
-        SnakeSpeed =
-            0.42,
-
-        SnakeLength =
-            0.16,
-
-        SnakeGlow =
-            1.75,
-
-        PulseStrength =
-            0.25,
 
         Animated =
-            true,
-
-        AnimationSpeed =
-            0.9,
+            false,
 
         CardAnimation =
-            true,
+            false,
 
         BackgroundTransparency =
             0
+
     },
 
     --==================================================
@@ -439,38 +372,9 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
-        Neon =
-            true,
-
-        NeonStrength =
-            1.25,
-
-        GlowStrength =
-            1.4,
-
-        GlowMin =
-            0.3,
-
-        GlowMax =
-            1,
-
-        SnakeAnimation =
-            true,
-
-        SnakeSpeed =
-            0.22,
-
-        SnakeLength =
-            0.2,
-
-        SnakeGlow =
-            1.5,
-
-        PulseStrength =
-            0.38,
-
         BackgroundTransparency =
             0.08
+
     },
 
     --==================================================
@@ -575,38 +479,9 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
-        Neon =
-            true,
-
-        NeonStrength =
-            1.3,
-
-        GlowStrength =
-            1.55,
-
-        GlowMin =
-            0.2,
-
-        GlowMax =
-            1,
-
-        SnakeAnimation =
-            true,
-
-        SnakeSpeed =
-            0.34,
-
-        SnakeLength =
-            0.17,
-
-        SnakeGlow =
-            1.7,
-
-        PulseStrength =
-            0.45,
-
         BackgroundTransparency =
             0.04
+
     },
 
     --==================================================
@@ -711,38 +586,9 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
-        Neon =
-            true,
-
-        NeonStrength =
-            0.75,
-
-        GlowStrength =
-            0.8,
-
-        GlowMin =
-            0.55,
-
-        GlowMax =
-            1,
-
-        SnakeAnimation =
-            true,
-
-        SnakeSpeed =
-            0.18,
-
-        SnakeLength =
-            0.14,
-
-        SnakeGlow =
-            1.15,
-
-        PulseStrength =
-            0.18,
-
         BackgroundTransparency =
             0
+
     },
 
     --==================================================
@@ -847,39 +693,11 @@ local PremiumPresets = {
         CardAnimation =
             true,
 
-        Neon =
-            true,
-
-        NeonStrength =
-            1.3,
-
-        GlowStrength =
-            1.45,
-
-        GlowMin =
-            0.25,
-
-        GlowMax =
-            1,
-
-        SnakeAnimation =
-            true,
-
-        SnakeSpeed =
-            0.25,
-
-        SnakeLength =
-            0.18,
-
-        SnakeGlow =
-            1.55,
-
-        PulseStrength =
-            0.35,
-
         BackgroundTransparency =
             0.03
+
     }
+
 }
 
 --==================================================
@@ -892,11 +710,16 @@ function Theme:Init(Context)
         Context.Config
 
     self.Themes =
-        self.Config.UI.Themes or {}
+        self.Config.UI.Themes
+        or {}
 
     self.Name =
         self.Config.UI.Theme
         or "Rimuru Dark"
+
+    --==================================================
+    -- SAFE THEME FALLBACK
+    --==================================================
 
     if not self.Themes[self.Name] then
 
@@ -936,14 +759,15 @@ function Theme:Init(Context)
 
     end
 
+    --==================================================
+    -- ANIMATION STATE
+    --==================================================
+
     self.RGBHue =
         0
 
     self.AnimationTime =
-        os.clock()
-
-    self.Initialized =
-        true
+        0
 
 end
 
@@ -975,84 +799,6 @@ function Theme:ApplyPremiumPreset()
 end
 
 --==================================================
--- INTERNAL ANIMATION TIME
---==================================================
-
-function Theme:GetAnimationTime()
-
-    if self.AnimationTime then
-        return self.AnimationTime
-    end
-
-    return os.clock()
-
-end
-
---==================================================
--- GET PULSE
---==================================================
--- Retorna uma onda suave:
---
--- 0 = mínimo
--- 1 = máximo
---
--- Usado por glow, accent e iluminação.
-
-function Theme:GetPulse()
-
-    if not self.Current
-    or not self.Current.Animated then
-
-        return 0.5
-
-    end
-
-    local Speed =
-        self.Current.AnimationSpeed
-        or 1
-
-    local Time =
-        self:GetAnimationTime()
-
-    return (
-        math.sin(
-            Time * Speed
-        ) + 1
-    ) / 2
-
-end
-
---==================================================
--- GET NEON PULSE
---==================================================
--- Pulso controlado pela intensidade do tema.
-
-function Theme:GetNeonPulse()
-
-    if not self.Current then
-        return 0
-    end
-
-    local Pulse =
-        self:GetPulse()
-
-    local Strength =
-        self.Current.PulseStrength
-        or 0.35
-
-    local Center =
-        0.5
-
-    return math.clamp(
-        Center
-        + ((Pulse - Center) * Strength * 2),
-        0,
-        1
-    )
-
-end
-
---==================================================
 -- GET ACCENT
 --==================================================
 
@@ -1075,9 +821,13 @@ function Theme:GetAccent()
     if self.Current.RGB then
 
         return Color3.fromHSV(
+
             self.RGBHue,
+
             0.9,
+
             1
+
         )
 
     end
@@ -1096,22 +846,25 @@ function Theme:GetAccent()
     end
 
     --==================================================
-    -- ANIMATED NEON ACCENT
+    -- NATURAL ANIMATED ACCENT
     --==================================================
 
     if self.Current.Animated then
+
+        local Pulse =
+            self:GetLightPulse()
 
         local AccentLight =
             self.Current.AccentLight
 
         if AccentLight then
 
-            local Pulse =
-                self:GetNeonPulse()
-
             return Base:Lerp(
+
                 AccentLight,
-                Pulse
+
+                Pulse * 0.72
+
             )
 
         end
@@ -1123,231 +876,140 @@ function Theme:GetAccent()
 end
 
 --==================================================
--- GET NEON COLOR
---==================================================
--- Cor principal usada pelos elementos neon.
-
-function Theme:GetNeonColor()
-
-    local Accent =
-        self:GetAccent()
-
-    if not self.Current then
-        return Accent
-    end
-
-    local Strength =
-        self.Current.NeonStrength
-        or 1
-
-    local Pulse =
-        self:GetNeonPulse()
-
-    local Boost =
-        math.clamp(
-            Pulse * Strength,
-            0,
-            1
-        )
-
-    return Accent:Lerp(
-        Color3.new(
-            1,
-            1,
-            1
-        ),
-        Boost * 0.22
-    )
-
-end
-
---==================================================
--- GET SNAKE COLOR
---==================================================
--- Núcleo brilhante da cobra.
-
-function Theme:GetSnakeColor()
-
-    local Accent =
-        self:GetAccent()
-
-    if not self.Current then
-        return Accent
-    end
-
-    local Glow =
-        self.Current.SnakeGlow
-        or 1.5
-
-    local Pulse =
-        self:GetNeonPulse()
-
-    local Intensity =
-        math.clamp(
-            0.35
-            + (Pulse * 0.35)
-            + (Glow * 0.15),
-            0,
-            1
-        )
-
-    return Accent:Lerp(
-        Color3.new(
-            1,
-            1,
-            1
-        ),
-        Intensity
-    )
-
-end
-
---==================================================
--- GET GLOW STRENGTH
+-- LIGHT PULSE
 --==================================================
 
-function Theme:GetGlowStrength()
-
-    if not self.Current then
-        return 0
-    end
-
-    local Strength =
-        self.Current.GlowStrength
-        or 1
-
-    local Pulse =
-        self:GetNeonPulse()
-
-    return math.clamp(
-        Strength
-        * (0.55 + Pulse * 0.45),
-        0,
-        3
-    )
-
-end
-
---==================================================
--- GET GLOW TRANSPARENCY
---==================================================
-
-function Theme:GetGlowTransparency()
-
-    if not self.Current then
-        return 1
-    end
-
-    local Min =
-        self.Current.GlowMin
-        or 0.25
-
-    local Max =
-        self.Current.GlowMax
-        or 1
-
-    local Pulse =
-        self:GetNeonPulse()
-
-    return math.clamp(
-        Max
-        - ((Max - Min) * Pulse),
-        0,
-        1
-    )
-
-end
-
---==================================================
--- GET SNAKE PROGRESS
---==================================================
--- A posição da cobra percorre a borda:
---
--- 0.00 → início
--- 0.25 → topo/direita
--- 0.50 → lado oposto
--- 0.75 → parte inferior
--- 1.00 → volta ao início
-
-function Theme:GetSnakeProgress()
+function Theme:GetLightPulse()
 
     if not self.Current
-    or not self.Current.SnakeAnimation then
+    or not self.Current.Animated then
 
         return 0
 
     end
 
     local Speed =
-        self.Current.SnakeSpeed
-        or 0.25
+        self.Current.AnimationSpeed
+        or 1
 
-    return (
-        self:GetAnimationTime()
-        * Speed
-    ) % 1
-
-end
-
---==================================================
--- GET SNAKE LENGTH
---==================================================
-
-function Theme:GetSnakeLength()
-
-    if not self.Current then
-        return 0.15
-    end
-
-    return math.clamp(
-        self.Current.SnakeLength
-        or 0.18,
-        0.03,
-        0.5
-    )
-
-end
-
---==================================================
--- GET SNAKE HEAD INTENSITY
---==================================================
--- Faz a cabeça da cobra ficar mais brilhante.
-
-function Theme:GetSnakeHeadIntensity()
-
-    local Progress =
-        self:GetSnakeProgress()
-
-    local Pulse =
-        self:GetNeonPulse()
+    local Time =
+        os.clock() * Speed
 
     local Wave =
-        (
-            math.sin(
-                Progress
-                * math.pi
-                * 2
-            )
-            + 1
-        ) / 2
+        math.sin(Time)
 
-    return math.clamp(
-        0.65
-        + (Wave * 0.2)
-        + (Pulse * 0.2),
-        0,
-        1
-    )
+    local Smooth =
+        (Wave + 1) / 2
+
+    --==================================================
+    -- SMOOTHSTEP
+    --==================================================
+
+    Smooth =
+        Smooth * Smooth *
+        (3 - 2 * Smooth)
+
+    return Smooth
 
 end
 
 --==================================================
--- LIGHT PULSE
+-- GLOW COLOR
 --==================================================
 
-function Theme:GetLightPulse()
+function Theme:GetGlowColor()
 
-    return self:GetPulse()
+    if not self.Current then
+
+        return Color3.new(
+            1,
+            1,
+            1
+        )
+
+    end
+
+    local Accent =
+        self:GetAccent()
+
+    local Light =
+        self.Current.AccentLight
+
+    if Light then
+
+        return Accent:Lerp(
+
+            Light,
+
+            0.35
+
+        )
+
+    end
+
+    return Accent
+
+end
+
+--==================================================
+-- GLOW TRANSPARENCY
+--==================================================
+
+function Theme:GetGlowTransparency()
+
+    if not self.Current then
+
+        return 0.8
+
+    end
+
+    if not self.Current.Animated then
+
+        return 0.82
+
+    end
+
+    local Pulse =
+        self:GetLightPulse()
+
+    return 0.78 -
+        (Pulse * 0.16)
+
+end
+
+--==================================================
+-- BORDER PULSE
+--==================================================
+
+function Theme:GetBorderPulse()
+
+    if not self.Current
+    or not self.Current.Animated then
+
+        return 0.35
+
+    end
+
+    local Speed =
+        (self.Current.AnimationSpeed or 1)
+        * 0.72
+
+    local Time =
+        os.clock() * Speed
+
+    local Wave =
+        (math.sin(Time) + 1) / 2
+
+    --==================================================
+    -- SMOOTHSTEP
+    --==================================================
+
+    Wave =
+        Wave * Wave *
+        (3 - 2 * Wave)
+
+    return 0.28 +
+        (Wave * 0.52)
 
 end
 
@@ -1400,16 +1062,27 @@ function Theme:GetCardColor(Index)
     local Wave =
         (
             math.sin(
-                self:GetAnimationTime()
+                os.clock()
                 * 0.9
                 + Offset
             )
             + 1
         ) / 2
 
+    --==================================================
+    -- SMOOTHSTEP
+    --==================================================
+
+    Wave =
+        Wave * Wave *
+        (3 - 2 * Wave)
+
     return Card:Lerp(
+
         Dark,
+
         Wave * 0.35
+
     )
 
 end
@@ -1428,10 +1101,6 @@ function Theme:GetLogoBorder()
             1
         )
 
-    end
-
-    if self.Current.Neon then
-        return self:GetNeonColor()
     end
 
     return self.Current.LogoBorder
@@ -1517,7 +1186,9 @@ end
 function Theme:GetTextStrokeTransparency()
 
     if not self.Current then
+
         return 0
+
     end
 
     return self.Current.TextStrokeTransparency
@@ -1679,7 +1350,9 @@ end
 function Theme:HasCustomStateColors()
 
     if not self.Current then
+
         return false
+
     end
 
     return
@@ -1729,7 +1402,7 @@ function Theme:SetTheme(Name)
     end
 
     self.AnimationTime =
-        os.clock()
+        0
 
     return true
 
@@ -1742,11 +1415,15 @@ end
 function Theme:UpdateRGB()
 
     if not self.Current then
+
         return nil
+
     end
 
     if not self.Current.RGB then
+
         return nil
+
     end
 
     self.RGBHue +=
@@ -1760,9 +1437,13 @@ function Theme:UpdateRGB()
     end
 
     return Color3.fromHSV(
+
         self.RGBHue,
+
         0.9,
+
         1
+
     )
 
 end
@@ -1774,45 +1455,13 @@ end
 function Theme:Update()
 
     if not self.Current then
+
         return
+
     end
 
     self.AnimationTime =
         os.clock()
-
-    if self.Current.RGB then
-
-        self:UpdateRGB()
-
-    end
-
-end
-
---==================================================
--- IS NEON
---==================================================
-
-function Theme:IsNeon()
-
-    if not self.Current then
-        return false
-    end
-
-    return self.Current.Neon == true
-
-end
-
---==================================================
--- IS SNAKE ENABLED
---==================================================
-
-function Theme:IsSnakeEnabled()
-
-    if not self.Current then
-        return false
-    end
-
-    return self.Current.SnakeAnimation == true
 
 end
 
@@ -1853,7 +1502,9 @@ end
 function Theme:GetBackground()
 
     if not self.Current then
+
         return nil
+
     end
 
     return self.Current.BackgroundImage
@@ -1867,7 +1518,9 @@ end
 function Theme:GetBackgroundTransparency()
 
     if not self.Current then
+
         return 1
+
     end
 
     return self.Current.BackgroundTransparency
@@ -1892,7 +1545,9 @@ end
 function Theme:IsAnimated()
 
     if not self.Current then
+
         return false
+
     end
 
     return self.Current.Animated == true
