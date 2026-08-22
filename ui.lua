@@ -1,14 +1,13 @@
 --// 💥 RIMURU HUB
 --// UI System
 --// PREMIUM NEON UI
---// Animated Stable Version
---// Background Contained Inside Main
+--// SMOOTH BORDER ANIMATION
+--// CONTAINED NEON FLOW
+--// NATURAL GLOW
+--// ROUNDED CORNERS
+--// ANIMATED STROKE
 --// SAFE THEME INTEGRATION
---// NEON GLOW
---// BORDER SNAKE
---// RGB COMPATIBLE
---// BLACKOUT COMPATIBLE
---// CLEAN ANIMATION CONNECTIONS
+--// BLACKOUT CATEGORY LOGIC REMAINS IN categories.lua
 
 --==================================================
 -- SERVICES
@@ -58,23 +57,20 @@ local CLOSE_OFFSET_Y =
 -- NEON CONFIG
 --==================================================
 
-local BORDER_THICKNESS =
-    2
+local CORNER_RADIUS =
+    14
 
-local GLOW_THICKNESS_1 =
+local BORDER_THICKNESS =
+    1.7
+
+local GLOW_THICKNESS =
     5
 
-local GLOW_THICKNESS_2 =
-    9
+local GLOW_TRANSPARENCY =
+    0.78
 
-local SNAKE_THICKNESS =
-    3
-
-local SNAKE_LENGTH =
-    0.16
-
-local SNAKE_TAIL =
-    0.075
+local BORDER_SPEED =
+    0.22
 
 --==================================================
 -- SAFE THEME VALUE
@@ -94,63 +90,6 @@ local function ThemeColor(
     end
 
     return Fallback
-
-end
-
---==================================================
--- CREATE CORNER
---==================================================
-
-local function CreateCorner(
-    Object,
-    Radius
-)
-
-    local Corner =
-        Instance.new("UICorner")
-
-    Corner.CornerRadius =
-        UDim.new(
-            0,
-            Radius
-        )
-
-    Corner.Parent =
-        Object
-
-    return Corner
-
-end
-
---==================================================
--- CREATE BORDER PART
---==================================================
-
-local function CreateBorderPart(
-    Parent,
-    Name,
-    ZIndex
-)
-
-    local Part =
-        Instance.new("Frame")
-
-    Part.Name =
-        Name
-
-    Part.BackgroundTransparency =
-        0
-
-    Part.BorderSizePixel =
-        0
-
-    Part.ZIndex =
-        ZIndex
-
-    Part.Parent =
-        Parent
-
-    return Part
 
 end
 
@@ -185,7 +124,7 @@ function UI:Init(Context)
     self.AnimationToken =
         0
 
-    self.RenderConnection =
+    self.NeonConnection =
         nil
 
     self:Create()
@@ -197,15 +136,6 @@ end
 --==================================================
 
 function UI:RemoveOld()
-
-    if self.RenderConnection then
-
-        self.RenderConnection:Disconnect()
-
-        self.RenderConnection =
-            nil
-
-    end
 
     pcall(function()
 
@@ -333,14 +263,12 @@ function UI:Create()
     Main.ZIndex =
         500
 
-    --==================================================
-    -- IMPORTANT
-    --==================================================
-    -- O glow precisa poder sair alguns pixels
-    -- da interface.
+    -- IMPORTANTE:
+    -- Mantemos Clipped para que qualquer
+    -- conteúdo visual fique preso na interface.
 
     Main.ClipsDescendants =
-        false
+        true
 
     Main.Parent =
         Gui
@@ -383,11 +311,202 @@ function UI:Create()
     MainCorner.CornerRadius =
         UDim.new(
             0,
-            12
+            CORNER_RADIUS
         )
 
     MainCorner.Parent =
         Main
+
+    self.MainCorner =
+        MainCorner
+
+    --==================================================
+    -- MAIN STROKE
+    --==================================================
+
+    local MainStroke =
+        Instance.new("UIStroke")
+
+    MainStroke.Name =
+        "NeonBorder"
+
+    MainStroke.Color =
+        self.Theme:GetAccent()
+
+    MainStroke.Thickness =
+        BORDER_THICKNESS
+
+    MainStroke.Transparency =
+        0.08
+
+    MainStroke.ApplyStrokeMode =
+        Enum.ApplyStrokeMode.Border
+
+    MainStroke.Parent =
+        Main
+
+    self.MainStroke =
+        MainStroke
+
+    --==================================================
+    -- GLOW LAYER
+    --==================================================
+
+    local Glow =
+        Instance.new("Frame")
+
+    Glow.Name =
+        "NeonGlow"
+
+    Glow.Size =
+        UDim2.new(
+            1,
+            0,
+            1,
+            0
+        )
+
+    Glow.Position =
+        UDim2.new(
+            0,
+            0,
+            0,
+            0
+        )
+
+    Glow.BackgroundTransparency =
+        1
+
+    Glow.BorderSizePixel =
+        0
+
+    Glow.ZIndex =
+        499
+
+    Glow.ClipsDescendants =
+        true
+
+    Glow.Parent =
+        Main
+
+    local GlowCorner =
+        Instance.new("UICorner")
+
+    GlowCorner.CornerRadius =
+        UDim.new(
+            0,
+            CORNER_RADIUS
+        )
+
+    GlowCorner.Parent =
+        Glow
+
+    local GlowStroke =
+        Instance.new("UIStroke")
+
+    GlowStroke.Name =
+        "GlowStroke"
+
+    GlowStroke.Color =
+        self.Theme:GetGlowColor()
+
+    GlowStroke.Thickness =
+        GLOW_THICKNESS
+
+    GlowStroke.Transparency =
+        GLOW_TRANSPARENCY
+
+    GlowStroke.ApplyStrokeMode =
+        Enum.ApplyStrokeMode.Border
+
+    GlowStroke.Parent =
+        Glow
+
+    self.Glow =
+        Glow
+
+    self.GlowStroke =
+        GlowStroke
+
+    --==================================================
+    -- NEON FLOW
+    --==================================================
+
+    local Flow =
+        Instance.new("Frame")
+
+    Flow.Name =
+        "NeonFlow"
+
+    Flow.Size =
+        UDim2.new(
+            1,
+            0,
+            1,
+            0
+        )
+
+    Flow.Position =
+        UDim2.new(
+            0,
+            0,
+            0,
+            0
+        )
+
+    Flow.BackgroundTransparency =
+        1
+
+    Flow.BorderSizePixel =
+        0
+
+    Flow.ZIndex =
+        501
+
+    Flow.ClipsDescendants =
+        true
+
+    Flow.Parent =
+        Main
+
+    local FlowCorner =
+        Instance.new("UICorner")
+
+    FlowCorner.CornerRadius =
+        UDim.new(
+            0,
+            CORNER_RADIUS
+        )
+
+    FlowCorner.Parent =
+        Flow
+
+    local FlowStroke =
+        Instance.new("UIStroke")
+
+    FlowStroke.Name =
+        "MovingBorder"
+
+    FlowStroke.Color =
+        self.Theme:GetAccent()
+
+    FlowStroke.Thickness =
+        2
+
+    FlowStroke.Transparency =
+        0.15
+
+    FlowStroke.ApplyStrokeMode =
+        Enum.ApplyStrokeMode.Border
+
+    FlowStroke.Parent =
+        Flow
+
+    self.Flow =
+        Flow
+
+    self.FlowStroke =
+        FlowStroke
 
     --==================================================
     -- BACKGROUND
@@ -442,7 +561,7 @@ function UI:Create()
     BackgroundCorner.CornerRadius =
         UDim.new(
             0,
-            12
+            CORNER_RADIUS
         )
 
     BackgroundCorner.Parent =
@@ -450,227 +569,6 @@ function UI:Create()
 
     self.Background =
         Background
-
-    --==================================================
-    -- MAIN BORDER SYSTEM
-    --==================================================
-
-    local BorderFolder =
-        Instance.new("Folder")
-
-    BorderFolder.Name =
-        "NeonBorder"
-
-    BorderFolder.Parent =
-        Main
-
-    self.NeonBorder =
-        BorderFolder
-
-    --==================================================
-    -- BASE BORDER
-    --==================================================
-
-    local BorderTop =
-        CreateBorderPart(
-            BorderFolder,
-            "Top",
-            506
-        )
-
-    local BorderRight =
-        CreateBorderPart(
-            BorderFolder,
-            "Right",
-            506
-        )
-
-    local BorderBottom =
-        CreateBorderPart(
-            BorderFolder,
-            "Bottom",
-            506
-        )
-
-    local BorderLeft =
-        CreateBorderPart(
-            BorderFolder,
-            "Left",
-            506
-        )
-
-    self.BorderParts = {
-
-        Top = BorderTop,
-        Right = BorderRight,
-        Bottom = BorderBottom,
-        Left = BorderLeft
-
-    }
-
-    --==================================================
-    -- GLOW 1
-    --==================================================
-
-    local GlowFolder =
-        Instance.new("Folder")
-
-    GlowFolder.Name =
-        "Glow"
-
-    GlowFolder.Parent =
-        Main
-
-    self.GlowFolder =
-        GlowFolder
-
-    local GlowTop =
-        CreateBorderPart(
-            GlowFolder,
-            "TopGlow",
-            504
-        )
-
-    local GlowRight =
-        CreateBorderPart(
-            GlowFolder,
-            "RightGlow",
-            504
-        )
-
-    local GlowBottom =
-        CreateBorderPart(
-            GlowFolder,
-            "BottomGlow",
-            504
-        )
-
-    local GlowLeft =
-        CreateBorderPart(
-            GlowFolder,
-            "LeftGlow",
-            504
-        )
-
-    self.GlowParts = {
-
-        Top = GlowTop,
-        Right = GlowRight,
-        Bottom = GlowBottom,
-        Left = GlowLeft
-
-    }
-
-    --==================================================
-    -- GLOW 2
-    --==================================================
-
-    local GlowFolder2 =
-        Instance.new("Folder")
-
-    GlowFolder2.Name =
-        "GlowOuter"
-
-    GlowFolder2.Parent =
-        Main
-
-    self.GlowFolder2 =
-        GlowFolder2
-
-    local GlowTop2 =
-        CreateBorderPart(
-            GlowFolder2,
-            "TopGlowOuter",
-            503
-        )
-
-    local GlowRight2 =
-        CreateBorderPart(
-            GlowFolder2,
-            "RightGlowOuter",
-            503
-        )
-
-    local GlowBottom2 =
-        CreateBorderPart(
-            GlowFolder2,
-            "BottomGlowOuter",
-            503
-        )
-
-    local GlowLeft2 =
-        CreateBorderPart(
-            GlowFolder2,
-            "LeftGlowOuter",
-            503
-        )
-
-    self.GlowParts2 = {
-
-        Top = GlowTop2,
-        Right = GlowRight2,
-        Bottom = GlowBottom2,
-        Left = GlowLeft2
-
-    }
-
-    --==================================================
-    -- SNAKE
-    --==================================================
-
-    local SnakeFolder =
-        Instance.new("Folder")
-
-    SnakeFolder.Name =
-        "BorderSnake"
-
-    SnakeFolder.Parent =
-        Main
-
-    self.SnakeFolder =
-        SnakeFolder
-
-    --==================================================
-    -- SNAKE GLOW
-    --==================================================
-
-    local SnakeGlow =
-        CreateBorderPart(
-            SnakeFolder,
-            "SnakeGlow",
-            507
-        )
-
-    self.SnakeGlow =
-        SnakeGlow
-
-    --==================================================
-    -- SNAKE CORE
-    --==================================================
-
-    local SnakeCore =
-        CreateBorderPart(
-            SnakeFolder,
-            "SnakeCore",
-            508
-        )
-
-    self.SnakeCore =
-        SnakeCore
-
-    --==================================================
-    -- SNAKE HEAD
-    --==================================================
-
-    local SnakeHead =
-        CreateBorderPart(
-            SnakeFolder,
-            "SnakeHead",
-            509
-        )
-
-    self.SnakeHead =
-        SnakeHead
 
     --==================================================
     -- HEADER
@@ -747,31 +645,6 @@ function UI:Create()
         HeaderLogo
 
     --==================================================
-    -- LOGO GLOW
-    --==================================================
-
-    local LogoGlow =
-        Instance.new("UIStroke")
-
-    LogoGlow.Name =
-        "NeonGlow"
-
-    LogoGlow.Color =
-        self.Theme:GetLogoBorder()
-
-    LogoGlow.Thickness =
-        4
-
-    LogoGlow.Transparency =
-        0.55
-
-    LogoGlow.Parent =
-        HeaderLogo
-
-    self.LogoGlow =
-        LogoGlow
-
-    --==================================================
     -- TITLE
     --==================================================
 
@@ -823,31 +696,6 @@ function UI:Create()
 
     self.Title =
         Title
-
-    --==================================================
-    -- TITLE STROKE
-    --==================================================
-
-    local TitleStroke =
-        Instance.new("UIStroke")
-
-    TitleStroke.Name =
-        "NeonTextGlow"
-
-    TitleStroke.Color =
-        self.Theme:GetAccent()
-
-    TitleStroke.Thickness =
-        1.5
-
-    TitleStroke.Transparency =
-        0.55
-
-    TitleStroke.Parent =
-        Title
-
-    self.TitleStroke =
-        TitleStroke
 
     --==================================================
     -- SUBTITLE
@@ -971,7 +819,7 @@ function UI:Create()
     CloseCorner.CornerRadius =
         UDim.new(
             0,
-            7
+            9
         )
 
     CloseCorner.Parent =
@@ -979,9 +827,6 @@ function UI:Create()
 
     local CloseStroke =
         Instance.new("UIStroke")
-
-    CloseStroke.Name =
-        "NeonStroke"
 
     CloseStroke.Color =
         self.Theme:GetAccent()
@@ -1058,10 +903,25 @@ function UI:Create()
     SidebarCorner.CornerRadius =
         UDim.new(
             0,
-            9
+            11
         )
 
     SidebarCorner.Parent =
+        Sidebar
+
+    local SidebarStroke =
+        Instance.new("UIStroke")
+
+    SidebarStroke.Color =
+        self.Theme:GetAccent()
+
+    SidebarStroke.Thickness =
+        1
+
+    SidebarStroke.Transparency =
+        0.65
+
+    SidebarStroke.Parent =
         Sidebar
 
     local SidebarPadding =
@@ -1104,28 +964,6 @@ function UI:Create()
         Sidebar
 
     self.Sidebar =
-        Sidebar
-
-    --==================================================
-    -- SIDEBAR GLOW
-    --==================================================
-
-    local SidebarStroke =
-        Instance.new("UIStroke")
-
-    SidebarStroke.Name =
-        "NeonStroke"
-
-    SidebarStroke.Color =
-        self.Theme:GetAccent()
-
-    SidebarStroke.Thickness =
-        1
-
-    SidebarStroke.Transparency =
-        0.5
-
-    SidebarStroke.Parent =
         Sidebar
 
     self.SidebarStroke =
@@ -1184,24 +1022,14 @@ function UI:Create()
     ContentCorner.CornerRadius =
         UDim.new(
             0,
-            9
+            11
         )
 
     ContentCorner.Parent =
         Content
 
-    self.Content =
-        Content
-
-    --==================================================
-    -- CONTENT STROKE
-    --==================================================
-
     local ContentStroke =
         Instance.new("UIStroke")
-
-    ContentStroke.Name =
-        "NeonStroke"
 
     ContentStroke.Color =
         self.Theme:GetAccent()
@@ -1210,9 +1038,12 @@ function UI:Create()
         1
 
     ContentStroke.Transparency =
-        0.55
+        0.65
 
     ContentStroke.Parent =
+        Content
+
+    self.Content =
         Content
 
     self.ContentStroke =
@@ -1270,31 +1101,6 @@ function UI:Create()
 
     self.ContentTitle =
         ContentTitle
-
-    --==================================================
-    -- CONTENT TITLE GLOW
-    --==================================================
-
-    local ContentTitleStroke =
-        Instance.new("UIStroke")
-
-    ContentTitleStroke.Name =
-        "NeonTextGlow"
-
-    ContentTitleStroke.Color =
-        self.Theme:GetAccent()
-
-    ContentTitleStroke.Thickness =
-        1.25
-
-    ContentTitleStroke.Transparency =
-        0.6
-
-    ContentTitleStroke.Parent =
-        ContentTitle
-
-    self.ContentTitleStroke =
-        ContentTitleStroke
 
     --==================================================
     -- SCROLL
@@ -1399,16 +1205,208 @@ function UI:Create()
     self:SetupDrag()
 
     --==================================================
-    -- APPLY INITIAL THEME
+    -- START NEON
     --==================================================
 
-    self:ApplyTheme()
+    self:StartNeonAnimation()
 
-    --==================================================
-    -- START NEON ENGINE
-    --==================================================
+end
 
-    self:StartNeonEngine()
+--==================================================
+-- NEON ANIMATION
+--==================================================
+
+function UI:StartNeonAnimation()
+
+    if self.NeonConnection then
+
+        self.NeonConnection:Disconnect()
+
+        self.NeonConnection =
+            nil
+
+    end
+
+    self.NeonConnection =
+        RunService.RenderStepped:Connect(
+
+            function()
+
+                if not self.Main
+                or not self.Main.Parent then
+
+                    return
+
+                end
+
+                if not self.Theme then
+
+                    return
+
+                end
+
+                local Current =
+                    self.Theme:GetCurrent()
+
+                if not Current then
+
+                    return
+
+                end
+
+                --==================================================
+                -- ACCENT
+                --==================================================
+
+                local Accent =
+                    self.Theme:GetAccent()
+
+                local GlowColor
+
+                if self.Theme.GetGlowColor then
+
+                    GlowColor =
+                        self.Theme:GetGlowColor()
+
+                else
+
+                    GlowColor =
+                        Accent
+
+                end
+
+                --==================================================
+                -- NATURAL PULSE
+                --==================================================
+
+                local Pulse =
+                    0.5
+
+                if self.Theme.GetBorderPulse then
+
+                    Pulse =
+                        self.Theme:GetBorderPulse()
+
+                end
+
+                --==================================================
+                -- MAIN BORDER
+                --==================================================
+
+                if self.MainStroke then
+
+                    self.MainStroke.Color =
+                        Accent
+
+                    self.MainStroke.Transparency =
+                        0.08 +
+                        ((1 - Pulse) * 0.18)
+
+                    self.MainStroke.Thickness =
+                        BORDER_THICKNESS
+                        +
+                        (Pulse * 0.45)
+
+                end
+
+                --==================================================
+                -- GLOW
+                --==================================================
+
+                if self.GlowStroke then
+
+                    self.GlowStroke.Color =
+                        GlowColor
+
+                    self.GlowStroke.Transparency =
+                        0.86 -
+                        (Pulse * 0.25)
+
+                    self.GlowStroke.Thickness =
+                        GLOW_THICKNESS
+                        +
+                        (Pulse * 1.8)
+
+                end
+
+                --==================================================
+                -- FLOW
+                --==================================================
+
+                if self.FlowStroke then
+
+                    self.FlowStroke.Color =
+                        Accent
+
+                    self.FlowStroke.Transparency =
+                        0.22 -
+                        (Pulse * 0.14)
+
+                    self.FlowStroke.Thickness =
+                        1.5 +
+                        (Pulse * 0.7)
+
+                end
+
+                --==================================================
+                -- CLOSE
+                --==================================================
+
+                if self.CloseStroke then
+
+                    self.CloseStroke.Color =
+                        Accent
+
+                    self.CloseStroke.Transparency =
+                        0.42 -
+                        (Pulse * 0.18)
+
+                end
+
+                --==================================================
+                -- SIDEBAR
+                --==================================================
+
+                if self.SidebarStroke then
+
+                    self.SidebarStroke.Color =
+                        Accent
+
+                    self.SidebarStroke.Transparency =
+                        0.70 -
+                        (Pulse * 0.15)
+
+                end
+
+                --==================================================
+                -- CONTENT
+                --==================================================
+
+                if self.ContentStroke then
+
+                    self.ContentStroke.Color =
+                        Accent
+
+                    self.ContentStroke.Transparency =
+                        0.70 -
+                        (Pulse * 0.15)
+
+                end
+
+                --==================================================
+                -- SCROLLBAR
+                --==================================================
+
+                if self.Scroll then
+
+                    self.Scroll.ScrollBarImageColor3 =
+                        Accent
+
+                end
+
+            end
+
+        )
 
 end
 
@@ -1435,7 +1433,8 @@ end
 
 function UI:CancelAnimation()
 
-    self.AnimationToken += 1
+    self.AnimationToken +=
+        1
 
     self.AnimationBusy =
         false
@@ -1571,6 +1570,7 @@ function UI:SetVisibleAnimated(Value)
             true
 
         ScaleTween:Play()
+
         PositionTween:Play()
 
         task.spawn(
@@ -1600,7 +1600,9 @@ function UI:SetVisibleAnimated(Value)
     --==================================================
 
     if not Main.Visible then
+
         return
+
     end
 
     local Info =
@@ -1658,6 +1660,7 @@ function UI:SetVisibleAnimated(Value)
         true
 
     ScaleTween:Play()
+
     PositionTween:Play()
 
     task.spawn(
@@ -1698,7 +1701,9 @@ end
 function UI:ToggleAnimated()
 
     if not self.Main then
+
         return
+
     end
 
     self:SetVisibleAnimated(
@@ -1719,7 +1724,9 @@ function UI:SetupDrag()
         self.Main
 
     if not Main then
+
         return
+
     end
 
     local Dragging =
@@ -1767,7 +1774,9 @@ function UI:SetupDrag()
         function(Input)
 
             if not Dragging then
+
                 return
+
             end
 
             if Input.UserInputType ==
@@ -1829,14 +1838,18 @@ end
 function UI:ApplyBackground()
 
     if not self.Background then
+
         return
+
     end
 
     local CurrentTheme =
         self.Theme:GetCurrent()
 
     if not CurrentTheme then
+
         return
+
     end
 
     local Image =
@@ -1874,14 +1887,18 @@ end
 function UI:ApplyTheme()
 
     if not self.Theme then
+
         return
+
     end
 
     local CurrentTheme =
         self.Theme:GetCurrent()
 
     if not CurrentTheme then
+
         return
+
     end
 
     --==================================================
@@ -1915,25 +1932,13 @@ function UI:ApplyTheme()
     self:ApplyBackground()
 
     --==================================================
-    -- COLORS
+    -- MAIN STROKE
     --==================================================
 
-    local Accent =
-        self.Theme:GetAccent()
+    if self.MainStroke then
 
-    --==================================================
-    -- MAIN BORDER
-    --==================================================
-
-    if self.BorderParts then
-
-        for _, Part in
-            pairs(self.BorderParts) do
-
-            Part.BackgroundColor3 =
-                Accent
-
-        end
+        self.MainStroke.Color =
+            self.Theme:GetAccent()
 
     end
 
@@ -1941,45 +1946,41 @@ function UI:ApplyTheme()
     -- GLOW
     --==================================================
 
-    if self.GlowParts then
+    if self.GlowStroke then
 
-        for _, Part in
-            pairs(self.GlowParts) do
+        if self.Theme.GetGlowColor then
 
-            Part.BackgroundColor3 =
-                Accent
+            self.GlowStroke.Color =
+                self.Theme:GetGlowColor()
 
-        end
+        else
 
-    end
-
-    if self.GlowParts2 then
-
-        for _, Part in
-            pairs(self.GlowParts2) do
-
-            Part.BackgroundColor3 =
-                Accent
+            self.GlowStroke.Color =
+                self.Theme:GetAccent()
 
         end
 
     end
 
     --==================================================
-    -- HEADER TITLE
+    -- FLOW
+    --==================================================
+
+    if self.FlowStroke then
+
+        self.FlowStroke.Color =
+            self.Theme:GetAccent()
+
+    end
+
+    --==================================================
+    -- TITLE
     --==================================================
 
     if self.Title then
 
         self.Title.TextColor3 =
             CurrentTheme.Text
-
-    end
-
-    if self.TitleStroke then
-
-        self.TitleStroke.Color =
-            Accent
 
     end
 
@@ -2022,10 +2023,14 @@ function UI:ApplyTheme()
 
     end
 
+    --==================================================
+    -- CLOSE STROKE
+    --==================================================
+
     if self.CloseStroke then
 
         self.CloseStroke.Color =
-            Accent
+            self.Theme:GetAccent()
 
     end
 
@@ -2057,7 +2062,7 @@ function UI:ApplyTheme()
     if self.SidebarStroke then
 
         self.SidebarStroke.Color =
-            Accent
+            self.Theme:GetAccent()
 
     end
 
@@ -2081,7 +2086,7 @@ function UI:ApplyTheme()
     if self.ContentStroke then
 
         self.ContentStroke.Color =
-            Accent
+            self.Theme:GetAccent()
 
     end
 
@@ -2096,13 +2101,6 @@ function UI:ApplyTheme()
 
     end
 
-    if self.ContentTitleStroke then
-
-        self.ContentTitleStroke.Color =
-            Accent
-
-    end
-
     --==================================================
     -- SCROLLBAR
     --==================================================
@@ -2110,12 +2108,12 @@ function UI:ApplyTheme()
     if self.Scroll then
 
         self.Scroll.ScrollBarImageColor3 =
-            Accent
+            self.Theme:GetAccent()
 
     end
 
     --==================================================
-    -- LOGO
+    -- LOGO BORDER
     --==================================================
 
     if self.HeaderLogo then
@@ -2134,903 +2132,31 @@ function UI:ApplyTheme()
 
     end
 
-    if self.LogoGlow then
-
-        self.LogoGlow.Color =
-            self.Theme:GetLogoBorder()
-
-    end
-
 end
 
 --==================================================
--- BORDER GEOMETRY
+-- DESTROY
 --==================================================
 
-function UI:UpdateBorderGeometry()
+function UI:Destroy()
 
-    if not self.Main
-    or not self.BorderParts
-    or not self.GlowParts
-    or not self.GlowParts2 then
+    if self.NeonConnection then
 
-        return
+        self.NeonConnection:Disconnect()
 
-    end
-
-    local Size =
-        self.Main.AbsoluteSize
-
-    local Width =
-        Size.X
-
-    local Height =
-        Size.Y
-
-    if Width <= 0
-    or Height <= 0 then
-
-        return
-
-    end
-
-    local T =
-        BORDER_THICKNESS
-
-    local G1 =
-        GLOW_THICKNESS_1
-
-    local G2 =
-        GLOW_THICKNESS_2
-
-    --==================================================
-    -- BASE BORDER
-    --==================================================
-
-    self.BorderParts.Top.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            T
-        )
-
-    self.BorderParts.Top.Position =
-        UDim2.new(
-            0,
-            0,
-            0,
-            0
-        )
-
-    self.BorderParts.Bottom.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            T
-        )
-
-    self.BorderParts.Bottom.Position =
-        UDim2.new(
-            0,
-            0,
-            1,
-            -T
-        )
-
-    self.BorderParts.Left.Size =
-        UDim2.new(
-            0,
-            T,
-            1,
-            0
-        )
-
-    self.BorderParts.Left.Position =
-        UDim2.new(
-            0,
-            0,
-            0,
-            0
-        )
-
-    self.BorderParts.Right.Size =
-        UDim2.new(
-            0,
-            T,
-            1,
-            0
-        )
-
-    self.BorderParts.Right.Position =
-        UDim2.new(
-            1,
-            -T,
-            0,
-            0
-        )
-
-    --==================================================
-    -- GLOW 1
-    --==================================================
-
-    self.GlowParts.Top.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            G1
-        )
-
-    self.GlowParts.Top.Position =
-        UDim2.new(
-            0,
-            0,
-            0,
-            -(G1 - T) / 2
-        )
-
-    self.GlowParts.Bottom.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            G1
-        )
-
-    self.GlowParts.Bottom.Position =
-        UDim2.new(
-            0,
-            0,
-            1,
-            -G1 / 2
-        )
-
-    self.GlowParts.Left.Size =
-        UDim2.new(
-            0,
-            G1,
-            1,
-            0
-        )
-
-    self.GlowParts.Left.Position =
-        UDim2.new(
-            0,
-            -(G1 - T) / 2,
-            0,
-            0
-        )
-
-    self.GlowParts.Right.Size =
-        UDim2.new(
-            0,
-            G1,
-            1,
-            0
-        )
-
-    self.GlowParts.Right.Position =
-        UDim2.new(
-            1,
-            -G1 / 2,
-            0,
-            0
-        )
-
-    --==================================================
-    -- GLOW 2
-    --==================================================
-
-    self.GlowParts2.Top.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            G2
-        )
-
-    self.GlowParts2.Top.Position =
-        UDim2.new(
-            0,
-            0,
-            0,
-            -(G2 - T) / 2
-        )
-
-    self.GlowParts2.Bottom.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            G2
-        )
-
-    self.GlowParts2.Bottom.Position =
-        UDim2.new(
-            0,
-            0,
-            1,
-            -G2 / 2
-        )
-
-    self.GlowParts2.Left.Size =
-        UDim2.new(
-            0,
-            G2,
-            1,
-            0
-        )
-
-    self.GlowParts2.Left.Position =
-        UDim2.new(
-            0,
-            -(G2 - T) / 2,
-            0,
-            0
-        )
-
-    self.GlowParts2.Right.Size =
-        UDim2.new(
-            0,
-            G2,
-            1,
-            0
-        )
-
-    self.GlowParts2.Right.Position =
-        UDim2.new(
-            1,
-            -G2 / 2,
-            0,
-            0
-        )
-
-end
-
---==================================================
--- SNAKE POSITION
---==================================================
--- A cobra percorre:
---
--- TOP
--- ↓
--- RIGHT
--- ↓
--- BOTTOM
--- ↓
--- LEFT
--- ↓
--- TOP
-
-function UI:UpdateSnake()
-
-    if not self.Main
-    or not self.SnakeCore
-    or not self.SnakeGlow
-    or not self.SnakeHead then
-
-        return
-
-    end
-
-    if not self.Theme:IsSnakeEnabled() then
-
-        self.SnakeCore.Visible =
-            false
-
-        self.SnakeGlow.Visible =
-            false
-
-        self.SnakeHead.Visible =
-            false
-
-        return
-
-    end
-
-    local Size =
-        self.Main.AbsoluteSize
-
-    local Width =
-        Size.X
-
-    local Height =
-        Size.Y
-
-    if Width <= 0
-    or Height <= 0 then
-
-        return
-
-    end
-
-    local Progress =
-        self.Theme:GetSnakeProgress()
-
-    local Length =
-        self.Theme:GetSnakeLength()
-
-    local Perimeter =
-        (
-            Width
-            + Height
-        ) * 2
-
-    local SegmentLength =
-        math.max(
-            25,
-            Perimeter * Length
-        )
-
-    local TailLength =
-        math.max(
-            10,
-            SegmentLength * SNAKE_TAIL
-        )
-
-    --==================================================
-    -- POSITION ON PERIMETER
-    --==================================================
-
-    local Distance =
-        Progress * Perimeter
-
-    local X
-    local Y
-    local Horizontal
-
-    --==================================================
-    -- TOP
-    --==================================================
-
-    if Distance <= Width then
-
-        X =
-            Distance
-
-        Y =
-            0
-
-        Horizontal =
-            true
-
-    --==================================================
-    -- RIGHT
-    --==================================================
-
-    elseif Distance <=
-        Width + Height then
-
-        X =
-            Width
-
-        Y =
-            Distance - Width
-
-        Horizontal =
-            false
-
-    --==================================================
-    -- BOTTOM
-    --==================================================
-
-    elseif Distance <=
-        Width * 2 + Height then
-
-        X =
-            Width
-            - (
-                Distance
-                - Width
-                - Height
-            )
-
-        Y =
-            Height
-
-        Horizontal =
-            true
-
-    --==================================================
-    -- LEFT
-    --==================================================
-
-    else
-
-        X =
-            0
-
-        Y =
-            Height
-            - (
-                Distance
-                - Width * 2
-                - Height
-            )
-
-        Horizontal =
-            false
-
-    end
-
-    --==================================================
-    -- CORE
-    --==================================================
-
-    local CoreThickness =
-        SNAKE_THICKNESS
-
-    if Horizontal then
-
-        self.SnakeCore.Size =
-            UDim2.new(
-                0,
-                SegmentLength,
-                0,
-                CoreThickness
-            )
-
-        self.SnakeCore.Position =
-            UDim2.new(
-                0,
-                X - SegmentLength / 2,
-                0,
-                Y - CoreThickness / 2
-            )
-
-    else
-
-        self.SnakeCore.Size =
-            UDim2.new(
-                0,
-                CoreThickness,
-                0,
-                SegmentLength
-            )
-
-        self.SnakeCore.Position =
-            UDim2.new(
-                0,
-                X - CoreThickness / 2,
-                0,
-                Y - SegmentLength / 2
-            )
-
-    end
-
-    --==================================================
-    -- GLOW
-    --==================================================
-
-    local GlowSize =
-        CoreThickness * 3
-
-    if Horizontal then
-
-        self.SnakeGlow.Size =
-            UDim2.new(
-                0,
-                SegmentLength,
-                0,
-                GlowSize
-            )
-
-        self.SnakeGlow.Position =
-            UDim2.new(
-                0,
-                X - SegmentLength / 2,
-                0,
-                Y - GlowSize / 2
-            )
-
-    else
-
-        self.SnakeGlow.Size =
-            UDim2.new(
-                0,
-                GlowSize,
-                0,
-                SegmentLength
-            )
-
-        self.SnakeGlow.Position =
-            UDim2.new(
-                0,
-                X - GlowSize / 2,
-                0,
-                Y - SegmentLength / 2
-            )
-
-    end
-
-    --==================================================
-    -- HEAD
-    --==================================================
-
-    local HeadSize =
-        math.max(
-            7,
-            SegmentLength * 0.18
-        )
-
-    if Horizontal then
-
-        self.SnakeHead.Size =
-            UDim2.new(
-                0,
-                HeadSize,
-                0,
-                CoreThickness + 1
-            )
-
-        self.SnakeHead.Position =
-            UDim2.new(
-                0,
-                X + SegmentLength / 2
-                    - HeadSize / 2,
-                0,
-                Y - (
-                    CoreThickness + 1
-                ) / 2
-            )
-
-    else
-
-        self.SnakeHead.Size =
-            UDim2.new(
-                0,
-                CoreThickness + 1,
-                0,
-                HeadSize
-            )
-
-        self.SnakeHead.Position =
-            UDim2.new(
-                0,
-                X - (
-                    CoreThickness + 1
-                ) / 2,
-                0,
-                Y + SegmentLength / 2
-                    - HeadSize / 2
-            )
-
-    end
-
-    --==================================================
-    -- COLORS
-    --==================================================
-
-    local CoreColor =
-        self.Theme:GetNeonColor()
-
-    local SnakeColor =
-        self.Theme:GetSnakeColor()
-
-    local GlowTransparency =
-        self.Theme:GetGlowTransparency()
-
-    self.SnakeCore.BackgroundColor3 =
-        CoreColor
-
-    self.SnakeGlow.BackgroundColor3 =
-        CoreColor
-
-    self.SnakeHead.BackgroundColor3 =
-        SnakeColor
-
-    --==================================================
-    -- TRANSPARENCY
-    --==================================================
-
-    self.SnakeCore.BackgroundTransparency =
-        0
-
-    self.SnakeGlow.BackgroundTransparency =
-        math.clamp(
-            GlowTransparency + 0.12,
-            0.05,
-            0.8
-        )
-
-    self.SnakeHead.BackgroundTransparency =
-        0
-
-    self.SnakeCore.Visible =
-        true
-
-    self.SnakeGlow.Visible =
-        true
-
-    self.SnakeHead.Visible =
-        true
-
-end
-
---==================================================
--- UPDATE NEON
---==================================================
-
-function UI:UpdateNeon()
-
-    if not self.Theme
-    or not self.Main then
-
-        return
-
-    end
-
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    if not CurrentTheme then
-        return
-    end
-
-    local Accent =
-        self.Theme:GetAccent()
-
-    local Neon =
-        self.Theme:GetNeonColor()
-
-    local Glow =
-        self.Theme:GetGlowTransparency()
-
-    --==================================================
-    -- BASE BORDER
-    --==================================================
-
-    if self.BorderParts then
-
-        for _, Part in
-            pairs(self.BorderParts) do
-
-            Part.BackgroundColor3 =
-                Accent
-
-            Part.BackgroundTransparency =
-                0
-
-        end
-
-    end
-
-    --==================================================
-    -- GLOW 1
-    --==================================================
-
-    if self.GlowParts then
-
-        for _, Part in
-            pairs(self.GlowParts) do
-
-            Part.BackgroundColor3 =
-                Accent
-
-            Part.BackgroundTransparency =
-                math.clamp(
-                    Glow + 0.18,
-                    0.15,
-                    0.85
-                )
-
-        end
-
-    end
-
-    --==================================================
-    -- GLOW 2
-    --==================================================
-
-    if self.GlowParts2 then
-
-        for _, Part in
-            pairs(self.GlowParts2) do
-
-            Part.BackgroundColor3 =
-                Accent
-
-            Part.BackgroundTransparency =
-                math.clamp(
-                    Glow + 0.38,
-                    0.3,
-                    0.95
-                )
-
-        end
-
-    end
-
-    --==================================================
-    -- MAIN SCALE GLOW
-    --==================================================
-
-    if self.LogoGlow then
-
-        self.LogoGlow.Color =
-            Neon
-
-        self.LogoGlow.Transparency =
-            math.clamp(
-                Glow + 0.18,
-                0.2,
-                0.85
-            )
-
-    end
-
-    --==================================================
-    -- TEXT GLOW
-    --==================================================
-
-    if self.TitleStroke then
-
-        self.TitleStroke.Color =
-            Neon
-
-        self.TitleStroke.Transparency =
-            math.clamp(
-                Glow + 0.15,
-                0.15,
-                0.85
-            )
-
-    end
-
-    if self.ContentTitleStroke then
-
-        self.ContentTitleStroke.Color =
-            Neon
-
-        self.ContentTitleStroke.Transparency =
-            math.clamp(
-                Glow + 0.2,
-                0.2,
-                0.9
-            )
-
-    end
-
-    --==================================================
-    -- CLOSE
-    --==================================================
-
-    if self.CloseStroke then
-
-        self.CloseStroke.Color =
-            Accent
-
-        self.CloseStroke.Transparency =
-            math.clamp(
-                Glow + 0.1,
-                0.15,
-                0.85
-            )
-
-    end
-
-    --==================================================
-    -- SIDEBAR
-    --==================================================
-
-    if self.SidebarStroke then
-
-        self.SidebarStroke.Color =
-            Accent
-
-        self.SidebarStroke.Transparency =
-            math.clamp(
-                Glow + 0.2,
-                0.25,
-                0.9
-            )
-
-    end
-
-    --==================================================
-    -- CONTENT
-    --==================================================
-
-    if self.ContentStroke then
-
-        self.ContentStroke.Color =
-            Accent
-
-        self.ContentStroke.Transparency =
-            math.clamp(
-                Glow + 0.2,
-                0.25,
-                0.9
-            )
-
-    end
-
-    --==================================================
-    -- SCROLLBAR
-    --==================================================
-
-    if self.Scroll then
-
-        self.Scroll.ScrollBarImageColor3 =
-            Neon
-
-    end
-
-    --==================================================
-    -- SNAKE
-    --==================================================
-
-    self:UpdateSnake()
-
-end
-
---==================================================
--- START NEON ENGINE
---==================================================
-
-function UI:StartNeonEngine()
-
-    if self.RenderConnection then
-
-        self.RenderConnection:Disconnect()
-
-        self.RenderConnection =
+        self.NeonConnection =
             nil
 
     end
 
-    self:UpdateBorderGeometry()
+    if self.Gui then
 
-    self.RenderConnection =
-        RunService.RenderStepped:Connect(
+        self.Gui:Destroy()
 
-            function()
+        self.Gui =
+            nil
 
-                if not self.Main
-                or not self.Main.Parent then
-
-                    if self.RenderConnection then
-
-                        self.RenderConnection:Disconnect()
-
-                        self.RenderConnection =
-                            nil
-
-                    end
-
-                    return
-
-                end
-
-                if not self:IsAnimationEnabled() then
-
-                    return
-
-                end
-
-                --==================================================
-                -- THEME ANIMATION
-                --==================================================
-
-                self.Theme:Update()
-
-                --==================================================
-                -- BORDER SIZE
-                --==================================================
-
-                self:UpdateBorderGeometry()
-
-                --==================================================
-                -- NEON
-                --==================================================
-
-                self:UpdateNeon()
-
-            end
-
-        )
+    end
 
 end
 
