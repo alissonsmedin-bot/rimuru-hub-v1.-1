@@ -1,1055 +1,265 @@
---// 💥 RIMURU HUB
---// Sound Cards System
---// Favorites Compatible
---// Copy + Favorite System
---// CLICK SIZE ANIMATION
---// STABLE LAYOUT VERSION
---// PREMIUM THEME COMPATIBLE
---// SAFE THEME COLORS
---// RGB ACCENT COMPATIBLE
---// BLACKOUT COPY CONTRAST
+--// ⭐ RIMURU HUB
+--// Favorites System
+--// Gerenciamento de favoritos + salvamento local
 
-local Cards = {}
+local Favorites = {}
 
 --==================================================
--- INIT
+-- CONFIGURAÇÃO
 --==================================================
 
-function Cards:Init(Context)
+local FILE_NAME = "RimuruHub_Favorites.json"
 
-    self.Context =
-        Context
+-- Favoritos mantidos em memória
+local FavoriteList = {}
 
-    self.Config =
-        Context.Config
+--==================================================
+-- SERVIÇOS
+--==================================================
 
-    self.Sounds =
-        Context.Sounds
+local HttpService
 
-    self.Theme =
-        Context.Theme
+pcall(function()
+HttpService = game:GetService("HttpService")
+end)
 
-    self.UI =
-        Context.UI
+--==================================================
+-- VERIFICAÇÃO DE FILESYSTEM
+--==================================================
 
-    self.Scroll =
-        self.UI.Scroll
+local function CanUseFileSystem()
+return
+type(isfile) == "function"
+and type(readfile) == "function"
+and type(writefile) == "function"
+end
 
-    --==================================================
-    -- FAVORITES
-    --==================================================
+--==================================================
+-- SALVAR
+--==================================================
 
-    self.Favorites =
-        Context.Favorites
+local function Save()
+if not CanUseFileSystem() then
+return false
+end
+
+if not HttpService then  
+    return false  
+end  
+
+local success, encoded = pcall(function()  
+    return HttpService:JSONEncode(FavoriteList)  
+end)  
+
+if not success then  
+    return false  
+end  
+
+local saved = pcall(function()  
+    writefile(FILE_NAME, encoded)  
+end)  
+
+return saved
 
 end
 
 --==================================================
--- CLICK ANIMATION CONFIG
+-- CARREGAR
 --==================================================
 
-local CLICK_GROW =
-    4
+local function Load()
+FavoriteList = {}
 
-local CLICK_TIME =
-    0.34
+if not CanUseFileSystem() then  
+    return  
+end  
 
---==================================================
--- BLACKOUT COPY COLORS
---==================================================
--- SOMENTE o tema Blackout utiliza:
---
--- Fundo: branco
--- Texto: preto
---
--- Todos os outros temas continuam usando:
---
--- Fundo: Accent
--- Texto: branco
---==================================================
+if not HttpService then  
+    return  
+end  
 
-local BLACKOUT_COPY_BACKGROUND =
-    Color3.fromRGB(
-        255,
-        255,
-        255
-    )
+if not isfile(FILE_NAME) then  
+    return  
+end  
 
-local BLACKOUT_COPY_TEXT =
-    Color3.fromRGB(
-        0,
-        0,
-        0
-    )
+local success, content = pcall(function()  
+    return readfile(FILE_NAME)  
+end)  
 
---==================================================
--- SAFE THEME COLOR
---==================================================
+if not success or not content or content == "" then  
+    return  
+end  
 
-local function GetThemeColor(
-    Theme,
-    Key,
-    Fallback
-)
+local decodedSuccess, decoded = pcall(function()  
+    return HttpService:JSONDecode(content)  
+end)  
 
-    if Theme
-    and Theme[Key] then
+if not decodedSuccess or type(decoded) ~= "table" then  
+    return  
+end  
 
-        return Theme[Key]
-
-    end
-
-    return Fallback
+for key, value in pairs(decoded) do  
+    if value == true then  
+        FavoriteList[tostring(key)] = true  
+    end  
+end
 
 end
 
 --==================================================
--- CHECK BLACKOUT
+-- INICIALIZAÇÃO
 --==================================================
 
-function Cards:IsBlackout()
+Load()
 
-    if not self.Theme then
-        return false
-    end
+--==================================================
+-- ADICIONAR / REMOVER
+--==================================================
 
-    if self.Theme.GetName then
+function Favorites:Add(ID)
+if ID == nil then
+return false
+end
 
-        return self.Theme:GetName()
-            == "Blackout"
+ID = tostring(ID)  
 
-    end
+FavoriteList[ID] = true  
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+Save()  
 
-    return CurrentTheme
-        and CurrentTheme.Name
-        == "Blackout"
+return true
+
+end
+
+function Favorites:Remove(ID)
+if ID == nil then
+return false
+end
+
+ID = tostring(ID)  
+
+FavoriteList[ID] = nil  
+
+Save()  
+
+return true
 
 end
 
 --==================================================
--- APPLY COPY STYLE
---==================================================
--- Mantém o comportamento original em todos
--- os temas, alterando somente o Blackout.
+-- ALTERNAR FAVORITO
 --==================================================
 
-function Cards:ApplyCopyStyle(
-    CopyButton
-)
+function Favorites:Toggle(ID)
+if ID == nil then
+return false
+end
 
-    if not CopyButton then
-        return
-    end
+ID = tostring(ID)  
 
-    if self:IsBlackout() then
+if FavoriteList[ID] then  
+    FavoriteList[ID] = nil  
+    Save()  
 
-        CopyButton.BackgroundColor3 =
-            BLACKOUT_COPY_BACKGROUND
+    return false  
+else  
+    FavoriteList[ID] = true  
+    Save()  
 
-        CopyButton.TextColor3 =
-            BLACKOUT_COPY_TEXT
-
-    else
-
-        CopyButton.BackgroundColor3 =
-            self.Theme:GetAccent()
-
-        CopyButton.TextColor3 =
-            Color3.fromRGB(
-                255,
-                255,
-                255
-            )
-
-    end
+    return true  
+end
 
 end
 
 --==================================================
--- CLICK SIZE ANIMATION
---==================================================
--- Cresce exatamente 4 pixels.
--- Retorna ao tamanho original após 0.34s.
--- Não utiliza UIScale.
+-- VERIFICAR
 --==================================================
 
-function Cards:ClickAnimation(Button)
+function Favorites:IsFavorite(ID)
+if ID == nil then
+return false
+end
 
-    if not Button
-    or not Button.Parent then
-
-        return
-
-    end
-
-    local OriginalSize =
-        Button.Size
-
-    local ExpandedSize =
-        UDim2.new(
-
-            OriginalSize.X.Scale,
-
-            OriginalSize.X.Offset
-                + CLICK_GROW,
-
-            OriginalSize.Y.Scale,
-
-            OriginalSize.Y.Offset
-                + CLICK_GROW
-
-        )
-
-    Button.Size =
-        ExpandedSize
-
-    task.delay(
-
-        CLICK_TIME,
-
-        function()
-
-            if Button
-            and Button.Parent then
-
-                Button.Size =
-                    OriginalSize
-
-            end
-
-        end
-
-    )
+return FavoriteList[tostring(ID)] == true
 
 end
 
 --==================================================
--- COPY SYSTEM
+-- OBTER TODOS
 --==================================================
 
-function Cards:Copy(ID)
+function Favorites:GetAll()
+local result = {}
 
-    if setclipboard then
+for ID, value in pairs(FavoriteList) do  
+    if value == true then  
+        table.insert(result, ID)  
+    end  
+end  
 
-        local Success =
-            pcall(function()
-
-                setclipboard(
-                    tostring(ID)
-                )
-
-            end)
-
-        if Success then
-            return true
-        end
-
-    end
-
-    if toclipboard then
-
-        local Success =
-            pcall(function()
-
-                toclipboard(
-                    tostring(ID)
-                )
-
-            end)
-
-        if Success then
-            return true
-        end
-
-    end
-
-    return false
+return result
 
 end
 
 --==================================================
--- FAVORITE STATUS
+-- CONTADOR
 --==================================================
 
-function Cards:IsFavorite(ID)
+function Favorites:GetCount()
+local count = 0
 
-    if not self.Favorites then
-        return false
-    end
+for _, value in pairs(FavoriteList) do  
+    if value == true then  
+        count = count + 1  
+    end  
+end  
 
-    local Success, Result =
-        pcall(function()
-
-            return self.Favorites:IsFavorite(
-                ID
-            )
-
-        end)
-
-    if Success then
-
-        return Result == true
-
-    end
-
-    return false
+return count
 
 end
 
 --==================================================
--- UPDATE FAVORITE BUTTON
+-- LIMPAR TODOS
 --==================================================
 
-function Cards:UpdateFavoriteButton(
-    Button,
-    ID
-)
+function Favorites:Clear()
+FavoriteList = {}
 
-    if not Button then
-        return
-    end
+Save()  
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    if not CurrentTheme then
-        return
-    end
-
-    local IsFavorite =
-        self:IsFavorite(ID)
-
-    if IsFavorite then
-
-        Button.Text =
-            "★"
-
-        Button.TextColor3 =
-            self.Theme:GetAccent()
-
-    else
-
-        Button.Text =
-            "☆"
-
-        Button.TextColor3 =
-            CurrentTheme.SubText
-            or CurrentTheme.Text
-
-    end
+return true
 
 end
 
 --==================================================
--- TOGGLE FAVORITE
+-- RECARREGAR
 --==================================================
 
-function Cards:ToggleFavorite(
-    ID,
-    Button
-)
+function Favorites:Reload()
+Load()
 
-    if not self.Favorites then
-        return
-    end
-
-    local Success, Result =
-        pcall(function()
-
-            return self.Favorites:Toggle(
-                ID
-            )
-
-        end)
-
-    if not Success then
-
-        warn(
-            "⚠️ Rimuru Hub: erro ao alterar favorito."
-        )
-
-        return
-
-    end
-
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    if Result then
-
-        Button.Text =
-            "★"
-
-        Button.TextColor3 =
-            self.Theme:GetAccent()
-
-    else
-
-        Button.Text =
-            "☆"
-
-        Button.TextColor3 =
-            CurrentTheme.SubText
-            or CurrentTheme.Text
-
-    end
+return FavoriteList
 
 end
 
 --==================================================
--- CREATE SOUND CARD
+-- SALVAR MANUALMENTE
 --==================================================
 
-function Cards:CreateSoundCard(
-    Index,
-    Data
-)
-
-    if type(Data) ~= "table" then
-        return
-    end
-
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    if not CurrentTheme then
-        return
-    end
-
-    local Name =
-        tostring(
-            Data[1]
-            or "Unknown"
-        )
-
-    local ID =
-        tostring(
-            Data[2]
-            or ""
-        )
-
-    --==================================================
-    -- CARD
-    --==================================================
-
-    local Card =
-        Instance.new(
-            "Frame"
-        )
-
-    Card.Name =
-        "Sound_" .. tostring(Index)
-
-    Card.Size =
-        UDim2.new(
-            1,
-            -5,
-            0,
-            48
-        )
-
-    Card.BackgroundColor3 =
-        CurrentTheme.Card
-
-    Card.BorderSizePixel =
-        0
-
-    Card.LayoutOrder =
-        Index
-
-    Card.ZIndex =
-        504
-
-    Card.Parent =
-        self.Scroll
-
-    --==================================================
-    -- CARD CORNER
-    --==================================================
-
-    local CardCorner =
-        Instance.new(
-            "UICorner"
-        )
-
-    CardCorner.CornerRadius =
-        UDim.new(
-            0,
-            8
-        )
-
-    CardCorner.Parent =
-        Card
-
-    --==================================================
-    -- NAME
-    --==================================================
-
-    local NameLabel =
-        Instance.new(
-            "TextLabel"
-        )
-
-    NameLabel.Name =
-        "Name"
-
-    NameLabel.Position =
-        UDim2.new(
-            0,
-            12,
-            0,
-            5
-        )
-
-    NameLabel.Size =
-        UDim2.new(
-            1,
-            -130,
-            0,
-            18
-        )
-
-    NameLabel.BackgroundTransparency =
-        1
-
-    NameLabel.Text =
-        Name
-
-    NameLabel.TextColor3 =
-        CurrentTheme.Text
-
-    NameLabel.TextSize =
-        12
-
-    NameLabel.Font =
-        Enum.Font.GothamMedium
-
-    NameLabel.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    NameLabel.TextTruncate =
-        Enum.TextTruncate.AtEnd
-
-    NameLabel.ZIndex =
-        505
-
-    NameLabel.Parent =
-        Card
-
-    --==================================================
-    -- ID
-    --==================================================
-
-    local IDLabel =
-        Instance.new(
-            "TextLabel"
-        )
-
-    IDLabel.Name =
-        "ID"
-
-    IDLabel.Position =
-        UDim2.new(
-            0,
-            12,
-            0,
-            25
-        )
-
-    IDLabel.Size =
-        UDim2.new(
-            1,
-            -130,
-            0,
-            16
-        )
-
-    IDLabel.BackgroundTransparency =
-        1
-
-    IDLabel.Text =
-        ID
-
-    IDLabel.TextColor3 =
-        CurrentTheme.SubText
-        or CurrentTheme.Text
-
-    IDLabel.TextSize =
-        10
-
-    IDLabel.Font =
-        Enum.Font.Code
-
-    IDLabel.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    IDLabel.ZIndex =
-        505
-
-    IDLabel.Parent =
-        Card
-
-    --==================================================
-    -- FAVORITE BUTTON
-    --==================================================
-
-    local FavoriteButton =
-        Instance.new(
-            "TextButton"
-        )
-
-    FavoriteButton.Name =
-        "Favorite"
-
-    FavoriteButton.Size =
-        UDim2.new(
-            0,
-            28,
-            0,
-            28
-        )
-
-    FavoriteButton.Position =
-        UDim2.new(
-            1,
-            -98,
-            0.5,
-            -14
-        )
-
-    FavoriteButton.BackgroundColor3 =
-        CurrentTheme.Button
-        or CurrentTheme.Card
-
-    FavoriteButton.BorderSizePixel =
-        0
-
-    FavoriteButton.TextSize =
-        18
-
-    FavoriteButton.Font =
-        Enum.Font.GothamBold
-
-    FavoriteButton.AutoButtonColor =
-        false
-
-    FavoriteButton.ZIndex =
-        506
-
-    FavoriteButton.Parent =
-        Card
-
-    --==================================================
-    -- FAVORITE CORNER
-    --==================================================
-
-    local FavoriteCorner =
-        Instance.new(
-            "UICorner"
-        )
-
-    FavoriteCorner.CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
-
-    FavoriteCorner.Parent =
-        FavoriteButton
-
-    --==================================================
-    -- FAVORITE STATE
-    --==================================================
-
-    self:UpdateFavoriteButton(
-
-        FavoriteButton,
-
-        ID
-
-    )
-
-    --==================================================
-    -- FAVORITE EVENT
-    --==================================================
-
-    FavoriteButton.MouseButton1Click:Connect(
-
-        function()
-
-            self:ClickAnimation(
-                FavoriteButton
-            )
-
-            self:ToggleFavorite(
-
-                ID,
-
-                FavoriteButton
-
-            )
-
-        end
-
-    )
-
-    --==================================================
-    -- COPY BUTTON
-    --==================================================
-
-    local CopyButton =
-        Instance.new(
-            "TextButton"
-        )
-
-    CopyButton.Name =
-        "Copy"
-
-    CopyButton.Size =
-        UDim2.new(
-            0,
-            55,
-            0,
-            28
-        )
-
-    CopyButton.Position =
-        UDim2.new(
-            1,
-            -65,
-            0.5,
-            -14
-        )
-
-    CopyButton.BorderSizePixel =
-        0
-
-    CopyButton.Text =
-        "Copy"
-
-    CopyButton.TextSize =
-        10
-
-    CopyButton.Font =
-        Enum.Font.GothamBold
-
-    CopyButton.AutoButtonColor =
-        false
-
-    CopyButton.ZIndex =
-        506
-
-    CopyButton.Parent =
-        Card
-
-    --==================================================
-    -- COPY STYLE
-    --==================================================
-    -- Blackout:
-    -- branco + preto
-    --
-    -- Outros temas:
-    -- Accent + branco
-    --==================================================
-
-    self:ApplyCopyStyle(
-        CopyButton
-    )
-
-    --==================================================
-    -- COPY CORNER
-    --==================================================
-
-    local CopyCorner =
-        Instance.new(
-            "UICorner"
-        )
-
-    CopyCorner.CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
-
-    CopyCorner.Parent =
-        CopyButton
-
-    --==================================================
-    -- COPY EVENT
-    --==================================================
-
-    CopyButton.MouseButton1Click:Connect(
-
-        function()
-
-            self:ClickAnimation(
-                CopyButton
-            )
-
-            if self:Copy(ID) then
-
-                CopyButton.Text =
-                    "Copied!"
-
-                task.delay(
-
-                    0.8,
-
-                    function()
-
-                        if CopyButton
-                        and CopyButton.Parent then
-
-                            CopyButton.Text =
-                                "Copy"
-
-                        end
-
-                    end
-
-                )
-
-            else
-
-                CopyButton.Text =
-                    "N/A"
-
-                task.delay(
-
-                    0.8,
-
-                    function()
-
-                        if CopyButton
-                        and CopyButton.Parent then
-
-                            CopyButton.Text =
-                                "Copy"
-
-                        end
-
-                    end
-
-                )
-
-            end
-
-        end
-
-    )
-
-    return Card
-
+function Favorites:Save()
+return Save()
 end
 
 --==================================================
--- APPLY THEME
+-- STATUS
 --==================================================
 
-function Cards:ApplyTheme()
-
-    if not self.Scroll then
-        return
-    end
-
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    if not CurrentTheme then
-        return
-    end
-
-    for _, Card in
-        ipairs(
-            self.Scroll:GetChildren()
-        ) do
-
-        if Card:IsA("Frame")
-        and Card.Name:sub(1, 6) ==
-            "Sound_" then
-
-            --==================================================
-            -- CARD
-            --==================================================
-
-            Card.BackgroundColor3 =
-                CurrentTheme.Card
-                or CurrentTheme.Content
-
-            --==================================================
-            -- NAME
-            --==================================================
-
-            local NameLabel =
-                Card:FindFirstChild(
-                    "Name"
-                )
-
-            if NameLabel then
-
-                NameLabel.TextColor3 =
-                    CurrentTheme.Text
-
-            end
-
-            --==================================================
-            -- ID
-            --==================================================
-
-            local IDLabel =
-                Card:FindFirstChild(
-                    "ID"
-                )
-
-            if IDLabel then
-
-                IDLabel.TextColor3 =
-                    CurrentTheme.SubText
-                    or CurrentTheme.Text
-
-            end
-
-            --==================================================
-            -- FAVORITE
-            --==================================================
-
-            local FavoriteButton =
-                Card:FindFirstChild(
-                    "Favorite"
-                )
-
-            if FavoriteButton then
-
-                FavoriteButton.BackgroundColor3 =
-                    CurrentTheme.Button
-                    or CurrentTheme.Card
-
-                local StoredID = ""
-
-                if IDLabel then
-
-                    StoredID =
-                        IDLabel.Text
-
-                end
-
-                self:UpdateFavoriteButton(
-
-                    FavoriteButton,
-
-                    StoredID
-
-                )
-
-            end
-
-            --==================================================
-            -- COPY
-            --==================================================
-
-            local CopyButton =
-                Card:FindFirstChild(
-                    "Copy"
-                )
-
-            if CopyButton then
-
-                --==================================================
-                -- BLACKOUT ONLY
-                --==================================================
-                -- No Blackout:
-                -- fundo branco
-                -- texto preto
-                --
-                -- Nos outros temas:
-                -- Accent
-                -- texto branco
-                --==================================================
-
-                self:ApplyCopyStyle(
-                    CopyButton
-                )
-
-            end
-
-        end
-
-    end
-
+function Favorites:IsFileSystemAvailable()
+return CanUseFileSystem()
 end
 
 --==================================================
--- REFRESH CARD
+-- EXPORTAR
 --==================================================
 
-function Cards:RefreshCard(
-    Card
-)
-
-    if not Card
-    or not Card.Parent then
-        return
-    end
-
-    local IDLabel =
-        Card:FindFirstChild(
-            "ID"
-        )
-
-    local FavoriteButton =
-        Card:FindFirstChild(
-            "Favorite"
-        )
-
-    if IDLabel
-    and FavoriteButton then
-
-        self:UpdateFavoriteButton(
-
-            FavoriteButton,
-
-            IDLabel.Text
-
-        )
-
-    end
-
-end
-
---==================================================
--- REFRESH ALL CARDS
---==================================================
-
-function Cards:Refresh()
-
-    if not self.Scroll then
-        return
-    end
-
-    for _, Object in
-        ipairs(
-            self.Scroll:GetChildren()
-        ) do
-
-        if Object:IsA("Frame")
-        and Object.Name:sub(1, 6) ==
-            "Sound_" then
-
-            self:RefreshCard(
-                Object
-            )
-
-        end
-
-    end
-
-end
-
---==================================================
--- RETURN MODULE
---==================================================
-
-return Cards
+return Favorites
