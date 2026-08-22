@@ -3,6 +3,7 @@
 --// PREMIUM NEON UI
 --// STABLE BORDER SYSTEM
 --// NATURAL PULSING GLOW
+--// SOFT INTERFACE SHADOW
 --// ROUNDED CORNERS
 --// SOFT ANIMATIONS
 --// SAFE THEME INTEGRATION
@@ -12,10 +13,17 @@
 -- SERVICES
 --==================================================
 
-local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
+local Players =
+    game:GetService("Players")
+
+local UIS =
+    game:GetService("UserInputService")
+
+local TweenService =
+    game:GetService("TweenService")
+
+local RunService =
+    game:GetService("RunService")
 
 --==================================================
 -- MODULE
@@ -27,11 +35,11 @@ local UI = {}
 -- MENU ANIMATION
 --==================================================
 
-local OPEN_TIME = 0.24
+local OPEN_TIME = 0.25
 local CLOSE_TIME = 0.18
 
-local OPEN_SCALE = 0.94
-local CLOSE_SCALE = 0.95
+local OPEN_SCALE = 0.96
+local CLOSE_SCALE = 0.98
 
 local OPEN_OFFSET_Y = 8
 local CLOSE_OFFSET_Y = 7
@@ -56,18 +64,11 @@ local BORDER_TRANSPARENCY = 0.42
 -- PULSE
 --==================================================
 
--- Intensidade do pulsar.
--- Quanto menor a transparência,
--- mais forte a borda aparece.
-
 local PULSE_MIN_TRANSPARENCY = 0.16
 local PULSE_MAX_TRANSPARENCY = 0.48
 
 local PULSE_MIN_THICKNESS = 1.5
 local PULSE_MAX_THICKNESS = 2.15
-
--- Velocidade do pulsar.
--- Mais baixo = mais lento.
 
 local PULSE_SPEED = 1.15
 
@@ -81,13 +82,37 @@ local GLOW_MIN_TRANSPARENCY = 0.78
 local GLOW_MAX_TRANSPARENCY = 0.94
 
 --==================================================
+-- SHADOW
+--==================================================
+
+-- A sombra é propositalmente muito transparente.
+-- Ela serve apenas para criar profundidade ao redor
+-- da interface, e NÃO para parecer outro painel.
+
+local SHADOW_PADDING = 10
+
+local SHADOW_TRANSPARENCY = 0.92
+
+local SHADOW_MIN_TRANSPARENCY = 0.915
+local SHADOW_MAX_TRANSPARENCY = 0.94
+
+local SHADOW_PULSE_SPEED = 0.75
+
+--==================================================
 -- SAFE COLOR
 --==================================================
 
-local function ThemeColor(Theme, Key, Fallback)
+local function ThemeColor(
+    Theme,
+    Key,
+    Fallback
+)
 
-    if Theme and Theme[Key] ~= nil then
+    if Theme
+    and Theme[Key] ~= nil then
+
         return Theme[Key]
+
     end
 
     return Fallback
@@ -106,30 +131,46 @@ local function GetThemeName(Theme)
 
     if Theme.GetName then
 
-        local Success, Result = pcall(function()
-            return Theme:GetName()
-        end)
+        local Success, Result =
+            pcall(function()
 
-        if Success and Result then
+                return Theme:GetName()
+
+            end)
+
+        if Success
+        and Result then
+
             return tostring(Result)
+
         end
 
     end
 
     if Theme.GetCurrentName then
 
-        local Success, Result = pcall(function()
-            return Theme:GetCurrentName()
-        end)
+        local Success, Result =
+            pcall(function()
 
-        if Success and Result then
+                return Theme:GetCurrentName()
+
+            end)
+
+        if Success
+        and Result then
+
             return tostring(Result)
+
         end
 
     end
 
     if Theme.CurrentTheme then
-        return tostring(Theme.CurrentTheme)
+
+        return tostring(
+            Theme.CurrentTheme
+        )
+
     end
 
     return ""
@@ -142,7 +183,8 @@ end
 
 function UI:Init(Context)
 
-    self.Context = Context or {}
+    self.Context =
+        Context or {}
 
     self.Player =
         self.Context.Player
@@ -150,7 +192,9 @@ function UI:Init(Context)
 
     self.PlayerGui =
         self.Context.PlayerGui
-        or self.Player:WaitForChild("PlayerGui")
+        or self.Player:WaitForChild(
+            "PlayerGui"
+        )
 
     self.Config =
         self.Context.Config
@@ -158,11 +202,17 @@ function UI:Init(Context)
     self.Theme =
         self.Context.Theme
 
-    self.AnimationBusy = false
-    self.AnimationToken = 0
+    self.AnimationBusy =
+        false
 
-    self.NeonConnection = nil
-    self.NeonTime = 0
+    self.AnimationToken =
+        0
+
+    self.NeonConnection =
+        nil
+
+    self.NeonTime =
+        0
 
     self:Create()
 
@@ -177,7 +227,9 @@ function UI:RemoveOld()
     pcall(function()
 
         local Old =
-            self.PlayerGui:FindFirstChild("RimuruHub")
+            self.PlayerGui:FindFirstChild(
+                "RimuruHub"
+            )
 
         if Old then
             Old:Destroy()
@@ -197,7 +249,9 @@ function UI:Create()
 
     if not self.Theme then
 
-        warn("❌ Rimuru Hub UI: Theme não encontrado.")
+        warn(
+            "❌ Rimuru Hub UI: Theme não encontrado."
+        )
 
         return
 
@@ -208,7 +262,9 @@ function UI:Create()
 
     if not CurrentTheme then
 
-        warn("❌ Rimuru Hub UI: tema inválido.")
+        warn(
+            "❌ Rimuru Hub UI: tema inválido."
+        )
 
         return
 
@@ -221,15 +277,89 @@ function UI:Create()
     local Gui =
         Instance.new("ScreenGui")
 
-    Gui.Name = "RimuruHub"
-    Gui.ResetOnSpawn = false
-    Gui.IgnoreGuiInset = true
-    Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    Gui.DisplayOrder = 999999
+    Gui.Name =
+        "RimuruHub"
 
-    Gui.Parent = self.PlayerGui
+    Gui.ResetOnSpawn =
+        false
 
-    self.Gui = Gui
+    Gui.IgnoreGuiInset =
+        true
+
+    Gui.ZIndexBehavior =
+        Enum.ZIndexBehavior.Global
+
+    Gui.DisplayOrder =
+        999999
+
+    Gui.Parent =
+        self.PlayerGui
+
+    self.Gui =
+        Gui
+
+    --==================================================
+    -- 🌑 INTERFACE SHADOW
+    --==================================================
+
+    local Shadow =
+        Instance.new("Frame")
+
+    Shadow.Name =
+        "InterfaceShadow"
+
+    Shadow.Size =
+        UDim2.new(
+            0,
+            600 + SHADOW_PADDING * 2,
+            0,
+            400 + SHADOW_PADDING * 2
+        )
+
+    Shadow.Position =
+        UDim2.new(
+            0.5,
+            -300 - SHADOW_PADDING,
+            0.5,
+            -200 - SHADOW_PADDING
+        )
+
+    Shadow.BackgroundColor3 =
+        Color3.fromRGB(
+            0,
+            0,
+            0
+        )
+
+    Shadow.BackgroundTransparency =
+        SHADOW_TRANSPARENCY
+
+    Shadow.BorderSizePixel =
+        0
+
+    Shadow.Visible =
+        CurrentTheme.ShadowEnabled == true
+
+    Shadow.ZIndex =
+        498
+
+    Shadow.Parent =
+        Gui
+
+    local ShadowCorner =
+        Instance.new("UICorner")
+
+    ShadowCorner.CornerRadius =
+        UDim.new(
+            0,
+            CORNER_RADIUS + 5
+        )
+
+    ShadowCorner.Parent =
+        Shadow
+
+    self.Shadow =
+        Shadow
 
     --==================================================
     -- MAIN
@@ -238,7 +368,8 @@ function UI:Create()
     local Main =
         Instance.new("Frame")
 
-    Main.Name = "Main"
+    Main.Name =
+        "Main"
 
     Main.Size =
         UDim2.new(
@@ -264,17 +395,26 @@ function UI:Create()
             15
         )
 
-    Main.BackgroundTransparency = 0.10
-    Main.BorderSizePixel = 0
+    Main.BackgroundTransparency =
+        0.10
 
-    Main.Visible = false
-    Main.ZIndex = 500
+    Main.BorderSizePixel =
+        0
 
-    Main.ClipsDescendants = true
+    Main.Visible =
+        false
 
-    Main.Parent = Gui
+    Main.ZIndex =
+        500
 
-    self.Main = Main
+    Main.ClipsDescendants =
+        true
+
+    Main.Parent =
+        Gui
+
+    self.Main =
+        Main
 
     self.OriginalPosition =
         Main.Position
@@ -289,12 +429,17 @@ function UI:Create()
     local MainScale =
         Instance.new("UIScale")
 
-    MainScale.Name = "MenuScale"
-    MainScale.Scale = 1
+    MainScale.Name =
+        "MenuScale"
 
-    MainScale.Parent = Main
+    MainScale.Scale =
+        1
 
-    self.MainScale = MainScale
+    MainScale.Parent =
+        Main
+
+    self.MainScale =
+        MainScale
 
     --==================================================
     -- MAIN CORNER
@@ -309,9 +454,11 @@ function UI:Create()
             CORNER_RADIUS
         )
 
-    MainCorner.Parent = Main
+    MainCorner.Parent =
+        Main
 
-    self.MainCorner = MainCorner
+    self.MainCorner =
+        MainCorner
 
     --==================================================
     -- MAIN BORDER
@@ -335,7 +482,8 @@ function UI:Create()
     MainStroke.ApplyStrokeMode =
         Enum.ApplyStrokeMode.Border
 
-    MainStroke.Parent = Main
+    MainStroke.Parent =
+        Main
 
     self.MainStroke =
         MainStroke
@@ -366,14 +514,20 @@ function UI:Create()
             0
         )
 
-    Glow.BackgroundTransparency = 1
-    Glow.BorderSizePixel = 0
+    Glow.BackgroundTransparency =
+        1
 
-    Glow.ZIndex = 499
+    Glow.BorderSizePixel =
+        0
 
-    Glow.ClipsDescendants = true
+    Glow.ZIndex =
+        499
 
-    Glow.Parent = Main
+    Glow.ClipsDescendants =
+        true
+
+    Glow.Parent =
+        Main
 
     local GlowCorner =
         Instance.new("UICorner")
@@ -399,7 +553,8 @@ function UI:Create()
     GlowStroke.Thickness =
         GLOW_THICKNESS
 
-    GlowStroke.Transparency = 1
+    GlowStroke.Transparency =
+        1
 
     GlowStroke.ApplyStrokeMode =
         Enum.ApplyStrokeMode.Border
@@ -439,8 +594,11 @@ function UI:Create()
             0
         )
 
-    Background.BackgroundTransparency = 1
-    Background.BorderSizePixel = 0
+    Background.BackgroundTransparency =
+        1
+
+    Background.BorderSizePixel =
+        0
 
     Background.ScaleType =
         Enum.ScaleType.Crop
@@ -448,10 +606,14 @@ function UI:Create()
     Background.ImageTransparency =
         self.Theme:GetBackgroundTransparency()
 
-    Background.ZIndex = 500
-    Background.Visible = false
+    Background.ZIndex =
+        500
 
-    Background.Parent = Main
+    Background.Visible =
+        false
+
+    Background.Parent =
+        Main
 
     local BackgroundCorner =
         Instance.new("UICorner")
@@ -475,7 +637,8 @@ function UI:Create()
     local Header =
         Instance.new("Frame")
 
-    Header.Name = "Header"
+    Header.Name =
+        "Header"
 
     Header.Size =
         UDim2.new(
@@ -485,10 +648,14 @@ function UI:Create()
             58
         )
 
-    Header.BackgroundTransparency = 1
-    Header.ZIndex = 502
+    Header.BackgroundTransparency =
+        1
 
-    Header.Parent = Main
+    Header.ZIndex =
+        502
+
+    Header.Parent =
+        Main
 
     self.Header =
         Header
@@ -519,7 +686,8 @@ function UI:Create()
             8
         )
 
-    HeaderLogo.BackgroundTransparency = 1
+    HeaderLogo.BackgroundTransparency =
+        1
 
     HeaderLogo.Image =
         "rbxassetid://6691708227"
@@ -527,7 +695,8 @@ function UI:Create()
     HeaderLogo.ScaleType =
         Enum.ScaleType.Fit
 
-    HeaderLogo.ZIndex = 502
+    HeaderLogo.ZIndex =
+        502
 
     HeaderLogo.Parent =
         Header
@@ -548,8 +717,11 @@ function UI:Create()
     LogoStroke.Color =
         self.Theme:GetLogoBorder()
 
-    LogoStroke.Thickness = 1.5
-    LogoStroke.Transparency = 0.20
+    LogoStroke.Thickness =
+        1.5
+
+    LogoStroke.Transparency =
+        0.20
 
     LogoStroke.Parent =
         HeaderLogo
@@ -564,7 +736,8 @@ function UI:Create()
     local Title =
         Instance.new("TextLabel")
 
-    Title.Name = "Title"
+    Title.Name =
+        "Title"
 
     Title.Position =
         UDim2.new(
@@ -582,7 +755,8 @@ function UI:Create()
             25
         )
 
-    Title.BackgroundTransparency = 1
+    Title.BackgroundTransparency =
+        1
 
     Title.Text =
         "Rimuru Hub"
@@ -590,14 +764,17 @@ function UI:Create()
     Title.TextColor3 =
         CurrentTheme.Text
 
-    Title.TextSize = 19
+    Title.TextSize =
+        19
+
     Title.Font =
         Enum.Font.GothamBold
 
     Title.TextXAlignment =
         Enum.TextXAlignment.Left
 
-    Title.ZIndex = 502
+    Title.ZIndex =
+        502
 
     Title.Parent =
         Header
@@ -631,7 +808,8 @@ function UI:Create()
             18
         )
 
-    Subtitle.BackgroundTransparency = 1
+    Subtitle.BackgroundTransparency =
+        1
 
     Subtitle.Text =
         "Sound Library"
@@ -639,14 +817,17 @@ function UI:Create()
     Subtitle.TextColor3 =
         CurrentTheme.SubText
 
-    Subtitle.TextSize = 11
+    Subtitle.TextSize =
+        11
+
     Subtitle.Font =
         Enum.Font.Gotham
 
     Subtitle.TextXAlignment =
         Enum.TextXAlignment.Left
 
-    Subtitle.ZIndex = 502
+    Subtitle.ZIndex =
+        502
 
     Subtitle.Parent =
         Header
@@ -689,20 +870,26 @@ function UI:Create()
             30
         )
 
-    Close.BorderSizePixel = 0
+    Close.BorderSizePixel =
+        0
 
-    Close.Text = "X"
+    Close.Text =
+        "X"
 
     Close.TextColor3 =
         CurrentTheme.Text
 
-    Close.TextSize = 12
+    Close.TextSize =
+        12
+
     Close.Font =
         Enum.Font.GothamBold
 
-    Close.AutoButtonColor = false
+    Close.AutoButtonColor =
+        false
 
-    Close.ZIndex = 503
+    Close.ZIndex =
+        503
 
     Close.Parent =
         Header
@@ -725,8 +912,11 @@ function UI:Create()
     CloseStroke.Color =
         self.Theme:GetAccent()
 
-    CloseStroke.Thickness = 1
-    CloseStroke.Transparency = 0.35
+    CloseStroke.Thickness =
+        1
+
+    CloseStroke.Transparency =
+        0.35
 
     CloseStroke.Parent =
         Close
@@ -775,9 +965,11 @@ function UI:Create()
     Sidebar.BackgroundTransparency =
         0.10
 
-    Sidebar.BorderSizePixel = 0
+    Sidebar.BorderSizePixel =
+        0
 
-    Sidebar.ZIndex = 502
+    Sidebar.ZIndex =
+        502
 
     Sidebar.Parent =
         Main
@@ -800,8 +992,11 @@ function UI:Create()
     SidebarStroke.Color =
         self.Theme:GetAccent()
 
-    SidebarStroke.Thickness = 1
-    SidebarStroke.Transparency = 0.65
+    SidebarStroke.Thickness =
+        1
+
+    SidebarStroke.Transparency =
+        0.65
 
     SidebarStroke.Parent =
         Sidebar
@@ -889,9 +1084,11 @@ function UI:Create()
     Content.BackgroundTransparency =
         0.10
 
-    Content.BorderSizePixel = 0
+    Content.BorderSizePixel =
+        0
 
-    Content.ZIndex = 502
+    Content.ZIndex =
+        502
 
     Content.Parent =
         Main
@@ -914,8 +1111,11 @@ function UI:Create()
     ContentStroke.Color =
         self.Theme:GetAccent()
 
-    ContentStroke.Thickness = 1
-    ContentStroke.Transparency = 0.65
+    ContentStroke.Thickness =
+        1
+
+    ContentStroke.Transparency =
+        0.65
 
     ContentStroke.Parent =
         Content
@@ -952,7 +1152,8 @@ function UI:Create()
             25
         )
 
-    ContentTitle.BackgroundTransparency = 1
+    ContentTitle.BackgroundTransparency =
+        1
 
     ContentTitle.Text =
         "Principal"
@@ -960,14 +1161,17 @@ function UI:Create()
     ContentTitle.TextColor3 =
         CurrentTheme.Text
 
-    ContentTitle.TextSize = 17
+    ContentTitle.TextSize =
+        17
+
     ContentTitle.Font =
         Enum.Font.GothamBold
 
     ContentTitle.TextXAlignment =
         Enum.TextXAlignment.Left
 
-    ContentTitle.ZIndex = 503
+    ContentTitle.ZIndex =
+        503
 
     ContentTitle.Parent =
         Content
@@ -1001,10 +1205,14 @@ function UI:Create()
             -52
         )
 
-    Scroll.BackgroundTransparency = 1
-    Scroll.BorderSizePixel = 0
+    Scroll.BackgroundTransparency =
+        1
 
-    Scroll.ScrollBarThickness = 5
+    Scroll.BorderSizePixel =
+        0
+
+    Scroll.ScrollBarThickness =
+        5
 
     Scroll.ScrollBarImageColor3 =
         self.Theme:GetAccent()
@@ -1015,7 +1223,8 @@ function UI:Create()
     Scroll.ScrollingDirection =
         Enum.ScrollingDirection.Y
 
-    Scroll.ZIndex = 503
+    Scroll.ZIndex =
+        503
 
     Scroll.Parent =
         Content
@@ -1054,11 +1263,15 @@ function UI:Create()
     -- CLOSE EVENT
     --==================================================
 
-    Close.MouseButton1Click:Connect(function()
+    Close.MouseButton1Click:Connect(
+        function()
 
-        self:SetVisibleAnimated(false)
+            self:SetVisibleAnimated(
+                false
+            )
 
-    end)
+        end
+    )
 
     --==================================================
     -- DRAG
@@ -1089,7 +1302,9 @@ function UI:ShouldUseGlow()
 
     if CurrentTheme.GlowEnabled ~= nil then
 
-        return CurrentTheme.GlowEnabled == true
+        return
+            CurrentTheme.GlowEnabled
+            == true
 
     end
 
@@ -1128,6 +1343,136 @@ function UI:ShouldUseGlow()
 end
 
 --==================================================
+-- SHOULD USE SHADOW
+--==================================================
+
+function UI:ShouldUseShadow()
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    if not CurrentTheme then
+        return false
+    end
+
+    if CurrentTheme.ShadowEnabled ~= nil then
+
+        return
+            CurrentTheme.ShadowEnabled
+            == true
+
+    end
+
+    local Name =
+        string.lower(
+            GetThemeName(
+                self.Theme
+            )
+        )
+
+    return
+        string.find(
+            Name,
+            "rimuru dark",
+            1,
+            true
+        )
+        ~= nil
+
+end
+
+--==================================================
+-- UPDATE SHADOW
+--==================================================
+
+function UI:UpdateShadow()
+
+    if not self.Shadow
+    or not self.Main then
+
+        return
+
+    end
+
+    local Enabled =
+        self:ShouldUseShadow()
+
+    self.Shadow.Visible =
+        Enabled
+
+    if not Enabled then
+        return
+    end
+
+    --==================================================
+    -- FOLLOW MAIN POSITION
+    --==================================================
+
+    self.Shadow.Position =
+        UDim2.new(
+            self.Main.Position.X.Scale,
+            self.Main.Position.X.Offset
+                - SHADOW_PADDING,
+
+            self.Main.Position.Y.Scale,
+            self.Main.Position.Y.Offset
+                - SHADOW_PADDING
+        )
+
+    --==================================================
+    -- FOLLOW MAIN SIZE
+    --==================================================
+
+    self.Shadow.Size =
+        UDim2.new(
+            self.Main.Size.X.Scale,
+            self.Main.Size.X.Offset
+                + SHADOW_PADDING * 2,
+
+            self.Main.Size.Y.Scale,
+            self.Main.Size.Y.Offset
+                + SHADOW_PADDING * 2
+        )
+
+    --==================================================
+    -- SHADOW PULSE
+    --==================================================
+
+    local Pulse =
+        (
+            math.sin(
+                self.NeonTime
+                * SHADOW_PULSE_SPEED
+            )
+            + 1
+        )
+        * 0.5
+
+    Pulse =
+        Pulse
+        * Pulse
+        * (
+            3
+            -
+            2 * Pulse
+        )
+
+    self.Shadow.BackgroundTransparency =
+        SHADOW_MAX_TRANSPARENCY
+        -
+        (
+            Pulse
+            *
+            (
+                SHADOW_MAX_TRANSPARENCY
+                -
+                SHADOW_MIN_TRANSPARENCY
+            )
+        )
+
+end
+
+--==================================================
 -- START NEON / PULSE
 --==================================================
 
@@ -1137,11 +1482,13 @@ function UI:StartNeonAnimation()
 
         self.NeonConnection:Disconnect()
 
-        self.NeonConnection = nil
+        self.NeonConnection =
+            nil
 
     end
 
-    self.NeonTime = 0
+    self.NeonTime =
+        0
 
     self.NeonConnection =
         RunService.RenderStepped:Connect(
@@ -1173,6 +1520,12 @@ function UI:StartNeonAnimation()
                     DeltaTime
 
                 --==================================================
+                -- SHADOW
+                --==================================================
+
+                self:UpdateShadow()
+
+                --==================================================
                 -- COLORS
                 --==================================================
 
@@ -1187,7 +1540,8 @@ function UI:StartNeonAnimation()
                     local Success, Result =
                         pcall(function()
 
-                            return self.Theme:GetGlowColor()
+                            return
+                                self.Theme:GetGlowColor()
 
                         end)
 
@@ -1222,16 +1576,13 @@ function UI:StartNeonAnimation()
                     )
                     * 0.5
 
-                -- Smoothstep
-
                 local Pulse =
                     Wave
                     * Wave
                     * (
                         3
                         -
-                        2
-                        * Wave
+                        2 * Wave
                     )
 
                 --==================================================
@@ -1243,12 +1594,14 @@ function UI:StartNeonAnimation()
                     local Success, Result =
                         pcall(function()
 
-                            return self.Theme:GetBorderPulse()
+                            return
+                                self.Theme:GetBorderPulse()
 
                         end)
 
                     if Success
-                    and type(Result) == "number" then
+                    and type(Result)
+                        == "number" then
 
                         Pulse =
                             math.clamp(
@@ -1467,7 +1820,9 @@ function UI:IsAnimationEnabled()
 
     end
 
-    return self.Config.UI.Animation ~= false
+    return
+        self.Config.UI.Animation
+        ~= false
 
 end
 
@@ -1477,8 +1832,11 @@ end
 
 function UI:CancelAnimation()
 
-    self.AnimationToken += 1
-    self.AnimationBusy = false
+    self.AnimationToken +=
+        1
+
+    self.AnimationBusy =
+        false
 
 end
 
@@ -1497,12 +1855,23 @@ function UI:SetVisible(Value)
     self.Main.Visible =
         Value
 
+    if self.Shadow then
+
+        self.Shadow.Visible =
+            Value
+            and self:ShouldUseShadow()
+
+    end
+
     if Value then
 
-        self.MainScale.Scale = 1
+        self.MainScale.Scale =
+            1
 
         self.Main.Position =
             self.OriginalPosition
+
+        self:UpdateShadow()
 
     end
 
@@ -1546,7 +1915,15 @@ function UI:SetVisibleAnimated(Value)
 
     if Value then
 
-        Main.Visible = true
+        Main.Visible =
+            true
+
+        if self.Shadow then
+
+            self.Shadow.Visible =
+                self:ShouldUseShadow()
+
+        end
 
         Scale.Scale =
             OPEN_SCALE
@@ -1559,6 +1936,8 @@ function UI:SetVisibleAnimated(Value)
                 self.OriginalPosition.Y.Offset
                     + OPEN_OFFSET_Y
             )
+
+        self:UpdateShadow()
 
         local Info =
             TweenInfo.new(
@@ -1671,6 +2050,13 @@ function UI:SetVisibleAnimated(Value)
         Main.Visible =
             false
 
+        if self.Shadow then
+
+            self.Shadow.Visible =
+                false
+
+        end
+
         Scale.Scale =
             1
 
@@ -1713,81 +2099,98 @@ function UI:SetupDrag()
         return
     end
 
-    local Dragging = false
+    local Dragging =
+        false
+
     local DragStart
+
     local StartPosition
 
-    Main.InputBegan:Connect(function(Input)
+    Main.InputBegan:Connect(
+        function(Input)
 
-        if not self.Config
-        or not self.Config.UI
-        or not self.Config.UI.MainMenuDraggable then
+            if not self.Config
+            or not self.Config.UI
+            or not self.Config.UI.MainMenuDraggable then
 
-            return
+                return
 
-        end
+            end
 
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseButton1
+            if Input.UserInputType ==
+                Enum.UserInputType.MouseButton1
 
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
+            or Input.UserInputType ==
+                Enum.UserInputType.Touch then
 
-            Dragging = true
+                Dragging =
+                    true
 
-            DragStart =
-                Input.Position
+                DragStart =
+                    Input.Position
 
-            StartPosition =
-                Main.Position
+                StartPosition =
+                    Main.Position
 
-        end
-
-    end)
-
-    UIS.InputChanged:Connect(function(Input)
-
-        if not Dragging then
-            return
-        end
-
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseMovement
-
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
-
-            local Delta =
-                Input.Position
-                - DragStart
-
-            Main.Position =
-                UDim2.new(
-                    StartPosition.X.Scale,
-                    StartPosition.X.Offset
-                        + Delta.X,
-                    StartPosition.Y.Scale,
-                    StartPosition.Y.Offset
-                        + Delta.Y
-                )
+            end
 
         end
+    )
 
-    end)
+    UIS.InputChanged:Connect(
+        function(Input)
 
-    UIS.InputEnded:Connect(function(Input)
+            if not Dragging then
+                return
+            end
 
-        if Input.UserInputType ==
-            Enum.UserInputType.MouseButton1
+            if Input.UserInputType ==
+                Enum.UserInputType.MouseMovement
 
-        or Input.UserInputType ==
-            Enum.UserInputType.Touch then
+            or Input.UserInputType ==
+                Enum.UserInputType.Touch then
 
-            Dragging = false
+                local Delta =
+                    Input.Position
+                    - DragStart
+
+                Main.Position =
+                    UDim2.new(
+                        StartPosition.X.Scale,
+                        StartPosition.X.Offset
+                            + Delta.X,
+
+                        StartPosition.Y.Scale,
+                        StartPosition.Y.Offset
+                            + Delta.Y
+                    )
+
+                -- A sombra acompanha o menu
+                -- imediatamente durante o drag.
+
+                self:UpdateShadow()
+
+            end
 
         end
+    )
 
-    end)
+    UIS.InputEnded:Connect(
+        function(Input)
+
+            if Input.UserInputType ==
+                Enum.UserInputType.MouseButton1
+
+            or Input.UserInputType ==
+                Enum.UserInputType.Touch then
+
+                Dragging =
+                    false
+
+            end
+
+        end
+    )
 
 end
 
@@ -1833,6 +2236,59 @@ function UI:ApplyBackground()
 
     self.Background.Visible =
         true
+
+end
+
+--==================================================
+-- APPLY SHADOW
+--==================================================
+
+function UI:ApplyShadow()
+
+    if not self.Shadow then
+        return
+    end
+
+    local CurrentTheme =
+        self.Theme:GetCurrent()
+
+    if not CurrentTheme then
+        return
+    end
+
+    local Enabled =
+        self:ShouldUseShadow()
+
+    self.Shadow.Visible =
+        self.Main
+        and self.Main.Visible
+        and Enabled
+        or false
+
+    --==================================================
+    -- COLOR
+    --==================================================
+
+    self.Shadow.BackgroundColor3 =
+        Color3.fromRGB(
+            0,
+            0,
+            0
+        )
+
+    --==================================================
+    -- TRANSPARENCY
+    --==================================================
+
+    self.Shadow.BackgroundTransparency =
+        CurrentTheme.ShadowTransparency
+        or SHADOW_TRANSPARENCY
+
+    --==================================================
+    -- SIZE / POSITION
+    --==================================================
+
+    self:UpdateShadow()
 
 end
 
@@ -1907,6 +2363,12 @@ function UI:ApplyTheme()
     end
 
     --==================================================
+    -- SHADOW
+    --==================================================
+
+    self:ApplyShadow()
+
+    --==================================================
     -- BACKGROUND
     --==================================================
 
@@ -1934,7 +2396,8 @@ function UI:ApplyTheme()
             local Success, Result =
                 pcall(function()
 
-                    return self.Theme:GetGlowColor()
+                    return
+                        self.Theme:GetGlowColor()
 
                 end)
 
@@ -2091,6 +2554,12 @@ function UI:ApplyTheme()
 
     end
 
+    --==================================================
+    -- SHADOW FINAL UPDATE
+    --==================================================
+
+    self:UpdateShadow()
+
 end
 
 --==================================================
@@ -2103,7 +2572,8 @@ function UI:Destroy()
 
         self.NeonConnection:Disconnect()
 
-        self.NeonConnection = nil
+        self.NeonConnection =
+            nil
 
     end
 
@@ -2111,9 +2581,16 @@ function UI:Destroy()
 
         self.Gui:Destroy()
 
-        self.Gui = nil
+        self.Gui =
+            nil
 
     end
+
+    self.Main =
+        nil
+
+    self.Shadow =
+        nil
 
 end
 
