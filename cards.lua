@@ -324,16 +324,14 @@ function Cards:UpdateFavoriteButton(
 
     if IsFavorite then
 
-        Button.Text =
-            "â˜…"
+        Button.Text = "★"
 
         Button.TextColor3 =
             self.Theme:GetAccent()
 
     else
 
-        Button.Text =
-            "â˜†"
+        Button.Text = "☆"
 
         Button.TextColor3 =
             CurrentTheme.SubText
