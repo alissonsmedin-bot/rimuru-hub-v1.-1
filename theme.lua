@@ -4,7 +4,7 @@
 --// Dynamic Colors
 --// Natural Neon Pulse
 --// Interface Glow
---// Soft Interface Shadow
+--// Strong Interface Shadow
 --// Border Glow
 --// Animated Border Snake
 --// Smooth Snake Motion
@@ -15,6 +15,7 @@
 --// Background Safe
 --// RGB Compatible
 --// BLACKOUT SELECTED STATE
+--// WHITE GOLD FULL INTERFACE
 --// SAFE THEME FALLBACKS
 
 local Theme = {}
@@ -31,221 +32,65 @@ local PremiumPresets = {
 
     ["Rimuru Dark"] = {
 
-        --==================================================
-        -- DEEP BLACK / BLUE-BLACK
-        --==================================================
+        Background = Color3.fromRGB(2, 4, 8),
+        Main = Color3.fromRGB(2, 4, 8),
+        Sidebar = Color3.fromRGB(3, 6, 11),
+        Content = Color3.fromRGB(5, 8, 14),
 
-        Background =
-            Color3.fromRGB(
-                2,
-                4,
-                8
-            ),
+        Card = Color3.fromRGB(8, 16, 25),
+        CardDark = Color3.fromRGB(5, 10, 18),
 
-        Content =
-            Color3.fromRGB(
-                5,
-                8,
-                14
-            ),
+        Button = Color3.fromRGB(6, 13, 22),
+        ButtonDark = Color3.fromRGB(3, 8, 14),
 
-        Card =
-            Color3.fromRGB(
-                8,
-                16,
-                25
-            ),
+        Accent = Color3.fromRGB(35, 145, 210),
+        AccentLight = Color3.fromRGB(105, 215, 245),
 
-        CardDark =
-            Color3.fromRGB(
-                5,
-                10,
-                18
-            ),
+        LogoBorder = Color3.fromRGB(115, 235, 255),
+        LogoBorderTransparency = 0.14,
+        LogoBorderThickness = 1.65,
 
-        Button =
-            Color3.fromRGB(
-                6,
-                13,
-                22
-            ),
+        LogoBackground = Color3.fromRGB(4, 18, 30),
+        Close = Color3.fromRGB(8, 18, 30),
 
-        ButtonDark =
-            Color3.fromRGB(
-                3,
-                8,
-                14
-            ),
+        Text = Color3.fromRGB(242, 248, 252),
+        SubText = Color3.fromRGB(145, 170, 190),
 
-        --==================================================
-        -- RIMURU ACCENT
-        --==================================================
+        TextStroke = Color3.fromRGB(0, 0, 0),
+        TextStrokeTransparency = 0.18,
 
-        Accent =
-            Color3.fromRGB(
-                35,
-                145,
-                210
-            ),
+        ShadowEnabled = true,
+        ShadowColor = Color3.fromRGB(0, 0, 0),
 
-        AccentLight =
-            Color3.fromRGB(
-                105,
-                215,
-                245
-            ),
+        -- Mais forte que antes
+        ShadowTransparency = 0.64,
+        ShadowSize = 12,
+        ShadowSoftness = 0.78,
 
-        --==================================================
-        -- UNIQUE LOGO BORDER
-        --==================================================
+        ShadowOffset = Vector2.new(0, 2),
 
-        LogoBorder =
-            Color3.fromRGB(
-                115,
-                235,
-                255
-            ),
+        ShadowAnimated = true,
+        ShadowMinTransparency = 0.70,
+        ShadowMaxTransparency = 0.56,
+        ShadowSpeed = 0.55,
 
-        LogoBorderTransparency =
-            0.14,
+        Animated = true,
+        AnimationSpeed = 1.15,
+        CardAnimation = true,
 
-        LogoBorderThickness =
-            1.65,
+        GlowEnabled = true,
+        GlowSpeed = 0.88,
+        GlowStrength = 0.58,
+        GlowMinTransparency = 0.84,
+        GlowMaxTransparency = 0.68,
 
-        --==================================================
-        -- TEXT
-        --==================================================
+        SnakeEnabled = true,
+        SnakeSpeed = 0.20,
+        SnakeSize = 4,
+        SnakeGlow = 0.68,
+        SnakeTransparency = 0.12,
 
-        Text =
-            Color3.fromRGB(
-                242,
-                248,
-                252
-            ),
-
-        SubText =
-            Color3.fromRGB(
-                145,
-                170,
-                190
-            ),
-
-        TextStroke =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
-
-        TextStrokeTransparency =
-            0.18,
-
-        --==================================================
-        -- RIMURU DARK SHADOW
-        --==================================================
-        -- Muito importante:
-        -- Isso NÃO é um quadro preto.
-        --
-        -- A sombra deve ser suave e espalhada.
-        -- O UI.lua usa esses valores para construir
-        -- a sombra ao redor da interface.
-
-        ShadowEnabled =
-            true,
-
-        ShadowColor =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
-
-        ShadowTransparency =
-            0.78,
-
-        ShadowSize =
-            10,
-
-        ShadowSoftness =
-            0.88,
-
-        ShadowOffset =
-            Vector2.new(
-                0,
-                2
-            ),
-
-        --==================================================
-        -- SHADOW SUBTLE PULSE
-        --==================================================
-
-        ShadowAnimated =
-            true,
-
-        ShadowMinTransparency =
-            0.82,
-
-        ShadowMaxTransparency =
-            0.74,
-
-        ShadowSpeed =
-            0.55,
-
-        --==================================================
-        -- ANIMATION
-        --==================================================
-
-        Animated =
-            true,
-
-        AnimationSpeed =
-            1.15,
-
-        CardAnimation =
-            true,
-
-        --==================================================
-        -- INTERFACE GLOW
-        --==================================================
-
-        GlowEnabled =
-            true,
-
-        GlowSpeed =
-            0.88,
-
-        GlowStrength =
-            0.58,
-
-        GlowMinTransparency =
-            0.84,
-
-        GlowMaxTransparency =
-            0.68,
-
-        --==================================================
-        -- BORDER SNAKE
-        --==================================================
-
-        SnakeEnabled =
-            true,
-
-        SnakeSpeed =
-            0.20,
-
-        SnakeSize =
-            4,
-
-        SnakeGlow =
-            0.68,
-
-        SnakeTransparency =
-            0.12,
-
-        --==================================================
-
-        BackgroundTransparency =
-            0.08
+        BackgroundTransparency = 0.08
     },
 
     --==================================================
@@ -254,177 +99,58 @@ local PremiumPresets = {
 
     ["Blackout"] = {
 
-        Background =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
+        Background = Color3.fromRGB(0, 0, 0),
+        Main = Color3.fromRGB(0, 0, 0),
+        Sidebar = Color3.fromRGB(0, 0, 0),
+        Content = Color3.fromRGB(0, 0, 0),
 
-        Content =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
+        Card = Color3.fromRGB(0, 0, 0),
+        CardDark = Color3.fromRGB(8, 8, 8),
 
-        Card =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
+        Button = Color3.fromRGB(0, 0, 0),
+        ButtonDark = Color3.fromRGB(10, 10, 10),
 
-        CardDark =
-            Color3.fromRGB(
-                8,
-                8,
-                8
-            ),
+        Accent = Color3.fromRGB(255, 255, 255),
+        AccentLight = Color3.fromRGB(255, 255, 255),
 
-        Button =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
+        LogoBorder = Color3.fromRGB(255, 255, 255),
+        LogoBorderTransparency = 0.08,
+        LogoBorderThickness = 1.8,
 
-        ButtonDark =
-            Color3.fromRGB(
-                10,
-                10,
-                10
-            ),
+        LogoBackground = Color3.fromRGB(0, 0, 0),
+        Close = Color3.fromRGB(10, 10, 10),
 
-        Accent =
-            Color3.fromRGB(
-                255,
-                255,
-                255
-            ),
+        Text = Color3.fromRGB(255, 255, 255),
+        SubText = Color3.fromRGB(180, 180, 180),
 
-        AccentLight =
-            Color3.fromRGB(
-                255,
-                255,
-                255
-            ),
+        TextStroke = Color3.fromRGB(0, 0, 0),
+        TextStrokeTransparency = 0.15,
 
-        LogoBorder =
-            Color3.fromRGB(
-                255,
-                255,
-                255
-            ),
+        Normal = Color3.fromRGB(0, 0, 0),
+        NormalText = Color3.fromRGB(255, 255, 255),
 
-        Text =
-            Color3.fromRGB(
-                255,
-                255,
-                255
-            ),
+        Selected = Color3.fromRGB(255, 255, 255),
+        SelectedText = Color3.fromRGB(0, 0, 0),
 
-        SubText =
-            Color3.fromRGB(
-                180,
-                180,
-                180
-            ),
+        ShadowEnabled = false,
 
-        TextStroke =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
+        Animated = true,
+        AnimationSpeed = 0.78,
+        CardAnimation = false,
 
-        TextStrokeTransparency =
-            0.15,
+        GlowEnabled = true,
+        GlowSpeed = 0.72,
+        GlowStrength = 0.68,
+        GlowMinTransparency = 0.86,
+        GlowMaxTransparency = 0.60,
 
-        --==================================================
-        -- BLACKOUT STATE
-        --==================================================
+        SnakeEnabled = true,
+        SnakeSpeed = 0.16,
+        SnakeSize = 5,
+        SnakeGlow = 0.82,
+        SnakeTransparency = 0.05,
 
-        Normal =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
-
-        NormalText =
-            Color3.fromRGB(
-                255,
-                255,
-                255
-            ),
-
-        Selected =
-            Color3.fromRGB(
-                255,
-                255,
-                255
-            ),
-
-        SelectedText =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
-
-        --==================================================
-        -- NO DARK SHADOW
-        --==================================================
-
-        ShadowEnabled =
-            false,
-
-        --==================================================
-        -- ANIMATION
-        --==================================================
-
-        Animated =
-            true,
-
-        AnimationSpeed =
-            0.78,
-
-        CardAnimation =
-            false,
-
-        GlowEnabled =
-            true,
-
-        GlowSpeed =
-            0.72,
-
-        GlowStrength =
-            0.68,
-
-        GlowMinTransparency =
-            0.86,
-
-        GlowMaxTransparency =
-            0.60,
-
-        SnakeEnabled =
-            true,
-
-        SnakeSpeed =
-            0.16,
-
-        SnakeSize =
-            5,
-
-        SnakeGlow =
-            0.82,
-
-        SnakeTransparency =
-            0.05,
-
-        BackgroundTransparency =
-            0
+        BackgroundTransparency = 0
     },
 
     --==================================================
@@ -433,149 +159,52 @@ local PremiumPresets = {
 
     ["Void"] = {
 
-        Background =
-            Color3.fromRGB(
-                4,
-                3,
-                10
-            ),
+        Background = Color3.fromRGB(4, 3, 10),
+        Main = Color3.fromRGB(4, 3, 10),
+        Sidebar = Color3.fromRGB(5, 4, 13),
+        Content = Color3.fromRGB(8, 6, 17),
 
-        Content =
-            Color3.fromRGB(
-                8,
-                6,
-                17
-            ),
+        Card = Color3.fromRGB(15, 11, 30),
+        CardDark = Color3.fromRGB(10, 7, 22),
 
-        Card =
-            Color3.fromRGB(
-                15,
-                11,
-                30
-            ),
+        Button = Color3.fromRGB(18, 13, 36),
+        ButtonDark = Color3.fromRGB(11, 8, 24),
 
-        CardDark =
-            Color3.fromRGB(
-                10,
-                7,
-                22
-            ),
+        Accent = Color3.fromRGB(145, 85, 255),
+        AccentLight = Color3.fromRGB(190, 135, 255),
 
-        Button =
-            Color3.fromRGB(
-                18,
-                13,
-                36
-            ),
+        LogoBorder = Color3.fromRGB(205, 150, 255),
+        LogoBorderTransparency = 0.12,
+        LogoBorderThickness = 1.7,
 
-        ButtonDark =
-            Color3.fromRGB(
-                11,
-                8,
-                24
-            ),
+        LogoBackground = Color3.fromRGB(18, 10, 35),
+        Close = Color3.fromRGB(25, 20, 35),
 
-        Accent =
-            Color3.fromRGB(
-                145,
-                85,
-                255
-            ),
+        Text = Color3.fromRGB(245, 240, 255),
+        SubText = Color3.fromRGB(165, 150, 190),
 
-        AccentLight =
-            Color3.fromRGB(
-                190,
-                135,
-                255
-            ),
+        TextStroke = Color3.fromRGB(0, 0, 0),
+        TextStrokeTransparency = 0.25,
 
-        LogoBorder =
-            Color3.fromRGB(
-                205,
-                150,
-                255
-            ),
+        Animated = true,
+        AnimationSpeed = 0.75,
+        CardAnimation = true,
 
-        Text =
-            Color3.fromRGB(
-                245,
-                240,
-                255
-            ),
+        GlowEnabled = true,
+        GlowSpeed = 0.68,
+        GlowStrength = 0.90,
+        GlowMinTransparency = 0.83,
+        GlowMaxTransparency = 0.50,
 
-        SubText =
-            Color3.fromRGB(
-                165,
-                150,
-                190
-            ),
+        SnakeEnabled = true,
+        SnakeSpeed = 0.19,
+        SnakeSize = 5,
+        SnakeGlow = 0.95,
+        SnakeTransparency = 0.06,
 
-        TextStroke =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
+        ShadowEnabled = false,
 
-        TextStrokeTransparency =
-            0.25,
-
-        --==================================================
-        -- ANIMATION
-        --==================================================
-
-        Animated =
-            true,
-
-        AnimationSpeed =
-            0.75,
-
-        CardAnimation =
-            true,
-
-        --==================================================
-        -- PURPLE GLOW
-        --==================================================
-
-        GlowEnabled =
-            true,
-
-        GlowSpeed =
-            0.68,
-
-        GlowStrength =
-            0.90,
-
-        GlowMinTransparency =
-            0.83,
-
-        GlowMaxTransparency =
-            0.50,
-
-        --==================================================
-        -- BORDER SNAKE
-        --==================================================
-
-        SnakeEnabled =
-            true,
-
-        SnakeSpeed =
-            0.19,
-
-        SnakeSize =
-            5,
-
-        SnakeGlow =
-            0.95,
-
-        SnakeTransparency =
-            0.06,
-
-        ShadowEnabled =
-            false,
-
-        BackgroundTransparency =
-            0.08
+        BackgroundTransparency = 0.08
     },
 
     --==================================================
@@ -584,137 +213,52 @@ local PremiumPresets = {
 
     ["Crimson"] = {
 
-        Background =
-            Color3.fromRGB(
-                12,
-                3,
-                5
-            ),
+        Background = Color3.fromRGB(12, 3, 5),
+        Main = Color3.fromRGB(12, 3, 5),
+        Sidebar = Color3.fromRGB(15, 3, 6),
+        Content = Color3.fromRGB(20, 5, 8),
 
-        Content =
-            Color3.fromRGB(
-                20,
-                5,
-                8
-            ),
+        Card = Color3.fromRGB(42, 8, 13),
+        CardDark = Color3.fromRGB(27, 5, 9),
 
-        Card =
-            Color3.fromRGB(
-                42,
-                8,
-                13
-            ),
+        Button = Color3.fromRGB(35, 7, 12),
+        ButtonDark = Color3.fromRGB(22, 4, 8),
 
-        CardDark =
-            Color3.fromRGB(
-                27,
-                5,
-                9
-            ),
+        Accent = Color3.fromRGB(220, 35, 55),
+        AccentLight = Color3.fromRGB(255, 75, 90),
 
-        Button =
-            Color3.fromRGB(
-                35,
-                7,
-                12
-            ),
+        LogoBorder = Color3.fromRGB(255, 105, 115),
+        LogoBorderTransparency = 0.10,
+        LogoBorderThickness = 1.7,
 
-        ButtonDark =
-            Color3.fromRGB(
-                22,
-                4,
-                8
-            ),
+        LogoBackground = Color3.fromRGB(45, 8, 12),
+        Close = Color3.fromRGB(55, 20, 24),
 
-        Accent =
-            Color3.fromRGB(
-                220,
-                35,
-                55
-            ),
+        Text = Color3.fromRGB(255, 245, 245),
+        SubText = Color3.fromRGB(205, 160, 165),
 
-        AccentLight =
-            Color3.fromRGB(
-                255,
-                75,
-                90
-            ),
+        TextStroke = Color3.fromRGB(0, 0, 0),
+        TextStrokeTransparency = 0.15,
 
-        LogoBorder =
-            Color3.fromRGB(
-                255,
-                105,
-                115
-            ),
+        Animated = true,
+        AnimationSpeed = 0.65,
+        CardAnimation = true,
 
-        Text =
-            Color3.fromRGB(
-                255,
-                245,
-                245
-            ),
+        GlowEnabled = true,
+        GlowSpeed = 0.62,
+        GlowStrength = 0.78,
+        GlowMinTransparency = 0.84,
+        GlowMaxTransparency = 0.58,
 
-        SubText =
-            Color3.fromRGB(
-                205,
-                160,
-                165
-            ),
+        SnakeEnabled = true,
+        SnakeSpeed = 0.18,
+        SnakeSize = 5,
+        SnakeGlow = 0.88,
+        SnakeTransparency = 0.08,
 
-        TextStroke =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
+        ShadowEnabled = false,
 
-        TextStrokeTransparency =
-            0.15,
-
-        Animated =
-            true,
-
-        AnimationSpeed =
-            0.65,
-
-        CardAnimation =
-            true,
-
-        GlowEnabled =
-            true,
-
-        GlowSpeed =
-            0.62,
-
-        GlowStrength =
-            0.78,
-
-        GlowMinTransparency =
-            0.84,
-
-        GlowMaxTransparency =
-            0.58,
-
-        SnakeEnabled =
-            true,
-
-        SnakeSpeed =
-            0.18,
-
-        SnakeSize =
-            5,
-
-        SnakeGlow =
-            0.88,
-
-        SnakeTransparency =
-            0.08,
-
-        ShadowEnabled =
-            false,
-
-        BackgroundTransparency =
-            0.04
+        BackgroundTransparency = 0.04
     },
 
     --==================================================
@@ -723,137 +267,52 @@ local PremiumPresets = {
 
     ["Crystal"] = {
 
-        Background =
-            Color3.fromRGB(
-                235,
-                242,
-                248
-            ),
+        Background = Color3.fromRGB(235, 242, 248),
+        Main = Color3.fromRGB(235, 242, 248),
+        Sidebar = Color3.fromRGB(230, 239, 247),
+        Content = Color3.fromRGB(248, 251, 255),
 
-        Content =
-            Color3.fromRGB(
-                248,
-                251,
-                255
-            ),
+        Card = Color3.fromRGB(225, 237, 248),
+        CardDark = Color3.fromRGB(210, 226, 240),
 
-        Card =
-            Color3.fromRGB(
-                225,
-                237,
-                248
-            ),
+        Button = Color3.fromRGB(220, 235, 248),
+        ButtonDark = Color3.fromRGB(205, 222, 237),
 
-        CardDark =
-            Color3.fromRGB(
-                210,
-                226,
-                240
-            ),
+        Accent = Color3.fromRGB(55, 155, 220),
+        AccentLight = Color3.fromRGB(105, 205, 255),
 
-        Button =
-            Color3.fromRGB(
-                220,
-                235,
-                248
-            ),
+        LogoBorder = Color3.fromRGB(80, 220, 255),
+        LogoBorderTransparency = 0.10,
+        LogoBorderThickness = 1.5,
 
-        ButtonDark =
-            Color3.fromRGB(
-                205,
-                222,
-                237
-            ),
+        LogoBackground = Color3.fromRGB(235, 245, 252),
+        Close = Color3.fromRGB(205, 222, 237),
 
-        Accent =
-            Color3.fromRGB(
-                55,
-                155,
-                220
-            ),
+        Text = Color3.fromRGB(20, 30, 40),
+        SubText = Color3.fromRGB(75, 95, 115),
 
-        AccentLight =
-            Color3.fromRGB(
-                105,
-                205,
-                255
-            ),
+        TextStroke = Color3.fromRGB(255, 255, 255),
+        TextStrokeTransparency = 0.1,
 
-        LogoBorder =
-            Color3.fromRGB(
-                80,
-                220,
-                255
-            ),
+        Animated = true,
+        AnimationSpeed = 0.45,
+        CardAnimation = true,
 
-        Text =
-            Color3.fromRGB(
-                20,
-                30,
-                40
-            ),
+        GlowEnabled = true,
+        GlowSpeed = 0.42,
+        GlowStrength = 0.35,
+        GlowMinTransparency = 0.90,
+        GlowMaxTransparency = 0.76,
 
-        SubText =
-            Color3.fromRGB(
-                75,
-                95,
-                115
-            ),
+        SnakeEnabled = true,
+        SnakeSpeed = 0.14,
+        SnakeSize = 4,
+        SnakeGlow = 0.45,
+        SnakeTransparency = 0.15,
 
-        TextStroke =
-            Color3.fromRGB(
-                255,
-                255,
-                255
-            ),
+        ShadowEnabled = false,
 
-        TextStrokeTransparency =
-            0.1,
-
-        Animated =
-            true,
-
-        AnimationSpeed =
-            0.45,
-
-        CardAnimation =
-            true,
-
-        GlowEnabled =
-            true,
-
-        GlowSpeed =
-            0.42,
-
-        GlowStrength =
-            0.35,
-
-        GlowMinTransparency =
-            0.90,
-
-        GlowMaxTransparency =
-            0.76,
-
-        SnakeEnabled =
-            true,
-
-        SnakeSpeed =
-            0.14,
-
-        SnakeSize =
-            4,
-
-        SnakeGlow =
-            0.45,
-
-        SnakeTransparency =
-            0.15,
-
-        ShadowEnabled =
-            false,
-
-        BackgroundTransparency =
-            0
+        BackgroundTransparency = 0
     },
 
     --==================================================
@@ -862,137 +321,206 @@ local PremiumPresets = {
 
     ["Golden Neon"] = {
 
-        Background =
-            Color3.fromRGB(
-                8,
-                7,
-                4
-            ),
+        Background = Color3.fromRGB(8, 7, 4),
+        Main = Color3.fromRGB(8, 7, 4),
+        Sidebar = Color3.fromRGB(10, 8, 4),
+        Content = Color3.fromRGB(15, 13, 7),
 
-        Content =
-            Color3.fromRGB(
-                15,
-                13,
-                7
-            ),
+        Card = Color3.fromRGB(32, 27, 11),
+        CardDark = Color3.fromRGB(22, 19, 8),
 
-        Card =
-            Color3.fromRGB(
-                32,
-                27,
-                11
-            ),
+        Button = Color3.fromRGB(28, 24, 10),
+        ButtonDark = Color3.fromRGB(18, 15, 7),
 
-        CardDark =
-            Color3.fromRGB(
-                22,
-                19,
-                8
-            ),
+        Accent = Color3.fromRGB(235, 175, 35),
+        AccentLight = Color3.fromRGB(255, 215, 85),
 
-        Button =
-            Color3.fromRGB(
-                28,
-                24,
-                10
-            ),
+        LogoBorder = Color3.fromRGB(255, 225, 110),
+        LogoBorderTransparency = 0.08,
+        LogoBorderThickness = 1.8,
 
-        ButtonDark =
-            Color3.fromRGB(
-                18,
-                15,
-                7
-            ),
+        LogoBackground = Color3.fromRGB(42, 31, 7),
+        Close = Color3.fromRGB(55, 44, 18),
 
-        Accent =
-            Color3.fromRGB(
-                235,
-                175,
-                35
-            ),
+        Text = Color3.fromRGB(255, 248, 220),
+        SubText = Color3.fromRGB(200, 180, 125),
 
-        AccentLight =
-            Color3.fromRGB(
-                255,
-                215,
-                85
-            ),
+        TextStroke = Color3.fromRGB(0, 0, 0),
+        TextStrokeTransparency = 0.1,
 
-        LogoBorder =
-            Color3.fromRGB(
-                255,
-                225,
-                110
-            ),
+        Animated = true,
+        AnimationSpeed = 0.55,
+        CardAnimation = true,
 
-        Text =
-            Color3.fromRGB(
-                255,
-                248,
-                220
-            ),
+        GlowEnabled = true,
+        GlowSpeed = 0.55,
+        GlowStrength = 0.72,
+        GlowMinTransparency = 0.86,
+        GlowMaxTransparency = 0.57,
 
-        SubText =
-            Color3.fromRGB(
-                200,
-                180,
-                125
-            ),
+        SnakeEnabled = true,
+        SnakeSpeed = 0.17,
+        SnakeSize = 5,
+        SnakeGlow = 0.85,
+        SnakeTransparency = 0.08,
 
-        TextStroke =
-            Color3.fromRGB(
-                0,
-                0,
-                0
-            ),
+        ShadowEnabled = false,
 
-        TextStrokeTransparency =
-            0.1,
+        BackgroundTransparency = 0.03
+    },
 
-        Animated =
-            true,
+    --==================================================
+    -- 🤍✨ BRANCO DOURADO
+    --==================================================
+    -- IMPORTANTE:
+    -- Este preset controla TODA a interface.
+    --
+    -- Main       = branco
+    -- Sidebar    = branco
+    -- Content    = branco
+    -- Card       = branco
+    -- Button     = branco
+    -- Accent     = dourado
+    -- Logo       = branco/dourado
+    --
+    -- Isso impede partes antigas do Config.lua
+    -- de deixarem o topo preto.
 
-        AnimationSpeed =
-            0.55,
+    ["Branco Dourado"] = {
 
-        CardAnimation =
-            true,
+        --==================================================
+        -- FULL WHITE INTERFACE
+        --==================================================
 
-        GlowEnabled =
-            true,
+        Background = Color3.fromRGB(245, 245, 242),
 
-        GlowSpeed =
-            0.55,
+        Main = Color3.fromRGB(245, 245, 242),
 
-        GlowStrength =
-            0.72,
+        Sidebar = Color3.fromRGB(238, 238, 234),
 
-        GlowMinTransparency =
-            0.86,
+        Content = Color3.fromRGB(248, 248, 245),
 
-        GlowMaxTransparency =
-            0.57,
+        --==================================================
+        -- WHITE CARDS
+        --==================================================
 
-        SnakeEnabled =
-            true,
+        Card = Color3.fromRGB(255, 255, 252),
 
-        SnakeSpeed =
-            0.17,
+        CardDark = Color3.fromRGB(238, 238, 233),
 
-        SnakeSize =
-            5,
+        Button = Color3.fromRGB(250, 250, 247),
 
-        SnakeGlow =
-            0.85,
+        ButtonDark = Color3.fromRGB(232, 232, 226),
 
-        SnakeTransparency =
-            0.08,
+        --==================================================
+        -- GOLD ACCENT
+        --==================================================
 
-        ShadowEnabled =
-            false,
+        Accent = Color3.fromRGB(218, 170, 55),
 
-        BackgroundTransparency =
-            0.03
+        AccentLight = Color3.fromRGB(255, 215, 100),
+
+        --==================================================
+        -- LOGO
+        --==================================================
+
+        LogoBorder = Color3.fromRGB(235, 190, 70),
+
+        LogoBorderTransparency = 0.05,
+
+        LogoBorderThickness = 1.9,
+
+        LogoBackground = Color3.fromRGB(255, 253, 242),
+
+        Close = Color3.fromRGB(225, 215, 190),
+
+        --==================================================
+        -- TEXT
+        --==================================================
+
+        Text = Color3.fromRGB(35, 35, 32),
+
+        SubText = Color3.fromRGB(105, 100, 88),
+
+        TextStroke = Color3.fromRGB(255, 255, 255),
+
+        TextStrokeTransparency = 0.25,
+
+        --==================================================
+        -- SELECTED / NORMAL
+        --==================================================
+
+        Normal = Color3.fromRGB(245, 245, 242),
+
+        NormalText = Color3.fromRGB(45, 43, 38),
+
+        Selected = Color3.fromRGB(218, 170, 55),
+
+        SelectedText = Color3.fromRGB(255, 255, 255),
+
+        --==================================================
+        -- ANIMATION
+        --==================================================
+
+        Animated = true,
+
+        AnimationSpeed = 0.52,
+
+        CardAnimation = true,
+
+        --==================================================
+        -- GOLD GLOW
+        --==================================================
+
+        GlowEnabled = true,
+
+        GlowSpeed = 0.52,
+
+        GlowStrength = 0.62,
+
+        GlowMinTransparency = 0.88,
+
+        GlowMaxTransparency = 0.62,
+
+        --==================================================
+        -- GOLD BORDER SNAKE
+        --==================================================
+
+        SnakeEnabled = true,
+
+        SnakeSpeed = 0.17,
+
+        SnakeSize = 5,
+
+        SnakeGlow = 0.78,
+
+        SnakeTransparency = 0.06,
+
+        --==================================================
+        -- SHADOW
+        --==================================================
+
+        ShadowEnabled = true,
+
+        ShadowColor = Color3.fromRGB(90, 75, 40),
+
+        ShadowTransparency = 0.72,
+
+        ShadowSize = 11,
+
+        ShadowSoftness = 0.82,
+
+        ShadowOffset = Vector2.new(0, 2),
+
+        ShadowAnimated = true,
+
+        ShadowMinTransparency = 0.78,
+
+        ShadowMaxTransparency = 0.66,
+
+        ShadowSpeed = 0.48,
+
+        BackgroundTransparency = 0
     }
 
 }
@@ -1003,32 +531,31 @@ local PremiumPresets = {
 
 function Theme:Init(Context)
 
-    self.Config =
-        Context.Config
+    Context = Context or {}
 
-    self.Themes =
-        self.Config.UI.Themes
-        or {}
+    self.Config = Context.Config or {}
+
+    self.Config.UI = self.Config.UI or {}
+
+    self.Themes = self.Config.UI.Themes or {}
 
     self.Name =
         self.Config.UI.Theme
         or "Rimuru Dark"
 
     --==================================================
-    -- SAFE THEME FALLBACK
+    -- SAFE FALLBACK
     --==================================================
 
     if not self.Themes[self.Name] then
 
         if self.Themes["Rimuru Dark"] then
 
-            self.Name =
-                "Rimuru Dark"
+            self.Name = "Rimuru Dark"
 
         else
 
-            self.Name =
-                next(self.Themes)
+            self.Name = next(self.Themes)
 
         end
 
@@ -1047,11 +574,9 @@ function Theme:Init(Context)
     -- ANIMATION STATE
     --==================================================
 
-    self.RGBHue =
-        0
+    self.RGBHue = 0
 
-    self.AnimationTime =
-        0
+    self.AnimationTime = 0
 
 end
 
@@ -1072,11 +597,95 @@ function Theme:ApplyPremiumPreset()
         return
     end
 
-    for Key, Value in
-        pairs(Preset) do
+    --==================================================
+    -- PREMIUM VALUES OVERRIDE CONFIG VALUES
+    --==================================================
 
-        self.Current[Key] =
-            Value
+    for Key, Value in pairs(Preset) do
+
+        self.Current[Key] = Value
+
+    end
+
+    --==================================================
+    -- IMPORTANT ALIASES
+    --==================================================
+    -- Alguns módulos antigos do Rimuru Hub usam
+    -- Main / Sidebar em vez de Background / Content.
+    --
+    -- Mantemos tudo sincronizado.
+
+    if Preset.Background then
+        self.Current.Main = Preset.Background
+    end
+
+    if Preset.Content then
+        self.Current.Content = Preset.Content
+    end
+
+    --==================================================
+    -- WHITE GOLD FORCE SYNC
+    --==================================================
+
+    if self.Name == "Branco Dourado" then
+
+        local White =
+            Color3.fromRGB(
+                245,
+                245,
+                242
+            )
+
+        local ContentWhite =
+            Color3.fromRGB(
+                248,
+                248,
+                245
+            )
+
+        self.Current.Background =
+            White
+
+        self.Current.Main =
+            White
+
+        self.Current.Sidebar =
+            Color3.fromRGB(
+                238,
+                238,
+                234
+            )
+
+        self.Current.Content =
+            ContentWhite
+
+        self.Current.Card =
+            Color3.fromRGB(
+                255,
+                255,
+                252
+            )
+
+        self.Current.Button =
+            Color3.fromRGB(
+                250,
+                250,
+                247
+            )
+
+        self.Current.Accent =
+            Color3.fromRGB(
+                218,
+                170,
+                55
+            )
+
+        self.Current.AccentLight =
+            Color3.fromRGB(
+                255,
+                215,
+                100
+            )
 
     end
 
@@ -1090,11 +699,7 @@ function Theme:GetAccent()
 
     if not self.Current then
 
-        return Color3.new(
-            1,
-            1,
-            1
-        )
+        return Color3.new(1, 1, 1)
 
     end
 
@@ -1117,17 +722,9 @@ function Theme:GetAccent()
 
     if not Base then
 
-        return Color3.new(
-            1,
-            1,
-            1
-        )
+        return Color3.new(1, 1, 1)
 
     end
-
-    --==================================================
-    -- NATURAL ANIMATED ACCENT
-    --==================================================
 
     if self.Current.Animated then
 
@@ -1170,26 +767,20 @@ function Theme:GetLightPulse()
         or 1
 
     local Time =
-        os.clock()
-        * Speed
+        os.clock() * Speed
 
     local Wave =
-        math.sin(Time)
+        (math.sin(Time) + 1) / 2
 
-    local Smooth =
-        (Wave + 1) / 2
-
-    Smooth =
-        Smooth
-        * Smooth
-        * (3 - 2 * Smooth)
-
-    return Smooth
+    return
+        Wave
+        * Wave
+        * (3 - 2 * Wave)
 
 end
 
 --==================================================
--- GET GLOW PULSE
+-- GLOW PULSE
 --==================================================
 
 function Theme:GetGlowPulse()
@@ -1205,12 +796,8 @@ function Theme:GetGlowPulse()
         self.Current.GlowSpeed
         or 1
 
-    local Time =
-        os.clock()
-        * Speed
-
     local Wave =
-        (math.sin(Time) + 1) / 2
+        (math.sin(os.clock() * Speed) + 1) / 2
 
     return
         Wave
@@ -1226,13 +813,7 @@ end
 function Theme:GetGlowColor()
 
     if not self.Current then
-
-        return Color3.new(
-            1,
-            1,
-            1
-        )
-
+        return Color3.new(1, 1, 1)
     end
 
     local Accent =
@@ -1270,22 +851,19 @@ function Theme:GetGlowTransparency()
     local Pulse =
         self:GetGlowPulse()
 
-    local MinTransparency =
+    local Min =
         self.Current.GlowMinTransparency
         or 0.80
 
-    local MaxTransparency =
+    local Max =
         self.Current.GlowMaxTransparency
         or 0.55
 
     return
-        MinTransparency
+        Min
         - (
             Pulse
-            * (
-                MinTransparency
-                - MaxTransparency
-            )
+            * (Min - Max)
         )
 
 end
@@ -1339,12 +917,14 @@ function Theme:GetBorderPulse()
         )
         * 0.72
 
-    local Time =
-        os.clock()
-        * Speed
-
     local Wave =
-        (math.sin(Time) + 1) / 2
+        (
+            math.sin(
+                os.clock() * Speed
+            )
+            + 1
+        )
+        / 2
 
     Wave =
         Wave
@@ -1353,7 +933,7 @@ function Theme:GetBorderPulse()
 
     return
         0.28
-        + (Wave * 0.52)
+        + Wave * 0.52
 
 end
 
@@ -1367,9 +947,7 @@ function Theme:IsShadowEnabled()
         return false
     end
 
-    return
-        self.Current.ShadowEnabled
-        == true
+    return self.Current.ShadowEnabled == true
 
 end
 
@@ -1412,25 +990,21 @@ function Theme:GetShadowTransparency()
 
     end
 
-    --==================================================
-    -- STATIC SHADOW
-    --==================================================
-
     if not self.Current.ShadowAnimated then
 
         return
             self.Current.ShadowTransparency
-            or 0.80
+            or 0.70
 
     end
 
     local Min =
         self.Current.ShadowMinTransparency
-        or 0.82
+        or 0.78
 
     local Max =
         self.Current.ShadowMaxTransparency
-        or 0.74
+        or 0.62
 
     local Speed =
         self.Current.ShadowSpeed
@@ -1439,8 +1013,7 @@ function Theme:GetShadowTransparency()
     local Wave =
         (
             math.sin(
-                os.clock()
-                * Speed
+                os.clock() * Speed
             )
             + 1
         )
@@ -1455,10 +1028,7 @@ function Theme:GetShadowTransparency()
         Min
         - (
             Wave
-            * (
-                Min
-                - Max
-            )
+            * (Min - Max)
         )
 
 end
@@ -1470,12 +1040,12 @@ end
 function Theme:GetShadowSize()
 
     if not self.Current then
-        return 8
+        return 10
     end
 
     return
         self.Current.ShadowSize
-        or 8
+        or 10
 
 end
 
@@ -1486,12 +1056,12 @@ end
 function Theme:GetShadowSoftness()
 
     if not self.Current then
-        return 0.85
+        return 0.82
     end
 
     return
         self.Current.ShadowSoftness
-        or 0.85
+        or 0.82
 
 end
 
@@ -1525,13 +1095,10 @@ end
 
 function Theme:IsSnakeEnabled()
 
-    if not self.Current then
-        return false
-    end
-
     return
-        self.Current.SnakeEnabled
-        == true
+        self.Current
+        and self.Current.SnakeEnabled == true
+        or false
 
 end
 
@@ -1600,7 +1167,7 @@ function Theme:GetSnakeTransparency()
 end
 
 --==================================================
--- GET SNAKE COLOR
+-- SNAKE COLOR
 --==================================================
 
 function Theme:GetSnakeColor()
@@ -1677,23 +1244,18 @@ function Theme:GetCardColor(Index)
 
     end
 
-    --==================================================
-    -- CARD WAVE
-    --==================================================
-
     local Offset =
-        (Index or 1)
-        * 0.55
+        (Index or 1) * 0.55
 
     local Wave =
         (
             math.sin(
-                os.clock()
-                * 0.9
+                os.clock() * 0.9
                 + Offset
             )
             + 1
-        ) / 2
+        )
+        / 2
 
     Wave =
         Wave
@@ -1708,7 +1270,7 @@ function Theme:GetCardColor(Index)
 end
 
 --==================================================
--- GET LOGO BORDER
+-- LOGO BORDER
 --==================================================
 
 function Theme:GetLogoBorder()
@@ -1730,7 +1292,7 @@ function Theme:GetLogoBorder()
 end
 
 --==================================================
--- GET LOGO BORDER TRANSPARENCY
+-- LOGO BORDER TRANSPARENCY
 --==================================================
 
 function Theme:GetLogoBorderTransparency()
@@ -1746,7 +1308,7 @@ function Theme:GetLogoBorderTransparency()
 end
 
 --==================================================
--- GET LOGO BORDER THICKNESS
+-- LOGO BORDER THICKNESS
 --==================================================
 
 function Theme:GetLogoBorderThickness()
@@ -1762,33 +1324,23 @@ function Theme:GetLogoBorderThickness()
 end
 
 --==================================================
--- GET TEXT COLOR
+-- TEXT
 --==================================================
 
 function Theme:GetText()
 
     if not self.Current then
-
-        return Color3.new(
-            1,
-            1,
-            1
-        )
-
+        return Color3.new(1, 1, 1)
     end
 
     return
         self.Current.Text
-        or Color3.new(
-            1,
-            1,
-            1
-        )
+        or Color3.new(1, 1, 1)
 
 end
 
 --==================================================
--- GET SUB TEXT
+-- SUB TEXT
 --==================================================
 
 function Theme:GetSubText()
@@ -1810,7 +1362,7 @@ function Theme:GetSubText()
 end
 
 --==================================================
--- GET TEXT STROKE
+-- TEXT STROKE
 --==================================================
 
 function Theme:GetTextStroke()
@@ -1836,7 +1388,7 @@ function Theme:GetTextStroke()
 end
 
 --==================================================
--- GET TEXT STROKE TRANSPARENCY
+-- TEXT STROKE TRANSPARENCY
 --==================================================
 
 function Theme:GetTextStrokeTransparency()
@@ -1852,7 +1404,7 @@ function Theme:GetTextStrokeTransparency()
 end
 
 --==================================================
--- GET BUTTON COLOR
+-- BUTTON
 --==================================================
 
 function Theme:GetButtonColor()
@@ -1874,7 +1426,7 @@ function Theme:GetButtonColor()
 end
 
 --==================================================
--- GET DARK BUTTON COLOR
+-- DARK BUTTON
 --==================================================
 
 function Theme:GetDarkButtonColor()
@@ -1896,7 +1448,7 @@ function Theme:GetDarkButtonColor()
 end
 
 --==================================================
--- NORMAL STATE COLOR
+-- NORMAL STATE
 --==================================================
 
 function Theme:GetNormalColor()
@@ -1924,7 +1476,7 @@ function Theme:GetNormalColor()
 end
 
 --==================================================
--- NORMAL STATE TEXT
+-- NORMAL TEXT
 --==================================================
 
 function Theme:GetNormalTextColor()
@@ -1951,7 +1503,7 @@ function Theme:GetNormalTextColor()
 end
 
 --==================================================
--- SELECTED STATE COLOR
+-- SELECTED
 --==================================================
 
 function Theme:GetSelectedColor()
@@ -1967,9 +1519,7 @@ function Theme:GetSelectedColor()
     end
 
     if self.Current.Selected then
-
         return self.Current.Selected
-
     end
 
     return self:GetAccent()
@@ -1977,7 +1527,7 @@ function Theme:GetSelectedColor()
 end
 
 --==================================================
--- SELECTED STATE TEXT
+-- SELECTED TEXT
 --==================================================
 
 function Theme:GetSelectedTextColor()
@@ -1993,9 +1543,7 @@ function Theme:GetSelectedTextColor()
     end
 
     if self.Current.SelectedText then
-
         return self.Current.SelectedText
-
     end
 
     return self:GetText()
@@ -2003,7 +1551,7 @@ function Theme:GetSelectedTextColor()
 end
 
 --==================================================
--- HAS CUSTOM STATE COLORS
+-- CUSTOM STATES
 --==================================================
 
 function Theme:HasCustomStateColors()
@@ -2027,9 +1575,7 @@ end
 function Theme:SetTheme(Name)
 
     if not self.Themes[Name] then
-
         return false
-
     end
 
     self.Name =
@@ -2041,25 +1587,13 @@ function Theme:SetTheme(Name)
     self.Config.UI.Theme =
         Name
 
-    --==================================================
-    -- PREMIUM PRESET
-    --==================================================
-
     self:ApplyPremiumPreset()
 
-    --==================================================
-    -- RGB RESET
-    --==================================================
-
     if self.Current.RGB then
-
-        self.RGBHue =
-            0
-
+        self.RGBHue = 0
     end
 
-    self.AnimationTime =
-        0
+    self.AnimationTime = 0
 
     return true
 
@@ -2079,14 +1613,10 @@ function Theme:UpdateRGB()
         return nil
     end
 
-    self.RGBHue +=
-        0.0025
+    self.RGBHue += 0.0025
 
     if self.RGBHue >= 1 then
-
-        self.RGBHue =
-            0
-
+        self.RGBHue = 0
     end
 
     return Color3.fromHSV(
@@ -2098,7 +1628,7 @@ function Theme:UpdateRGB()
 end
 
 --==================================================
--- UPDATE ANIMATION
+-- UPDATE
 --==================================================
 
 function Theme:Update()
@@ -2113,7 +1643,7 @@ function Theme:Update()
 end
 
 --==================================================
--- GET CURRENT
+-- CURRENT
 --==================================================
 
 function Theme:GetCurrent()
@@ -2123,7 +1653,7 @@ function Theme:GetCurrent()
 end
 
 --==================================================
--- GET NAME
+-- NAME
 --==================================================
 
 function Theme:GetName()
@@ -2133,7 +1663,7 @@ function Theme:GetName()
 end
 
 --==================================================
--- GET THEMES
+-- THEMES
 --==================================================
 
 function Theme:GetThemes()
@@ -2143,7 +1673,7 @@ function Theme:GetThemes()
 end
 
 --==================================================
--- GET BACKGROUND
+-- BACKGROUND
 --==================================================
 
 function Theme:GetBackground()
@@ -2157,7 +1687,7 @@ function Theme:GetBackground()
 end
 
 --==================================================
--- GET BACKGROUND TRANSPARENCY
+-- BACKGROUND TRANSPARENCY
 --==================================================
 
 function Theme:GetBackgroundTransparency()
@@ -2173,7 +1703,7 @@ function Theme:GetBackgroundTransparency()
 end
 
 --==================================================
--- GET PREMIUM PRESETS
+-- PREMIUM PRESETS
 --==================================================
 
 function Theme:GetPremiumPresets()
@@ -2183,7 +1713,7 @@ function Theme:GetPremiumPresets()
 end
 
 --==================================================
--- IS ANIMATED
+-- ANIMATED
 --==================================================
 
 function Theme:IsAnimated()
@@ -2193,13 +1723,12 @@ function Theme:IsAnimated()
     end
 
     return
-        self.Current.Animated
-        == true
+        self.Current.Animated == true
 
 end
 
 --==================================================
--- IS GLOW ENABLED
+-- GLOW ENABLED
 --==================================================
 
 function Theme:IsGlowEnabled()
@@ -2209,8 +1738,91 @@ function Theme:IsGlowEnabled()
     end
 
     return
-        self.Current.GlowEnabled
-        == true
+        self.Current.GlowEnabled == true
+
+end
+
+--==================================================
+-- MAIN COLOR
+--==================================================
+
+function Theme:GetMainColor()
+
+    if not self.Current then
+        return Color3.new(0, 0, 0)
+    end
+
+    return
+        self.Current.Main
+        or self.Current.Background
+        or Color3.new(0, 0, 0)
+
+end
+
+--==================================================
+-- SIDEBAR COLOR
+--==================================================
+
+function Theme:GetSidebarColor()
+
+    if not self.Current then
+        return Color3.new(0, 0, 0)
+    end
+
+    return
+        self.Current.Sidebar
+        or self.Current.Main
+        or self.Current.Background
+        or Color3.new(0, 0, 0)
+
+end
+
+--==================================================
+-- CONTENT COLOR
+--==================================================
+
+function Theme:GetContentColor()
+
+    if not self.Current then
+        return Color3.new(0, 0, 0)
+    end
+
+    return
+        self.Current.Content
+        or self.Current.Background
+        or Color3.new(0, 0, 0)
+
+end
+
+--==================================================
+-- LOGO BACKGROUND
+--==================================================
+
+function Theme:GetLogoBackground()
+
+    if not self.Current then
+        return self:GetMainColor()
+    end
+
+    return
+        self.Current.LogoBackground
+        or self:GetMainColor()
+
+end
+
+--==================================================
+-- CLOSE COLOR
+--==================================================
+
+function Theme:GetCloseColor()
+
+    if not self.Current then
+        return self:GetButtonColor()
+    end
+
+    return
+        self.Current.Close
+        or self:GetButtonColor()
 
 end
 
