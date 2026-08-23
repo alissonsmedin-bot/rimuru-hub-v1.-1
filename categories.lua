@@ -17,10 +17,9 @@
 --// CATEGORY CONTRAST SYSTEM
 --// THEME AWARE
 --// BLACKOUT = BLACK/WHITE INVERSION
---// SAFE INITIALIZATION
---// SAFE THEME FALLBACK
---// SAFE UI FALLBACK
---// STABLE VERSION
+--// CONFIGURATION CONTEXT FIX
+--// SEARCH CLEAR ON CATEGORY CHANGE
+--// SAFE CONTEXT SWITCHING
 
 local TweenService =
     game:GetService("TweenService")
@@ -48,40 +47,10 @@ local CategoryIcons = {
 }
 
 --==================================================
--- INTERNAL SAFE HELPERS
---==================================================
-
-local function IsTable(Value)
-
-    return type(Value) == "table"
-
-end
-
-local function IsInstance(Value)
-
-    return typeof(Value) == "Instance"
-
-end
-
---==================================================
 -- INIT
 --==================================================
 
 function Categories:Init(Context)
-
-    --==================================================
-    -- CONTEXT SAFETY
-    --==================================================
-
-    if type(Context) ~= "table" then
-
-        warn(
-            "⚠️ Rimuru Hub Categories: Context inválido."
-        )
-
-        return false
-
-    end
 
     self.Context =
         Context
@@ -107,20 +76,6 @@ function Categories:Init(Context)
     self.Search =
         Context.Search
 
-    --==================================================
-    -- UI SAFETY
-    --==================================================
-
-    if type(self.UI) ~= "table" then
-
-        warn(
-            "⚠️ Rimuru Hub Categories: UI não encontrada."
-        )
-
-        return false
-
-    end
-
     self.Sidebar =
         self.UI.Sidebar
 
@@ -130,45 +85,29 @@ function Categories:Init(Context)
     self.ContentTitle =
         self.UI.ContentTitle
 
-    if not IsInstance(self.Sidebar) then
-
-        warn(
-            "⚠️ Rimuru Hub Categories: Sidebar inválida."
-        )
-
-    end
-
-    if not IsInstance(self.Scroll) then
-
-        warn(
-            "⚠️ Rimuru Hub Categories: Scroll inválido."
-        )
-
-    end
-
-    if not IsInstance(self.ContentTitle) then
-
-        warn(
-            "⚠️ Rimuru Hub Categories: ContentTitle inválido."
-        )
-
-    end
-
-    --==================================================
-    -- STATE
-    --==================================================
-
     self.SelectedButton =
         nil
 
     self.CategoryButtons =
         {}
 
+    --==================================================
+    -- ALL SOUNDS
+    --==================================================
+
     self.AllSounds =
         {}
 
+    --==================================================
+    -- CURRENT CATEGORY
+    --==================================================
+
     self.CurrentCategory =
         "ALL"
+
+    --==================================================
+    -- CURRENT FILTER
+    --==================================================
 
     self.CurrentFilter =
         "All"
@@ -242,8 +181,6 @@ function Categories:Init(Context)
 
     }
 
-    return true
-
 end
 
 --==================================================
@@ -254,114 +191,84 @@ function Categories:GetIcon(
     CategoryName
 )
 
-    return CategoryIcons[CategoryName]
-        or "📁"
+    return CategoryIcons[
+        CategoryName
+    ]
+    or "📁"
 
 end
 
 --==================================================
--- SET NORMAL CATEGORY STYLE
+-- NORMAL CATEGORY STYLE
 --==================================================
 
 function Categories:SetNormalStyle(
     Button
 )
 
-    if not Button
-    or not Button.Parent then
-
+    if not Button then
         return
-
     end
 
     if not self.Theme then
         return
     end
 
-    local Success =
-        pcall(
+    if type(
+        self.Theme.GetNormalColor
+    ) ~= "function" then
 
-            function()
+        return
 
-                Button.BackgroundColor3 =
-                    self.Theme:GetNormalColor()
+    end
 
-                Button.TextColor3 =
-                    self.Theme:GetNormalTextColor()
+    Button.BackgroundColor3 =
+        self.Theme:GetNormalColor()
 
-            end
-
-        )
-
-    if not Success then
-
-        Button.BackgroundColor3 =
-            Color3.fromRGB(
-                25,
-                25,
-                32
-            )
+    if type(
+        self.Theme.GetNormalTextColor
+    ) == "function" then
 
         Button.TextColor3 =
-            Color3.fromRGB(
-                240,
-                240,
-                245
-            )
+            self.Theme:GetNormalTextColor()
 
     end
 
 end
 
 --==================================================
--- SET SELECTED CATEGORY STYLE
+-- SELECTED CATEGORY STYLE
 --==================================================
 
 function Categories:SetSelectedStyle(
     Button
 )
 
-    if not Button
-    or not Button.Parent then
-
+    if not Button then
         return
-
     end
 
     if not self.Theme then
         return
     end
 
-    local Success =
-        pcall(
+    if type(
+        self.Theme.GetSelectedColor
+    ) ~= "function" then
 
-            function()
+        return
 
-                Button.BackgroundColor3 =
-                    self.Theme:GetSelectedColor()
+    end
 
-                Button.TextColor3 =
-                    self.Theme:GetSelectedTextColor()
+    Button.BackgroundColor3 =
+        self.Theme:GetSelectedColor()
 
-            end
-
-        )
-
-    if not Success then
-
-        Button.BackgroundColor3 =
-            Color3.fromRGB(
-                25,
-                150,
-                255
-            )
+    if type(
+        self.Theme.GetSelectedTextColor
+    ) == "function" then
 
         Button.TextColor3 =
-            Color3.fromRGB(
-                240,
-                240,
-                245
-            )
+            self.Theme:GetSelectedTextColor()
 
     end
 
@@ -388,6 +295,10 @@ function Categories:AnimateCategoryClick(
 
     end
 
+    --==================================================
+    -- ORIGINAL SIZE
+    --==================================================
+
     local OriginalSize =
         Button.Size
 
@@ -410,19 +321,26 @@ function Categories:AnimateCategoryClick(
         self.CategoryClickReturnTime
         or 0.10
 
+    --==================================================
+    -- TOKEN
+    --==================================================
+
     local Token =
         (
             Button:GetAttribute(
                 "CategoryAnimationToken"
             )
             or 0
-        )
-        + 1
+        ) + 1
 
     Button:SetAttribute(
         "CategoryAnimationToken",
         Token
     )
+
+    --==================================================
+    -- EXPANDED SIZE
+    --==================================================
 
     local ExpandedSize =
         UDim2.new(
@@ -454,6 +372,10 @@ function Categories:AnimateCategoryClick(
         )
 
     ExpandTween:Play()
+
+    --==================================================
+    -- RETURN
+    --==================================================
 
     task.delay(
 
@@ -511,58 +433,36 @@ function Categories:BuildAllSounds()
     self.AllSounds =
         {}
 
-    if not IsTable(self.Sounds) then
-        return self.AllSounds
+    if not self.Sounds then
+        return
     end
-
-    --==================================================
-    -- SORT CATEGORIES
-    --==================================================
-
-    local CategoryNames =
-        {}
 
     for CategoryName, CategoryData in
-        pairs(self.Sounds) do
+        pairs(
+            self.Sounds
+        ) do
 
-        if type(CategoryData) == "table"
-        and CategoryName ~= "ALL"
-        and CategoryName ~= "Configuração" then
+        if type(CategoryData) ==
+            "table" then
 
-            table.insert(
-                CategoryNames,
-                tostring(CategoryName)
-            )
+            --==================================================
+            -- IGNORE NON-SOUND SPECIAL TABLES
+            --==================================================
 
-        end
+            if CategoryName ~= "ALL" then
 
-    end
+                for _, SoundData in
+                    ipairs(CategoryData) do
 
-    table.sort(
-        CategoryNames
-    )
+                    if type(SoundData) ==
+                        "table" then
 
-    --==================================================
-    -- BUILD ALL
-    --==================================================
+                        table.insert(
+                            self.AllSounds,
+                            SoundData
+                        )
 
-    for _, CategoryName in
-        ipairs(CategoryNames) do
-
-        local CategoryData =
-            self.Sounds[CategoryName]
-
-        if type(CategoryData) == "table" then
-
-            for _, SoundData in
-                ipairs(CategoryData) do
-
-                if type(SoundData) == "table" then
-
-                    table.insert(
-                        self.AllSounds,
-                        SoundData
-                    )
+                    end
 
                 end
 
@@ -572,8 +472,6 @@ function Categories:BuildAllSounds()
 
     end
 
-    return self.AllSounds
-
 end
 
 --==================================================
@@ -582,11 +480,8 @@ end
 
 function Categories:ClearContent()
 
-    if not self.Scroll
-    or not self.Scroll.Parent then
-
+    if not self.Scroll then
         return
-
     end
 
     for _, Object in
@@ -599,12 +494,6 @@ function Categories:ClearContent()
         )
         and not Object:IsA(
             "UIPadding"
-        )
-        and not Object:IsA(
-            "UIGridLayout"
-        )
-        and not Object:IsA(
-            "UIPageLayout"
         ) then
 
             Object:Destroy()
@@ -622,18 +511,43 @@ end
 function Categories:NotifySearch()
 
     if self.Search
-    and type(self.Search.OnContextChanged)
-        == "function" then
+    and type(
+        self.Search.OnContextChanged
+    ) == "function" then
 
-        pcall(
+        pcall(function()
 
-            function()
+            self.Search:OnContextChanged()
 
-                self.Search:OnContextChanged()
+        end)
 
-            end
+    end
 
-        )
+end
+
+--==================================================
+-- CLEAR SEARCH FOR CONTEXT
+--==================================================
+-- Usado quando o usuário troca de categoria.
+--
+-- IMPORTANTE:
+-- Não chama RefreshCurrent().
+-- Não recria ALL.
+-- Apenas limpa o estado da pesquisa.
+--==================================================
+
+function Categories:ClearSearchContext()
+
+    if self.Search
+    and type(
+        self.Search.ClearForContext
+    ) == "function" then
+
+        pcall(function()
+
+            self.Search:ClearForContext()
+
+        end)
 
     end
 
@@ -648,50 +562,35 @@ function Categories:GetFavoriteSounds()
     local Result =
         {}
 
-    if not self.Favorites
-    or type(self.Favorites.IsFavorite)
-        ~= "function" then
-
+    if not self.Favorites then
         return Result
-
     end
 
     self:BuildAllSounds()
 
     for _, SoundData in
-        ipairs(self.AllSounds) do
+        ipairs(
+            self.AllSounds
+        ) do
 
-        if type(SoundData) == "table" then
+        if type(SoundData) ==
+            "table" then
 
             local ID =
                 SoundData[2]
 
-            if ID then
+            if ID
+            and type(
+                self.Favorites.IsFavorite
+            ) == "function"
+            and self.Favorites:IsFavorite(
+                ID
+            ) then
 
-                local Success,
-                    IsFavorite =
-
-                    pcall(
-
-                        function()
-
-                            return self.Favorites:IsFavorite(
-                                ID
-                            )
-
-                        end
-
-                    )
-
-                if Success
-                and IsFavorite == true then
-
-                    table.insert(
-                        Result,
-                        SoundData
-                    )
-
-                end
+                table.insert(
+                    Result,
+                    SoundData
+                )
 
             end
 
@@ -711,7 +610,8 @@ function Categories:GetSoundName(
     SoundData
 )
 
-    if type(SoundData) ~= "table" then
+    if type(SoundData) ~=
+        "table" then
 
         return ""
 
@@ -754,9 +654,12 @@ function Categories:GetSoundsByName(
     end
 
     for _, SoundData in
-        ipairs(self.AllSounds) do
+        ipairs(
+            self.AllSounds
+        ) do
 
-        if type(SoundData) == "table" then
+        if type(SoundData) ==
+            "table" then
 
             local Name =
                 self:GetSoundName(
@@ -815,15 +718,19 @@ end
 
 function Categories:GetCurrentSounds()
 
+    --==================================================
+    -- CATEGORY HAS PRIORITY
+    --==================================================
+
     if self.CurrentCategory ~= "ALL" then
 
         local Category =
-            self.Sounds
-            and self.Sounds[
+            self.Sounds[
                 self.CurrentCategory
             ]
 
-        if type(Category) == "table" then
+        if type(Category) ==
+            "table" then
 
             local Result =
                 {}
@@ -831,7 +738,8 @@ function Categories:GetCurrentSounds()
             for _, Data in
                 ipairs(Category) do
 
-                if type(Data) == "table" then
+                if type(Data) ==
+                    "table" then
 
                     table.insert(
                         Result,
@@ -848,6 +756,10 @@ function Categories:GetCurrentSounds()
 
     end
 
+    --==================================================
+    -- FILTER
+    --==================================================
+
     local Resolver =
         self.FilterResolvers[
             self.CurrentFilter
@@ -855,15 +767,14 @@ function Categories:GetCurrentSounds()
 
     if Resolver then
 
-        local Success,
-            Result =
-
+        local Success, Result =
             pcall(
                 Resolver
             )
 
         if Success
-        and type(Result) == "table" then
+        and type(Result) ==
+            "table" then
 
             return Result
 
@@ -871,7 +782,13 @@ function Categories:GetCurrentSounds()
 
     end
 
-    return self:BuildAllSounds()
+    --==================================================
+    -- FALLBACK
+    --==================================================
+
+    self:BuildAllSounds()
+
+    return self.AllSounds
 
 end
 
@@ -901,24 +818,24 @@ end
 
 function Categories:UpdateFilterButton()
 
-    if not self.FilterButton
-    or not self.FilterButton.Parent then
-
+    if not self.FilterButton then
         return
-
     end
 
-    if self.CurrentFilter == "Favorite" then
+    if self.CurrentFilter ==
+        "Favorite" then
 
         self.FilterButton.Text =
             "★ Favorite"
 
-    elseif self.CurrentFilter == "M1" then
+    elseif self.CurrentFilter ==
+        "M1" then
 
         self.FilterButton.Text =
             "M1"
 
-    elseif self.CurrentFilter == "Hit" then
+    elseif self.CurrentFilter ==
+        "Hit" then
 
         self.FilterButton.Text =
             "Hit"
@@ -966,25 +883,7 @@ function Categories:CreateFilterOption(
     end
 
     local CurrentTheme =
-
-        self.Theme
-        and self.Theme:GetCurrent()
-        or
-        {
-            Button =
-                Color3.fromRGB(
-                    25,
-                    25,
-                    32
-                ),
-
-            Text =
-                Color3.fromRGB(
-                    240,
-                    240,
-                    245
-                )
-        }
+        self.Theme:GetCurrent()
 
     local Button =
         Instance.new(
@@ -1067,7 +966,8 @@ function Categories:CreateFilterOption(
 
         function()
 
-            if type(Callback) == "function" then
+            if type(Callback) ==
+                "function" then
 
                 Callback()
 
@@ -1087,33 +987,19 @@ end
 
 function Categories:CreateFilterMenu()
 
-    if self.FilterMenu
-    and self.FilterMenu.Parent then
-
-        return self.FilterMenu
-
-    end
-
-    if not self.ContentTitle
-    or not self.ContentTitle.Parent then
-
-        return nil
-
+    if self.FilterMenu then
+        return
     end
 
     local CurrentTheme =
+        self.Theme:GetCurrent()
 
-        self.Theme
-        and self.Theme:GetCurrent()
-        or
-        {
-            Content =
-                Color3.fromRGB(
-                    15,
-                    15,
-                    20
-                )
-        }
+    local Parent =
+        self.ContentTitle.Parent
+
+    if not Parent then
+        return
+    end
 
     local Menu =
         Instance.new(
@@ -1155,7 +1041,7 @@ function Categories:CreateFilterMenu()
         true
 
     Menu.Parent =
-        self.ContentTitle.Parent
+        Parent
 
     local MenuCorner =
         Instance.new(
@@ -1190,6 +1076,10 @@ function Categories:CreateFilterMenu()
 
     self.FilterStroke =
         MenuStroke
+
+    --==================================================
+    -- SCROLL
+    --==================================================
 
     local FilterScroll =
         Instance.new(
@@ -1250,6 +1140,10 @@ function Categories:CreateFilterMenu()
     self.FilterScroll =
         FilterScroll
 
+    --==================================================
+    -- LAYOUT
+    --==================================================
+
     local Layout =
         Instance.new(
             "UIListLayout"
@@ -1266,6 +1160,10 @@ function Categories:CreateFilterMenu()
 
     Layout.Parent =
         FilterScroll
+
+    --==================================================
+    -- PADDING
+    --==================================================
 
     local Padding =
         Instance.new(
@@ -1379,8 +1277,6 @@ function Categories:CreateFilterMenu()
 
     )
 
-    return Menu
-
 end
 
 --==================================================
@@ -1389,43 +1285,19 @@ end
 
 function Categories:CreateFilterButton()
 
-    if self.FilterButton
-    and self.FilterButton.Parent then
-
-        return self.FilterButton
-
-    end
-
-    if not self.ContentTitle
-    or not self.ContentTitle.Parent then
-
-        return nil
-
+    if self.FilterButton then
+        return
     end
 
     local CurrentTheme =
-
-        self.Theme
-        and self.Theme:GetCurrent()
-        or
-        {
-            Button =
-                Color3.fromRGB(
-                    25,
-                    25,
-                    32
-                ),
-
-            Text =
-                Color3.fromRGB(
-                    240,
-                    240,
-                    245
-                )
-        }
+        self.Theme:GetCurrent()
 
     local Parent =
         self.ContentTitle.Parent
+
+    if not Parent then
+        return
+    end
 
     local Button =
         Instance.new(
@@ -1529,43 +1401,6 @@ function Categories:CreateFilterButton()
 
     )
 
-    return Button
-
-end
-
---==================================================
--- CREATE SOUND CARD SAFE
---==================================================
-
-function Categories:CreateCard(
-    Index,
-    Data
-)
-
-    if not self.Cards
-    or type(self.Cards.CreateSoundCard)
-        ~= "function" then
-
-        return false
-
-    end
-
-    local Success =
-        pcall(
-
-            function()
-
-                self.Cards:CreateSoundCard(
-                    Index,
-                    Data
-                )
-
-            end
-
-        )
-
-    return Success
-
 end
 
 --==================================================
@@ -1588,14 +1423,15 @@ function Categories:ShowAll()
 
     self:BuildAllSounds()
 
-    if self.ContentTitle then
+    self.ContentTitle.Text =
+        "ALL"
 
-        self.ContentTitle.Text =
-            "ALL"
+    --==================================================
+    -- FAVORITE
+    --==================================================
 
-    end
-
-    if self.CurrentFilter == "Favorite" then
+    if self.CurrentFilter ==
+        "Favorite" then
 
         self:ShowFavorites()
 
@@ -1603,7 +1439,12 @@ function Categories:ShowAll()
 
     end
 
-    if self.CurrentFilter == "M1" then
+    --==================================================
+    -- M1
+    --==================================================
+
+    if self.CurrentFilter ==
+        "M1" then
 
         self:ShowM1()
 
@@ -1611,7 +1452,12 @@ function Categories:ShowAll()
 
     end
 
-    if self.CurrentFilter == "Hit" then
+    --==================================================
+    -- HIT
+    --==================================================
+
+    if self.CurrentFilter ==
+        "Hit" then
 
         self:ShowHit()
 
@@ -1619,17 +1465,21 @@ function Categories:ShowAll()
 
     end
 
-    for Index, Data in
-        ipairs(self.AllSounds) do
+    --==================================================
+    -- ALL
+    --==================================================
 
-        self:CreateCard(
+    for Index, Data in
+        ipairs(
+            self.AllSounds
+        ) do
+
+        self.Cards:CreateSoundCard(
             Index,
             Data
         )
 
     end
-
-    self:NotifySearch()
 
 end
 
@@ -1653,20 +1503,18 @@ function Categories:ShowFavorites()
 
     self:ClearContent()
 
-    if self.ContentTitle then
-
-        self.ContentTitle.Text =
-            "ALL"
-
-    end
+    self.ContentTitle.Text =
+        "ALL"
 
     local FavoriteSounds =
         self:GetFavoriteSounds()
 
     for Index, Data in
-        ipairs(FavoriteSounds) do
+        ipairs(
+            FavoriteSounds
+        ) do
 
-        self:CreateCard(
+        self.Cards:CreateSoundCard(
             Index,
             Data
         )
@@ -1697,20 +1545,18 @@ function Categories:ShowM1()
 
     self:ClearContent()
 
-    if self.ContentTitle then
-
-        self.ContentTitle.Text =
-            "ALL"
-
-    end
+    self.ContentTitle.Text =
+        "ALL"
 
     local M1Sounds =
         self:GetM1Sounds()
 
     for Index, Data in
-        ipairs(M1Sounds) do
+        ipairs(
+            M1Sounds
+        ) do
 
-        self:CreateCard(
+        self.Cards:CreateSoundCard(
             Index,
             Data
         )
@@ -1741,20 +1587,18 @@ function Categories:ShowHit()
 
     self:ClearContent()
 
-    if self.ContentTitle then
-
-        self.ContentTitle.Text =
-            "ALL"
-
-    end
+    self.ContentTitle.Text =
+        "ALL"
 
     local HitSounds =
         self:GetHitSounds()
 
     for Index, Data in
-        ipairs(HitSounds) do
+        ipairs(
+            HitSounds
+        ) do
 
-        self:CreateCard(
+        self.Cards:CreateSoundCard(
             Index,
             Data
         )
@@ -1773,6 +1617,16 @@ function Categories:ShowCategory(
     CategoryName
 )
 
+    --==================================================
+    -- LIMPAR PESQUISA AO TROCAR DE CATEGORIA
+    --==================================================
+
+    self:ClearSearchContext()
+
+    --==================================================
+    -- ALL
+    --==================================================
+
     if CategoryName == "ALL" then
 
         self.CurrentCategory =
@@ -1789,6 +1643,10 @@ function Categories:ShowCategory(
 
     end
 
+    --==================================================
+    -- CATEGORY
+    --==================================================
+
     self.CurrentCategory =
         CategoryName
 
@@ -1796,6 +1654,10 @@ function Categories:ShowCategory(
         "All"
 
     self:UpdateFilterButton()
+
+    --==================================================
+    -- HIDE FILTER
+    --==================================================
 
     if self.FilterButton then
 
@@ -1806,18 +1668,21 @@ function Categories:ShowCategory(
 
     self:CloseFilterMenu()
 
+    --==================================================
+    -- CLEAR
+    --==================================================
+
     self:ClearContent()
 
-    if self.ContentTitle then
+    self.ContentTitle.Text =
+        CategoryName
 
-        self.ContentTitle.Text =
-            CategoryName
-
-    end
+    --==================================================
+    -- GET CATEGORY
+    --==================================================
 
     local Category =
-        self.Sounds
-        and self.Sounds[
+        self.Sounds[
             CategoryName
         ]
 
@@ -1829,12 +1694,17 @@ function Categories:ShowCategory(
 
     end
 
+    --==================================================
+    -- CREATE CARDS
+    --==================================================
+
     for Index, Data in
         ipairs(Category) do
 
-        if type(Data) == "table" then
+        if type(Data) ==
+            "table" then
 
-            self:CreateCard(
+            self.Cards:CreateSoundCard(
                 Index,
                 Data
             )
@@ -1844,6 +1714,54 @@ function Categories:ShowCategory(
     end
 
     self:NotifySearch()
+
+end
+
+--==================================================
+-- SHOW CONFIGURATION
+--==================================================
+-- Configuração NÃO é uma categoria de sons.
+--==================================================
+
+function Categories:ShowConfiguration()
+
+    --==================================================
+    -- CLEAR SEARCH
+    --==================================================
+
+    self:ClearSearchContext()
+
+    --==================================================
+    -- FILTER OFF
+    --==================================================
+
+    if self.FilterButton then
+
+        self.FilterButton.Visible =
+            false
+
+    end
+
+    self:CloseFilterMenu()
+
+    --==================================================
+    -- STATE
+    --==================================================
+
+    self.CurrentCategory =
+        "Configuração"
+
+    self.CurrentFilter =
+        "All"
+
+    --==================================================
+    -- CONTENT
+    --==================================================
+
+    self:ClearContent()
+
+    self.ContentTitle.Text =
+        "Configuração"
 
 end
 
@@ -1859,6 +1777,10 @@ function Categories:SelectButton(
         return
     end
 
+    --==================================================
+    -- DESELECT OLD
+    --==================================================
+
     if self.SelectedButton
     and self.SelectedButton ~= Button then
 
@@ -1867,6 +1789,10 @@ function Categories:SelectButton(
         )
 
     end
+
+    --==================================================
+    -- SELECT NEW
+    --==================================================
 
     self.SelectedButton =
         Button
@@ -1896,17 +1822,6 @@ function Categories:CreateCategoryButton(
 
     end
 
-    if not self.Sidebar
-    or not self.Sidebar.Parent then
-
-        warn(
-            "⚠️ Rimuru Hub Categories: Sidebar indisponível."
-        )
-
-        return nil
-
-    end
-
     local Button =
         Instance.new(
             "TextButton"
@@ -1923,12 +1838,20 @@ function Categories:CreateCategoryButton(
             38
         )
 
+    --==================================================
+    -- NORMAL STYLE
+    --==================================================
+
     self:SetNormalStyle(
         Button
     )
 
     Button.BorderSizePixel =
         0
+
+    --==================================================
+    -- ICON
+    --==================================================
 
     local Icon =
         self:GetIcon(
@@ -1961,6 +1884,10 @@ function Categories:CreateCategoryButton(
     Button.Parent =
         self.Sidebar
 
+    --==================================================
+    -- PADDING
+    --==================================================
+
     local ButtonPadding =
         Instance.new(
             "UIPadding"
@@ -1974,6 +1901,10 @@ function Categories:CreateCategoryButton(
 
     ButtonPadding.Parent =
         Button
+
+    --==================================================
+    -- CORNER
+    --==================================================
 
     local ButtonCorner =
         Instance.new(
@@ -1989,23 +1920,69 @@ function Categories:CreateCategoryButton(
     ButtonCorner.Parent =
         Button
 
+    --==================================================
+    -- CLICK
+    --==================================================
+
     Button.MouseButton1Click:Connect(
 
         function()
+
+            --==================================================
+            -- SELECT
+            --==================================================
 
             self:SelectButton(
                 Button
             )
 
+            --==================================================
+            -- SIZE ANIMATION
+            --==================================================
+
             self:AnimateCategoryClick(
                 Button
             )
+
+            --==================================================
+            -- SOUND CATEGORY
+            --==================================================
 
             if ShowSoundCategory then
 
                 self:ShowCategory(
                     CategoryName
                 )
+
+                return
+
+            end
+
+            --==================================================
+            -- CONFIGURATION
+            --==================================================
+
+            if CategoryName ==
+                "Configuração" then
+
+                self:ShowConfiguration()
+
+            else
+
+                --==================================================
+                -- OTHER NON-SOUND CATEGORY
+                --==================================================
+
+                self:ClearSearchContext()
+
+                if self.FilterButton then
+
+                    self.FilterButton.Visible =
+                        false
+
+                end
+
+                self:CloseFilterMenu()
 
             end
 
@@ -2028,21 +2005,11 @@ end
 
 function Categories:CreateCategories()
 
-    if not self.Sidebar then
-
-        warn(
-            "⚠️ Rimuru Hub Categories: impossível criar categorias sem Sidebar."
-        )
-
-        return 0
-
-    end
-
     --==================================================
-    -- REMOVE OLD CATEGORY BUTTONS
+    -- PREVENT DUPLICATION
     --==================================================
 
-    for Name, Button in
+    for CategoryName, Button in
         pairs(
             self.CategoryButtons
         ) do
@@ -2063,17 +2030,25 @@ function Categories:CreateCategories()
         nil
 
     --==================================================
-    -- ALL FIRST
+    -- INDEX
     --==================================================
 
     local CategoryIndex =
-        1
+        0
+
+    --==================================================
+    -- ALL FIRST
+    --==================================================
+
+    CategoryIndex += 1
 
     local AllButton =
         self:CreateCategoryButton(
 
             "ALL",
+
             CategoryIndex,
+
             true
 
         )
@@ -2085,45 +2060,31 @@ function Categories:CreateCategories()
     -- SOUND CATEGORIES
     --==================================================
 
-    local CategoryNames =
-        {}
+    if self.Sounds then
 
-    if type(self.Sounds) == "table" then
-
-        for CategoryName, CategoryData in
-            pairs(self.Sounds) do
+        for CategoryName in
+            pairs(
+                self.Sounds
+            ) do
 
             if CategoryName ~= "ALL"
-            and CategoryName ~= "Configuração"
-            and type(CategoryData) == "table" then
+            and CategoryName ~= "Configuração" then
 
-                table.insert(
-                    CategoryNames,
-                    tostring(CategoryName)
+                CategoryIndex += 1
+
+                self:CreateCategoryButton(
+
+                    CategoryName,
+
+                    CategoryIndex,
+
+                    true
+
                 )
 
             end
 
         end
-
-    end
-
-    table.sort(
-        CategoryNames
-    )
-
-    for _, CategoryName in
-        ipairs(CategoryNames) do
-
-        CategoryIndex += 1
-
-        self:CreateCategoryButton(
-
-            CategoryName,
-            CategoryIndex,
-            true
-
-        )
 
     end
 
@@ -2135,7 +2096,9 @@ function Categories:CreateCategories()
         self:CreateCategoryButton(
 
             "Configuração",
+
             CategoryIndex + 1,
+
             false
 
         )
@@ -2165,13 +2128,7 @@ function Categories:SetDefaultCategory()
         ]
 
     if not AllButton then
-
-        warn(
-            "⚠️ Rimuru Hub Categories: botão ALL não encontrado."
-        )
-
-        return false
-
+        return
     end
 
     self.CurrentCategory =
@@ -2187,8 +2144,6 @@ function Categories:SetDefaultCategory()
     self:SelectButton(
         AllButton
     )
-
-    return true
 
 end
 
@@ -2222,7 +2177,9 @@ end
 
 function Categories:GetAllSounds()
 
-    return self:BuildAllSounds()
+    self:BuildAllSounds()
+
+    return self.AllSounds
 
 end
 
@@ -2263,9 +2220,13 @@ function Categories:SetFilter(
         FilterName
     ] then
 
-        return false
+        return
 
     end
+
+    --==================================================
+    -- FILTER ALWAYS BELONGS TO ALL
+    --==================================================
 
     self.CurrentCategory =
         "ALL"
@@ -2273,17 +2234,41 @@ function Categories:SetFilter(
     self.CurrentFilter =
         FilterName
 
+    --==================================================
+    -- CLEAR SEARCH
+    --==================================================
+
+    self:ClearSearchContext()
+
+    --==================================================
+    -- FILTER BUTTON
+    --==================================================
+
     self:UpdateFilterButton()
 
-    if FilterName == "Favorite" then
+    if self.FilterButton then
+
+        self.FilterButton.Visible =
+            true
+
+    end
+
+    --==================================================
+    -- SHOW
+    --==================================================
+
+    if FilterName ==
+        "Favorite" then
 
         self:ShowFavorites()
 
-    elseif FilterName == "M1" then
+    elseif FilterName ==
+        "M1" then
 
         self:ShowM1()
 
-    elseif FilterName == "Hit" then
+    elseif FilterName ==
+        "Hit" then
 
         self:ShowHit()
 
@@ -2292,8 +2277,6 @@ function Categories:SetFilter(
         self:ShowAll()
 
     end
-
-    return true
 
 end
 
@@ -2306,14 +2289,15 @@ function Categories:RegisterFilter(
     Resolver
 )
 
-    if type(FilterName) ~= "string"
-    or FilterName == "" then
+    if type(FilterName) ~=
+        "string" then
 
         return false
 
     end
 
-    if type(Resolver) ~= "function" then
+    if type(Resolver) ~=
+        "function" then
 
         return false
 
@@ -2329,12 +2313,27 @@ function Categories:RegisterFilter(
 end
 
 --==================================================
--- REFRESH CURRENT CONTENT
+-- REFRESH CURRENT
+--==================================================
+-- IMPORTANTE:
+-- Não limpa pesquisa.
+-- Não muda categoria.
+-- Apenas reconstrói o contexto atual.
 --==================================================
 
 function Categories:RefreshCurrent()
 
-    if self.CurrentCategory ~= "ALL" then
+    if self.CurrentCategory ==
+        "Configuração" then
+
+        self:ShowConfiguration()
+
+        return
+
+    end
+
+    if self.CurrentCategory ~=
+        "ALL" then
 
         self:ShowCategory(
             self.CurrentCategory
@@ -2344,7 +2343,8 @@ function Categories:RefreshCurrent()
 
     end
 
-    if self.CurrentFilter == "Favorite" then
+    if self.CurrentFilter ==
+        "Favorite" then
 
         self:ShowFavorites()
 
@@ -2352,7 +2352,8 @@ function Categories:RefreshCurrent()
 
     end
 
-    if self.CurrentFilter == "M1" then
+    if self.CurrentFilter ==
+        "M1" then
 
         self:ShowM1()
 
@@ -2360,7 +2361,8 @@ function Categories:RefreshCurrent()
 
     end
 
-    if self.CurrentFilter == "Hit" then
+    if self.CurrentFilter ==
+        "Hit" then
 
         self:ShowHit()
 
@@ -2378,10 +2380,6 @@ end
 
 function Categories:ApplyTheme()
 
-    if not self.Theme then
-        return false
-    end
-
     --==================================================
     -- CATEGORY BUTTONS
     --==================================================
@@ -2391,23 +2389,18 @@ function Categories:ApplyTheme()
             self.CategoryButtons
         ) do
 
-        if Button
-        and Button.Parent then
+        if Button ==
+            self.SelectedButton then
 
-            if Button ==
-                self.SelectedButton then
+            self:SetSelectedStyle(
+                Button
+            )
 
-                self:SetSelectedStyle(
-                    Button
-                )
+        else
 
-            else
-
-                self:SetNormalStyle(
-                    Button
-                )
-
-            end
+            self:SetNormalStyle(
+                Button
+            )
 
         end
 
@@ -2417,8 +2410,7 @@ function Categories:ApplyTheme()
     -- FILTER BUTTON
     --==================================================
 
-    if self.FilterButton
-    and self.FilterButton.Parent then
+    if self.FilterButton then
 
         local CurrentTheme =
             self.Theme:GetCurrent()
@@ -2435,8 +2427,7 @@ function Categories:ApplyTheme()
     -- FILTER STROKE
     --==================================================
 
-    if self.FilterStroke
-    and self.FilterStroke.Parent then
+    if self.FilterStroke then
 
         self.FilterStroke.Color =
             self.Theme:GetAccent()
@@ -2447,8 +2438,7 @@ function Categories:ApplyTheme()
     -- FILTER MENU
     --==================================================
 
-    if self.FilterMenu
-    and self.FilterMenu.Parent then
+    if self.FilterMenu then
 
         local CurrentTheme =
             self.Theme:GetCurrent()
@@ -2474,8 +2464,7 @@ function Categories:ApplyTheme()
     -- FILTER OPTIONS
     --==================================================
 
-    if self.FilterScroll
-    and self.FilterScroll.Parent then
+    if self.FilterScroll then
 
         self.FilterScroll.ScrollBarImageColor3 =
             self.Theme:GetAccent()
@@ -2503,90 +2492,6 @@ function Categories:ApplyTheme()
         end
 
     end
-
-    return true
-
-end
-
---==================================================
--- DESTROY
---==================================================
-
-function Categories:Destroy()
-
-    self:CloseFilterMenu()
-
-    for _, Button in
-        pairs(
-            self.CategoryButtons
-        ) do
-
-        if Button
-        and Button.Parent then
-
-            Button:Destroy()
-
-        end
-
-    end
-
-    if self.FilterButton
-    and self.FilterButton.Parent then
-
-        self.FilterButton:Destroy()
-
-    end
-
-    self.CategoryButtons =
-        {}
-
-    self.FilterButton =
-        nil
-
-    self.FilterMenu =
-        nil
-
-    self.FilterScroll =
-        nil
-
-    self.FilterStroke =
-        nil
-
-    self.SelectedButton =
-        nil
-
-    self.AllButton =
-        nil
-
-    self.ConfigButton =
-        nil
-
-    self.AllSounds =
-        {}
-
-    self.Context =
-        nil
-
-    self.Config =
-        nil
-
-    self.Sounds =
-        nil
-
-    self.Theme =
-        nil
-
-    self.UI =
-        nil
-
-    self.Cards =
-        nil
-
-    self.Favorites =
-        nil
-
-    self.Search =
-        nil
 
 end
 
