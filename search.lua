@@ -4,6 +4,10 @@
 --// CATEGORY-AWARE SEARCH
 --// FAVORITE / M1 / HIT COMPATIBLE
 --// FUTURE FILTER COMPATIBLE
+--// CATEGORY CHANGE CLEARS SEARCH
+--// SAFE SEARCH RESET
+--// NO OLD QUERY RESTORE
+--// CONTEXT SAFE VERSION
 
 local Search = {}
 
@@ -52,11 +56,21 @@ function Search:Init(Context)
     self.Active =
         false
 
+    self.Connected =
+        false
+
     self.SortMode =
         nil
 
     self.LastCategory =
         "ALL"
+
+    --==================================================
+    -- CONTEXT CHANGE LOCK
+    --==================================================
+
+    self.ContextChanging =
+        false
 
 end
 
@@ -67,9 +81,22 @@ end
 function Search:GetTheme()
 
     if self.Theme
-    and self.Theme.GetCurrent then
+    and type(self.Theme.GetCurrent) ==
+        "function" then
 
-        return self.Theme:GetCurrent()
+        local Success, Result =
+            pcall(function()
+
+                return self.Theme:GetCurrent()
+
+            end)
+
+        if Success
+        and type(Result) == "table" then
+
+            return Result
+
+        end
 
     end
 
@@ -83,11 +110,22 @@ end
 
 function Search:Create()
 
+    if self.Box
+    and self.Box.Parent then
+
+        return self.Box
+
+    end
+
+    if not self.UI then
+        return nil
+    end
+
     local Header =
         self.UI.Header
 
     if not Header then
-        return
+        return nil
     end
 
     --==================================================
@@ -120,6 +158,11 @@ function Search:Create()
 
     SearchBox.BackgroundColor3 =
         self:GetTheme().Card
+        or Color3.fromRGB(
+            35,
+            35,
+            35
+        )
 
     SearchBox.BorderSizePixel =
         0
@@ -132,9 +175,19 @@ function Search:Create()
 
     SearchBox.PlaceholderColor3 =
         self:GetTheme().SubText
+        or Color3.fromRGB(
+            150,
+            150,
+            150
+        )
 
     SearchBox.TextColor3 =
         self:GetTheme().Text
+        or Color3.fromRGB(
+            255,
+            255,
+            255
+        )
 
     SearchBox.TextSize =
         11
@@ -197,60 +250,64 @@ function Search:Create()
         SearchBox
 
     --==================================================
--- RESULT COUNT
--- FICA DIRETAMENTE ABAIXO DA SEARCH BOX
---==================================================
+    -- RESULT COUNT
+    --==================================================
 
-local ResultLabel =
-    Instance.new(
-        "TextLabel"
-    )
+    local ResultLabel =
+        Instance.new(
+            "TextLabel"
+        )
 
-ResultLabel.Name =
-    "SearchResultCount"
+    ResultLabel.Name =
+        "SearchResultCount"
 
-ResultLabel.Position =
-    UDim2.new(
-        0,
-        285,
-        0,
-        48
-    )
+    ResultLabel.Position =
+        UDim2.new(
+            0,
+            285,
+            0,
+            48
+        )
 
-ResultLabel.Size =
-    UDim2.new(
-        0,
-        210,
-        0,
-        18
-    )
+    ResultLabel.Size =
+        UDim2.new(
+            0,
+            210,
+            0,
+            18
+        )
 
-ResultLabel.BackgroundTransparency =
-    1
+    ResultLabel.BackgroundTransparency =
+        1
 
-ResultLabel.Text =
-    ""
+    ResultLabel.Text =
+        ""
 
-ResultLabel.TextColor3 =
-    self:GetTheme().SubText
+    ResultLabel.TextColor3 =
+        self:GetTheme().SubText
+        or Color3.fromRGB(
+            150,
+            150,
+            150
+        )
 
-ResultLabel.TextSize =
-    10
+    ResultLabel.TextSize =
+        10
 
-ResultLabel.Font =
-    Enum.Font.Gotham
+    ResultLabel.Font =
+        Enum.Font.Gotham
 
-ResultLabel.TextXAlignment =
-    Enum.TextXAlignment.Left
+    ResultLabel.TextXAlignment =
+        Enum.TextXAlignment.Left
 
-ResultLabel.Visible =
-    false
+    ResultLabel.Visible =
+        false
 
-ResultLabel.ZIndex =
-    505
+    ResultLabel.ZIndex =
+        505
 
-ResultLabel.Parent =
-    Header
+    ResultLabel.Parent =
+        Header
 
     --==================================================
     -- SAVE
@@ -262,6 +319,8 @@ ResultLabel.Parent =
     self.ResultLabel =
         ResultLabel
 
+    return SearchBox
+
 end
 
 --==================================================
@@ -270,7 +329,8 @@ end
 
 function Search:Connect()
 
-    if not self.Box then
+    if not self.Box
+    or not self.Box.Parent then
 
         self:Create()
 
@@ -291,6 +351,14 @@ function Search:Connect()
         "Text"
     ):Connect(function()
 
+        --==================================================
+        -- DURING CATEGORY CHANGE
+        --==================================================
+
+        if self.ContextChanging then
+            return
+        end
+
         self:Search(
             self.Box.Text
         )
@@ -304,6 +372,10 @@ end
 --==================================================
 
 function Search:ClearScroll()
+
+    if not self.UI then
+        return
+    end
 
     local Scroll =
         self.UI.Scroll
@@ -335,22 +407,28 @@ end
 --==================================================
 -- GET CURRENT SOUND POOL
 --==================================================
--- O Search NÃO decide mais qual filtro usar.
---
--- O Categories é responsável por informar
--- exatamente quais sons estão disponíveis
--- no contexto atual.
---==================================================
 
 function Search:GetCurrentSoundPool()
 
+    --==================================================
+    -- CATEGORIES
+    --==================================================
+
     if self.Categories
-    and self.Categories.GetCurrentSounds then
+    and type(
+        self.Categories.GetCurrentSounds
+    ) == "function" then
 
-        local Sounds =
-            self.Categories:GetCurrentSounds()
+        local Success, Sounds =
+            pcall(function()
 
-        if type(Sounds) == "table" then
+                return self.Categories:
+                    GetCurrentSounds()
+
+            end)
+
+        if Success
+        and type(Sounds) == "table" then
 
             return Sounds
 
@@ -369,7 +447,7 @@ function Search:GetCurrentSoundPool()
         return Result
     end
 
-    for CategoryName, Category in
+    for _, Category in
         pairs(
             self.Sounds
         ) do
@@ -443,6 +521,10 @@ function Search:Matches(
             )
         )
 
+    if LowerQuery == "" then
+        return false
+    end
+
     --==================================================
     -- NAME
     --==================================================
@@ -501,14 +583,14 @@ function Search:Collect(
     end
 
     --==================================================
-    -- CURRENT FILTER / CATEGORY
+    -- CURRENT CONTEXT
     --==================================================
 
     local CurrentPool =
         self:GetCurrentSoundPool()
 
     --==================================================
-    -- SEARCH ONLY INSIDE CURRENT POOL
+    -- SEARCH CURRENT POOL ONLY
     --==================================================
 
     for Index, Data in
@@ -523,9 +605,36 @@ function Search:Collect(
             Query
         ) then
 
+            local CurrentCategory =
+                "ALL"
+
+            if self.Categories
+            and type(
+                self.Categories.GetCurrentCategory
+            ) == "function" then
+
+                local Success, Category =
+                    pcall(function()
+
+                        return self.Categories:
+                            GetCurrentCategory()
+
+                    end)
+
+                if Success
+                and Category then
+
+                    CurrentCategory =
+                        Category
+
+                end
+
+            end
+
             table.insert(
                 Results,
                 {
+
                     Name =
                         tostring(
                             Data[1]
@@ -539,16 +648,14 @@ function Search:Collect(
                         ),
 
                     Category =
-                        self.Categories
-                        and self.Categories.GetCurrentCategory
-                        and self.Categories:GetCurrentCategory()
-                        or "ALL",
+                        CurrentCategory,
 
                     Index =
                         Index,
 
                     Data =
                         Data
+
                 }
             )
 
@@ -567,6 +674,10 @@ end
 function Search:Sort(
     Results
 )
+
+    if type(Results) ~= "table" then
+        return
+    end
 
     if self.SortMode ==
         "A-Z" then
@@ -621,13 +732,13 @@ function Search:CreateResult(
         return
     end
 
-    if not self.Cards.CreateSoundCard then
-        return
-    end
+    if type(
+        self.Cards.CreateSoundCard
+    ) ~= "function" then
 
-    --==================================================
-    -- USE ORIGINAL DATA WHEN AVAILABLE
-    --==================================================
+        return
+
+    end
 
     local Data =
         Result.Data
@@ -643,10 +754,6 @@ function Search:CreateResult(
         return
 
     end
-
-    --==================================================
-    -- FALLBACK
-    --==================================================
 
     self.Cards:CreateSoundCard(
         Index,
@@ -665,6 +772,10 @@ end
 function Search:ShowNoResults(
     Query
 )
+
+    if not self.UI then
+        return
+    end
 
     local Scroll =
         self.UI.Scroll
@@ -694,11 +805,16 @@ function Search:ShowNoResults(
 
     Label.Text =
         'Nenhum resultado para "' ..
-        Query ..
+        tostring(Query) ..
         '"'
 
     Label.TextColor3 =
         self:GetTheme().SubText
+        or Color3.fromRGB(
+            150,
+            150,
+            150
+        )
 
     Label.TextSize =
         12
@@ -756,15 +872,13 @@ function Search:Search(
         self:ClearScroll()
 
         --==================================================
-        -- RESTORE CURRENT CONTEXT
+        -- IMPORTANT:
+        -- NÃO chama RefreshCurrent aqui.
+        --
+        -- O Categories já controla o conteúdo.
+        -- Isso impede que apagar uma pesquisa
+        -- faça o sistema voltar para ALL.
         --==================================================
-
-        if self.Categories
-        and self.Categories.RefreshCurrent then
-
-            self.Categories:RefreshCurrent()
-
-        end
 
         return
 
@@ -849,21 +963,73 @@ function Search:Search(
 end
 
 --==================================================
+-- CLEAR SEARCH INTERNAL
+--==================================================
+
+function Search:ClearInternal()
+
+    self.Query =
+        ""
+
+    self.Results =
+        {}
+
+    self.Active =
+        false
+
+    if self.ResultLabel then
+
+        self.ResultLabel.Visible =
+            false
+
+        self.ResultLabel.Text =
+            ""
+
+    end
+
+    self:ClearScroll()
+
+end
+
+--==================================================
 -- CONTEXT CHANGED
 --==================================================
--- Chamado pelo Categories quando o usuário
--- muda de categoria ou filtro.
+-- Chamado pelo Categories quando:
+--
+-- • troca de categoria
+-- • troca de filtro
+-- • refresh
+--
+-- A pesquisa antiga NÃO deve sobreviver
+-- à troca de categoria/filtro.
 --==================================================
 
 function Search:OnContextChanged()
 
-    if not self.Active then
-        return
+    --==================================================
+    -- CONTEXTO MUDOU:
+    -- LIMPA A PESQUISA.
+    --==================================================
+
+    self.ContextChanging =
+        true
+
+    --==================================================
+    -- LIMPAR TEXTBOX SEM DISPARAR
+    -- UMA NOVA PESQUISA
+    --==================================================
+
+    if self.Box then
+
+        self.Box.Text =
+            ""
+
     end
 
-    self:Search(
-        self.Query
-    )
+    self:ClearInternal()
+
+    self.ContextChanging =
+        false
 
 end
 
@@ -883,17 +1049,11 @@ function Search:SetCategory(
     end
 
     --==================================================
-    -- SE JÁ EXISTE UMA PESQUISA,
-    -- ATUALIZA IMEDIATAMENTE
+    -- CATEGORY CHANGE:
+    -- SEMPRE LIMPA A PESQUISA.
     --==================================================
 
-    if self.Active then
-
-        self:Search(
-            self.Query
-        )
-
-    end
+    self:OnContextChanged()
 
 end
 
@@ -908,18 +1068,31 @@ function Search:ApplyTheme()
 
     if self.Box then
 
-        self.Box.BackgroundColor3 =
-            CurrentTheme.Card
+        if CurrentTheme.Card then
 
-        self.Box.TextColor3 =
-            CurrentTheme.Text
+            self.Box.BackgroundColor3 =
+                CurrentTheme.Card
 
-        self.Box.PlaceholderColor3 =
-            CurrentTheme.SubText
+        end
+
+        if CurrentTheme.Text then
+
+            self.Box.TextColor3 =
+                CurrentTheme.Text
+
+        end
+
+        if CurrentTheme.SubText then
+
+            self.Box.PlaceholderColor3 =
+                CurrentTheme.SubText
+
+        end
 
     end
 
-    if self.ResultLabel then
+    if self.ResultLabel
+    and CurrentTheme.SubText then
 
         self.ResultLabel.TextColor3 =
             CurrentTheme.SubText
@@ -939,7 +1112,8 @@ function Search:SetSortMode(
     self.SortMode =
         Mode
 
-    if self.Active then
+    if self.Active
+    and self.Query ~= "" then
 
         self:Search(
             self.Query
@@ -1010,18 +1184,20 @@ end
 
 function Search:Clear()
 
+    self.ContextChanging =
+        true
+
     if self.Box then
 
         self.Box.Text =
             ""
 
-    else
-
-        self:Search(
-            ""
-        )
-
     end
+
+    self:ClearInternal()
+
+    self.ContextChanging =
+        false
 
 end
 
