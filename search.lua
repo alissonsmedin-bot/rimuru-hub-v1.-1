@@ -1,183 +1,1054 @@
 --// 💥 RIMURU HUB
---// Search System
---// FILTER-AWARE SEARCH
---// CATEGORY-AWARE SEARCH
---// FAVORITE / M1 / HIT COMPATIBLE
---// FUTURE FILTER COMPATIBLE
---// CATEGORY CHANGE CLEARS SEARCH
---// SAFE SEARCH RESET
---// NO OLD QUERY RESTORE
---// CONTEXT SAFE VERSION
---// CARDS COMPATIBLE
+--// PREMIUM SEARCH SYSTEM
+--// CASE-INSENSITIVE SEARCH
+--// PARTIAL MATCH
+--// NAME + ID SEARCH
+--// CATEGORY AWARE
+--// FAVORITES AWARE
+--// LIVE SEARCH
+--// RESULT COUNTER
+--// CLEAR BUTTON
+--// NO RESULTS STATE
 --// THEME COMPATIBLE
---// NO RECURSIVE CONTEXT LOOP
+--// SAFE INITIALIZATION
+--// SAFE REFRESH
+--// DUPLICATE CONNECTION PROTECTION
+--// SEARCH STATE PROTECTION
+--// PERFORMANCE SAFE
+--// FUTURE FILTER COMPATIBLE
 
 local Search = {}
+
+--==================================================
+-- CONFIG
+--==================================================
+
+local SEARCH_DEBOUNCE = 0.035
+
+local SEARCH_HEIGHT = 34
+
+local SEARCH_TOP_OFFSET = 42
+
+local SEARCH_BOTTOM_OFFSET = 8
+
+local RESULT_TEXT = "Results: "
+
+local PLACEHOLDER_TEXT =
+	"Search sounds..."
+
+--==================================================
+-- FALLBACK COLORS
+--==================================================
+
+local FALLBACK_BACKGROUND =
+	Color3.fromRGB(
+		20,
+		20,
+		27
+	)
+
+local FALLBACK_BUTTON =
+	Color3.fromRGB(
+		30,
+		30,
+		38
+	)
+
+local FALLBACK_TEXT =
+	Color3.fromRGB(
+		240,
+		240,
+		245
+	)
+
+local FALLBACK_SUBTEXT =
+	Color3.fromRGB(
+		145,
+		150,
+		160
+	)
+
+local FALLBACK_ACCENT =
+	Color3.fromRGB(
+		25,
+		150,
+		255
+	)
+
+--==================================================
+-- SAFE COLOR
+--==================================================
+
+local function SafeColor(
+	Value,
+	Fallback
+)
+
+	if typeof(Value) == "Color3" then
+		return Value
+	end
+
+	return Fallback
+
+end
+
+--==================================================
+-- SAFE THEME
+--==================================================
+
+local function GetTheme(
+	Theme
+)
+
+	if not Theme then
+
+		return {
+			Background = FALLBACK_BACKGROUND,
+			Card = FALLBACK_BUTTON,
+			Button = FALLBACK_BUTTON,
+			Text = FALLBACK_TEXT,
+			SubText = FALLBACK_SUBTEXT,
+			Accent = FALLBACK_ACCENT
+		}
+
+	end
+
+	local Current
+
+	if type(Theme.GetCurrent) == "function" then
+
+		local Success,
+			Result =
+			pcall(function()
+
+				return Theme:GetCurrent()
+
+			end)
+
+		if Success
+		and type(Result) == "table" then
+
+			Current =
+				Result
+
+		end
+
+	end
+
+	if type(Current) ~= "table" then
+
+		Current =
+			Theme.CurrentTheme
+
+	end
+
+	if type(Current) ~= "table" then
+
+		Current = {}
+
+	end
+
+	return {
+
+		Background =
+			SafeColor(
+				Current.Background
+					or Current.Content,
+				FALLBACK_BACKGROUND
+			),
+
+		Card =
+			SafeColor(
+				Current.Card
+					or Current.Button,
+				FALLBACK_BUTTON
+			),
+
+		Button =
+			SafeColor(
+				Current.Button
+					or Current.Card,
+				FALLBACK_BUTTON
+			),
+
+		Text =
+			SafeColor(
+				Current.Text,
+				FALLBACK_TEXT
+			),
+
+		SubText =
+			SafeColor(
+				Current.SubText,
+				FALLBACK_SUBTEXT
+			),
+
+		Accent =
+			SafeColor(
+				Current.Accent,
+				FALLBACK_ACCENT
+			)
+
+	}
+
+end
+
+--==================================================
+-- NORMALIZE TEXT
+--==================================================
+-- Esta é uma das partes mais importantes.
+--
+-- Tudo passa por aqui antes de ser comparado.
+--
+-- M1
+-- m1
+-- M1
+--
+-- serão tratados da mesma maneira.
+--==================================================
+
+function Search:Normalize(
+	Value
+)
+
+	if Value == nil then
+		return ""
+	end
+
+	local Text =
+		tostring(
+			Value
+		)
+
+	-- Remove espaços extras
+	Text =
+		Text:gsub(
+			"%s+",
+			" "
+		)
+
+	-- Remove espaços nas pontas
+	Text =
+		Text:gsub(
+			"^%s+",
+			""
+		)
+
+	Text =
+		Text:gsub(
+			"%s+$",
+			""
+		)
+
+	-- Case insensitive
+	Text =
+		string.lower(
+			Text
+		)
+
+	return Text
+
+end
+
+--==================================================
+-- SPLIT SEARCH WORDS
+--==================================================
+
+function Search:GetWords(
+	Query
+)
+
+	local Words = {}
+
+	Query =
+		self:Normalize(
+			Query
+		)
+
+	for Word in string.gmatch(
+		Query,
+		"%S+"
+	) do
+
+		table.insert(
+			Words,
+			Word
+		)
+
+	end
+
+	return Words
+
+end
+
+--==================================================
+-- WORD MATCH
+--==================================================
+-- Todos os termos precisam existir.
+--
+-- Exemplo:
+--
+-- "m1 hit"
+--
+-- encontra:
+--
+-- "M1 Hit 1"
+-- "M1 Hit 2"
+--
+-- mas não:
+--
+-- "M1 Down"
+--==================================================
+
+function Search:Matches(
+	Name,
+	ID,
+	Query
+)
+
+	Query =
+		self:Normalize(
+			Query
+		)
+
+	if Query == "" then
+		return true
+	end
+
+	local NameText =
+		self:Normalize(
+			Name
+		)
+
+	local IDText =
+		self:Normalize(
+			ID
+		)
+
+	local Combined =
+		NameText
+		.. " "
+		.. IDText
+
+	local Words =
+		self:GetWords(
+			Query
+		)
+
+	for _, Word in
+		ipairs(
+			Words
+		) do
+
+		if not string.find(
+			Combined,
+			Word,
+			1,
+			true
+		) then
+
+			return false
+
+		end
+
+	end
+
+	return true
+
+end
 
 --==================================================
 -- INIT
 --==================================================
 
-function Search:Init(Context)
+function Search:Init(
+	Context
+)
 
-    Context = Context or {}
+	Context =
+		Context
+		or {}
 
-    self.Context =
-        Context
+	self.Context =
+		Context
 
-    self.Config =
-        Context.Config
+	self.Config =
+		Context.Config
 
-    self.Sounds =
-        Context.Sounds
+	self.Theme =
+		Context.Theme
 
-    self.Theme =
-        Context.Theme
+	self.UI =
+		Context.UI
 
-    self.UI =
-        Context.UI
+	self.Cards =
+		Context.Cards
 
-    self.Cards =
-        Context.Cards
+	self.Categories =
+		Context.Categories
 
-    self.Categories =
-        Context.Categories
+	self.Favorites =
+		Context.Favorites
 
-    self.Favorites =
-        Context.Favorites
+	self.Query =
+		""
 
-    --==================================================
-    -- SEARCH STATE
-    --==================================================
+	self.CurrentCategory =
+		"Outros"
 
-    self.Query =
-        ""
+	self.LastQuery =
+		""
 
-    self.LastQuery =
-        ""
+	self.Searching =
+		false
 
-    self.IsSearching =
-        false
+	self.RefreshToken =
+		0
 
-    self.SuppressContextUpdate =
-        false
+	self.Connections =
+		self.Connections
+		or {}
 
-    self.IsUpdating =
-        false
+	self.Initialized =
+		false
 
-    --==================================================
-    -- UI
-    --==================================================
+	--==================================================
+	-- FIND CONTENT
+	--==================================================
 
-    self.SearchBox =
-        nil
+	if not self.UI then
 
-    self.ResultsLabel =
-        nil
+		warn(
+			"⚠️ Rimuru Hub Search: UI não encontrado."
+		)
 
-    self.ResultCountLabel =
-        nil
+		return false
 
-    --==================================================
-    -- CONTEXT
-    --==================================================
+	end
 
-    self.ContextCategory =
-        "ALL"
+	self.Content =
+		self.UI.Content
 
-    self.ContextFilter =
-        "All"
+	self.Scroll =
+		self.UI.Scroll
 
-    --==================================================
-    -- CONNECTION
-    --==================================================
+	if not self.Content
+	or not self.Scroll then
 
-    self.SearchConnection =
-        nil
+		warn(
+			"⚠️ Rimuru Hub Search: Content/Scroll não encontrado."
+		)
+
+		return false
+
+	end
+
+	--==================================================
+	-- CREATE
+	--==================================================
+
+	local Success,
+		Error =
+		pcall(function()
+
+			self:Create()
+
+		end)
+
+	if not Success then
+
+		warn(
+			"❌ Rimuru Hub Search: erro ao criar:",
+			tostring(Error)
+		)
+
+		return false
+
+	end
+
+	self.Initialized =
+		true
+
+	return true
 
 end
 
 --==================================================
--- SET UI REFERENCES
+-- CREATE SEARCH BAR
 --==================================================
 
-function Search:SetSearchBox(
-    SearchBox
-)
+function Search:Create()
 
-    self.SearchBox =
-        SearchBox
+	-- Evita duplicação
+	local Existing =
+		self.Content:FindFirstChild(
+			"PremiumSearch"
+		)
 
-    if not SearchBox then
-        return
-    end
+	if Existing then
 
-    --==================================================
-    -- REMOVE OLD CONNECTION
-    --==================================================
+		Existing:Destroy()
 
-    if self.SearchConnection then
+	end
 
-        pcall(function()
+	--==================================================
+	-- CONTAINER
+	--==================================================
 
-            self.SearchConnection:Disconnect()
+	local Container =
+		Instance.new(
+			"Frame"
+		)
 
-        end)
+	Container.Name =
+		"PremiumSearch"
 
-        self.SearchConnection =
-            nil
+	Container.Position =
+		UDim2.new(
+			0,
+			10,
+			0,
+			8
+		)
 
-    end
+	Container.Size =
+		UDim2.new(
+			1,
+			-20,
+			0,
+			SEARCH_HEIGHT
+		)
 
-    --==================================================
-    -- TEXT CHANGED
-    --==================================================
+	Container.BackgroundTransparency =
+		1
 
-    self.SearchConnection =
-        SearchBox:GetPropertyChangedSignal(
-            "Text"
-        ):Connect(
+	Container.BorderSizePixel =
+		0
 
-            function()
+	Container.ZIndex =
+		510
 
-                self:SetQuery(
-                    SearchBox.Text
-                )
+	Container.Parent =
+		self.Content
 
-            end
+	self.Container =
+		Container
 
-        )
+	--==================================================
+	-- SEARCH BACKGROUND
+	--==================================================
+
+	local Background =
+		Instance.new(
+			"Frame"
+		)
+
+	Background.Name =
+		"Background"
+
+	Background.Size =
+		UDim2.new(
+			1,
+			-72,
+			1,
+			0
+		)
+
+	Background.BackgroundColor3 =
+		FALLBACK_BACKGROUND
+
+	Background.BackgroundTransparency =
+		0
+
+	Background.BorderSizePixel =
+		0
+
+	Background.ZIndex =
+		510
+
+	Background.Parent =
+		Container
+
+	local Corner =
+		Instance.new(
+			"UICorner"
+		)
+
+	Corner.CornerRadius =
+		UDim.new(
+			0,
+			9
+		)
+
+	Corner.Parent =
+		Background
+
+	local Stroke =
+		Instance.new(
+			"UIStroke"
+		)
+
+	Stroke.Name =
+		"SearchStroke"
+
+	Stroke.Thickness =
+		1
+
+	Stroke.Transparency =
+		0.45
+
+	Stroke.Color =
+		FALLBACK_ACCENT
+
+	Stroke.Parent =
+		Background
+
+	self.Background =
+		Background
+
+	self.Stroke =
+		Stroke
+
+	--==================================================
+	-- SEARCH ICON
+	--==================================================
+
+	local Icon =
+		Instance.new(
+			"TextLabel"
+		)
+
+	Icon.Name =
+		"SearchIcon"
+
+	Icon.Position =
+		UDim2.new(
+			0,
+			10,
+			0,
+			0
+		)
+
+	Icon.Size =
+		UDim2.new(
+			0,
+			22,
+			1,
+			0
+		)
+
+	Icon.BackgroundTransparency =
+		1
+
+	Icon.Text =
+		"⌕"
+
+	Icon.TextSize =
+		21
+
+	Icon.Font =
+		Enum.Font.GothamBold
+
+	Icon.TextColor3 =
+		FALLBACK_ACCENT
+
+	Icon.ZIndex =
+		511
+
+	Icon.Parent =
+		Background
+
+	self.Icon =
+		Icon
+
+	--==================================================
+	-- TEXT BOX
+	--==================================================
+
+	local TextBox =
+		Instance.new(
+			"TextBox"
+		)
+
+	TextBox.Name =
+		"Input"
+
+	TextBox.Position =
+		UDim2.new(
+			0,
+			36,
+			0,
+			0
+		)
+
+	TextBox.Size =
+		UDim2.new(
+			1,
+			-70,
+			1,
+			0
+		)
+
+	TextBox.BackgroundTransparency =
+		1
+
+	TextBox.ClearTextOnFocus =
+		false
+
+	TextBox.PlaceholderText =
+		PLACEHOLDER_TEXT
+
+	TextBox.Text =
+		""
+
+	TextBox.TextColor3 =
+		FALLBACK_TEXT
+
+	TextBox.PlaceholderColor3 =
+		FALLBACK_SUBTEXT
+
+	TextBox.TextSize =
+		11
+
+	TextBox.Font =
+		Enum.Font.Gotham
+
+	TextBox.TextXAlignment =
+		Enum.TextXAlignment.Left
+
+	TextBox.ZIndex =
+		511
+
+	TextBox.Parent =
+		Background
+
+	self.Input =
+		TextBox
+
+	--==================================================
+	-- CLEAR BUTTON
+	--==================================================
+
+	local Clear =
+		Instance.new(
+			"TextButton"
+		)
+
+	Clear.Name =
+		"Clear"
+
+	Clear.Size =
+		UDim2.new(
+			0,
+			28,
+			0,
+			28
+		)
+
+	Clear.Position =
+		UDim2.new(
+			1,
+			-34,
+			0.5,
+			-14
+		)
+
+	Clear.BackgroundTransparency =
+		1
+
+	Clear.Text =
+		"×"
+
+	Clear.TextSize =
+		18
+
+	Clear.Font =
+		Enum.Font.GothamBold
+
+	Clear.TextColor3 =
+		FALLBACK_SUBTEXT
+
+	Clear.AutoButtonColor =
+		false
+
+	Clear.Visible =
+		false
+
+	Clear.ZIndex =
+		512
+
+	Clear.Parent =
+		Background
+
+	self.Clear =
+		Clear
+
+	--==================================================
+	-- RESULT COUNTER
+	--==================================================
+
+	local Results =
+		Instance.new(
+			"TextLabel"
+		)
+
+	Results.Name =
+		"Results"
+
+	Results.Position =
+		UDim2.new(
+			1,
+			-65,
+			0,
+			0
+		)
+
+	Results.Size =
+		UDim2.new(
+			0,
+			65,
+			1,
+			0
+		)
+
+	Results.BackgroundTransparency =
+		1
+
+	Results.Text =
+		""
+
+	Results.TextColor3 =
+		FALLBACK_SUBTEXT
+
+	Results.TextSize =
+		9
+
+	Results.Font =
+		Enum.Font.GothamMedium
+
+	Results.TextXAlignment =
+		Enum.TextXAlignment.Right
+
+	Results.ZIndex =
+		511
+
+	Results.Parent =
+		Container
+
+	self.Results =
+		Results
+
+	--==================================================
+	-- NO RESULTS
+	--==================================================
+
+	local Empty =
+		Instance.new(
+			"TextLabel"
+		)
+
+	Empty.Name =
+		"NoResults"
+
+	Empty.Position =
+		UDim2.new(
+			0,
+			0,
+			0,
+			55
+		)
+
+	Empty.Size =
+		UDim2.new(
+			1,
+			0,
+			0,
+			40
+		)
+
+	Empty.BackgroundTransparency =
+		1
+
+	Empty.Text =
+		"No sounds found"
+
+	Empty.TextColor3 =
+		FALLBACK_SUBTEXT
+
+	Empty.TextSize =
+		12
+
+	Empty.Font =
+		Enum.Font.GothamMedium
+
+	Empty.Visible =
+		false
+
+	Empty.ZIndex =
+		510
+
+	Empty.Parent =
+		self.Content
+
+	self.NoResults =
+		Empty
+
+	--==================================================
+	-- EVENTS
+	--==================================================
+
+	self:DisconnectEvents()
+
+	table.insert(
+		self.Connections,
+
+		TextBox:GetPropertyChangedSignal(
+			"Text"
+		):Connect(function()
+
+			self:ScheduleSearch(
+				TextBox.Text
+			)
+
+		end)
+
+	)
+
+	table.insert(
+		self.Connections,
+
+		Clear.MouseButton1Click:Connect(
+			function()
+
+				self:ClearSearch()
+
+			end
+		)
+
+	)
+
+	table.insert(
+		self.Connections,
+
+		TextBox.Focused:Connect(
+			function()
+
+				self:OnFocus()
+
+			end
+		)
+
+	)
+
+	table.insert(
+		self.Connections,
+
+		TextBox.FocusLost:Connect(
+			function()
+
+				self:OnFocusLost()
+
+			end
+		)
+
+	)
+
+	self:ApplyTheme()
 
 end
 
 --==================================================
--- SET RESULT LABEL
+-- DISCONNECT EVENTS
 --==================================================
 
-function Search:SetResultsLabel(
-    Label
-)
+function Search:DisconnectEvents()
 
-    self.ResultsLabel =
-        Label
+	if not self.Connections then
+		self.Connections = {}
+		return
+	end
+
+	for _, Connection in
+		ipairs(
+			self.Connections
+		) do
+
+		if Connection
+		and type(Connection.Disconnect) == "function" then
+
+			pcall(function()
+
+				Connection:Disconnect()
+
+			end)
+
+		end
+
+	end
+
+	table.clear(
+		self.Connections
+	)
 
 end
 
 --==================================================
--- NORMALIZE
+-- FOCUS
 --==================================================
 
-function Search:Normalize(
-    Text
+function Search:OnFocus()
+
+	if self.Stroke then
+
+		self.Stroke.Transparency =
+			0.15
+
+	end
+
+end
+
+function Search:OnFocusLost()
+
+	if self.Stroke then
+
+		self.Stroke.Transparency =
+			0.45
+
+	end
+
+end
+
+--==================================================
+-- SET CATEGORY
+--==================================================
+-- Chamado pelo Categories.lua.
+--
+-- Importante:
+-- trocar categoria limpa a pesquisa.
+-- Isso evita a categoria nova herdar uma query
+-- antiga sem querer.
+--==================================================
+
+function Search:SetCategory(
+	Category
 )
 
-    if Text == nil then
-        return ""
-    end
+	Category =
+		tostring(
+			Category
+			or ""
+		)
 
-    return string.lower(
-        tostring(Text)
-    )
+	if Category == "" then
+		Category = "Outros"
+	end
+
+	self.CurrentCategory =
+		Category
+
+	self:ClearSearch(
+		true
+	)
 
 end
 
@@ -187,693 +1058,8 @@ end
 
 function Search:GetQuery()
 
-    return self.Query
-
-end
-
---==================================================
--- HAS QUERY
---==================================================
-
-function Search:HasQuery()
-
-    return self.Query ~= ""
-
-end
-
---==================================================
--- GET CATEGORY
---==================================================
-
-function Search:GetCurrentCategory()
-
-    if self.Categories
-    and type(
-        self.Categories.GetCurrentCategory
-    ) == "function" then
-
-        local Success, Category =
-            pcall(function()
-
-                return self.Categories:
-                    GetCurrentCategory()
-
-            end)
-
-        if Success
-        and type(Category) == "string" then
-
-            return Category
-
-        end
-
-    end
-
-    return self.ContextCategory
-
-end
-
---==================================================
--- GET FILTER
---==================================================
-
-function Search:GetCurrentFilter()
-
-    if self.Categories
-    and type(
-        self.Categories.GetCurrentFilter
-    ) == "function" then
-
-        local Success, Filter =
-            pcall(function()
-
-                return self.Categories:
-                    GetCurrentFilter()
-
-            end)
-
-        if Success
-        and type(Filter) == "string" then
-
-            return Filter
-
-        end
-
-    end
-
-    return self.ContextFilter
-
-end
-
---==================================================
--- UPDATE CONTEXT
---==================================================
-
-function Search:UpdateContext()
-
-    self.ContextCategory =
-        self:GetCurrentCategory()
-
-    self.ContextFilter =
-        self:GetCurrentFilter()
-
-end
-
---==================================================
--- VALID SOUND DATA
---==================================================
-
-function Search:IsValidSoundData(
-    Data
-)
-
-    if type(Data) ~= "table" then
-        return false
-    end
-
-    if type(Data[1]) ~= "string" then
-        return false
-    end
-
-    if Data[1] == "" then
-        return false
-    end
-
-    if Data[2] == nil then
-        return false
-    end
-
-    return true
-
-end
-
---==================================================
--- GET ALL SOUNDS
---==================================================
-
-function Search:GetAllSounds()
-
-    if self.Categories
-    and type(
-        self.Categories.GetAllSounds
-    ) == "function" then
-
-        local Success, Result =
-            pcall(function()
-
-                return self.Categories:
-                    GetAllSounds()
-
-            end)
-
-        if Success
-        and type(Result) == "table" then
-
-            return Result
-
-        end
-
-    end
-
-    local Result = {}
-
-    if type(self.Sounds) ~= "table" then
-        return Result
-    end
-
-    for CategoryName, CategoryData in pairs(
-        self.Sounds
-    ) do
-
-        if CategoryName ~= "ALL"
-        and CategoryName ~= "Configuração"
-        and type(CategoryData) == "table" then
-
-            for _, Data in ipairs(CategoryData) do
-
-                if self:IsValidSoundData(Data) then
-
-                    table.insert(
-                        Result,
-                        Data
-                    )
-
-                end
-
-            end
-
-        end
-
-    end
-
-    return Result
-
-end
-
---==================================================
--- GET FAVORITES
---==================================================
-
-function Search:GetFavoriteSounds()
-
-    if self.Categories
-    and type(
-        self.Categories.GetFavoriteSounds
-    ) == "function" then
-
-        local Success, Result =
-            pcall(function()
-
-                return self.Categories:
-                    GetFavoriteSounds()
-
-            end)
-
-        if Success
-        and type(Result) == "table" then
-
-            return Result
-
-        end
-
-    end
-
-    local Result = {}
-
-    if not self.Favorites
-    or type(self.Favorites.IsFavorite) ~= "function" then
-
-        return Result
-
-    end
-
-    for _, Data in ipairs(
-        self:GetAllSounds()
-    ) do
-
-        if self:IsValidSoundData(Data) then
-
-            local ID =
-                Data[2]
-
-            local Success, Favorite =
-                pcall(function()
-
-                    return self.Favorites:
-                        IsFavorite(ID)
-
-                end)
-
-            if Success
-            and Favorite == true then
-
-                table.insert(
-                    Result,
-                    Data
-                )
-
-            end
-
-        end
-
-    end
-
-    return Result
-
-end
-
---==================================================
--- GET M1
---==================================================
-
-function Search:GetM1Sounds()
-
-    if self.Categories
-    and type(
-        self.Categories.GetM1Sounds
-    ) == "function" then
-
-        local Success, Result =
-            pcall(function()
-
-                return self.Categories:
-                    GetM1Sounds()
-
-            end)
-
-        if Success
-        and type(Result) == "table" then
-
-            return Result
-
-        end
-
-    end
-
-    return self:FilterListByWord(
-        self:GetAllSounds(),
-        "m1"
-    )
-
-end
-
---==================================================
--- GET HIT
---==================================================
-
-function Search:GetHitSounds()
-
-    if self.Categories
-    and type(
-        self.Categories.GetHitSounds
-    ) == "function" then
-
-        local Success, Result =
-            pcall(function()
-
-                return self.Categories:
-                    GetHitSounds()
-
-            end)
-
-        if Success
-        and type(Result) == "table" then
-
-            return Result
-
-        end
-
-    end
-
-    return self:FilterListByWord(
-        self:GetAllSounds(),
-        "hit"
-    )
-
-end
-
---==================================================
--- FILTER LIST BY WORD
---==================================================
-
-function Search:FilterListByWord(
-    List,
-    Word
-)
-
-    local Result = {}
-
-    Word =
-        self:Normalize(Word)
-
-    if Word == "" then
-        return Result
-    end
-
-    if type(List) ~= "table" then
-        return Result
-    end
-
-    for _, Data in ipairs(List) do
-
-        if self:IsValidSoundData(Data) then
-
-            local Name =
-                self:Normalize(
-                    Data[1]
-                )
-
-            if string.find(
-                Name,
-                Word,
-                1,
-                true
-            ) then
-
-                table.insert(
-                    Result,
-                    Data
-                )
-
-            end
-
-        end
-
-    end
-
-    return Result
-
-end
-
---==================================================
--- GET CONTEXT SOUNDS
---==================================================
-
-function Search:GetContextSounds()
-
-    self:UpdateContext()
-
-    local Category =
-        self.ContextCategory
-
-    local Filter =
-        self.ContextFilter
-
-    --==================================================
-    -- CONFIGURATION
-    --==================================================
-
-    if Category ==
-        "Configuração" then
-
-        return {}
-
-    end
-
-    --==================================================
-    -- NORMAL CATEGORY
-    --==================================================
-
-    if Category ~= "ALL" then
-
-        if type(self.Sounds) == "table" then
-
-            local CategoryData =
-                self.Sounds[Category]
-
-            if type(CategoryData) == "table" then
-
-                local Result = {}
-
-                for _, Data in ipairs(
-                    CategoryData
-                ) do
-
-                    if self:IsValidSoundData(Data) then
-
-                        table.insert(
-                            Result,
-                            Data
-                        )
-
-                    end
-
-                end
-
-                return Result
-
-            end
-
-        end
-
-        return {}
-
-    end
-
-    --==================================================
-    -- ALL FILTERS
-    --==================================================
-
-    if Filter == "Favorite" then
-
-        return self:GetFavoriteSounds()
-
-    end
-
-    if Filter == "M1" then
-
-        return self:GetM1Sounds()
-
-    end
-
-    if Filter == "Hit" then
-
-        return self:GetHitSounds()
-
-    end
-
-    return self:GetAllSounds()
-
-end
-
---==================================================
--- SEARCH DATA
---==================================================
-
-function Search:SearchList(
-    List,
-    Query
-)
-
-    local Result = {}
-
-    Query =
-        self:Normalize(Query)
-
-    if Query == "" then
-
-        for _, Data in ipairs(List or {}) do
-
-            if self:IsValidSoundData(Data) then
-
-                table.insert(
-                    Result,
-                    Data
-                )
-
-            end
-
-        end
-
-        return Result
-
-    end
-
-    if type(List) ~= "table" then
-        return Result
-    end
-
-    for _, Data in ipairs(List) do
-
-        if self:IsValidSoundData(Data) then
-
-            local Name =
-                self:Normalize(
-                    Data[1]
-                )
-
-            if string.find(
-                Name,
-                Query,
-                1,
-                true
-            ) then
-
-                table.insert(
-                    Result,
-                    Data
-                )
-
-            end
-
-        end
-
-    end
-
-    return Result
-
-end
-
---==================================================
--- GET SEARCH RESULTS
---==================================================
-
-function Search:GetResults(
-    Query
-)
-
-    Query =
-        self:Normalize(
-            Query ~= nil
-            and Query
-            or self.Query
-        )
-
-    local ContextSounds =
-        self:GetContextSounds()
-
-    return self:SearchList(
-        ContextSounds,
-        Query
-    )
-
-end
-
---==================================================
--- UPDATE RESULT TEXT
---==================================================
-
-function Search:UpdateResultLabel(
-    Count,
-    Query
-)
-
-    local Label =
-        self.ResultsLabel
-
-    if not Label then
-        return
-    end
-
-    if Query == "" then
-
-        Label.Text = ""
-
-        return
-
-    end
-
-    Label.Text =
-        "Results found: "
-        .. tostring(Count)
-
-end
-
---==================================================
--- RENDER RESULTS
---==================================================
-
-function Search:RenderResults(
-    Results
-)
-
-    if self.IsUpdating then
-        return
-    end
-
-    self.IsUpdating = true
-
-    local Success, Error =
-        pcall(function()
-
-            if not self.Categories then
-                return
-            end
-
-            if self.Categories.CurrentCategory ==
-                "Configuração" then
-
-                return
-
-            end
-
-            if not self.Cards
-            or type(
-                self.Cards.CreateSoundCard
-            ) ~= "function" then
-
-                warn(
-                    "[RIMURU HUB] Search: Cards.CreateSoundCard não está disponível."
-                )
-
-                return
-
-            end
-
-            if not self.UI
-            or not self.UI.Scroll then
-                return
-            end
-
-            --==================================================
-            -- CLEAR ONLY SOUND CARDS
-            --==================================================
-
-            for _, Object in ipairs(
-                self.UI.Scroll:GetChildren()
-            ) do
-
-                if Object:IsA("Frame")
-                and Object.Name:sub(1, 6) ==
-                    "Sound_" then
-
-                    Object:Destroy()
-
-                end
-
-            end
-
-            --==================================================
-            -- CREATE RESULTS
-            --==================================================
-
-            for Index, Data in ipairs(
-                Results or {}
-            ) do
-
-                if self:IsValidSoundData(Data) then
-
-                    self.Cards:CreateSoundCard(
-                        Index,
-                        Data
-                    )
-
-                end
-
-            end
-
-        end)
-
-    self.IsUpdating = false
-
-    if not Success then
-
-        warn(
-            "[RIMURU HUB] Search Render Error:",
-            Error
-        )
-
-    end
+	return self.Query
+		or ""
 
 end
 
@@ -882,197 +1068,442 @@ end
 --==================================================
 
 function Search:SetQuery(
-    Query
+	Query
 )
 
-    Query =
-        self:Normalize(
-            Query
-        )
+	Query =
+		tostring(
+			Query
+			or ""
+		)
 
-    --==================================================
-    -- NO CHANGE
-    --==================================================
+	if self.Input
+	and self.Input.Text ~= Query then
 
-    if Query == self.Query
-    and Query == self.LastQuery then
+		self.Input.Text =
+			Query
 
-        return
+		return
 
-    end
+	end
 
-    self.Query =
-        Query
-
-    self.LastQuery =
-        Query
-
-    self.IsSearching =
-        Query ~= ""
-
-    --==================================================
-    -- UPDATE CONTEXT
-    --==================================================
-
-    self:UpdateContext()
-
-    --==================================================
-    -- EMPTY QUERY
-    --==================================================
-
-    if Query == "" then
-
-        self:UpdateResultLabel(
-            0,
-            ""
-        )
-
-        self:RenderResults(
-            self:GetContextSounds()
-        )
-
-        return
-
-    end
-
-    --==================================================
-    -- SEARCH
-    --==================================================
-
-    local Results =
-        self:GetResults(
-            Query
-        )
-
-    self:UpdateResultLabel(
-        #Results,
-        Query
-    )
-
-    self:RenderResults(
-        Results
-    )
+	self:Search(
+		Query
+	)
 
 end
 
 --==================================================
 -- CLEAR SEARCH
 --==================================================
--- Zera completamente a busca.
--- Não restaura query antiga.
---==================================================
 
-function Search:Clear()
+function Search:ClearSearch(
+	Silent
+)
 
-    self.Query =
-        ""
+	self.Query =
+		""
 
-    self.LastQuery =
-        ""
+	self.LastQuery =
+		""
 
-    self.IsSearching =
-        false
+	if self.Input then
 
-    if self.SearchBox then
+		self.Input.Text =
+			""
 
-        -- evita que o TextChanged
-        -- execute duas reconstruções
+	end
 
-        self.SuppressContextUpdate =
-            true
+	if not Silent then
 
-        self.SearchBox.Text =
-            ""
+		self:Search(
+			""
+		)
 
-        self.SuppressContextUpdate =
-            false
+	else
 
-    end
+		self:Search(
+			"",
+			true
+		)
 
-    self:UpdateResultLabel(
-        0,
-        ""
-    )
+	end
 
 end
 
 --==================================================
--- CLEAR FOR CONTEXT
---==================================================
--- Usado pelo Categories.lua quando:
---
--- categoria muda
--- filtro muda
--- configuração abre
---
--- IMPORTANTE:
--- nunca restaura a pesquisa anterior.
+-- SCHEDULE SEARCH
 --==================================================
 
-function Search:ClearForContext()
+function Search:ScheduleSearch(
+	Query
+)
 
-    self:Clear()
+	Query =
+		tostring(
+			Query
+			or ""
+		)
 
-    self:UpdateContext()
+	self.RefreshToken += 1
+
+	local Token =
+		self.RefreshToken
+
+	task.delay(
+		SEARCH_DEBOUNCE,
+		function()
+
+			if Token ~= self.RefreshToken then
+				return
+			end
+
+			self:Search(
+				Query
+			)
+
+		end
+	)
 
 end
 
 --==================================================
--- CONTEXT CHANGED
---==================================================
--- Quando tema ou categoria atualiza a interface,
--- a pesquisa atual continua válida.
---
--- Se houver query:
--- pesquisa novamente.
---
--- Se não houver:
--- apenas redesenha o contexto atual.
+-- CHECK CARD
 --==================================================
 
-function Search:OnContextChanged()
+function Search:IsSoundCard(
+	Object
+)
 
-    if self.SuppressContextUpdate then
-        return
-    end
+	if not Object then
+		return false
+	end
 
-    self:UpdateContext()
+	if not Object:IsA("Frame") then
+		return false
+	end
 
-    if self.IsSearching
-    and self.Query ~= "" then
+	local Name =
+		Object.Name
 
-        local Results =
-            self:GetResults(
-                self.Query
-            )
+	if type(Name) ~= "string" then
+		return false
+	end
 
-        self:UpdateResultLabel(
-            #Results,
-            self.Query
-        )
+	return string.sub(
+		Name,
+		1,
+		6
+	) == "Sound_"
 
-        self:RenderResults(
-            Results
-        )
+end
 
-        return
+--==================================================
+-- GET CARD DATA
+--==================================================
 
-    end
+function Search:GetCardData(
+	Card
+)
 
-    self:UpdateResultLabel(
-        0,
-        ""
-    )
+	if not Card then
+		return "", ""
+	end
+
+	local NameLabel =
+		Card:FindFirstChild(
+			"Name"
+		)
+
+	local IDLabel =
+		Card:FindFirstChild(
+			"ID"
+		)
+
+	local Name =
+		NameLabel
+		and NameLabel:IsA("TextLabel")
+		and NameLabel.Text
+		or ""
+
+	local ID =
+		IDLabel
+		and IDLabel:IsA("TextLabel")
+		and IDLabel.Text
+		or ""
+
+	return (
+		tostring(Name)
+	),
+	(
+		tostring(ID)
+	)
+
+end
+
+--==================================================
+-- SEARCH
+--==================================================
+
+function Search:Search(
+	Query,
+	Silent
+)
+
+	Query =
+		tostring(
+			Query
+			or ""
+		)
+
+	self.Query =
+		Query
+
+	self.LastQuery =
+		Query
+
+	local NormalizedQuery =
+		self:Normalize(
+			Query
+		)
+
+	local HasQuery =
+		NormalizedQuery ~= ""
+
+	local Found =
+		0
+
+	local Total =
+		0
+
+	if not self.Scroll then
+		return
+	end
+
+	--==================================================
+	-- PROCESS CARDS
+	--==================================================
+
+	for _, Object in
+		ipairs(
+			self.Scroll:GetChildren()
+		) do
+
+		if self:IsSoundCard(Object) then
+
+			Total += 1
+
+			local Name,
+				ID =
+				self:GetCardData(
+					Object
+				)
+
+			local Match =
+				self:Matches(
+					Name,
+					ID,
+					Query
+				)
+
+			Object.Visible =
+				Match
+
+			if Match then
+
+				Found += 1
+
+			end
+
+		end
+
+	end
+
+	--==================================================
+	-- UPDATE RESULT
+	--==================================================
+
+	self:UpdateResults(
+		Found,
+		Total,
+		HasQuery
+	)
+
+	--==================================================
+	-- NO RESULTS
+	--==================================================
+
+	self:UpdateNoResults(
+		Found,
+		Total,
+		HasQuery
+	)
+
+	self.Searching =
+		HasQuery
+
+	self:UpdateClearButton(
+		HasQuery
+	)
+
+	if not Silent then
+
+		self:UpdateCanvas()
+
+	end
+
+end
+
+--==================================================
+-- UPDATE RESULTS
+--==================================================
+
+function Search:UpdateResults(
+	Found,
+	Total,
+	HasQuery
+)
+
+	if not self.Results then
+		return
+	end
+
+	if HasQuery then
+
+		self.Results.Text =
+			RESULT_TEXT
+			.. tostring(Found)
+
+	else
+
+		self.Results.Text =
+			""
+
+	end
+
+end
+
+--==================================================
+-- UPDATE NO RESULTS
+--==================================================
+
+function Search:UpdateNoResults(
+	Found,
+	Total,
+	HasQuery
+)
+
+	if not self.NoResults then
+		return
+	end
+
+	if HasQuery
+	and Total > 0
+	and Found == 0 then
+
+		self.NoResults.Visible =
+			true
+
+	else
+
+		self.NoResults.Visible =
+			false
+
+	end
+
+end
+
+--==================================================
+-- UPDATE CLEAR
+--==================================================
+
+function Search:UpdateClearButton(
+	Visible
+)
+
+	if not self.Clear then
+		return
+	end
+
+	self.Clear.Visible =
+		Visible
+
+end
+
+--==================================================
+-- UPDATE CANVAS
+--==================================================
+
+function Search:UpdateCanvas()
+
+	if not self.Scroll then
+		return
+	end
+
+	-- AutomaticCanvasSize já é usado pelo UI.
+	-- Esta chamada apenas força uma atualização
+	-- quando necessário.
+
+	pcall(function()
+
+		self.Scroll.CanvasPosition =
+			Vector2.new(
+				self.Scroll.CanvasPosition.X,
+				0
+			)
+
+	end)
 
 end
 
 --==================================================
 -- REFRESH
 --==================================================
+-- Útil quando:
+--
+-- Favorites mudou
+-- Cards foram recriados
+-- Categoria mudou
+-- Theme foi alterado
+--==================================================
 
 function Search:Refresh()
 
-    self:OnContextChanged()
+	if not self.Initialized then
+		return
+	end
+
+	self:Search(
+		self.Query
+			or "",
+		true
+	)
+
+end
+
+--==================================================
+-- SHOW ALL
+--==================================================
+
+function Search:ShowAll()
+
+	if not self.Scroll then
+		return
+	end
+
+	for _, Object in
+		ipairs(
+			self.Scroll:GetChildren()
+		) do
+
+		if self:IsSoundCard(Object) then
+
+			Object.Visible =
+				true
+
+		end
+
+	end
 
 end
 
@@ -1082,59 +1513,28 @@ end
 
 function Search:GetResultCount()
 
-    if not self.IsSearching then
-        return 0
-    end
+	if not self.Scroll then
+		return 0
+	end
 
-    local Results =
-        self:GetResults(
-            self.Query
-        )
+	local Count =
+		0
 
-    return #Results
+	for _, Object in
+		ipairs(
+			self.Scroll:GetChildren()
+		) do
 
-end
+		if self:IsSoundCard(Object)
+		and Object.Visible then
 
---==================================================
--- GET STATE
---==================================================
+			Count += 1
 
-function Search:GetState()
+		end
 
-    return {
+	end
 
-        Query =
-            self.Query,
-
-        IsSearching =
-            self.IsSearching,
-
-        Category =
-            self:GetCurrentCategory(),
-
-        Filter =
-            self:GetCurrentFilter(),
-
-        ResultCount =
-            self:GetResultCount()
-
-    }
-
-end
-
---==================================================
--- RESET
---==================================================
-
-function Search:Reset()
-
-    self:Clear()
-
-    self.ContextCategory =
-        "ALL"
-
-    self.ContextFilter =
-        "All"
+	return Count
 
 end
 
@@ -1144,24 +1544,145 @@ end
 
 function Search:ApplyTheme()
 
-    if not self.Theme then
-        return
-    end
+	if not self.Content then
+		return
+	end
 
-    if self.ResultsLabel then
+	local Theme =
+		GetTheme(
+			self.Theme
+		)
 
-        local CurrentTheme =
-            self.Theme:GetCurrent()
+	--==================================================
+	-- BACKGROUND
+	--==================================================
 
-        if CurrentTheme then
+	if self.Background then
 
-            self.ResultsLabel.TextColor3 =
-                CurrentTheme.SubText
-                or CurrentTheme.Text
+		self.Background.BackgroundColor3 =
+			Theme.Card
 
-        end
+	end
 
-    end
+	--==================================================
+	-- STROKE
+	--==================================================
+
+	if self.Stroke then
+
+		self.Stroke.Color =
+			Theme.Accent
+
+	end
+
+	--==================================================
+	-- ICON
+	--==================================================
+
+	if self.Icon then
+
+		self.Icon.TextColor3 =
+			Theme.Accent
+
+	end
+
+	--==================================================
+	-- INPUT
+	--==================================================
+
+	if self.Input then
+
+		self.Input.TextColor3 =
+			Theme.Text
+
+		self.Input.PlaceholderColor3 =
+			Theme.SubText
+
+	end
+
+	--==================================================
+	-- CLEAR
+	--==================================================
+
+	if self.Clear then
+
+		self.Clear.TextColor3 =
+			Theme.SubText
+
+	end
+
+	--==================================================
+	-- RESULTS
+	--==================================================
+
+	if self.Results then
+
+		self.Results.TextColor3 =
+			Theme.SubText
+
+	end
+
+	--==================================================
+	-- NO RESULTS
+	--==================================================
+
+	if self.NoResults then
+
+		self.NoResults.TextColor3 =
+			Theme.SubText
+
+	end
+
+end
+
+--==================================================
+-- DESTROY
+--==================================================
+
+function Search:Destroy()
+
+	self.RefreshToken += 1
+
+	self:DisconnectEvents()
+
+	if self.Container then
+
+		self.Container:Destroy()
+
+	end
+
+	if self.NoResults then
+
+		self.NoResults:Destroy()
+
+	end
+
+	self.Container =
+		nil
+
+	self.Background =
+		nil
+
+	self.Stroke =
+		nil
+
+	self.Icon =
+		nil
+
+	self.Input =
+		nil
+
+	self.Clear =
+		nil
+
+	self.Results =
+		nil
+
+	self.NoResults =
+		nil
+
+	self.Initialized =
+		false
 
 end
 
