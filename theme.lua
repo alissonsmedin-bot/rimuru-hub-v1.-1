@@ -11,6 +11,7 @@
 --// RGB SUPPORT
 --// UI COMPATIBLE
 --// CONFIG COMPATIBLE
+--// HARD FALLBACK SYSTEM
 --// STABLE VERSION
 
 local Theme = {}
@@ -34,14 +35,28 @@ Theme.RGBTime = 0
 Theme.RGBConnection = nil
 
 --==================================================
--- FALLBACKS
+-- DEFAULT COLORS
 --==================================================
 
-local DEFAULT_COLOR =
+local DEFAULT_BACKGROUND =
     Color3.fromRGB(
         10,
         10,
         15
+    )
+
+local DEFAULT_CONTENT =
+    Color3.fromRGB(
+        15,
+        15,
+        20
+    )
+
+local DEFAULT_CARD =
+    Color3.fromRGB(
+        25,
+        25,
+        32
     )
 
 local DEFAULT_ACCENT =
@@ -63,6 +78,20 @@ local DEFAULT_SUBTEXT =
         140,
         145,
         155
+    )
+
+local DEFAULT_BLACK =
+    Color3.fromRGB(
+        8,
+        8,
+        8
+    )
+
+local DEFAULT_WHITE =
+    Color3.fromRGB(
+        245,
+        245,
+        245
     )
 
 --==================================================
@@ -116,6 +145,122 @@ local function SafeBoolean(
 end
 
 --==================================================
+-- SAFE STRING
+--==================================================
+
+local function SafeString(
+    Value,
+    Fallback
+)
+
+    if type(Value) == "string"
+    and Value ~= "" then
+
+        return Value
+
+    end
+
+    return Fallback
+
+end
+
+--==================================================
+-- CREATE HARD FALLBACK THEME
+--==================================================
+
+function Theme:CreateFallbackTheme()
+
+    return {
+
+        Name =
+            "Rimuru Dark",
+
+        --==================================================
+        -- MAIN COLORS
+        --==================================================
+
+        Background =
+            DEFAULT_BACKGROUND,
+
+        Main =
+            DEFAULT_BACKGROUND,
+
+        Sidebar =
+            DEFAULT_CONTENT,
+
+        Content =
+            DEFAULT_CONTENT,
+
+        Card =
+            DEFAULT_CARD,
+
+        Button =
+            DEFAULT_CARD,
+
+        Close =
+            DEFAULT_CARD,
+
+        --==================================================
+        -- TEXT
+        --==================================================
+
+        Accent =
+            DEFAULT_ACCENT,
+
+        Text =
+            DEFAULT_TEXT,
+
+        SubText =
+            DEFAULT_SUBTEXT,
+
+        --==================================================
+        -- LOGO
+        --==================================================
+
+        LogoBackground =
+            DEFAULT_BACKGROUND,
+
+        LogoBorder =
+            DEFAULT_ACCENT,
+
+        --==================================================
+        -- BACKGROUND
+        --==================================================
+
+        BackgroundImage =
+            nil,
+
+        BackgroundTransparency =
+            0.35,
+
+        --==================================================
+        -- EFFECTS
+        --==================================================
+
+        GlowEnabled =
+            true,
+
+        ShadowEnabled =
+            true,
+
+        ShadowTransparency =
+            0.92,
+
+        BorderPulse =
+            true,
+
+        --==================================================
+        -- RGB
+        --==================================================
+
+        RGB =
+            false,
+
+    }
+
+end
+
+--==================================================
 -- GET RAW THEME
 --==================================================
 
@@ -124,15 +269,15 @@ local function GetRawTheme(
     Name
 )
 
-    if not Config then
+    if type(Config) ~= "table" then
         return nil
     end
 
-    if not Config.UI then
+    if type(Config.UI) ~= "table" then
         return nil
     end
 
-    if not Config.UI.Themes then
+    if type(Config.UI.Themes) ~= "table" then
         return nil
     end
 
@@ -161,7 +306,9 @@ function Theme:Normalize(
     -- COPY ORIGINAL VALUES
     --==================================================
 
-    for Key, Value in pairs(RawTheme) do
+    for Key, Value in pairs(
+        RawTheme
+    ) do
 
         Normalized[Key] =
             Value
@@ -173,22 +320,23 @@ function Theme:Normalize(
     --==================================================
 
     Normalized.Name =
-        Name
+        SafeString(
+            Name,
+            "Rimuru Dark"
+        )
 
     --==================================================
     -- BACKGROUND
     --==================================================
-    -- Config usa "Main".
-    -- UI usa "Background".
-    --
-    -- Mantemos os dois compatíveis.
 
     Normalized.Background =
         SafeColor(
             RawTheme.Background,
+
             SafeColor(
                 RawTheme.Main,
-                DEFAULT_COLOR
+
+                DEFAULT_BACKGROUND
             )
         )
 
@@ -202,6 +350,7 @@ function Theme:Normalize(
     Normalized.Sidebar =
         SafeColor(
             RawTheme.Sidebar,
+
             Normalized.Background
         )
 
@@ -212,6 +361,7 @@ function Theme:Normalize(
     Normalized.Content =
         SafeColor(
             RawTheme.Content,
+
             Normalized.Background
         )
 
@@ -222,6 +372,7 @@ function Theme:Normalize(
     Normalized.Card =
         SafeColor(
             RawTheme.Card,
+
             Normalized.Content
         )
 
@@ -232,7 +383,19 @@ function Theme:Normalize(
     Normalized.Button =
         SafeColor(
             RawTheme.Button,
+
             Normalized.Card
+        )
+
+    --==================================================
+    -- CLOSE
+    --==================================================
+
+    Normalized.Close =
+        SafeColor(
+            RawTheme.Close,
+
+            Normalized.Button
         )
 
     --==================================================
@@ -242,6 +405,7 @@ function Theme:Normalize(
     Normalized.Accent =
         SafeColor(
             RawTheme.Accent,
+
             DEFAULT_ACCENT
         )
 
@@ -252,6 +416,7 @@ function Theme:Normalize(
     Normalized.Text =
         SafeColor(
             RawTheme.Text,
+
             DEFAULT_TEXT
         )
 
@@ -262,6 +427,7 @@ function Theme:Normalize(
     Normalized.SubText =
         SafeColor(
             RawTheme.SubText,
+
             DEFAULT_SUBTEXT
         )
 
@@ -272,25 +438,38 @@ function Theme:Normalize(
     Normalized.LogoBackground =
         SafeColor(
             RawTheme.LogoBackground,
+
             Normalized.Background
         )
 
     --==================================================
-    -- CLOSE
+    -- LOGO BORDER
     --==================================================
 
-    Normalized.Close =
+    Normalized.LogoBorder =
         SafeColor(
-            RawTheme.Close,
-            Normalized.Button
+            RawTheme.LogoBorder,
+
+            Normalized.Accent
         )
 
     --==================================================
     -- BACKGROUND IMAGE
     --==================================================
 
-    Normalized.BackgroundImage =
-        RawTheme.BackgroundImage
+    if RawTheme.BackgroundImage ~= nil then
+
+        Normalized.BackgroundImage =
+            tostring(
+                RawTheme.BackgroundImage
+            )
+
+    else
+
+        Normalized.BackgroundImage =
+            nil
+
+    end
 
     --==================================================
     -- BACKGROUND TRANSPARENCY
@@ -298,12 +477,15 @@ function Theme:Normalize(
 
     Normalized.BackgroundTransparency =
         math.clamp(
+
             SafeNumber(
                 RawTheme.BackgroundTransparency,
                 0.35
             ),
+
             0,
             1
+
         )
 
     --==================================================
@@ -320,21 +502,21 @@ function Theme:Normalize(
 
     else
 
-        -- Temas naturalmente neon.
-
-        if Name == "Rimuru Dark"
-        or Name == "Void"
-        or Name == "Blackout" then
-
-            Normalized.GlowEnabled =
-                true
-
-        else
-
-            Normalized.GlowEnabled =
-                false
-
-        end
+        Normalized.GlowEnabled =
+            (
+                Normalized.Name
+                == "Rimuru Dark"
+            )
+            or
+            (
+                Normalized.Name
+                == "Void"
+            )
+            or
+            (
+                Normalized.Name
+                == "Blackout"
+            )
 
     end
 
@@ -352,10 +534,11 @@ function Theme:Normalize(
 
     else
 
-        -- Sombra padrão apenas no tema principal.
-
         Normalized.ShadowEnabled =
-            Name == "Rimuru Dark"
+            (
+                Normalized.Name
+                == "Rimuru Dark"
+            )
 
     end
 
@@ -365,12 +548,15 @@ function Theme:Normalize(
 
     Normalized.ShadowTransparency =
         math.clamp(
+
             SafeNumber(
                 RawTheme.ShadowTransparency,
                 0.92
             ),
+
             0,
             1
+
         )
 
     --==================================================
@@ -387,6 +573,7 @@ function Theme:Normalize(
     Normalized.BorderPulse =
         SafeBoolean(
             RawTheme.BorderPulse,
+
             Normalized.GlowEnabled
         )
 
@@ -399,28 +586,84 @@ end
 --==================================================
 
 function Theme:Init(
-    Config
+    ConfigOrContext
 )
 
-    self.Config =
-        Config
+    --==================================================
+    -- RESET RGB
+    --==================================================
+
+    self:StopRGB()
 
     self.RGBTime =
         0
 
     --==================================================
-    -- DEFAULT THEME
+    -- DETECT CONFIG
+    --==================================================
+
+    local Config =
+        ConfigOrContext
+
+    -- Permite:
+    --
+    -- Theme:Init(Config)
+    --
+    -- OU
+    --
+    -- Theme:Init(Context)
+    --
+    -- caso Context.Config exista.
+
+    if type(Config) == "table"
+    and type(Config.Config) == "table" then
+
+        Config =
+            Config.Config
+
+    end
+
+    --==================================================
+    -- STORE CONFIG
+    --==================================================
+
+    self.Config =
+        Config
+
+    --==================================================
+    -- INVALID CONFIG FALLBACK
+    --==================================================
+
+    if type(self.Config) ~= "table" then
+
+        warn(
+            "⚠️ Rimuru Hub Theme: Config inválida. Usando fallback."
+        )
+
+        self.CurrentTheme =
+            self:CreateFallbackTheme()
+
+        self.CurrentThemeName =
+            "Rimuru Dark"
+
+        return false
+
+    end
+
+    --==================================================
+    -- DEFAULT NAME
     --==================================================
 
     local DefaultName =
         "Rimuru Dark"
 
-    if Config
-    and Config.UI
-    and Config.UI.Theme then
+    if type(self.Config.UI) == "table"
+    and self.Config.UI.Theme ~= nil then
 
         DefaultName =
-            Config.UI.Theme
+            tostring(
+                self.Config.UI.Theme
+            )
 
     end
 
@@ -428,22 +671,54 @@ function Theme:Init(
     -- LOAD DEFAULT
     --==================================================
 
-    self:SetTheme(
-        DefaultName
-    )
+    local Success =
+        self:SetTheme(
+            DefaultName
+        )
+
+    --==================================================
+    -- HARD FALLBACK
+    --==================================================
+
+    if not Success
+    or type(self.CurrentTheme) ~= "table" then
+
+        warn(
+            "⚠️ Rimuru Hub Theme: usando tema interno Rimuru Dark."
+        )
+
+        self.CurrentTheme =
+            self:CreateFallbackTheme()
+
+        self.CurrentThemeName =
+            "Rimuru Dark"
+
+    end
+
+    --==================================================
+    -- RGB
+    --==================================================
+
+    if self:IsRGB() then
+
+        self:StartRGB()
+
+    end
+
+    return true
 
 end
 
 --==================================================
--- INITIALIZE
+-- INITIALIZE ALIAS
 --==================================================
 
 function Theme:Initialize(
-    Config
+    ConfigOrContext
 )
 
     return self:Init(
-        Config
+        ConfigOrContext
     )
 
 end
@@ -456,25 +731,39 @@ function Theme:SetTheme(
     Name
 )
 
-    if not self.Config then
+    --==================================================
+    -- CONFIG CHECK
+    --==================================================
+
+    if type(self.Config) ~= "table" then
 
         warn(
             "❌ Rimuru Hub Theme: Config não encontrada."
         )
 
+        self.CurrentTheme =
+            self:CreateFallbackTheme()
+
+        self.CurrentThemeName =
+            "Rimuru Dark"
+
         return false
 
     end
 
-    if not self.Config.UI then
+    --==================================================
+    -- THEME NAME
+    --==================================================
 
-        warn(
-            "❌ Rimuru Hub Theme: Config.UI não encontrada."
+    Name =
+        SafeString(
+            Name,
+            "Rimuru Dark"
         )
 
-        return false
-
-    end
+    --==================================================
+    -- FIND THEME
+    --==================================================
 
     local RawTheme =
         GetRawTheme(
@@ -483,7 +772,7 @@ function Theme:SetTheme(
         )
 
     --==================================================
-    -- FALLBACK
+    -- FALLBACK TO RIMURU DARK
     --==================================================
 
     if not RawTheme then
@@ -506,18 +795,28 @@ function Theme:SetTheme(
     end
 
     --==================================================
-    -- FINAL FALLBACK
+    -- CONFIG THEMES INVALID
     --==================================================
 
     if not RawTheme then
 
         warn(
-            "❌ Rimuru Hub Theme: nenhum tema válido encontrado."
+            "⚠️ Rimuru Hub Theme: Themes não encontrados. Usando fallback interno."
         )
+
+        self.CurrentTheme =
+            self:CreateFallbackTheme()
+
+        self.CurrentThemeName =
+            "Rimuru Dark"
 
         return false
 
     end
+
+    --==================================================
+    -- NORMALIZE
+    --==================================================
 
     local Normalized =
         self:Normalize(
@@ -525,21 +824,47 @@ function Theme:SetTheme(
             RawTheme
         )
 
-    if not Normalized then
+    if type(Normalized) ~= "table" then
 
         warn(
-            "❌ Rimuru Hub Theme: falha ao normalizar tema."
+            "⚠️ Rimuru Hub Theme: falha ao normalizar '" ..
+            tostring(Name) ..
+            "'. Usando fallback."
         )
+
+        self.CurrentTheme =
+            self:CreateFallbackTheme()
+
+        self.CurrentThemeName =
+            "Rimuru Dark"
 
         return false
 
     end
+
+    --==================================================
+    -- APPLY
+    --==================================================
 
     self.CurrentTheme =
         Normalized
 
     self.CurrentThemeName =
         Name
+
+    --==================================================
+    -- RGB STATE
+    --==================================================
+
+    if Normalized.RGB then
+
+        self:StartRGB()
+
+    else
+
+        self:StopRGB()
+
+    end
 
     return true
 
@@ -565,6 +890,17 @@ end
 
 function Theme:GetCurrent()
 
+    if type(self.CurrentTheme)
+        ~= "table" then
+
+        self.CurrentTheme =
+            self:CreateFallbackTheme()
+
+        self.CurrentThemeName =
+            "Rimuru Dark"
+
+    end
+
     return self.CurrentTheme
 
 end
@@ -576,6 +912,7 @@ end
 function Theme:GetCurrentName()
 
     return self.CurrentThemeName
+        or "Rimuru Dark"
 
 end
 
@@ -586,6 +923,7 @@ end
 function Theme:GetName()
 
     return self.CurrentThemeName
+        or "Rimuru Dark"
 
 end
 
@@ -596,10 +934,6 @@ end
 function Theme:GetTheme(
     Name
 )
-
-    if not self.Config then
-        return nil
-    end
 
     local RawTheme =
         GetRawTheme(
@@ -624,9 +958,9 @@ end
 
 function Theme:GetThemes()
 
-    if not self.Config
-    or not self.Config.UI
-    or not self.Config.UI.Themes then
+    if type(self.Config) ~= "table"
+    or type(self.Config.UI) ~= "table"
+    or type(self.Config.UI.Themes) ~= "table" then
 
         return {}
 
@@ -644,21 +978,14 @@ function Theme:GetThemeNames()
 
     local Names = {}
 
-    if not self.Config
-    or not self.Config.UI
-    or not self.Config.UI.Themes then
+    local Themes =
+        self:GetThemes()
 
-        return Names
-
-    end
-
-    for Name in pairs(
-        self.Config.UI.Themes
-    ) do
+    for Name in pairs(Themes) do
 
         table.insert(
             Names,
-            Name
+            tostring(Name)
         )
 
     end
@@ -678,15 +1005,7 @@ end
 function Theme:GetAccent()
 
     local Current =
-        self.CurrentTheme
-
-    if not Current then
-
-        return DEFAULT_ACCENT
-
-    end
-
-    -- RGB não usa Accent fixo.
+        self:GetCurrent()
 
     if Current.RGB then
 
@@ -708,13 +1027,7 @@ end
 function Theme:GetGlowColor()
 
     local Current =
-        self.CurrentTheme
-
-    if not Current then
-
-        return DEFAULT_ACCENT
-
-    end
+        self:GetCurrent()
 
     if Current.RGB then
 
@@ -736,13 +1049,7 @@ end
 function Theme:GetLogoBorder()
 
     local Current =
-        self.CurrentTheme
-
-    if not Current then
-
-        return DEFAULT_ACCENT
-
-    end
+        self:GetCurrent()
 
     if Current.RGB then
 
@@ -750,27 +1057,9 @@ function Theme:GetLogoBorder()
 
     end
 
-    if Current.LogoBorder then
-
-        return SafeColor(
-            Current.LogoBorder,
-            Current.Accent
-        )
-
-    end
-
-    if Current.LogoBackground then
-
-        return SafeColor(
-            Current.LogoBackground,
-            Current.Accent
-        )
-
-    end
-
     return SafeColor(
-        Current.Accent,
-        DEFAULT_ACCENT
+        Current.LogoBorder,
+        Current.Accent
     )
 
 end
@@ -782,21 +1071,18 @@ end
 function Theme:GetBackgroundTransparency()
 
     local Current =
-        self.CurrentTheme
-
-    if not Current then
-
-        return 0.35
-
-    end
+        self:GetCurrent()
 
     return math.clamp(
+
         SafeNumber(
             Current.BackgroundTransparency,
             0.35
         ),
+
         0,
         1
+
     )
 
 end
@@ -808,11 +1094,7 @@ end
 function Theme:IsShadowEnabled()
 
     local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return false
-    end
+        self:GetCurrent()
 
     return Current.ShadowEnabled
         == true
@@ -826,11 +1108,7 @@ end
 function Theme:IsGlowEnabled()
 
     local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return false
-    end
+        self:GetCurrent()
 
     return Current.GlowEnabled
         == true
@@ -844,13 +1122,7 @@ end
 function Theme:GetBorderPulse()
 
     local Current =
-        self.CurrentTheme
-
-    if not Current then
-
-        return 0
-
-    end
+        self:GetCurrent()
 
     if Current.BorderPulse
         == false then
@@ -858,25 +1130,6 @@ function Theme:GetBorderPulse()
         return 0
 
     end
-
-    --==================================================
-    -- RGB
-    --==================================================
-
-    if Current.RGB then
-
-        return (
-            math.sin(
-                self.RGBTime * 1.15
-            )
-            + 1
-        ) * 0.5
-
-    end
-
-    --==================================================
-    -- NORMAL PULSE
-    --==================================================
 
     return (
         math.sin(
@@ -905,16 +1158,14 @@ function Theme:GetRGBColor()
 
     local G =
         math.sin(
-            Time
-            + 2.094
+            Time + 2.094
         )
         * 0.5
         + 0.5
 
     local B =
         math.sin(
-            Time
-            + 4.188
+            Time + 4.188
         )
         * 0.5
         + 0.5
@@ -983,11 +1234,7 @@ end
 function Theme:IsRGB()
 
     local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return false
-    end
+        self:GetCurrent()
 
     return Current.RGB
         == true
@@ -1003,13 +1250,11 @@ function Theme:GetColor(
 )
 
     local Current =
-        self.CurrentTheme
+        self:GetCurrent()
 
-    if not Current then
-
-        return DEFAULT_COLOR
-
-    end
+    --==================================================
+    -- RGB COLORS
+    --==================================================
 
     if Current.RGB
     and (
@@ -1022,19 +1267,52 @@ function Theme:GetColor(
 
     end
 
-    if Current[Key] ~= nil then
+    --==================================================
+    -- COLOR EXISTS
+    --==================================================
 
-        if typeof(
-            Current[Key]
-        ) == "Color3" then
+    if Current[Key] ~= nil
+    and typeof(
+        Current[Key]
+    ) == "Color3" then
 
-            return Current[Key]
-
-        end
+        return Current[Key]
 
     end
 
-    return DEFAULT_COLOR
+    --==================================================
+    -- SPECIAL FALLBACKS
+    --==================================================
+
+    if Key == "Accent"
+    or Key == "Glow"
+    or Key == "LogoBorder" then
+
+        return DEFAULT_ACCENT
+
+    end
+
+    if Key == "Text" then
+
+        return DEFAULT_TEXT
+
+    end
+
+    if Key == "SubText" then
+
+        return DEFAULT_SUBTEXT
+
+    end
+
+    if Key == "Card"
+    or Key == "Button"
+    or Key == "Close" then
+
+        return DEFAULT_CARD
+
+    end
+
+    return DEFAULT_BACKGROUND
 
 end
 
@@ -1044,14 +1322,7 @@ end
 
 function Theme:GetMain()
 
-    local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return DEFAULT_COLOR
-    end
-
-    return Current.Background
+    return self:GetCurrent().Background
 
 end
 
@@ -1061,14 +1332,7 @@ end
 
 function Theme:GetSidebar()
 
-    local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return DEFAULT_COLOR
-    end
-
-    return Current.Sidebar
+    return self:GetCurrent().Sidebar
 
 end
 
@@ -1078,14 +1342,7 @@ end
 
 function Theme:GetContent()
 
-    local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return DEFAULT_COLOR
-    end
-
-    return Current.Content
+    return self:GetCurrent().Content
 
 end
 
@@ -1095,14 +1352,7 @@ end
 
 function Theme:GetCard()
 
-    local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return DEFAULT_COLOR
-    end
-
-    return Current.Card
+    return self:GetCurrent().Card
 
 end
 
@@ -1112,14 +1362,7 @@ end
 
 function Theme:GetButton()
 
-    local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return DEFAULT_COLOR
-    end
-
-    return Current.Button
+    return self:GetCurrent().Button
 
 end
 
@@ -1129,14 +1372,7 @@ end
 
 function Theme:GetText()
 
-    local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return DEFAULT_TEXT
-    end
-
-    return Current.Text
+    return self:GetCurrent().Text
 
 end
 
@@ -1146,14 +1382,7 @@ end
 
 function Theme:GetSubText()
 
-    local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return DEFAULT_SUBTEXT
-    end
-
-    return Current.SubText
+    return self:GetCurrent().SubText
 
 end
 
@@ -1163,14 +1392,7 @@ end
 
 function Theme:GetClose()
 
-    local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return DEFAULT_COLOR
-    end
-
-    return Current.Close
+    return self:GetCurrent().Close
 
 end
 
@@ -1180,14 +1402,7 @@ end
 
 function Theme:GetLogoBackground()
 
-    local Current =
-        self.CurrentTheme
-
-    if not Current then
-        return DEFAULT_COLOR
-    end
-
-    return Current.LogoBackground
+    return self:GetCurrent().LogoBackground
 
 end
 
@@ -1197,14 +1412,141 @@ end
 
 function Theme:GetBackgroundImage()
 
-    local Current =
-        self.CurrentTheme
+    return self:GetCurrent().BackgroundImage
 
-    if not Current then
-        return nil
+end
+
+--==================================================
+-- GET NORMAL COLOR
+--==================================================
+
+function Theme:GetNormalColor()
+
+    local Current =
+        self:GetCurrent()
+
+    local Name =
+        string.lower(
+            tostring(
+                Current.Name
+            )
+        )
+
+    if string.find(
+        Name,
+        "blackout",
+        1,
+        true
+    ) then
+
+        return DEFAULT_BLACK
+
     end
 
-    return Current.BackgroundImage
+    return SafeColor(
+        Current.Button
+            or Current.Card,
+        DEFAULT_CARD
+    )
+
+end
+
+--==================================================
+-- GET NORMAL TEXT COLOR
+--==================================================
+
+function Theme:GetNormalTextColor()
+
+    local Current =
+        self:GetCurrent()
+
+    local Name =
+        string.lower(
+            tostring(
+                Current.Name
+            )
+        )
+
+    if string.find(
+        Name,
+        "blackout",
+        1,
+        true
+    ) then
+
+        return DEFAULT_WHITE
+
+    end
+
+    return SafeColor(
+        Current.Text,
+        DEFAULT_TEXT
+    )
+
+end
+
+--==================================================
+-- GET SELECTED COLOR
+--==================================================
+
+function Theme:GetSelectedColor()
+
+    local Current =
+        self:GetCurrent()
+
+    local Name =
+        string.lower(
+            tostring(
+                Current.Name
+            )
+        )
+
+    if string.find(
+        Name,
+        "blackout",
+        1,
+        true
+    ) then
+
+        return DEFAULT_WHITE
+
+    end
+
+    return self:GetAccent()
+
+end
+
+--==================================================
+-- GET SELECTED TEXT COLOR
+--==================================================
+
+function Theme:GetSelectedTextColor()
+
+    local Current =
+        self:GetCurrent()
+
+    local Name =
+        string.lower(
+            tostring(
+                Current.Name
+            )
+        )
+
+    if string.find(
+        Name,
+        "blackout",
+        1,
+        true
+    ) then
+
+        return DEFAULT_BLACK
+
+    end
+
+    return SafeColor(
+        Current.Text,
+        DEFAULT_TEXT
+    )
 
 end
 
@@ -1214,12 +1556,12 @@ end
 
 function Theme:Refresh()
 
-    if not self.CurrentThemeName then
-        return false
-    end
+    local Name =
+        self.CurrentThemeName
+        or "Rimuru Dark"
 
     return self:SetTheme(
-        self.CurrentThemeName
+        Name
     )
 
 end
@@ -1232,7 +1574,7 @@ function Theme:Apply(
     Name
 )
 
-    if Name then
+    if Name ~= nil then
 
         return self:SetTheme(
             Name
