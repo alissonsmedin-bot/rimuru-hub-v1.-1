@@ -1,13 +1,12 @@
 --// 💥 RIMURU HUB
 --// MAIN LOADER
 --// STABLE MODULAR VERSION
+--// THEME FIX
+--// UI FIX
+--// SEARCH CONTEXT FIX
+--// FAVORITES INIT FIX
 --// SAFE INITIALIZATION
---// MODULE ERROR REPORTING
---// THEME SAFE
---// UI SAFE
---// CATEGORY SAFE
---// HARD FALLBACK
---// VERSION 2
+--// CONFIGURATION CONTEXT FIX
 
 --==================================================
 -- SERVICES
@@ -33,6 +32,10 @@ if not Player then
 
 end
 
+--==================================================
+-- PLAYER GUI
+--==================================================
+
 local PlayerGui =
     Player:WaitForChild(
         "PlayerGui"
@@ -46,7 +49,7 @@ local BaseURL =
     "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/"
 
 --==================================================
--- MODULE LOADER
+-- LOAD MODULE
 --==================================================
 
 local function Load(
@@ -65,11 +68,12 @@ local function Load(
                     URL
                 )
 
-            if type(Source) ~= "string"
+            if not Source
             or Source == "" then
 
                 error(
-                    "arquivo vazio ou inválido"
+                    "Fonte vazia para " ..
+                    FileName
                 )
 
             end
@@ -79,10 +83,11 @@ local function Load(
                     Source
                 )
 
-            if type(Loader) ~= "function" then
+            if not Loader then
 
                 error(
-                    "loadstring retornou nil"
+                    "loadstring retornou nil para " ..
+                    FileName
                 )
 
             end
@@ -94,36 +99,14 @@ local function Load(
     if not Success then
 
         warn(
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            "❌ Rimuru Hub: erro ao carregar " ..
+            FileName
         )
 
         warn(
-            "❌ RIMURU HUB"
-        )
-
-        warn(
-            "Falha ao carregar: " ..
-            tostring(FileName)
-        )
-
-        warn(
-            tostring(Result)
-        )
-
-        warn(
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        )
-
-        return nil
-
-    end
-
-    if Result == nil then
-
-        warn(
-            "❌ Rimuru Hub: " ..
-            FileName ..
-            " retornou nil."
+            tostring(
+                Result
+            )
         )
 
         return nil
@@ -142,6 +125,16 @@ local Config =
     Load(
         "config.lua"
     )
+
+if not Config then
+
+    warn(
+        "❌ Rimuru Hub: Config não carregado."
+    )
+
+    return
+
+end
 
 if type(Config) ~= "table" then
 
@@ -172,6 +165,16 @@ local Sounds =
         "sound.lua"
     )
 
+if not Sounds then
+
+    warn(
+        "❌ Rimuru Hub: Sounds não carregado."
+    )
+
+    return
+
+end
+
 if type(Sounds) ~= "table" then
 
     warn(
@@ -187,34 +190,52 @@ end
 --==================================================
 
 local Theme =
-    Load("theme.lua")
+    Load(
+        "theme.lua"
+    )
 
 local UI =
-    Load("ui.lua")
+    Load(
+        "ui.lua"
+    )
 
 local Logo =
-    Load("logo.lua")
+    Load(
+        "logo.lua"
+    )
 
 local Cards =
-    Load("cards.lua")
+    Load(
+        "cards.lua"
+    )
 
 local Favorites =
-    Load("favorites.lua")
+    Load(
+        "favorites.lua"
+    )
 
 local Search =
-    Load("search.lua")
+    Load(
+        "search.lua"
+    )
 
 local Categories =
-    Load("categories.lua")
+    Load(
+        "categories.lua"
+    )
 
 local Settings =
-    Load("settings.lua")
+    Load(
+        "settings.lua"
+    )
 
 local RGB =
-    Load("RGB.lua")
+    Load(
+        "RGB.lua"
+    )
 
 --==================================================
--- MODULE VALIDATION
+-- VERIFY MODULES
 --==================================================
 
 local Modules = {
@@ -249,7 +270,9 @@ local Modules = {
 }
 
 for Name, Module in
-    pairs(Modules) do
+    pairs(
+        Modules
+    ) do
 
     if type(Module) ~= "table" then
 
@@ -312,91 +335,13 @@ local Context = {
 }
 
 --==================================================
--- SAFE INIT
---==================================================
-
-local function InitModule(
-    Name,
-    Module
-)
-
-    if type(Module) ~= "table" then
-
-        warn(
-            "❌ " ..
-            Name ..
-            ": módulo inválido."
-        )
-
-        return false
-
-    end
-
-    if type(Module.Init) ~= "function" then
-
-        warn(
-            "❌ " ..
-            Name ..
-            ": método Init não encontrado."
-        )
-
-        return false
-
-    end
-
-    local Success, Error =
-        pcall(function()
-
-            Module:Init(
-                Context
-            )
-
-        end)
-
-    if not Success then
-
-        warn(
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        )
-
-        warn(
-            "❌ Rimuru Hub: erro em " ..
-            Name
-        )
-
-        warn(
-            tostring(Error)
-        )
-
-        warn(
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        )
-
-        return false
-
-    end
-
-    return true
-
-end
-
---==================================================
 -- THEME
 --==================================================
--- Theme aceita Config diretamente.
--- Não passamos Context aqui.
+-- Theme recebe Config diretamente.
+--==================================================
 
-if type(Theme.Init) ~= "function" then
-
-    warn(
-        "❌ Theme: método Init não encontrado."
-    )
-
-    return
-
-end
-
-local ThemeSuccess, ThemeError =
+local ThemeSuccess,
+      ThemeError =
     pcall(function()
 
         Theme:Init(
@@ -412,7 +357,9 @@ if not ThemeSuccess then
     )
 
     warn(
-        tostring(ThemeError)
+        tostring(
+            ThemeError
+        )
     )
 
     return
@@ -423,10 +370,27 @@ end
 -- UI
 --==================================================
 
-if not InitModule(
-    "UI",
-    UI
-) then
+local UISuccess,
+      UIError =
+    pcall(function()
+
+        UI:Init(
+            Context
+        )
+
+    end)
+
+if not UISuccess then
+
+    warn(
+        "❌ Rimuru Hub: erro ao inicializar UI."
+    )
+
+    warn(
+        tostring(
+            UIError
+        )
+    )
 
     return
 
@@ -436,13 +400,26 @@ end
 -- LOGO
 --==================================================
 
-if not InitModule(
-    "Logo",
-    Logo
-) then
+local LogoSuccess,
+      LogoError =
+    pcall(function()
+
+        Logo:Init(
+            Context
+        )
+
+    end)
+
+if not LogoSuccess then
 
     warn(
-        "⚠️ Rimuru Hub: Logo não inicializado."
+        "⚠️ Rimuru Hub: erro ao inicializar Logo."
+    )
+
+    warn(
+        tostring(
+            LogoError
+        )
     )
 
 end
@@ -451,10 +428,27 @@ end
 -- CARDS
 --==================================================
 
-if not InitModule(
-    "Cards",
-    Cards
-) then
+local CardsSuccess,
+      CardsError =
+    pcall(function()
+
+        Cards:Init(
+            Context
+        )
+
+    end)
+
+if not CardsSuccess then
+
+    warn(
+        "❌ Rimuru Hub: erro ao inicializar Cards."
+    )
+
+    warn(
+        tostring(
+            CardsError
+        )
+    )
 
     return
 
@@ -463,15 +457,32 @@ end
 --==================================================
 -- FAVORITES
 --==================================================
+-- Favorites agora possui Init(Context).
+--==================================================
 
-if not InitModule(
-    "Favorites",
-    Favorites
-) then
+local FavoritesSuccess,
+      FavoritesError =
+    pcall(function()
+
+        Favorites:Init(
+            Context
+        )
+
+    end)
+
+if not FavoritesSuccess then
 
     warn(
-        "⚠️ Rimuru Hub: Favorites não inicializado."
+        "❌ Rimuru Hub: erro ao inicializar Favorites."
     )
+
+    warn(
+        tostring(
+            FavoritesError
+        )
+    )
+
+    return
 
 end
 
@@ -479,116 +490,20 @@ end
 -- CATEGORIES
 --==================================================
 
-if not InitModule(
-    "Categories",
-    Categories
-) then
-
-    return
-
-end
-
---==================================================
--- SEARCH
---==================================================
-
-if not InitModule(
-    "Search",
-    Search
-) then
-
-    warn(
-        "⚠️ Rimuru Hub: Search não inicializado."
-    )
-
-end
-
---==================================================
--- SETTINGS
---==================================================
-
-if not InitModule(
-    "Settings",
-    Settings
-) then
-
-    warn(
-        "⚠️ Rimuru Hub: Settings não inicializado."
-    )
-
-end
-
---==================================================
--- RGB
---==================================================
-
-if not InitModule(
-    "RGB",
-    RGB
-) then
-
-    warn(
-        "⚠️ Rimuru Hub: RGB não inicializado."
-    )
-
-end
-
---==================================================
--- SEARCH CONNECT
---==================================================
-
-if type(Search.Connect) ==
-    "function" then
-
-    local Success, Error =
-        pcall(function()
-
-            Search:Connect()
-
-        end)
-
-    if not Success then
-
-        warn(
-            "⚠️ Rimuru Hub: erro ao conectar Search."
-        )
-
-        warn(
-            tostring(Error)
-        )
-
-    end
-
-end
-
---==================================================
--- CREATE CATEGORIES
---==================================================
-
-if type(
-    Categories.CreateCategories
-) ~= "function" then
-
-    warn(
-        "❌ Rimuru Hub: Categories.CreateCategories não existe."
-    )
-
-    return
-
-end
-
 local CategoriesSuccess,
-    CategoriesError =
+      CategoriesError =
     pcall(function()
 
-        Categories:CreateCategories()
+        Categories:Init(
+            Context
+        )
 
     end)
 
 if not CategoriesSuccess then
 
     warn(
-        "❌ Rimuru Hub: erro ao criar categorias."
+        "❌ Rimuru Hub: erro ao inicializar Categories."
     )
 
     warn(
@@ -602,7 +517,170 @@ if not CategoriesSuccess then
 end
 
 --==================================================
+-- SEARCH
+--==================================================
+
+local SearchSuccess,
+      SearchError =
+    pcall(function()
+
+        Search:Init(
+            Context
+        )
+
+    end)
+
+if not SearchSuccess then
+
+    warn(
+        "❌ Rimuru Hub: erro ao inicializar Search."
+    )
+
+    warn(
+        tostring(
+            SearchError
+        )
+    )
+
+    return
+
+end
+
+--==================================================
+-- SETTINGS
+--==================================================
+
+local SettingsSuccess,
+      SettingsError =
+    pcall(function()
+
+        Settings:Init(
+            Context
+        )
+
+    end)
+
+if not SettingsSuccess then
+
+    warn(
+        "⚠️ Rimuru Hub: erro ao inicializar Settings."
+    )
+
+    warn(
+        tostring(
+            SettingsError
+        )
+    )
+
+end
+
+--==================================================
+-- RGB
+--==================================================
+
+local RGBSuccess,
+      RGBError =
+    pcall(function()
+
+        RGB:Init(
+            Context
+        )
+
+    end)
+
+if not RGBSuccess then
+
+    warn(
+        "⚠️ Rimuru Hub: erro ao inicializar RGB."
+    )
+
+    warn(
+        tostring(
+            RGBError
+        )
+    )
+
+end
+
+--==================================================
+-- SEARCH CONNECT
+--==================================================
+
+if type(
+    Search.Connect
+) == "function" then
+
+    local Success,
+          Error =
+        pcall(function()
+
+            Search:Connect()
+
+        end)
+
+    if not Success then
+
+        warn(
+            "⚠️ Rimuru Hub: erro ao conectar Search."
+        )
+
+        warn(
+            tostring(
+                Error
+            )
+        )
+
+    end
+
+end
+
+--==================================================
+-- CREATE CATEGORIES
+--==================================================
+
+if type(
+    Categories.CreateCategories
+) == "function" then
+
+    local Success,
+          Error =
+        pcall(function()
+
+            Categories:CreateCategories()
+
+        end)
+
+    if not Success then
+
+        warn(
+            "❌ Rimuru Hub: erro ao criar categorias."
+        )
+
+        warn(
+            tostring(
+                Error
+            )
+        )
+
+        return
+
+    end
+
+else
+
+    warn(
+        "❌ Rimuru Hub: Categories.CreateCategories não encontrado."
+    )
+
+    return
+
+end
+
+--==================================================
 -- CONFIG BUTTON
+--==================================================
+-- Configuração não é uma categoria de sons.
+-- O próprio Categories controla o contexto dela.
 --==================================================
 
 local ConfigButton =
@@ -614,10 +692,56 @@ if ConfigButton then
 
         function()
 
-            if type(Settings.Show) ==
-                "function" then
+            --==================================================
+            -- LIMPAR PESQUISA
+            --==================================================
 
-                local Success, Error =
+            if Search
+            and type(
+                Search.ClearForContext
+            ) == "function" then
+
+                pcall(function()
+
+                    Search:ClearForContext()
+
+                end)
+
+            end
+
+            --==================================================
+            -- ESCONDER FILTRO
+            --==================================================
+
+            if Categories.FilterButton then
+
+                Categories.FilterButton.Visible =
+                    false
+
+            end
+
+            if type(
+                Categories.CloseFilterMenu
+            ) == "function" then
+
+                pcall(function()
+
+                    Categories:CloseFilterMenu()
+
+                end)
+
+            end
+
+            --==================================================
+            -- MOSTRAR SETTINGS
+            --==================================================
+
+            if type(
+                Settings.Show
+            ) == "function" then
+
+                local Success,
+                      Error =
                     pcall(function()
 
                         Settings:Show()
@@ -631,21 +755,23 @@ if ConfigButton then
                     )
 
                     warn(
-                        tostring(Error)
+                        tostring(
+                            Error
+                        )
                     )
 
                 end
-
-            else
-
-                warn(
-                    "⚠️ Rimuru Hub: Settings.Show não encontrado."
-                )
 
             end
 
         end
 
+    )
+
+else
+
+    warn(
+        "⚠️ Rimuru Hub: ConfigButton não encontrado."
     )
 
 end
@@ -658,7 +784,8 @@ if type(
     Categories.SetDefaultCategory
 ) == "function" then
 
-    local Success, Error =
+    local Success,
+          Error =
         pcall(function()
 
             Categories:SetDefaultCategory()
@@ -668,14 +795,26 @@ if type(
     if not Success then
 
         warn(
-            "⚠️ Rimuru Hub: erro ao definir categoria padrão."
+            "❌ Rimuru Hub: erro ao definir categoria padrão."
         )
 
         warn(
-            tostring(Error)
+            tostring(
+                Error
+            )
         )
 
+        return
+
     end
+
+else
+
+    warn(
+        "❌ Rimuru Hub: SetDefaultCategory não encontrado."
+    )
+
+    return
 
 end
 
@@ -768,7 +907,25 @@ if type(
 end
 
 --==================================================
--- FINAL STATUS
+-- FINAL VISIBILITY
+--==================================================
+
+if type(
+    Search.SetVisible
+) == "function" then
+
+    pcall(function()
+
+        Search:SetVisible(
+            true
+        )
+
+    end)
+
+end
+
+--==================================================
+-- LOADED
 --==================================================
 
 print(
@@ -776,7 +933,7 @@ print(
 )
 
 print(
-    "🌓bem vindo ao mundo, Rimuru Hub.🌓"
+    "🌓seja bem vindo ao mundo, Rimuru Hub. 🌓"
 )
 
 print(
@@ -784,13 +941,6 @@ print(
     tostring(
         Theme:GetCurrentName()
         or "Rimuru Dark"
-    )
-)
-
-print(
-    "📂 Categorias: " ..
-    tostring(
-        Categories:GetAllSoundCount()
     )
 )
 
