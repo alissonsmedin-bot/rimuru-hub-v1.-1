@@ -1,23 +1,25 @@
 --// 💥 RIMURU HUB
 --// PREMIUM SEARCH SYSTEM
---// HEADER SEARCH
+--// STABLE V2
+--// SINGLE SEARCH BAR
+--// TOP HEADER SEARCH
 --// CASE-INSENSITIVE
 --// PARTIAL MATCH
 --// NAME + ID SEARCH
+--// MULTI-WORD SEARCH
 --// LIVE SEARCH
 --// RESULT COUNTER
 --// CLEAR BUTTON
 --// NO RESULTS STATE
---// THEME COMPATIBLE
+--// THEME ADAPTIVE
 --// CATEGORY SAFE
---// FAVORITES COMPATIBLE
---// PERFORMANCE SAFE
---// DUPLICATE SAFE
---// REFRESH SAFE
+--// FAVORITES SAFE
+--// DUPLICATE SEARCH CLEANUP
+--// LEGACY SEARCH CLEANUP
+--// SAFE INITIALIZATION
+--// SAFE REFRESH
+--// DEBOUNCE PROTECTION
 --// FUTURE FILTER COMPATIBLE
---// HEADER INTEGRATED
---// SINGLE SEARCH BAR
---// STABLE VERSION
 
 local Search = {}
 
@@ -25,27 +27,31 @@ local Search = {}
 -- CONFIG
 --==================================================
 
-local SEARCH_HEIGHT = 32
+local SEARCH_HEIGHT = 34
 
-local SEARCH_WIDTH = 265
+local SEARCH_TOP = 8
 
-local SEARCH_RIGHT_OFFSET = 48
+local SEARCH_RIGHT_PADDING = 10
 
-local SEARCH_DEBOUNCE = 0.045
+local SEARCH_LEFT_PADDING = 10
 
-local SEARCH_CORNER_RADIUS = 9
+local SEARCH_RADIUS = 9
 
-local SEARCH_STROKE_TRANSPARENCY = 0.42
+local SEARCH_DEBOUNCE = 0.035
 
-local SEARCH_FOCUS_TRANSPARENCY = 0.12
+local RESULT_TEXT = " / "
 
-local SEARCH_ICON_SIZE = 17
+local PLACEHOLDER_TEXT = "Search sounds..."
 
-local SEARCH_TEXT_SIZE = 11
+--==================================================
+-- LUPA
+--==================================================
+-- Usamos imagem em vez de caractere Unicode.
+-- Isso evita o problema de "⌕" aparecer como X
+-- dependendo da fonte/dispositivo.
 
-local SEARCH_RESULT_TEXT_SIZE = 8
-
-local PLACEHOLDER_TEXT = "Search name or ID..."
+local SEARCH_ICON =
+	"rbxassetid://6031154871"
 
 --==================================================
 -- FALLBACK COLORS
@@ -54,11 +60,11 @@ local PLACEHOLDER_TEXT = "Search name or ID..."
 local FALLBACK_BACKGROUND =
 	Color3.fromRGB(
 		25,
-		25,
-		32
+		20,
+		27
 	)
 
-local FALLBACK_BUTTON =
+local FALLBACK_CARD =
 	Color3.fromRGB(
 		30,
 		30,
@@ -87,18 +93,6 @@ local FALLBACK_ACCENT =
 	)
 
 --==================================================
--- SEARCH ICON
---==================================================
--- Roblox built-in magnifying glass icon.
--- ImageLabel evita o antigo símbolo "⌕"
--- que podia aparecer como um retângulo
--- dependendo da fonte/dispositivo.
---==================================================
-
-local SEARCH_ICON =
-	"rbxassetid://6031094678"
-
---==================================================
 -- SAFE COLOR
 --==================================================
 
@@ -116,74 +110,83 @@ local function SafeColor(
 end
 
 --==================================================
--- SAFE NUMBER
+-- SAFE STRING
 --==================================================
 
-local function SafeNumber(
-	Value,
-	Fallback
+local function SafeString(
+	Value
 )
 
-	if type(Value) == "number" then
-		return Value
+	if Value == nil then
+		return ""
 	end
 
-	return Fallback
+	local Success,
+		Result =
+		pcall(
+			tostring,
+			Value
+		)
+
+	if Success then
+		return Result
+	end
+
+	return ""
 
 end
 
 --==================================================
--- SAFE THEME
+-- GET THEME
 --==================================================
 
 local function GetTheme(
 	Theme
 )
 
+	local Default = {
+
+		Background =
+			FALLBACK_BACKGROUND,
+
+		Card =
+			FALLBACK_CARD,
+
+		Button =
+			FALLBACK_CARD,
+
+		Text =
+			FALLBACK_TEXT,
+
+		SubText =
+			FALLBACK_SUBTEXT,
+
+		Accent =
+			FALLBACK_ACCENT
+
+	}
+
 	if not Theme then
-
-		return {
-
-			Background =
-				FALLBACK_BACKGROUND,
-
-			Content =
-				FALLBACK_BACKGROUND,
-
-			Card =
-				FALLBACK_BUTTON,
-
-			Button =
-				FALLBACK_BUTTON,
-
-			Text =
-				FALLBACK_TEXT,
-
-			SubText =
-				FALLBACK_SUBTEXT,
-
-			Accent =
-				FALLBACK_ACCENT
-
-		}
-
+		return Default
 	end
 
 	local Current = nil
 
 	--==================================================
-	-- MODERN THEME API
+	-- NEW THEME SYSTEM
 	--==================================================
 
 	if type(Theme.GetCurrent) == "function" then
 
 		local Success,
 			Result =
-			pcall(function()
+			pcall(
+				function()
 
-				return Theme:GetCurrent()
+					return Theme:GetCurrent()
 
-			end)
+				end
+			)
 
 		if Success
 		and type(Result) == "table" then
@@ -208,7 +211,9 @@ local function GetTheme(
 	end
 
 	if type(Current) ~= "table" then
+
 		Current = {}
+
 	end
 
 	return {
@@ -216,14 +221,9 @@ local function GetTheme(
 		Background =
 			SafeColor(
 				Current.Background
+				or Current.Content
 				or Current.Main,
-				FALLBACK_BACKGROUND
-			),
 
-		Content =
-			SafeColor(
-				Current.Content
-				or Current.Background,
 				FALLBACK_BACKGROUND
 			),
 
@@ -231,31 +231,36 @@ local function GetTheme(
 			SafeColor(
 				Current.Card
 				or Current.Button,
-				FALLBACK_BUTTON
+
+				FALLBACK_CARD
 			),
 
 		Button =
 			SafeColor(
 				Current.Button
 				or Current.Card,
-				FALLBACK_BUTTON
+
+				FALLBACK_CARD
 			),
 
 		Text =
 			SafeColor(
 				Current.Text,
+
 				FALLBACK_TEXT
 			),
 
 		SubText =
 			SafeColor(
 				Current.SubText,
+
 				FALLBACK_SUBTEXT
 			),
 
 		Accent =
 			SafeColor(
 				Current.Accent,
+
 				FALLBACK_ACCENT
 			)
 
@@ -266,41 +271,37 @@ end
 --==================================================
 -- NORMALIZE
 --==================================================
--- Tudo passa por esta função.
---
--- M1
--- m1
--- M1
---
--- são considerados iguais.
---==================================================
 
 function Search:Normalize(
 	Value
 )
 
-	if Value == nil then
-		return ""
-	end
-
 	local Text =
-		tostring(Value)
+		SafeString(
+			Value
+		)
 
-	-- Normaliza espaços
+	-- Remove quebra de linha
+	Text =
+		Text:gsub(
+			"[\r\n\t]+",
+			" "
+		)
+
+	-- Junta espaços duplicados
 	Text =
 		Text:gsub(
 			"%s+",
 			" "
 		)
 
-	-- Remove espaços do início
+	-- Remove espaços das pontas
 	Text =
 		Text:gsub(
 			"^%s+",
 			""
 		)
 
-	-- Remove espaços do final
 	Text =
 		Text:gsub(
 			"%s+$",
@@ -309,14 +310,16 @@ function Search:Normalize(
 
 	-- Case insensitive
 	Text =
-		string.lower(Text)
+		string.lower(
+			Text
+		)
 
 	return Text
 
 end
 
 --==================================================
--- GET SEARCH WORDS
+-- GET WORDS
 --==================================================
 
 function Search:GetWords(
@@ -326,7 +329,9 @@ function Search:GetWords(
 	local Words = {}
 
 	Query =
-		self:Normalize(Query)
+		self:Normalize(
+			Query
+		)
 
 	if Query == "" then
 		return Words
@@ -351,24 +356,6 @@ end
 --==================================================
 -- MATCH
 --==================================================
--- Todos os termos digitados precisam aparecer
--- no nome ou no ID.
---
--- Exemplo:
---
--- "m1"
---
--- encontra:
---
--- M1
--- m1
--- M1 Hit
--- Ultimate M1
---
--- "m1 123"
---
--- procura ambos os termos.
---==================================================
 
 function Search:Matches(
 	Name,
@@ -377,17 +364,23 @@ function Search:Matches(
 )
 
 	Query =
-		self:Normalize(Query)
+		self:Normalize(
+			Query
+		)
 
 	if Query == "" then
 		return true
 	end
 
 	local NameText =
-		self:Normalize(Name)
+		self:Normalize(
+			Name
+		)
 
 	local IDText =
-		self:Normalize(ID)
+		self:Normalize(
+			ID
+		)
 
 	local Combined =
 		NameText
@@ -395,13 +388,14 @@ function Search:Matches(
 		.. IDText
 
 	local Words =
-		self:GetWords(Query)
+		self:GetWords(
+			Query
+		)
 
-	if #Words == 0 then
-		return true
-	end
-
-	for _, Word in ipairs(Words) do
+	for _, Word in
+		ipairs(
+			Words
+		) do
 
 		if not string.find(
 			Combined,
@@ -417,6 +411,85 @@ function Search:Matches(
 	end
 
 	return true
+
+end
+
+--==================================================
+-- REMOVE OLD SEARCH BARS
+--==================================================
+-- Essa parte é propositalmente agressiva.
+--
+-- Se alguma versão antiga do sistema criou:
+--
+-- Search
+-- SearchBar
+-- SearchBox
+-- PremiumSearch
+-- OldSearch
+-- etc.
+--
+-- ela será removida antes de criar a nova.
+--
+-- Isso evita duas barras aparecendo.
+
+function Search:RemoveLegacySearchBars()
+
+	if not self.Content then
+		return
+	end
+
+	local LegacyNames = {
+
+		["PremiumSearch"] = true,
+
+		["SearchBar"] = true,
+
+		["SearchBox"] = true,
+
+		["SearchContainer"] = true,
+
+		["OldSearch"] = true,
+
+		["LegacySearch"] = true,
+
+		["SearchUI"] = true,
+
+		["SoundSearch"] = true
+
+	}
+
+	for _, Object in
+		ipairs(
+			self.Content:GetChildren()
+		) do
+
+		if Object:IsA("GuiObject") then
+
+			local Name =
+				SafeString(
+					Object.Name
+				)
+
+			if LegacyNames[Name] then
+
+				-- Não destrói a nova barra
+				if Object ~= self.Container then
+
+					pcall(
+						function()
+
+							Object:Destroy()
+
+						end
+					)
+
+				end
+
+			end
+
+		end
+
+	end
 
 end
 
@@ -462,16 +535,13 @@ function Search:Init(
 	self.CurrentCategory =
 		"Outros"
 
-	self.Searching =
-		false
-
 	self.RefreshToken =
 		0
 
-	self.Initialized =
+	self.Searching =
 		false
 
-	self.Destroyed =
+	self.Initialized =
 		false
 
 	self.Connections =
@@ -479,7 +549,7 @@ function Search:Init(
 		or {}
 
 	--==================================================
-	-- VALIDATE UI
+	-- UI CHECK
 	--==================================================
 
 	if not self.UI then
@@ -492,29 +562,11 @@ function Search:Init(
 
 	end
 
-	--==================================================
-	-- HEADER
-	--==================================================
-
-	self.Header =
-		self.UI.Header
-
-	if not self.Header then
-
-		warn(
-			"⚠️ Rimuru Hub Search: Header não encontrado."
-		)
-
-		return false
-
-	end
-
-	--==================================================
-	-- CONTENT
-	--==================================================
-
 	self.Content =
 		self.UI.Content
+
+	self.Scroll =
+		self.UI.Scroll
 
 	if not self.Content then
 
@@ -525,13 +577,6 @@ function Search:Init(
 		return false
 
 	end
-
-	--==================================================
-	-- SCROLL
-	--==================================================
-
-	self.Scroll =
-		self.UI.Scroll
 
 	if not self.Scroll then
 
@@ -549,16 +594,18 @@ function Search:Init(
 
 	local Success,
 		Error =
-		pcall(function()
+		pcall(
+			function()
 
-			self:Create()
+				self:Create()
 
-		end)
+			end
+		)
 
 	if not Success then
 
 		warn(
-			"❌ Rimuru Hub Search: erro ao criar:"
+			"❌ Rimuru Hub Search: erro ao criar."
 		)
 
 		warn(
@@ -572,9 +619,6 @@ function Search:Init(
 	self.Initialized =
 		true
 
-	self.Destroyed =
-		false
-
 	return true
 
 end
@@ -586,46 +630,53 @@ end
 function Search:Create()
 
 	--==================================================
-	-- CLEAN OLD SEARCH
+	-- REMOVE EXISTING
 	--==================================================
 
-	local Old =
-		self.Header:FindFirstChild(
-			"PremiumSearch"
+	self:DisconnectEvents()
+
+	local Existing =
+		self.Content:FindFirstChild(
+			"RimuruPremiumSearch"
 		)
 
-	if Old then
-		Old:Destroy()
+	if Existing then
+
+		Existing:Destroy()
+
 	end
+
+	-- Remove possíveis barras antigas
+	self:RemoveLegacySearchBars()
 
 	--==================================================
 	-- CONTAINER
 	--==================================================
 
 	local Container =
-		Instance.new("Frame")
+		Instance.new(
+			"Frame"
+		)
 
 	Container.Name =
-		"PremiumSearch"
-
-	Container.AnchorPoint =
-		Vector2.new(
-			1,
-			0.5
-		)
+		"RimuruPremiumSearch"
 
 	Container.Position =
 		UDim2.new(
-			1,
-			-SEARCH_RIGHT_OFFSET,
-			0.5,
-			0
+			0,
+			SEARCH_LEFT_PADDING,
+			0,
+			SEARCH_TOP
 		)
 
 	Container.Size =
 		UDim2.new(
-			0,
-			SEARCH_WIDTH,
+			1,
+			-(
+				SEARCH_LEFT_PADDING
+				+
+				SEARCH_RIGHT_PADDING
+			),
 			0,
 			SEARCH_HEIGHT
 		)
@@ -637,23 +688,25 @@ function Search:Create()
 		0
 
 	Container.ZIndex =
-		510
+		520
 
 	Container.Parent =
-		self.Header
+		self.Content
 
 	self.Container =
 		Container
 
 	--==================================================
-	-- BACKGROUND
+	-- SEARCH BACKGROUND
 	--==================================================
 
 	local Background =
-		Instance.new("Frame")
+		Instance.new(
+			"Frame"
+		)
 
 	Background.Name =
-		"Background"
+		"SearchBackground"
 
 	Background.Size =
 		UDim2.new(
@@ -664,7 +717,7 @@ function Search:Create()
 		)
 
 	Background.BackgroundColor3 =
-		FALLBACK_BUTTON
+		FALLBACK_CARD
 
 	Background.BackgroundTransparency =
 		0
@@ -673,25 +726,29 @@ function Search:Create()
 		0
 
 	Background.ZIndex =
-		510
+		520
 
 	Background.Parent =
 		Container
 
 	local Corner =
-		Instance.new("UICorner")
+		Instance.new(
+			"UICorner"
+		)
 
 	Corner.CornerRadius =
 		UDim.new(
 			0,
-			SEARCH_CORNER_RADIUS
+			SEARCH_RADIUS
 		)
 
 	Corner.Parent =
 		Background
 
 	local Stroke =
-		Instance.new("UIStroke")
+		Instance.new(
+			"UIStroke"
+		)
 
 	Stroke.Name =
 		"SearchStroke"
@@ -703,7 +760,10 @@ function Search:Create()
 		1
 
 	Stroke.Transparency =
-		SEARCH_STROKE_TRANSPARENCY
+		0.45
+
+	Stroke.ApplyStrokeMode =
+		Enum.ApplyStrokeMode.Border
 
 	Stroke.Parent =
 		Background
@@ -719,15 +779,19 @@ function Search:Create()
 	--==================================================
 
 	local Icon =
-		Instance.new("ImageLabel")
+		Instance.new(
+			"ImageLabel"
+		)
 
 	Icon.Name =
 		"SearchIcon"
 
-	Icon.AnchorPoint =
-		Vector2.new(
+	Icon.Size =
+		UDim2.new(
 			0,
-			0.5
+			18,
+			0,
+			18
 		)
 
 	Icon.Position =
@@ -735,15 +799,7 @@ function Search:Create()
 			0,
 			10,
 			0.5,
-			0
-		)
-
-	Icon.Size =
-		UDim2.new(
-			0,
-			SEARCH_ICON_SIZE,
-			0,
-			SEARCH_ICON_SIZE
+			-9
 		)
 
 	Icon.BackgroundTransparency =
@@ -758,11 +814,14 @@ function Search:Create()
 	Icon.ImageColor3 =
 		FALLBACK_ACCENT
 
+	Icon.ImageTransparency =
+		0
+
 	Icon.ScaleType =
 		Enum.ScaleType.Fit
 
 	Icon.ZIndex =
-		511
+		521
 
 	Icon.Parent =
 		Background
@@ -775,15 +834,17 @@ function Search:Create()
 	--==================================================
 
 	local Input =
-		Instance.new("TextBox")
+		Instance.new(
+			"TextBox"
+		)
 
 	Input.Name =
-		"Input"
+		"SearchInput"
 
 	Input.Position =
 		UDim2.new(
 			0,
-			34,
+			36,
 			0,
 			0
 		)
@@ -791,7 +852,7 @@ function Search:Create()
 	Input.Size =
 		UDim2.new(
 			1,
-			-105,
+			-110,
 			1,
 			0
 		)
@@ -808,6 +869,9 @@ function Search:Create()
 	Input.MultiLine =
 		false
 
+	Input.TextEditable =
+		true
+
 	Input.Text =
 		""
 
@@ -821,7 +885,7 @@ function Search:Create()
 		FALLBACK_SUBTEXT
 
 	Input.TextSize =
-		SEARCH_TEXT_SIZE
+		11
 
 	Input.Font =
 		Enum.Font.Gotham
@@ -833,7 +897,7 @@ function Search:Create()
 		Enum.TextYAlignment.Center
 
 	Input.ZIndex =
-		511
+		521
 
 	Input.Parent =
 		Background
@@ -842,48 +906,50 @@ function Search:Create()
 		Input
 
 	--==================================================
-	-- RESULT COUNTER
+	-- RESULTS
 	--==================================================
 
 	local Results =
-		Instance.new("TextLabel")
+		Instance.new(
+			"TextLabel"
+		)
 
 	Results.Name =
-		"Results"
+		"SearchResults"
 
 	Results.AnchorPoint =
 		Vector2.new(
 			1,
-			0.5
+			0
 		)
 
 	Results.Position =
 		UDim2.new(
 			1,
-			-35,
-			0.5,
+			-40,
+			0,
 			0
 		)
 
 	Results.Size =
 		UDim2.new(
 			0,
-			48,
-			0,
-			18
+			55,
+			1,
+			0
 		)
 
 	Results.BackgroundTransparency =
 		1
 
 	Results.Text =
-		""
+		"0 / 0"
 
 	Results.TextColor3 =
 		FALLBACK_SUBTEXT
 
 	Results.TextSize =
-		SEARCH_RESULT_TEXT_SIZE
+		9
 
 	Results.Font =
 		Enum.Font.GothamMedium
@@ -895,7 +961,7 @@ function Search:Create()
 		Enum.TextYAlignment.Center
 
 	Results.ZIndex =
-		511
+		521
 
 	Results.Parent =
 		Background
@@ -904,14 +970,16 @@ function Search:Create()
 		Results
 
 	--==================================================
-	-- CLEAR BUTTON
+	-- CLEAR
 	--==================================================
 
 	local Clear =
-		Instance.new("TextButton")
+		Instance.new(
+			"TextButton"
+		)
 
 	Clear.Name =
-		"Clear"
+		"ClearSearch"
 
 	Clear.AnchorPoint =
 		Vector2.new(
@@ -922,7 +990,7 @@ function Search:Create()
 	Clear.Position =
 		UDim2.new(
 			1,
-			-7,
+			-8,
 			0.5,
 			0
 		)
@@ -930,9 +998,9 @@ function Search:Create()
 	Clear.Size =
 		UDim2.new(
 			0,
-			22,
+			25,
 			0,
-			22
+			25
 		)
 
 	Clear.BackgroundTransparency =
@@ -944,14 +1012,14 @@ function Search:Create()
 	Clear.Text =
 		"×"
 
-	Clear.TextColor3 =
-		FALLBACK_SUBTEXT
-
 	Clear.TextSize =
-		17
+		18
 
 	Clear.Font =
 		Enum.Font.GothamBold
+
+	Clear.TextColor3 =
+		FALLBACK_SUBTEXT
 
 	Clear.AutoButtonColor =
 		false
@@ -960,7 +1028,7 @@ function Search:Create()
 		false
 
 	Clear.ZIndex =
-		512
+		522
 
 	Clear.Parent =
 		Background
@@ -971,44 +1039,29 @@ function Search:Create()
 	--==================================================
 	-- NO RESULTS
 	--==================================================
-	-- Fica no Content, NÃO dentro da barra.
-	--==================================================
 
 	local Empty =
-		self.Content:FindFirstChild(
-			"SearchNoResults"
+		Instance.new(
+			"TextLabel"
 		)
-
-	if Empty then
-		Empty:Destroy()
-	end
-
-	Empty =
-		Instance.new("TextLabel")
 
 	Empty.Name =
-		"SearchNoResults"
-
-	Empty.AnchorPoint =
-		Vector2.new(
-			0.5,
-			0
-		)
+		"NoSearchResults"
 
 	Empty.Position =
 		UDim2.new(
-			0.5,
 			0,
 			0,
-			115
+			0,
+			48
 		)
 
 	Empty.Size =
 		UDim2.new(
 			1,
-			-30,
 			0,
-			45
+			0,
+			40
 		)
 
 	Empty.BackgroundTransparency =
@@ -1029,14 +1082,11 @@ function Search:Create()
 	Empty.TextXAlignment =
 		Enum.TextXAlignment.Center
 
-	Empty.TextYAlignment =
-		Enum.TextYAlignment.Center
-
 	Empty.Visible =
 		false
 
 	Empty.ZIndex =
-		505
+		520
 
 	Empty.Parent =
 		self.Content
@@ -1048,37 +1098,27 @@ function Search:Create()
 	-- EVENTS
 	--==================================================
 
-	self:DisconnectEvents()
-
-	-- INPUT
 	table.insert(
 		self.Connections,
 
 		Input:GetPropertyChangedSignal(
 			"Text"
-		):Connect(function()
+		):Connect(
+			function()
 
-			if self.Destroyed then
-				return
+				self:ScheduleSearch(
+					Input.Text
+				)
+
 			end
-
-			self:ScheduleSearch(
-				Input.Text
-			)
-
-		end)
+		)
 	)
 
-	-- CLEAR
 	table.insert(
 		self.Connections,
 
 		Clear.MouseButton1Click:Connect(
 			function()
-
-				if self.Destroyed then
-					return
-				end
 
 				self:ClearSearch()
 
@@ -1086,14 +1126,21 @@ function Search:Create()
 		)
 	)
 
-	-- FOCUS
 	table.insert(
 		self.Connections,
 
 		Input.Focused:Connect(
 			function()
 
-				self:OnFocus()
+				if self.Stroke then
+
+					self.Stroke.Transparency =
+						0.12
+
+					self.Stroke.Thickness =
+						1.4
+
+				end
 
 			end
 		)
@@ -1105,22 +1152,26 @@ function Search:Create()
 		Input.FocusLost:Connect(
 			function()
 
-				self:OnFocusLost()
+				if self.Stroke then
+
+					self.Stroke.Transparency =
+						0.45
+
+					self.Stroke.Thickness =
+						1
+
+				end
 
 			end
 		)
 	)
-
-	--==================================================
-	-- APPLY THEME
-	--==================================================
 
 	self:ApplyTheme()
 
 end
 
 --==================================================
--- DISCONNECT EVENTS
+-- DISCONNECT
 --==================================================
 
 function Search:DisconnectEvents()
@@ -1139,16 +1190,15 @@ function Search:DisconnectEvents()
 			self.Connections
 		) do
 
-		if Connection
-		and type(
-			Connection.Disconnect
-		) == "function" then
+		if Connection then
 
-			pcall(function()
+			pcall(
+				function()
 
-				Connection:Disconnect()
+					Connection:Disconnect()
 
-			end)
+				end
+			)
 
 		end
 
@@ -1161,36 +1211,6 @@ function Search:DisconnectEvents()
 end
 
 --==================================================
--- FOCUS
---==================================================
-
-function Search:OnFocus()
-
-	if self.Stroke then
-
-		self.Stroke.Transparency =
-			SEARCH_FOCUS_TRANSPARENCY
-
-	end
-
-end
-
---==================================================
--- FOCUS LOST
---==================================================
-
-function Search:OnFocusLost()
-
-	if self.Stroke then
-
-		self.Stroke.Transparency =
-			SEARCH_STROKE_TRANSPARENCY
-
-	end
-
-end
-
---==================================================
 -- SET CATEGORY
 --==================================================
 
@@ -1199,9 +1219,8 @@ function Search:SetCategory(
 )
 
 	Category =
-		tostring(
+		SafeString(
 			Category
-			or ""
 		)
 
 	if Category == "" then
@@ -1214,12 +1233,7 @@ function Search:SetCategory(
 	self.CurrentCategory =
 		Category
 
-	--==================================================
-	-- IMPORTANTE
-	--==================================================
-	-- Categoria nova NÃO herda pesquisa antiga.
-	--==================================================
-
+	-- Categoria nova começa limpa.
 	self:ClearSearch(
 		true
 	)
@@ -1246,18 +1260,20 @@ function Search:SetQuery(
 )
 
 	Query =
-		tostring(
+		SafeString(
 			Query
-			or ""
 		)
 
-	if self.Input
-	and self.Input.Text ~= Query then
+	if self.Input then
 
-		self.Input.Text =
-			Query
+		if self.Input.Text ~= Query then
 
-		return
+			self.Input.Text =
+				Query
+
+			return
+
+		end
 
 	end
 
@@ -1268,7 +1284,7 @@ function Search:SetQuery(
 end
 
 --==================================================
--- CLEAR SEARCH
+-- CLEAR
 --==================================================
 
 function Search:ClearSearch(
@@ -1283,23 +1299,17 @@ function Search:ClearSearch(
 	self.LastQuery =
 		""
 
-	self.Searching =
-		false
-
-	if self.Input
-	and self.Input.Text ~= "" then
+	if self.Input then
 
 		self.Input.Text =
 			""
 
-	else
-
-		self:Search(
-			"",
-			Silent == true
-		)
-
 	end
+
+	self:Search(
+		"",
+		Silent == true
+	)
 
 end
 
@@ -1312,9 +1322,8 @@ function Search:ScheduleSearch(
 )
 
 	Query =
-		tostring(
+		SafeString(
 			Query
-			or ""
 		)
 
 	self.RefreshToken += 1
@@ -1326,11 +1335,12 @@ function Search:ScheduleSearch(
 		SEARCH_DEBOUNCE,
 		function()
 
-			if self.Destroyed
-			or Token ~= self.RefreshToken then
-
+			if Token ~= self.RefreshToken then
 				return
+			end
 
+			if not self.Initialized then
+				return
 			end
 
 			self:Search(
@@ -1343,7 +1353,7 @@ function Search:ScheduleSearch(
 end
 
 --==================================================
--- IS SOUND CARD
+-- CARD CHECK
 --==================================================
 
 function Search:IsSoundCard(
@@ -1354,19 +1364,17 @@ function Search:IsSoundCard(
 		return false
 	end
 
-	if not Object:IsA("Frame") then
+	if not Object:IsA("GuiObject") then
 		return false
 	end
 
-	--==================================================
-	-- PRIMEIRA FORMA
-	--==================================================
-
 	local Name =
-		Object.Name
+		SafeString(
+			Object.Name
+		)
 
-	if type(Name) == "string"
-	and string.sub(
+	-- Sistema atual
+	if string.sub(
 		Name,
 		1,
 		6
@@ -1376,19 +1384,15 @@ function Search:IsSoundCard(
 
 	end
 
-	--==================================================
-	-- SEGUNDA FORMA
-	--==================================================
 	-- Compatibilidade futura:
-	-- cards que não usam Sound_ no nome.
-	--==================================================
+	-- cards podem possuir atributo.
+	local IsSound =
+		Object:GetAttribute(
+			"IsSoundCard"
+		)
 
-	if Object:GetAttribute(
-		"SoundCard"
-	) == true then
-
+	if IsSound == true then
 		return true
-
 	end
 
 	return false
@@ -1407,111 +1411,83 @@ function Search:GetCardData(
 		return "", ""
 	end
 
+	--==================================================
+	-- ATTRIBUTE FIRST
+	--==================================================
+
+	local AttributeName =
+		Card:GetAttribute(
+			"SoundName"
+		)
+
+	local AttributeID =
+		Card:GetAttribute(
+			"SoundID"
+		)
+
+	--==================================================
+	-- NAME
+	--==================================================
+
 	local Name =
-		""
-
-	local ID =
-		""
-
-	--==================================================
-	-- NAME LABEL
-	--==================================================
-
-	local NameLabel =
-		Card:FindFirstChild(
-			"Name",
-			true
+		SafeString(
+			AttributeName
 		)
-
-	if NameLabel
-	and NameLabel:IsA(
-		"TextLabel"
-	) then
-
-		Name =
-			NameLabel.Text
-
-	elseif NameLabel
-	and NameLabel:IsA(
-		"TextButton"
-	) then
-
-		Name =
-			NameLabel.Text
-
-	end
-
-	--==================================================
-	-- ID LABEL
-	--==================================================
-
-	local IDLabel =
-		Card:FindFirstChild(
-			"ID",
-			true
-		)
-
-	if IDLabel
-	and IDLabel:IsA(
-		"TextLabel"
-	) then
-
-		ID =
-			IDLabel.Text
-
-	elseif IDLabel
-	and IDLabel:IsA(
-		"TextButton"
-	) then
-
-		ID =
-			IDLabel.Text
-
-	end
-
-	--==================================================
-	-- ATTRIBUTE FALLBACK
-	--==================================================
 
 	if Name == "" then
 
-		local AttributeName =
-			Card:GetAttribute(
-				"SoundName"
+		local NameLabel =
+			Card:FindFirstChild(
+				"Name",
+				true
 			)
 
-		if AttributeName ~= nil then
+		if NameLabel
+		and NameLabel:IsA(
+			"TextLabel"
+		) then
 
 			Name =
-				tostring(
-					AttributeName
+				SafeString(
+					NameLabel.Text
 				)
 
 		end
 
 	end
+
+	--==================================================
+	-- ID
+	--==================================================
+
+	local ID =
+		SafeString(
+			AttributeID
+		)
 
 	if ID == "" then
 
-		local AttributeID =
-			Card:GetAttribute(
-				"SoundID"
+		local IDLabel =
+			Card:FindFirstChild(
+				"ID",
+				true
 			)
 
-		if AttributeID ~= nil then
+		if IDLabel
+		and IDLabel:IsA(
+			"TextLabel"
+		) then
 
 			ID =
-				tostring(
-					AttributeID
+				SafeString(
+					IDLabel.Text
 				)
 
 		end
 
 	end
 
-	return
-		tostring(Name),
-		tostring(ID)
+	return Name, ID
 
 end
 
@@ -1524,14 +1500,9 @@ function Search:Search(
 	Silent
 )
 
-	if self.Destroyed then
-		return
-	end
-
 	Query =
-		tostring(
+		SafeString(
 			Query
-			or ""
 		)
 
 	self.Query =
@@ -1540,13 +1511,9 @@ function Search:Search(
 	self.LastQuery =
 		Query
 
-	local Normalized =
-		self:Normalize(
-			Query
-		)
-
-	local HasQuery =
-		Normalized ~= ""
+	if not self.Scroll then
+		return
+	end
 
 	local Found =
 		0
@@ -1554,12 +1521,13 @@ function Search:Search(
 	local Total =
 		0
 
-	if not self.Scroll then
-		return
-	end
+	local HasQuery =
+		self:Normalize(
+			Query
+		) ~= ""
 
 	--==================================================
-	-- PROCESS
+	-- CARDS
 	--==================================================
 
 	for _, Object in
@@ -1603,106 +1571,57 @@ function Search:Search(
 	-- RESULTS
 	--==================================================
 
-	self:UpdateResults(
-		Found,
-		Total,
-		HasQuery
-	)
+	if self.Results then
+
+		-- SEMPRE:
+		--
+		-- 0 / 0
+		-- 4 / 28
+		-- 1 / 10
+
+		self.Results.Text =
+			tostring(Found)
+			.. RESULT_TEXT
+			.. tostring(Total)
+
+	end
 
 	--==================================================
-	-- EMPTY
+	-- NO RESULTS
 	--==================================================
 
-	self:UpdateNoResults(
-		Found,
-		Total,
-		HasQuery
-	)
+	if self.NoResults then
+
+		self.NoResults.Visible =
+			HasQuery
+			and Total > 0
+			and Found == 0
+
+	end
 
 	--==================================================
 	-- CLEAR
 	--==================================================
 
-	self:UpdateClearButton(
-		HasQuery
-	)
+	if self.Clear then
+
+		self.Clear.Visible =
+			HasQuery
+
+	end
 
 	self.Searching =
 		HasQuery
+
+	--==================================================
+	-- CANVAS
+	--==================================================
 
 	if not Silent then
 
 		self:UpdateCanvas()
 
 	end
-
-end
-
---==================================================
--- UPDATE RESULTS
---==================================================
-
-function Search:UpdateResults(
-	Found,
-	Total,
-	HasQuery
-)
-
-	if not self.Results then
-		return
-	end
-
-	if HasQuery then
-
-		self.Results.Text =
-			tostring(Found)
-			.. "/"
-			.. tostring(Total)
-
-	else
-
-		self.Results.Text =
-			""
-
-	end
-
-end
-
---==================================================
--- UPDATE NO RESULTS
---==================================================
-
-function Search:UpdateNoResults(
-	Found,
-	Total,
-	HasQuery
-)
-
-	if not self.NoResults then
-		return
-	end
-
-	self.NoResults.Visible =
-		HasQuery
-		and Total > 0
-		and Found == 0
-
-end
-
---==================================================
--- UPDATE CLEAR
---==================================================
-
-function Search:UpdateClearButton(
-	Visible
-)
-
-	if not self.Clear then
-		return
-	end
-
-	self.Clear.Visible =
-		Visible
 
 end
 
@@ -1716,15 +1635,17 @@ function Search:UpdateCanvas()
 		return
 	end
 
-	pcall(function()
+	pcall(
+		function()
 
-		self.Scroll.CanvasPosition =
-			Vector2.new(
-				0,
-				0
-			)
+			self.Scroll.CanvasPosition =
+				Vector2.new(
+					self.Scroll.CanvasPosition.X,
+					0
+				)
 
-	end)
+		end
+	)
 
 end
 
@@ -1734,16 +1655,28 @@ end
 
 function Search:Refresh()
 
-	if not self.Initialized
-	or self.Destroyed then
-
+	if not self.Initialized then
 		return
+	end
+
+	-- Reobtém referências caso UI tenha
+	-- recriado o Content/Scroll.
+
+	if self.UI then
+
+		self.Content =
+			self.UI.Content
+			or self.Content
+
+		self.Scroll =
+			self.UI.Scroll
+			or self.Scroll
 
 	end
 
 	self:Search(
 		self.Query
-			or "",
+		or "",
 		true
 	)
 
@@ -1775,16 +1708,16 @@ function Search:ShowAll()
 
 	end
 
-	self:UpdateNoResults(
-		0,
-		0,
-		false
+	self:Search(
+		self.Query
+		or "",
+		true
 	)
 
 end
 
 --==================================================
--- GET RESULT COUNT
+-- RESULT COUNT
 --==================================================
 
 function Search:GetResultCount()
@@ -1817,14 +1750,42 @@ function Search:GetResultCount()
 end
 
 --==================================================
+-- TOTAL COUNT
+--==================================================
+
+function Search:GetTotalCount()
+
+	if not self.Scroll then
+		return 0
+	end
+
+	local Count =
+		0
+
+	for _, Object in
+		ipairs(
+			self.Scroll:GetChildren()
+		) do
+
+		if self:IsSoundCard(
+			Object
+		) then
+
+			Count += 1
+
+		end
+
+	end
+
+	return Count
+
+end
+
+--==================================================
 -- APPLY THEME
 --==================================================
 
 function Search:ApplyTheme()
-
-	if self.Destroyed then
-		return
-	end
 
 	local Theme =
 		GetTheme(
@@ -1879,23 +1840,23 @@ function Search:ApplyTheme()
 	end
 
 	--==================================================
-	-- CLEAR
-	--==================================================
-
-	if self.Clear then
-
-		self.Clear.TextColor3 =
-			Theme.SubText
-
-	end
-
-	--==================================================
 	-- RESULTS
 	--==================================================
 
 	if self.Results then
 
 		self.Results.TextColor3 =
+			Theme.SubText
+
+	end
+
+	--==================================================
+	-- CLEAR
+	--==================================================
+
+	if self.Clear then
+
+		self.Clear.TextColor3 =
 			Theme.SubText
 
 	end
@@ -1919,22 +1880,31 @@ end
 
 function Search:Destroy()
 
-	self.Destroyed =
-		true
-
 	self.RefreshToken += 1
 
 	self:DisconnectEvents()
 
 	if self.Container then
 
-		self.Container:Destroy()
+		pcall(
+			function()
+
+				self.Container:Destroy()
+
+			end
+		)
 
 	end
 
 	if self.NoResults then
 
-		self.NoResults:Destroy()
+		pcall(
+			function()
+
+				self.NoResults:Destroy()
+
+			end
+		)
 
 	end
 
@@ -1960,15 +1930,6 @@ function Search:Destroy()
 		nil
 
 	self.NoResults =
-		nil
-
-	self.Header =
-		nil
-
-	self.Content =
-		nil
-
-	self.Scroll =
 		nil
 
 	self.Initialized =
