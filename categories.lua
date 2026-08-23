@@ -20,9 +20,9 @@
 --// CONFIGURATION CONTEXT FIX
 --// SEARCH CLEAR ON CATEGORY CHANGE
 --// SAFE CONTEXT SWITCHING
---// SETTINGS CONNECTION FIX
---// NESTED SOUND TABLE SUPPORT
---// IPAIRS/Pairs SAFE SOUND READER
+--// SOUND DATABASE COMPATIBILITY FIX
+--// OUTROS CATEGORY FIX
+--// ALL SOUND COLLECTION FIX
 
 local TweenService =
     game:GetService("TweenService")
@@ -37,6 +37,9 @@ local CategoryIcons = {
 
     ["ALL"] =
         "🏠",
+
+    ["Outros"] =
+        "📁",
 
     ["Outro"] =
         "📁",
@@ -78,17 +81,6 @@ function Categories:Init(Context)
 
     self.Search =
         Context.Search
-
-    --==================================================
-    -- SETTINGS
-    --==================================================
-
-    self.Settings =
-        Context.Settings
-
-    --==================================================
-    -- SIDEBAR
-    --==================================================
 
     self.Sidebar =
         self.UI.Sidebar
@@ -291,8 +283,6 @@ end
 --==================================================
 -- CATEGORY CLICK ANIMATION
 --==================================================
--- PRESERVADA SEM ALTERAÇÕES
---==================================================
 
 function Categories:AnimateCategoryClick(
     Button
@@ -441,117 +431,53 @@ function Categories:AnimateCategoryClick(
 end
 
 --==================================================
--- SOUND DATA VALIDATION
+-- IS VALID SOUND DATA
 --==================================================
 
-function Categories:IsSoundData(
-    Data
+function Categories:IsValidSoundData(
+    SoundData
 )
 
-    if type(Data) ~= "table" then
+    if type(SoundData) ~= "table" then
         return false
     end
 
-    --==================================================
-    -- NORMAL FORMAT
-    -- { "Nome", "ID" }
-    --==================================================
-
-    if Data[1] ~= nil
-    and Data[2] ~= nil then
-
-        return true
-
+    if type(SoundData[1]) ~= "string" then
+        return false
     end
 
-    return false
-
-end
-
---==================================================
--- COLLECT SOUND DATA
---==================================================
--- Aceita:
---
--- {
---     {"Nome", "ID"},
---     {"Nome", "ID"}
--- }
---
--- e também estruturas aninhadas.
---
--- Isso evita que uma categoria fique vazia
--- simplesmente porque os sons estão dentro
--- de outra tabela.
---==================================================
-
-function Categories:CollectSoundData(
-    Source,
-    Result,
-    Seen
-)
-
-    Result =
-        Result
-        or {}
-
-    Seen =
-        Seen
-        or {}
-
-    if type(Source) ~= "table" then
-
-        return Result
-
+    if SoundData[1] == "" then
+        return false
     end
 
-    --==================================================
-    -- DIRECT SOUND
-    --==================================================
-
-    if self:IsSoundData(Source) then
-
-        if not Seen[Source] then
-
-            Seen[Source] =
-                true
-
-            table.insert(
-                Result,
-                Source
-            )
-
-        end
-
-        return Result
-
+    if SoundData[2] == nil then
+        return false
     end
 
-    --==================================================
-    -- NESTED TABLE
-    --==================================================
-
-    for _, Value in
-        pairs(Source) do
-
-        if type(Value) == "table" then
-
-            self:CollectSoundData(
-                Value,
-                Result,
-                Seen
-            )
-
-        end
-
-    end
-
-    return Result
+    return true
 
 end
 
 --==================================================
 -- BUILD ALL SOUNDS
+--==================================================
+-- IMPORTANT:
+-- The sound.lua database contains:
+--
+-- ["Outros"] = {
+--     {"Name", "ID"},
+--     {"Name", "ID"}
+-- }
+--
+-- ["Heian Sukuna Sounds"] = {
+--     {"Name", "ID"},
+--     {"Name", "ID"}
+-- }
+--
+-- ALL must collect every valid sound from
+-- every category.
+--
+-- It must NOT depend on a category called ALL.
 --==================================================
 
 function Categories:BuildAllSounds()
@@ -559,11 +485,17 @@ function Categories:BuildAllSounds()
     self.AllSounds =
         {}
 
-    if not self.Sounds then
-        return
+    if type(self.Sounds) ~= "table" then
+
+        return self.AllSounds
+
     end
 
-    local Seen =
+    --==================================================
+    -- SORT CATEGORY NAMES
+    --==================================================
+
+    local CategoryNames =
         {}
 
     for CategoryName, CategoryData in
@@ -572,17 +504,83 @@ function Categories:BuildAllSounds()
         ) do
 
         if CategoryName ~= "ALL"
-        and CategoryName ~= "Configuração" then
+        and CategoryName ~= "Configuração"
+        and type(CategoryData) == "table" then
 
-            self:CollectSoundData(
-                CategoryData,
-                self.AllSounds,
-                Seen
+            table.insert(
+                CategoryNames,
+                CategoryName
             )
 
         end
 
     end
+
+    table.sort(
+        CategoryNames,
+        function(A, B)
+
+            -- Outros sempre primeiro
+            if A == "Outros" then
+                return true
+            end
+
+            if B == "Outros" then
+                return false
+            end
+
+            return A < B
+
+        end
+    )
+
+    --==================================================
+    -- COLLECT SOUNDS
+    --==================================================
+
+    for _, CategoryName in
+        ipairs(
+            CategoryNames
+        ) do
+
+        local CategoryData =
+            self.Sounds[
+                CategoryName
+            ]
+
+        if type(CategoryData) ==
+            "table" then
+
+            for _, SoundData in
+                ipairs(CategoryData) do
+
+                if self:IsValidSoundData(
+                    SoundData
+                ) then
+
+                    --==================================================
+                    -- IMPORTANT:
+                    -- Do NOT remove duplicate IDs.
+                    --
+                    -- Example:
+                    -- two different sounds may intentionally
+                    -- use the same Roblox ID.
+                    --==================================================
+
+                    table.insert(
+                        self.AllSounds,
+                        SoundData
+                    )
+
+                end
+
+            end
+
+        end
+
+    end
+
+    return self.AllSounds
 
 end
 
@@ -678,8 +676,9 @@ function Categories:GetFavoriteSounds()
             self.AllSounds
         ) do
 
-        if type(SoundData) ==
-            "table" then
+        if self:IsValidSoundData(
+            SoundData
+        ) then
 
             local ID =
                 SoundData[2]
@@ -715,8 +714,9 @@ function Categories:GetSoundName(
     SoundData
 )
 
-    if type(SoundData) ~=
-        "table" then
+    if not self:IsValidSoundData(
+        SoundData
+    ) then
 
         return ""
 
@@ -725,7 +725,6 @@ function Categories:GetSoundName(
     return string.lower(
         tostring(
             SoundData[1]
-            or ""
         )
     )
 
@@ -763,8 +762,9 @@ function Categories:GetSoundsByName(
             self.AllSounds
         ) do
 
-        if type(SoundData) ==
-            "table" then
+        if self:IsValidSoundData(
+            SoundData
+        ) then
 
             local Name =
                 self:GetSoundName(
@@ -835,7 +835,7 @@ function Categories:GetCurrentSounds()
     end
 
     --==================================================
-    -- CATEGORY HAS PRIORITY
+    -- NORMAL CATEGORY
     --==================================================
 
     if self.CurrentCategory ~= "ALL" then
@@ -848,9 +848,26 @@ function Categories:GetCurrentSounds()
         if type(Category) ==
             "table" then
 
-            return self:CollectSoundData(
-                Category
-            )
+            local Result =
+                {}
+
+            for _, Data in
+                ipairs(Category) do
+
+                if self:IsValidSoundData(
+                    Data
+                ) then
+
+                    table.insert(
+                        Result,
+                        Data
+                    )
+
+                end
+
+            end
+
+            return Result
 
         end
 
@@ -886,9 +903,7 @@ function Categories:GetCurrentSounds()
     -- FALLBACK
     --==================================================
 
-    self:BuildAllSounds()
-
-    return self.AllSounds
+    return self:BuildAllSounds()
 
 end
 
@@ -1519,9 +1534,16 @@ function Categories:ShowAll()
 
     end
 
+    self:CloseFilterMenu()
+
     self:ClearContent()
 
-    self:BuildAllSounds()
+    --==================================================
+    -- BUILD COMPLETE DATABASE
+    --==================================================
+
+    local AllSounds =
+        self:BuildAllSounds()
 
     self.ContentTitle.Text =
         "ALL"
@@ -1566,12 +1588,25 @@ function Categories:ShowAll()
     end
 
     --==================================================
-    -- ALL
+    -- ALL SOUNDS
     --==================================================
+
+    if not self.Cards
+    or type(
+        self.Cards.CreateSoundCard
+    ) ~= "function" then
+
+        warn(
+            "[RIMURU HUB] Cards.CreateSoundCard não está disponível."
+        )
+
+        return
+
+    end
 
     for Index, Data in
         ipairs(
-            self.AllSounds
+            AllSounds
         ) do
 
         self.Cards:CreateSoundCard(
@@ -1608,6 +1643,19 @@ function Categories:ShowFavorites()
 
     local FavoriteSounds =
         self:GetFavoriteSounds()
+
+    if not self.Cards
+    or type(
+        self.Cards.CreateSoundCard
+    ) ~= "function" then
+
+        warn(
+            "[RIMURU HUB] Cards.CreateSoundCard não está disponível."
+        )
+
+        return
+
+    end
 
     for Index, Data in
         ipairs(
@@ -1651,6 +1699,19 @@ function Categories:ShowM1()
     local M1Sounds =
         self:GetM1Sounds()
 
+    if not self.Cards
+    or type(
+        self.Cards.CreateSoundCard
+    ) ~= "function" then
+
+        warn(
+            "[RIMURU HUB] Cards.CreateSoundCard não está disponível."
+        )
+
+        return
+
+    end
+
     for Index, Data in
         ipairs(
             M1Sounds
@@ -1693,6 +1754,19 @@ function Categories:ShowHit()
     local HitSounds =
         self:GetHitSounds()
 
+    if not self.Cards
+    or type(
+        self.Cards.CreateSoundCard
+    ) ~= "function" then
+
+        warn(
+            "[RIMURU HUB] Cards.CreateSoundCard não está disponível."
+        )
+
+        return
+
+    end
+
     for Index, Data in
         ipairs(
             HitSounds
@@ -1716,6 +1790,19 @@ end
 function Categories:ShowCategory(
     CategoryName
 )
+
+    --==================================================
+    -- CONFIGURATION PROTECTION
+    --==================================================
+
+    if CategoryName ==
+        "Configuração" then
+
+        self:ShowConfiguration()
+
+        return
+
+    end
 
     --==================================================
     -- CLEAR SEARCH
@@ -1795,25 +1882,28 @@ function Categories:ShowCategory(
     end
 
     --==================================================
-    -- COLLECT CATEGORY SOUNDS
-    --==================================================
-
-    local CategorySounds =
-        self:CollectSoundData(
-            Category
-        )
-
-    --==================================================
     -- CREATE CARDS
     --==================================================
 
-    for Index, Data in
-        ipairs(
-            CategorySounds
-        ) do
+    if not self.Cards
+    or type(
+        self.Cards.CreateSoundCard
+    ) ~= "function" then
 
-        if type(Data) ==
-            "table" then
+        warn(
+            "[RIMURU HUB] Cards.CreateSoundCard não está disponível."
+        )
+
+        return
+
+    end
+
+    for Index, Data in
+        ipairs(Category) do
+
+        if self:IsValidSoundData(
+            Data
+        ) then
 
             self.Cards:CreateSoundCard(
                 Index,
@@ -1830,9 +1920,6 @@ end
 
 --==================================================
 -- SHOW CONFIGURATION
---==================================================
--- Configuração NÃO é uma categoria de sons.
--- Agora chama o módulo Settings corretamente.
 --==================================================
 
 function Categories:ShowConfiguration()
@@ -1879,32 +1966,13 @@ function Categories:ShowConfiguration()
     -- SETTINGS MODULE
     --==================================================
 
-    if self.Settings
+    if self.Context
+    and self.Context.Settings
     and type(
-        self.Settings.Show
+        self.Context.Settings.Show
     ) == "function" then
 
-        local Success, ErrorMessage =
-            pcall(function()
-
-                self.Settings:Show()
-
-            end)
-
-        if not Success then
-
-            warn(
-                "[RIMURU HUB] Settings.Show error:",
-                ErrorMessage
-            )
-
-        end
-
-    else
-
-        warn(
-            "[RIMURU HUB] Settings module não encontrado no Context."
-        )
+        self.Context.Settings:Show()
 
     end
 
@@ -2084,6 +2152,8 @@ function Categories:CreateCategoryButton(
             --==================================================
             -- SIZE ANIMATION
             --==================================================
+            -- PRESERVED EXACTLY
+            --==================================================
 
             self:AnimateCategoryClick(
                 Button
@@ -2205,31 +2275,82 @@ function Categories:CreateCategories()
     -- SOUND CATEGORIES
     --==================================================
 
-    if self.Sounds then
+    local SoundCategoryNames =
+        {}
 
-        for CategoryName in
+    if type(self.Sounds) ==
+        "table" then
+
+        for CategoryName, CategoryData in
             pairs(
                 self.Sounds
             ) do
 
             if CategoryName ~= "ALL"
-            and CategoryName ~= "Configuração" then
+            and CategoryName ~= "Configuração"
+            and type(CategoryData) ==
+                "table" then
 
-                CategoryIndex += 1
-
-                self:CreateCategoryButton(
-
-                    CategoryName,
-
-                    CategoryIndex,
-
-                    true
-
+                table.insert(
+                    SoundCategoryNames,
+                    CategoryName
                 )
 
             end
 
         end
+
+    end
+
+    --==================================================
+    -- STABLE ORDER
+    --==================================================
+
+    table.sort(
+        SoundCategoryNames,
+        function(A, B)
+
+            if A == "Outros" then
+                return true
+            end
+
+            if B == "Outros" then
+                return false
+            end
+
+            if A == "Heian Sukuna Sounds" then
+                return true
+            end
+
+            if B == "Heian Sukuna Sounds" then
+                return false
+            end
+
+            return A < B
+
+        end
+    )
+
+    --==================================================
+    -- CREATE SOUND CATEGORIES
+    --==================================================
+
+    for _, CategoryName in
+        ipairs(
+            SoundCategoryNames
+        ) do
+
+        CategoryIndex += 1
+
+        self:CreateCategoryButton(
+
+            CategoryName,
+
+            CategoryIndex,
+
+            true
+
+        )
 
     end
 
@@ -2322,9 +2443,7 @@ end
 
 function Categories:GetAllSounds()
 
-    self:BuildAllSounds()
-
-    return self.AllSounds
+    return self:BuildAllSounds()
 
 end
 
@@ -2334,9 +2453,10 @@ end
 
 function Categories:GetAllSoundCount()
 
-    self:BuildAllSounds()
+    local Sounds =
+        self:BuildAllSounds()
 
-    return #self.AllSounds
+    return #Sounds
 
 end
 
@@ -2475,11 +2595,52 @@ function Categories:RefreshCurrent()
     if self.CurrentCategory ~=
         "ALL" then
 
-        self:ShowCategory(
-            self.CurrentCategory
-        )
+        --==================================================
+        -- IMPORTANT:
+        -- Do NOT call ShowCategory here if we are
+        -- refreshing due to a theme change, because
+        -- ShowCategory clears the search context.
+        --==================================================
 
-        return
+        local Category =
+            self.Sounds[
+                self.CurrentCategory
+            ]
+
+        if type(Category) ==
+            "table" then
+
+            self:ClearContent()
+
+            self.ContentTitle.Text =
+                self.CurrentCategory
+
+            if self.Cards
+            and type(
+                self.Cards.CreateSoundCard
+            ) == "function" then
+
+                for Index, Data in
+                    ipairs(Category) do
+
+                    if self:IsValidSoundData(
+                        Data
+                    ) then
+
+                        self.Cards:CreateSoundCard(
+                            Index,
+                            Data
+                        )
+
+                    end
+
+                end
+
+            end
+
+            return
+
+        end
 
     end
 
