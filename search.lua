@@ -42,7 +42,7 @@ local PLACEHOLDER_TEXT =
 
 local FALLBACK_BACKGROUND =
 	Color3.fromRGB(
-		20,
+		25,
 		20,
 		27
 	)
@@ -57,7 +57,7 @@ local FALLBACK_BUTTON =
 local FALLBACK_TEXT =
 	Color3.fromRGB(
 		240,
-		240,
+		230,
 		245
 	)
 
@@ -72,7 +72,7 @@ local FALLBACK_ACCENT =
 	Color3.fromRGB(
 		25,
 		150,
-		255
+		250
 	)
 
 --==================================================
