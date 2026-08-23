@@ -15,6 +15,8 @@
 --// BACKGROUND SUPPORT
 --// CATEGORY THEME COMPATIBILITY
 --// BLACKOUT COMPATIBLE
+--// SINGLE SEARCH BAR
+--// NO STATIC CONTENT TITLE
 --// UPDATED / STABLE
 
 --==================================================
@@ -105,10 +107,25 @@ local SHADOW_PULSE_SPEED = 0.75
 --==================================================
 
 local SEARCH_HEIGHT = 34
-
 local SEARCH_CORNER_RADIUS = 9
-
 local SEARCH_TEXT_SIZE = 11
+
+--==================================================
+-- LAYOUT
+--==================================================
+
+local CONTENT_PADDING = 10
+
+local SEARCH_TOP = 39
+
+local SEARCH_BOTTOM_GAP = 7
+
+local SCROLL_TOP =
+	SEARCH_TOP
+	+ SEARCH_HEIGHT
+	+ SEARCH_BOTTOM_GAP
+
+local SCROLL_BOTTOM = 10
 
 --==================================================
 -- FALLBACK COLORS
@@ -1872,6 +1889,9 @@ function UI:Create()
 	Content.ZIndex =
 		502
 
+	Content.ClipsDescendants =
+		true
+
 	Content.Parent =
 		Main
 
@@ -1913,76 +1933,26 @@ function UI:Create()
 		ContentStroke
 
 	--==================================================
-	-- CONTENT TITLE
+	-- IMPORTANT
+	--==================================================
+	-- NÃO existe mais ContentTitle aqui.
+	--
+	-- O título de categoria deve ser criado pelo
+	-- sistema responsável pelas categorias.
+	--
+	-- Isso impede:
+	--
+	-- 1. título duplicado
+	-- 2. título gigante
+	-- 3. quadro ocupando o lugar da pesquisa
+	-- 4. conflito entre categorias e UI
 	--==================================================
 
-	local ContentTitle =
-		Instance.new(
-			"TextLabel"
-		)
-
-	ContentTitle.Name =
-		"ContentTitle"
-
-	ContentTitle.Position =
-		UDim2.new(
-			0,
-			14,
-			0,
-			10
-		)
-
-	ContentTitle.Size =
-		UDim2.new(
-			1,
-			-28,
-			0,
-			25
-		)
-
-	ContentTitle.BackgroundTransparency =
-		1
-
-	ContentTitle.Text =
-		"Principal"
-
-	ContentTitle.TextColor3 =
-		SafeColor(
-			CurrentTheme.Text,
-			FALLBACK_TEXT
-		)
-
-	ContentTitle.TextSize =
-		17
-
-	ContentTitle.Font =
-		Enum.Font.GothamBold
-
-	ContentTitle.TextXAlignment =
-		Enum.TextXAlignment.Left
-
-	ContentTitle.ZIndex =
-		503
-
-	ContentTitle.Parent =
-		Content
-
 	self.ContentTitle =
-		ContentTitle
+		nil
 
 	--==================================================
 	-- SEARCH BAR
-	--==================================================
-	-- A barra agora pertence oficialmente ao UI.
-	--
-	-- Search.lua NÃO precisa criar outra barra.
-	-- Ele pode acessar:
-	--
-	-- Context.UI.SearchBar
-	-- Context.UI.SearchBox
-	-- Context.UI.SearchClear
-	--
-	-- A lógica da pesquisa continua no Search.lua.
 	--==================================================
 
 	local SearchBar =
@@ -1996,15 +1966,15 @@ function UI:Create()
 	SearchBar.Position =
 		UDim2.new(
 			0,
-			10,
+			CONTENT_PADDING,
 			0,
-			39
+			SEARCH_TOP
 		)
 
 	SearchBar.Size =
 		UDim2.new(
 			1,
-			-20,
+			-CONTENT_PADDING * 2,
 			0,
 			SEARCH_HEIGHT
 		)
@@ -2058,6 +2028,9 @@ function UI:Create()
 	SearchStroke.Transparency =
 		0.55
 
+	SearchStroke.ApplyStrokeMode =
+		Enum.ApplyStrokeMode.Border
+
 	SearchStroke.Parent =
 		SearchBar
 
@@ -2106,6 +2079,9 @@ function UI:Create()
 
 	SearchIcon.Font =
 		Enum.Font.GothamMedium
+
+	SearchIcon.TextXAlignment =
+		Enum.TextXAlignment.Center
 
 	SearchIcon.ZIndex =
 		505
@@ -2260,9 +2236,6 @@ function UI:Create()
 	--==================================================
 	-- SEARCH CLEAR EVENT
 	--==================================================
-	-- A lógica de filtragem continua no Search.lua.
-	-- Aqui só limpamos a caixa.
-	--==================================================
 
 	SearchClear.MouseButton1Click:Connect(
 
@@ -2324,13 +2297,16 @@ function UI:Create()
 	)
 
 	--==================================================
-	-- SEARCH SIZE
+	-- CONTENT SCROLL
 	--==================================================
-	-- Agora o Scroll começa DEPOIS da barra.
-	-- Isso evita o problema antigo de:
+	-- O Scroll começa abaixo da SearchBar.
 	--
-	-- pesquisa sobrepondo título/cards
-	-- cards aparecendo embaixo da pesquisa
+	-- Search:
+	-- Y = 39
+	-- Height = 34
+	--
+	-- Scroll:
+	-- Y = 80
 	--==================================================
 
 	local Scroll =
@@ -2344,17 +2320,20 @@ function UI:Create()
 	Scroll.Position =
 		UDim2.new(
 			0,
-			10,
+			CONTENT_PADDING,
 			0,
-			80
+			SCROLL_TOP
 		)
 
 	Scroll.Size =
 		UDim2.new(
 			1,
-			-20,
+			-CONTENT_PADDING * 2,
 			1,
-			-90
+			-(
+				SCROLL_TOP
+				+ SCROLL_BOTTOM
+			)
 		)
 
 	Scroll.BackgroundTransparency =
@@ -2377,6 +2356,9 @@ function UI:Create()
 
 	Scroll.ZIndex =
 		503
+
+	Scroll.ClipsDescendants =
+		true
 
 	Scroll.Parent =
 		Content
@@ -2789,12 +2771,22 @@ function UI:StartNeonAnimation()
 
 				end
 
-				if self.SearchIcon then
+				local Current =
+					GetCurrentTheme(
+						self.Theme
+					)
 
-					local Current =
-						GetCurrentTheme(
-							self.Theme
+				if self.SearchBar then
+
+					self.SearchBar.BackgroundColor3 =
+						SafeColor(
+							Current.Card,
+							FALLBACK_CARD
 						)
+
+				end
+
+				if self.SearchIcon then
 
 					self.SearchIcon.TextColor3 =
 						SafeColor(
@@ -2805,11 +2797,6 @@ function UI:StartNeonAnimation()
 				end
 
 				if self.SearchBox then
-
-					local Current =
-						GetCurrentTheme(
-							self.Theme
-						)
 
 					self.SearchBox.TextColor3 =
 						SafeColor(
@@ -2826,11 +2813,6 @@ function UI:StartNeonAnimation()
 				end
 
 				if self.SearchClear then
-
-					local Current =
-						GetCurrentTheme(
-							self.Theme
-						)
 
 					self.SearchClear.TextColor3 =
 						Accent
@@ -3506,20 +3488,6 @@ function UI:ApplyTheme()
 	end
 
 	--==================================================
-	-- CONTENT TITLE
-	--==================================================
-
-	if self.ContentTitle then
-
-		self.ContentTitle.TextColor3 =
-			SafeColor(
-				CurrentTheme.Text,
-				FALLBACK_TEXT
-			)
-
-	end
-
-	--==================================================
 	-- SEARCH
 	--==================================================
 
@@ -3669,6 +3637,9 @@ function UI:Destroy()
 		nil
 
 	self.SearchStroke =
+		nil
+
+	self.ContentTitle =
 		nil
 
 end
