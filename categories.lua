@@ -20,6 +20,9 @@
 --// CONFIGURATION CONTEXT FIX
 --// SEARCH CLEAR ON CATEGORY CHANGE
 --// SAFE CONTEXT SWITCHING
+--// SETTINGS CONNECTION FIX
+--// NESTED SOUND TABLE SUPPORT
+--// IPAIRS/Pairs SAFE SOUND READER
 
 local TweenService =
     game:GetService("TweenService")
@@ -75,6 +78,17 @@ function Categories:Init(Context)
 
     self.Search =
         Context.Search
+
+    --==================================================
+    -- SETTINGS
+    --==================================================
+
+    self.Settings =
+        Context.Settings
+
+    --==================================================
+    -- SIDEBAR
+    --==================================================
 
     self.Sidebar =
         self.UI.Sidebar
@@ -277,6 +291,8 @@ end
 --==================================================
 -- CATEGORY CLICK ANIMATION
 --==================================================
+-- PRESERVADA SEM ALTERAÇÕES
+--==================================================
 
 function Categories:AnimateCategoryClick(
     Button
@@ -425,6 +441,116 @@ function Categories:AnimateCategoryClick(
 end
 
 --==================================================
+-- SOUND DATA VALIDATION
+--==================================================
+
+function Categories:IsSoundData(
+    Data
+)
+
+    if type(Data) ~= "table" then
+        return false
+    end
+
+    --==================================================
+    -- NORMAL FORMAT
+    -- { "Nome", "ID" }
+    --==================================================
+
+    if Data[1] ~= nil
+    and Data[2] ~= nil then
+
+        return true
+
+    end
+
+    return false
+
+end
+
+--==================================================
+-- COLLECT SOUND DATA
+--==================================================
+-- Aceita:
+--
+-- {
+--     {"Nome", "ID"},
+--     {"Nome", "ID"}
+-- }
+--
+-- e também estruturas aninhadas.
+--
+-- Isso evita que uma categoria fique vazia
+-- simplesmente porque os sons estão dentro
+-- de outra tabela.
+--==================================================
+
+function Categories:CollectSoundData(
+    Source,
+    Result,
+    Seen
+)
+
+    Result =
+        Result
+        or {}
+
+    Seen =
+        Seen
+        or {}
+
+    if type(Source) ~= "table" then
+
+        return Result
+
+    end
+
+    --==================================================
+    -- DIRECT SOUND
+    --==================================================
+
+    if self:IsSoundData(Source) then
+
+        if not Seen[Source] then
+
+            Seen[Source] =
+                true
+
+            table.insert(
+                Result,
+                Source
+            )
+
+        end
+
+        return Result
+
+    end
+
+    --==================================================
+    -- NESTED TABLE
+    --==================================================
+
+    for _, Value in
+        pairs(Source) do
+
+        if type(Value) == "table" then
+
+            self:CollectSoundData(
+                Value,
+                Result,
+                Seen
+            )
+
+        end
+
+    end
+
+    return Result
+
+end
+
+--==================================================
 -- BUILD ALL SOUNDS
 --==================================================
 
@@ -437,36 +563,22 @@ function Categories:BuildAllSounds()
         return
     end
 
+    local Seen =
+        {}
+
     for CategoryName, CategoryData in
         pairs(
             self.Sounds
         ) do
 
-        if type(CategoryData) ==
-            "table" then
+        if CategoryName ~= "ALL"
+        and CategoryName ~= "Configuração" then
 
-            --==================================================
-            -- IGNORE NON-SOUND SPECIAL TABLES
-            --==================================================
-
-            if CategoryName ~= "ALL" then
-
-                for _, SoundData in
-                    ipairs(CategoryData) do
-
-                    if type(SoundData) ==
-                        "table" then
-
-                        table.insert(
-                            self.AllSounds,
-                            SoundData
-                        )
-
-                    end
-
-                end
-
-            end
+            self:CollectSoundData(
+                CategoryData,
+                self.AllSounds,
+                Seen
+            )
 
         end
 
@@ -527,13 +639,6 @@ end
 
 --==================================================
 -- CLEAR SEARCH FOR CONTEXT
---==================================================
--- Usado quando o usuário troca de categoria.
---
--- IMPORTANTE:
--- Não chama RefreshCurrent().
--- Não recria ALL.
--- Apenas limpa o estado da pesquisa.
 --==================================================
 
 function Categories:ClearSearchContext()
@@ -719,6 +824,17 @@ end
 function Categories:GetCurrentSounds()
 
     --==================================================
+    -- CONFIGURATION
+    --==================================================
+
+    if self.CurrentCategory ==
+        "Configuração" then
+
+        return {}
+
+    end
+
+    --==================================================
     -- CATEGORY HAS PRIORITY
     --==================================================
 
@@ -732,25 +848,9 @@ function Categories:GetCurrentSounds()
         if type(Category) ==
             "table" then
 
-            local Result =
-                {}
-
-            for _, Data in
-                ipairs(Category) do
-
-                if type(Data) ==
-                    "table" then
-
-                    table.insert(
-                        Result,
-                        Data
-                    )
-
-                end
-
-            end
-
-            return Result
+            return self:CollectSoundData(
+                Category
+            )
 
         end
 
@@ -1618,7 +1718,7 @@ function Categories:ShowCategory(
 )
 
     --==================================================
-    -- LIMPAR PESQUISA AO TROCAR DE CATEGORIA
+    -- CLEAR SEARCH
     --==================================================
 
     self:ClearSearchContext()
@@ -1695,11 +1795,22 @@ function Categories:ShowCategory(
     end
 
     --==================================================
+    -- COLLECT CATEGORY SOUNDS
+    --==================================================
+
+    local CategorySounds =
+        self:CollectSoundData(
+            Category
+        )
+
+    --==================================================
     -- CREATE CARDS
     --==================================================
 
     for Index, Data in
-        ipairs(Category) do
+        ipairs(
+            CategorySounds
+        ) do
 
         if type(Data) ==
             "table" then
@@ -1721,6 +1832,7 @@ end
 -- SHOW CONFIGURATION
 --==================================================
 -- Configuração NÃO é uma categoria de sons.
+-- Agora chama o módulo Settings corretamente.
 --==================================================
 
 function Categories:ShowConfiguration()
@@ -1762,6 +1874,39 @@ function Categories:ShowConfiguration()
 
     self.ContentTitle.Text =
         "Configuração"
+
+    --==================================================
+    -- SETTINGS MODULE
+    --==================================================
+
+    if self.Settings
+    and type(
+        self.Settings.Show
+    ) == "function" then
+
+        local Success, ErrorMessage =
+            pcall(function()
+
+                self.Settings:Show()
+
+            end)
+
+        if not Success then
+
+            warn(
+                "[RIMURU HUB] Settings.Show error:",
+                ErrorMessage
+            )
+
+        end
+
+    else
+
+        warn(
+            "[RIMURU HUB] Settings module não encontrado no Context."
+        )
+
+    end
 
 end
 
@@ -2314,11 +2459,6 @@ end
 
 --==================================================
 -- REFRESH CURRENT
---==================================================
--- IMPORTANTE:
--- Não limpa pesquisa.
--- Não muda categoria.
--- Apenas reconstrói o contexto atual.
 --==================================================
 
 function Categories:RefreshCurrent()
