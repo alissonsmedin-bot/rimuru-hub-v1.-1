@@ -11,6 +11,7 @@
 --// SOFT INTERFACE SHADOW
 --// ROUNDED CORNERS
 --// SOFT ANIMATIONS
+--// SMOOTH +12PX ANIMATION
 --// DRAG SUPPORT
 --// BACKGROUND SUPPORT
 --// CATEGORY THEME COMPATIBILITY
@@ -45,14 +46,22 @@ local UI = {}
 -- ANIMATION
 --==================================================
 
-local OPEN_TIME = 0.25
-local CLOSE_TIME = 0.18
+local OPEN_TIME = 0.28
+local CLOSE_TIME = 0.20
 
-local OPEN_SCALE = 0.96
-local CLOSE_SCALE = 0.98
+-- A escala não altera o tamanho real do layout.
+-- Isso permite uma animação visual maior sem
+-- empurrar SearchBar, Cards ou Sidebar.
 
-local OPEN_OFFSET_Y = 8
-local CLOSE_OFFSET_Y = 7
+local OPEN_SCALE = 0.94
+local CLOSE_SCALE = 0.975
+
+-- Movimento visual.
+-- Aumentado para ficar mais perceptível sem
+-- estourar a interface.
+
+local OPEN_OFFSET_Y = 12
+local CLOSE_OFFSET_Y = 10
 
 --==================================================
 -- ROUNDED CORNERS
@@ -217,6 +226,19 @@ local function SafeNumber(
 
 end
 
+local function SafeBoolean(
+	Value,
+	Fallback
+)
+
+	if type(Value) == "boolean" then
+		return Value
+	end
+
+	return Fallback
+
+end
+
 --==================================================
 -- FALLBACK THEME
 --==================================================
@@ -341,6 +363,10 @@ local function GetCurrentTheme(
 
 	end
 
+	Current.Name =
+		Current.Name
+		or "Rimuru Dark"
+
 	Current.Card =
 		SafeColor(
 			Current.Card,
@@ -397,6 +423,45 @@ local function GetCurrentTheme(
 		SafeColor(
 			Current.SubText,
 			FALLBACK_SUBTEXT
+		)
+
+	Current.LogoBorder =
+		SafeColor(
+			Current.LogoBorder
+				or Current.Accent,
+			FALLBACK_ACCENT
+		)
+
+	Current.BackgroundTransparency =
+		math.clamp(
+			SafeNumber(
+				Current.BackgroundTransparency,
+				0.35
+			),
+			0,
+			1
+		)
+
+	Current.ShadowTransparency =
+		math.clamp(
+			SafeNumber(
+				Current.ShadowTransparency,
+				SHADOW_TRANSPARENCY
+			),
+			0,
+			1
+		)
+
+	Current.GlowEnabled =
+		SafeBoolean(
+			Current.GlowEnabled,
+			true
+		)
+
+	Current.ShadowEnabled =
+		SafeBoolean(
+			Current.ShadowEnabled,
+			true
 		)
 
 	return Current
@@ -969,6 +1034,9 @@ function UI:Init(
 
 	self.SearchFocused =
 		false
+
+	self.SearchQuery =
+		""
 
 	self:EnsureThemeCompatibility()
 
@@ -1933,19 +2001,7 @@ function UI:Create()
 		ContentStroke
 
 	--==================================================
-	-- IMPORTANT
-	--==================================================
-	-- NÃO existe mais ContentTitle aqui.
-	--
-	-- O título de categoria deve ser criado pelo
-	-- sistema responsável pelas categorias.
-	--
-	-- Isso impede:
-	--
-	-- 1. título duplicado
-	-- 2. título gigante
-	-- 3. quadro ocupando o lugar da pesquisa
-	-- 4. conflito entre categorias e UI
+	-- NO STATIC CONTENT TITLE
 	--==================================================
 
 	self.ContentTitle =
@@ -2234,6 +2290,29 @@ function UI:Create()
 		SearchStroke
 
 	--==================================================
+	-- SEARCH TEXT TRACKING
+	--==================================================
+
+	self.SearchConnection =
+		SearchBox:GetPropertyChangedSignal(
+			"Text"
+		):Connect(function()
+
+			local Text =
+				tostring(
+					SearchBox.Text
+						or ""
+				)
+
+			self.SearchQuery =
+				Text
+
+			self.SearchClear.Visible =
+				Text ~= ""
+
+		end)
+
+	--==================================================
 	-- SEARCH CLEAR EVENT
 	--==================================================
 
@@ -2299,15 +2378,6 @@ function UI:Create()
 	--==================================================
 	-- CONTENT SCROLL
 	--==================================================
-	-- O Scroll começa abaixo da SearchBar.
-	--
-	-- Search:
-	-- Y = 39
-	-- Height = 34
-	--
-	-- Scroll:
-	-- Y = 80
-	--==================================================
 
 	local Scroll =
 		Instance.new(
@@ -2344,6 +2414,9 @@ function UI:Create()
 
 	Scroll.ScrollBarThickness =
 		5
+
+	Scroll.ScrollBarImageTransparency =
+		0.15
 
 	Scroll.ScrollBarImageColor3 =
 		self:GetAccent()
@@ -2420,6 +2493,18 @@ function UI:Create()
 	self:SetupDrag()
 
 	--==================================================
+	-- BACKGROUND
+	--==================================================
+
+	self:ApplyBackground()
+
+	--==================================================
+	-- SHADOW
+	--==================================================
+
+	self:ApplyShadow()
+
+	--==================================================
 	-- NEON
 	--==================================================
 
@@ -2451,26 +2536,83 @@ function UI:UpdateShadow()
 		return
 	end
 
+	local Scale =
+		1
+
+	if self.MainScale then
+
+		Scale =
+			math.max(
+				self.MainScale.Scale,
+				0.01
+			)
+
+	end
+
+	local BaseWidth =
+		self.Main.Size.X.Offset
+
+	local BaseHeight =
+		self.Main.Size.Y.Offset
+
+	local Width =
+		(
+			BaseWidth
+			* Scale
+		)
+		+
+		(
+			SHADOW_PADDING
+			* 2
+		)
+
+	local Height =
+		(
+			BaseHeight
+			* Scale
+		)
+		+
+		(
+			SHADOW_PADDING
+			* 2
+		)
+
+	local CenterX =
+		self.Main.Position.X.Offset
+		+
+		(
+			BaseWidth
+			* (1 - Scale)
+			* 0.5
+		)
+
+	local CenterY =
+		self.Main.Position.Y.Offset
+		+
+		(
+			BaseHeight
+			* (1 - Scale)
+			* 0.5
+		)
+
 	self.Shadow.Position =
 		UDim2.new(
 			self.Main.Position.X.Scale,
-			self.Main.Position.X.Offset
+			CenterX
 				- SHADOW_PADDING,
 
 			self.Main.Position.Y.Scale,
-			self.Main.Position.Y.Offset
+			CenterY
 				- SHADOW_PADDING
 		)
 
 	self.Shadow.Size =
 		UDim2.new(
 			self.Main.Size.X.Scale,
-			self.Main.Size.X.Offset
-				+ SHADOW_PADDING * 2,
+			Width,
 
 			self.Main.Size.Y.Scale,
-			self.Main.Size.Y.Offset
-				+ SHADOW_PADDING * 2
+			Height
 		)
 
 	local Pulse =
@@ -2776,6 +2918,84 @@ function UI:StartNeonAnimation()
 						self.Theme
 					)
 
+				--==================================================
+				-- MAIN COLORS
+				--==================================================
+
+				if self.Main then
+
+					self.Main.BackgroundColor3 =
+						SafeColor(
+							Current.Background,
+							FALLBACK_BACKGROUND
+						)
+
+				end
+
+				if self.Sidebar then
+
+					self.Sidebar.BackgroundColor3 =
+						SafeColor(
+							Current.Sidebar,
+							FALLBACK_CONTENT
+						)
+
+				end
+
+				if self.Content then
+
+					self.Content.BackgroundColor3 =
+						SafeColor(
+							Current.Content,
+							FALLBACK_CONTENT
+						)
+
+				end
+
+				if self.Close then
+
+					self.Close.BackgroundColor3 =
+						SafeColor(
+							Current.Close,
+							FALLBACK_CARD
+						)
+
+					self.Close.TextColor3 =
+						SafeColor(
+							Current.Text,
+							FALLBACK_TEXT
+						)
+
+				end
+
+				--==================================================
+				-- TITLE
+				--==================================================
+
+				if self.Title then
+
+					self.Title.TextColor3 =
+						SafeColor(
+							Current.Text,
+							FALLBACK_TEXT
+						)
+
+				end
+
+				if self.Subtitle then
+
+					self.Subtitle.TextColor3 =
+						SafeColor(
+							Current.SubText,
+							FALLBACK_SUBTEXT
+						)
+
+				end
+
+				--==================================================
+				-- SEARCH COLORS
+				--==================================================
+
 				if self.SearchBar then
 
 					self.SearchBar.BackgroundColor3 =
@@ -2906,8 +3126,12 @@ function UI:SetVisible(
 
 	if Value then
 
-		self.MainScale.Scale =
-			1
+		if self.MainScale then
+
+			self.MainScale.Scale =
+				1
+
+		end
 
 		self.Main.Position =
 			self.OriginalPosition
@@ -2970,6 +3194,9 @@ function UI:SetVisibleAnimated(
 
 		end
 
+		-- Começa menor e levemente abaixo.
+		-- O tamanho físico continua sendo 600x400.
+
 		Scale.Scale =
 			OPEN_SCALE
 
@@ -3022,10 +3249,17 @@ function UI:SetVisibleAnimated(
 			PositionTween.Completed:Wait()
 
 			if self.AnimationToken
-				== Token then
+				== Token
+				and Main.Parent then
 
 				self.AnimationBusy =
 					false
+
+				Scale.Scale =
+					1
+
+				Main.Position =
+					self.OriginalPosition
 
 				self:UpdateShadow()
 
@@ -3365,9 +3599,6 @@ function UI:ApplyTheme()
 
 	end
 
-	self:ApplyShadow()
-	self:ApplyBackground()
-
 	--==================================================
 	-- BORDER
 	--==================================================
@@ -3542,6 +3773,18 @@ function UI:ApplyTheme()
 	end
 
 	--==================================================
+	-- BACKGROUND
+	--==================================================
+
+	self:ApplyBackground()
+
+	--==================================================
+	-- SHADOW
+	--==================================================
+
+	self:ApplyShadow()
+
+	--==================================================
 	-- SCROLL
 	--==================================================
 
@@ -3609,16 +3852,58 @@ function UI:Destroy()
 	self.Main =
 		nil
 
+	self.MainScale =
+		nil
+
+	self.MainStroke =
+		nil
+
+	self.MainCorner =
+		nil
+
 	self.Shadow =
 		nil
 
 	self.Background =
 		nil
 
+	self.Glow =
+		nil
+
+	self.GlowStroke =
+		nil
+
+	self.Header =
+		nil
+
+	self.HeaderLogo =
+		nil
+
+	self.LogoStroke =
+		nil
+
+	self.Title =
+		nil
+
+	self.Subtitle =
+		nil
+
+	self.Close =
+		nil
+
+	self.CloseStroke =
+		nil
+
 	self.Sidebar =
 		nil
 
+	self.SidebarStroke =
+		nil
+
 	self.Content =
+		nil
+
+	self.ContentStroke =
 		nil
 
 	self.Scroll =
@@ -3641,6 +3926,9 @@ function UI:Destroy()
 
 	self.ContentTitle =
 		nil
+
+	self.SearchQuery =
+		""
 
 end
 
