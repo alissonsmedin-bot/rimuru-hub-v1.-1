@@ -1,10 +1,14 @@
 --// 💥 RIMURU HUB
 --// Settings System
---// Theme Popup + Animation Toggle
---// Fixed 120x82 Theme Selector
---// Scrollable Theme List
---// Safe Popup Position
---// Outside Click Close
+--// REWORKED SETTINGS UI
+--// MODERN TOGGLE SYSTEM
+--// ON / OFF SWITCHES
+--// THEME POPUP
+--// SCROLLABLE THEME LIST
+--// SAFE POPUP POSITION
+--// OUTSIDE CLICK CLOSE
+--// THEME AWARE
+--// SMOOTH TOGGLE ANIMATION
 
 local Settings = {}
 
@@ -36,6 +40,22 @@ local POPUP_OPEN_TIME =
 
 local POPUP_CLOSE_TIME =
     0.10
+
+--==================================================
+-- TOGGLE CONFIG
+--==================================================
+
+local TOGGLE_WIDTH =
+    52
+
+local TOGGLE_HEIGHT =
+    26
+
+local TOGGLE_KNOB_SIZE =
+    20
+
+local TOGGLE_ANIMATION_TIME =
+    0.14
 
 --==================================================
 -- INIT
@@ -73,6 +93,26 @@ function Settings:Init(Context)
     self.ThemePopupConnection =
         nil
 
+    self.ToggleButtons =
+        {}
+
+end
+
+--==================================================
+-- GET CURRENT THEME
+--==================================================
+
+function Settings:GetTheme()
+
+    if self.Theme
+    and self.Theme.GetCurrent then
+
+        return self.Theme:GetCurrent()
+
+    end
+
+    return {}
+
 end
 
 --==================================================
@@ -82,6 +122,13 @@ end
 function Settings:ClearContent()
 
     self:CloseThemePopup()
+
+    self.ToggleButtons =
+        {}
+
+    if not self.Scroll then
+        return
+    end
 
     for _, Object in
         ipairs(
@@ -100,6 +147,180 @@ function Settings:ClearContent()
 end
 
 --==================================================
+-- TOGGLE COLORS
+--==================================================
+
+function Settings:GetToggleColors(
+    Enabled
+)
+
+    local CurrentTheme =
+        self:GetTheme()
+
+    local Accent =
+        self.Theme:GetAccent()
+
+    local OffColor =
+        CurrentTheme.Button
+        or CurrentTheme.Card
+
+    local OnColor =
+        Accent
+
+    local KnobColor =
+        Color3.fromRGB(
+            255,
+            255,
+            255
+        )
+
+    if Enabled then
+
+        return OnColor, KnobColor
+
+    end
+
+    return OffColor, CurrentTheme.SubText
+
+end
+
+--==================================================
+-- UPDATE TOGGLE VISUAL
+--==================================================
+
+function Settings:UpdateToggleVisual(
+    Data,
+    Enabled,
+    Animate
+)
+
+    if not Data then
+        return
+    end
+
+    local Button =
+        Data.Button
+
+    local Track =
+        Data.Track
+
+    local Knob =
+        Data.Knob
+
+    local StateLabel =
+        Data.StateLabel
+
+    if not Button
+    or not Button.Parent
+    or not Track
+    or not Knob
+    or not StateLabel then
+
+        return
+
+    end
+
+    local TrackColor,
+        KnobColor =
+        self:GetToggleColors(
+            Enabled
+        )
+
+    local KnobPosition
+
+    if Enabled then
+
+        KnobPosition =
+            UDim2.new(
+                1,
+                -TOGGLE_KNOB_SIZE - 3,
+                0.5,
+                -TOGGLE_KNOB_SIZE / 2
+            )
+
+        StateLabel.Text =
+            "ON"
+
+    else
+
+        KnobPosition =
+            UDim2.new(
+                0,
+                3,
+                0.5,
+                -TOGGLE_KNOB_SIZE / 2
+            )
+
+        StateLabel.Text =
+            "OFF"
+
+    end
+
+    local Duration =
+        Animate
+        and TOGGLE_ANIMATION_TIME
+        or 0
+
+    if Duration <= 0 then
+
+        Track.BackgroundColor3 =
+            TrackColor
+
+        Knob.BackgroundColor3 =
+            KnobColor
+
+        Knob.Position =
+            KnobPosition
+
+    else
+
+        local TrackTween =
+            TweenService:Create(
+
+                Track,
+
+                TweenInfo.new(
+                    Duration,
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                ),
+
+                {
+                    BackgroundColor3 =
+                        TrackColor
+                }
+
+            )
+
+        local KnobTween =
+            TweenService:Create(
+
+                Knob,
+
+                TweenInfo.new(
+                    Duration,
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                ),
+
+                {
+                    BackgroundColor3 =
+                        KnobColor,
+
+                    Position =
+                        KnobPosition
+                }
+
+            )
+
+        TrackTween:Play()
+        KnobTween:Play()
+
+    end
+
+end
+
+--==================================================
 -- CREATE TOGGLE
 --==================================================
 
@@ -111,7 +332,11 @@ function Settings:CreateToggle(
 )
 
     local CurrentTheme =
-        self.Theme:GetCurrent()
+        self:GetTheme()
+
+    --==================================================
+    -- MAIN BUTTON
+    --==================================================
 
     local Button =
         Instance.new("TextButton")
@@ -137,23 +362,7 @@ function Settings:CreateToggle(
         0
 
     Button.Text =
-        Name ..
-        ": " ..
-        tostring(
-            GetValue()
-        )
-
-    Button.TextColor3 =
-        CurrentTheme.Text
-
-    Button.TextSize =
-        12
-
-    Button.Font =
-        Enum.Font.GothamMedium
-
-    Button.TextXAlignment =
-        Enum.TextXAlignment.Left
+        ""
 
     Button.AutoButtonColor =
         false
@@ -166,22 +375,6 @@ function Settings:CreateToggle(
 
     Button.Parent =
         self.Scroll
-
-    --==================================================
-    -- PADDING
-    --==================================================
-
-    local Padding =
-        Instance.new("UIPadding")
-
-    Padding.PaddingLeft =
-        UDim.new(
-            0,
-            12
-        )
-
-    Padding.Parent =
-        Button
 
     --==================================================
     -- CORNER
@@ -200,26 +393,354 @@ function Settings:CreateToggle(
         Button
 
     --==================================================
+    -- NAME LABEL
+    --==================================================
+
+    local Label =
+        Instance.new("TextLabel")
+
+    Label.Name =
+        "SettingName"
+
+    Label.Size =
+        UDim2.new(
+            1,
+            -(TOGGLE_WIDTH + 30),
+            1,
+            0
+        )
+
+    Label.Position =
+        UDim2.new(
+            0,
+            12,
+            0,
+            0
+        )
+
+    Label.BackgroundTransparency =
+        1
+
+    Label.Text =
+        Name
+
+    Label.TextColor3 =
+        CurrentTheme.Text
+
+    Label.TextSize =
+        12
+
+    Label.Font =
+        Enum.Font.GothamMedium
+
+    Label.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    Label.ZIndex =
+        505
+
+    Label.Parent =
+        Button
+
+    --==================================================
+    -- TOGGLE TRACK
+    --==================================================
+
+    local Track =
+        Instance.new("Frame")
+
+    Track.Name =
+        "Toggle"
+
+    Track.Size =
+        UDim2.new(
+            0,
+            TOGGLE_WIDTH,
+            0,
+            TOGGLE_HEIGHT
+        )
+
+    Track.Position =
+        UDim2.new(
+            1,
+            -TOGGLE_WIDTH - 10,
+            0.5,
+            -TOGGLE_HEIGHT / 2
+        )
+
+    Track.BorderSizePixel =
+        0
+
+    Track.ZIndex =
+        506
+
+    Track.Parent =
+        Button
+
+    local TrackCorner =
+        Instance.new("UICorner")
+
+    TrackCorner.CornerRadius =
+        UDim.new(
+            1,
+            0
+        )
+
+    TrackCorner.Parent =
+        Track
+
+    --==================================================
+    -- TOGGLE KNOB
+    --==================================================
+
+    local Knob =
+        Instance.new("Frame")
+
+    Knob.Name =
+        "Knob"
+
+    Knob.Size =
+        UDim2.new(
+            0,
+            TOGGLE_KNOB_SIZE,
+            0,
+            TOGGLE_KNOB_SIZE
+        )
+
+    Knob.BorderSizePixel =
+        0
+
+    Knob.ZIndex =
+        507
+
+    Knob.Parent =
+        Track
+
+    local KnobCorner =
+        Instance.new("UICorner")
+
+    KnobCorner.CornerRadius =
+        UDim.new(
+            1,
+            0
+        )
+
+    KnobCorner.Parent =
+        Knob
+
+    --==================================================
+    -- STATE TEXT
+    --==================================================
+
+    local StateLabel =
+        Instance.new("TextLabel")
+
+    StateLabel.Name =
+        "State"
+
+    StateLabel.Size =
+        UDim2.new(
+            0,
+            27,
+            1,
+            0
+        )
+
+    StateLabel.Position =
+        UDim2.new(
+            0,
+            25,
+            0,
+            0
+        )
+
+    StateLabel.BackgroundTransparency =
+        1
+
+    StateLabel.TextSize =
+        8
+
+    StateLabel.Font =
+        Enum.Font.GothamBold
+
+    StateLabel.TextXAlignment =
+        Enum.TextXAlignment.Center
+
+    StateLabel.ZIndex =
+        508
+
+    StateLabel.Parent =
+        Track
+
+    --==================================================
+    -- DATA
+    --==================================================
+
+    local Data = {
+
+        Button =
+            Button,
+
+        Track =
+            Track,
+
+        Knob =
+            Knob,
+
+        StateLabel =
+            StateLabel,
+
+        GetValue =
+            GetValue,
+
+        SetValue =
+            SetValue,
+
+        Name =
+            Name
+
+    }
+
+    self.ToggleButtons[
+        Name
+    ] =
+        Data
+
+    --==================================================
+    -- INITIAL STATE
+    --==================================================
+
+    local InitialValue =
+        false
+
+    local Success,
+        Value =
+        pcall(
+            GetValue
+        )
+
+    if Success then
+
+        InitialValue =
+            Value == true
+
+    end
+
+    self:UpdateToggleVisual(
+        Data,
+        InitialValue,
+        false
+    )
+
+    --==================================================
+    -- HOVER
+    --==================================================
+
+    Button.MouseEnter:Connect(
+        function()
+
+            if not Button.Parent then
+                return
+            end
+
+            local Tween =
+                TweenService:Create(
+
+                    Button,
+
+                    TweenInfo.new(
+                        0.10,
+                        Enum.EasingStyle.Quad,
+                        Enum.EasingDirection.Out
+                    ),
+
+                    {
+                        BackgroundTransparency =
+                            0
+                    }
+
+                )
+
+            Tween:Play()
+
+        end
+    )
+
+    Button.MouseLeave:Connect(
+        function()
+
+            if not Button.Parent then
+                return
+            end
+
+            local Tween =
+                TweenService:Create(
+
+                    Button,
+
+                    TweenInfo.new(
+                        0.10,
+                        Enum.EasingStyle.Quad,
+                        Enum.EasingDirection.Out
+                    ),
+
+                    {
+                        BackgroundTransparency =
+                            0.12
+                    }
+
+                )
+
+            Tween:Play()
+
+        end
+    )
+
+    --==================================================
     -- CLICK
     --==================================================
 
-    Button.MouseButton1Click:Connect(function()
+    Button.MouseButton1Click:Connect(
+        function()
 
-        local NewValue =
-            not GetValue()
+            local Success,
+                CurrentValue =
+                pcall(
+                    GetValue
+                )
 
-        SetValue(
-            NewValue
-        )
+            if not Success then
+                return
+            end
 
-        Button.Text =
-            Name ..
-            ": " ..
-            tostring(
-                NewValue
+            local NewValue =
+                not (
+                    CurrentValue == true
+                )
+
+            local SetSuccess =
+                pcall(
+                    function()
+
+                        SetValue(
+                            NewValue
+                        )
+
+                    end
+                )
+
+            if not SetSuccess then
+                return
+            end
+
+            self:UpdateToggleVisual(
+                Data,
+                NewValue,
+                true
             )
 
-    end)
+        end
+    )
 
     return Button
 
@@ -249,10 +770,6 @@ function Settings:CloseThemePopup()
     if not Popup then
         return
     end
-
-    --==================================================
-    -- CLOSE ANIMATION
-    --==================================================
 
     local Scale =
         Popup:FindFirstChild(
@@ -284,15 +801,17 @@ function Settings:CloseThemePopup()
 
         Tween:Play()
 
-        task.spawn(function()
+        task.spawn(
+            function()
 
-            Tween.Completed:Wait()
+                Tween.Completed:Wait()
 
-            if Popup then
-                Popup:Destroy()
+                if Popup then
+                    Popup:Destroy()
+                end
+
             end
-
-        end)
+        )
 
     else
 
@@ -343,12 +862,7 @@ function Settings:GetPopupPosition(
         AbsoluteSize.Y +
         POPUP_OFFSET
 
-    --==================================================
-    -- RIGHT EDGE
-    --==================================================
-
-    if X +
-        POPUP_WIDTH >
+    if X + POPUP_WIDTH >
         Viewport.X then
 
         X =
@@ -358,20 +872,11 @@ function Settings:GetPopupPosition(
 
     end
 
-    --==================================================
-    -- LEFT EDGE
-    --==================================================
-
     if X < 6 then
         X = 6
     end
 
-    --==================================================
-    -- BOTTOM EDGE
-    --==================================================
-
-    if Y +
-        POPUP_HEIGHT >
+    if Y + POPUP_HEIGHT >
         Viewport.Y then
 
         Y =
@@ -380,10 +885,6 @@ function Settings:GetPopupPosition(
             POPUP_OFFSET
 
     end
-
-    --==================================================
-    -- TOP EDGE
-    --==================================================
 
     if Y < 6 then
         Y = 6
@@ -411,7 +912,7 @@ function Settings:CreateThemePopup(
     end
 
     local CurrentTheme =
-        self.Theme:GetCurrent()
+        self:GetTheme()
 
     if not CurrentTheme then
         return
@@ -597,7 +1098,7 @@ function Settings:CreateThemePopup(
         Popup
 
     --==================================================
-    -- SCROLL PADDING
+    -- PADDING
     --==================================================
 
     local Padding =
@@ -673,7 +1174,7 @@ function Settings:CreateThemePopup(
     )
 
     --==================================================
-    -- CREATE BUTTONS
+    -- CREATE THEME BUTTONS
     --==================================================
 
     for Index, Name in
@@ -748,7 +1249,7 @@ function Settings:CreateThemePopup(
             Scroll
 
         --==================================================
-        -- BUTTON PADDING
+        -- PADDING
         --==================================================
 
         local ButtonPadding =
@@ -764,7 +1265,7 @@ function Settings:CreateThemePopup(
             Button
 
         --==================================================
-        -- BUTTON CORNER
+        -- CORNER
         --==================================================
 
         local ButtonCorner =
@@ -780,7 +1281,7 @@ function Settings:CreateThemePopup(
             Button
 
         --==================================================
-        -- CURRENT THEME STROKE
+        -- CURRENT STROKE
         --==================================================
 
         if IsCurrent then
@@ -806,100 +1307,100 @@ function Settings:CreateThemePopup(
         -- HOVER
         --==================================================
 
-        Button.MouseEnter:Connect(function()
+        Button.MouseEnter:Connect(
+            function()
 
-            if not Button.Parent then
-                return
+                if not Button.Parent then
+                    return
+                end
+
+                local Tween =
+                    TweenService:Create(
+
+                        Button,
+
+                        TweenInfo.new(
+                            0.10,
+                            Enum.EasingStyle.Quad,
+                            Enum.EasingDirection.Out
+                        ),
+
+                        {
+                            BackgroundTransparency =
+                                0
+                        }
+
+                    )
+
+                Tween:Play()
+
             end
+        )
 
-            local HoverTween =
-                TweenService:Create(
+        Button.MouseLeave:Connect(
+            function()
 
-                    Button,
+                if not Button.Parent then
+                    return
+                end
 
-                    TweenInfo.new(
+                local Tween =
+                    TweenService:Create(
 
-                        0.10,
+                        Button,
 
-                        Enum.EasingStyle.Quad,
+                        TweenInfo.new(
+                            0.10,
+                            Enum.EasingStyle.Quad,
+                            Enum.EasingDirection.Out
+                        ),
 
-                        Enum.EasingDirection.Out
+                        {
+                            BackgroundTransparency =
+                                IsCurrent
+                                and 0
+                                or 0.08
+                        }
 
-                    ),
+                    )
 
-                    {
-                        BackgroundTransparency =
-                            0
-                    }
+                Tween:Play()
 
-                )
-
-            HoverTween:Play()
-
-        end)
-
-        Button.MouseLeave:Connect(function()
-
-            if not Button.Parent then
-                return
             end
-
-            local LeaveTween =
-                TweenService:Create(
-
-                    Button,
-
-                    TweenInfo.new(
-
-                        0.10,
-
-                        Enum.EasingStyle.Quad,
-
-                        Enum.EasingDirection.Out
-
-                    ),
-
-                    {
-                        BackgroundTransparency =
-                            IsCurrent
-                            and 0
-                            or 0.08
-                    }
-
-                )
-
-            LeaveTween:Play()
-
-        end)
+        )
 
         --==================================================
         -- CLICK
         --==================================================
 
-        Button.MouseButton1Click:Connect(function()
+        Button.MouseButton1Click:Connect(
+            function()
 
-            if self.Theme:SetTheme(
-                Name
-            ) then
+                if self.Theme:SetTheme(
+                    Name
+                ) then
 
-                self:CloseThemePopup()
+                    self:CloseThemePopup()
 
-                self:ApplyTheme()
+                    self:ApplyTheme()
 
-                task.defer(function()
+                    task.defer(
+                        function()
 
-                    if self.Scroll
-                    and self.Scroll.Parent then
+                            if self.Scroll
+                            and self.Scroll.Parent then
 
-                        self:Show()
+                                self:Show()
 
-                    end
+                            end
 
-                end)
+                        end
+                    )
+
+                end
 
             end
-
-        end)
+        )
 
     end
 
@@ -935,94 +1436,94 @@ function Settings:CreateThemePopup(
     --==================================================
 
     self.ThemePopupConnection =
-        UIS.InputBegan:Connect(function(
-            Input
+        UIS.InputBegan:Connect(
+            function(Input)
+
+                if not self.ThemePopup then
+                    return
+                end
+
+                if Input.UserInputType ~=
+                    Enum.UserInputType.MouseButton1
+
+                and Input.UserInputType ~=
+                    Enum.UserInputType.Touch then
+
+                    return
+
+                end
+
+                local Position =
+                    Input.Position
+
+                local PopupPosition =
+                    Popup.AbsolutePosition
+
+                local PopupSize =
+                    Popup.AbsoluteSize
+
+                local InsidePopup =
+
+                    Position.X >=
+                    PopupPosition.X
+
+                    and
+
+                    Position.X <=
+                    PopupPosition.X +
+                    PopupSize.X
+
+                    and
+
+                    Position.Y >=
+                    PopupPosition.Y
+
+                    and
+
+                    Position.Y <=
+                    PopupPosition.Y +
+                    PopupSize.Y
+
+                if InsidePopup then
+                    return
+                end
+
+                local ButtonPosition =
+                    ThemeButton.AbsolutePosition
+
+                local ButtonSize =
+                    ThemeButton.AbsoluteSize
+
+                local InsideButton =
+
+                    Position.X >=
+                    ButtonPosition.X
+
+                    and
+
+                    Position.X <=
+                    ButtonPosition.X +
+                    ButtonSize.X
+
+                    and
+
+                    Position.Y >=
+                    ButtonPosition.Y
+
+                    and
+
+                    Position.Y <=
+                    ButtonPosition.Y +
+                    ButtonSize.Y
+
+                if InsideButton then
+                    return
+                end
+
+                self:CloseThemePopup()
+
+            end
         )
-
-        if not self.ThemePopup then
-            return
-        end
-
-        if Input.UserInputType ~=
-            Enum.UserInputType.MouseButton1
-
-        and Input.UserInputType ~=
-            Enum.UserInputType.Touch then
-
-            return
-
-        end
-
-        local Position =
-            Input.Position
-
-        local PopupPosition =
-            Popup.AbsolutePosition
-
-        local PopupSize =
-            Popup.AbsoluteSize
-
-        local InsidePopup =
-
-            Position.X >=
-            PopupPosition.X
-
-            and
-
-            Position.X <=
-            PopupPosition.X +
-            PopupSize.X
-
-            and
-
-            Position.Y >=
-            PopupPosition.Y
-
-            and
-
-            Position.Y <=
-            PopupPosition.Y +
-            PopupSize.Y
-
-        if InsidePopup then
-            return
-        end
-
-        local ButtonPosition =
-            ThemeButton.AbsolutePosition
-
-        local ButtonSize =
-            ThemeButton.AbsoluteSize
-
-        local InsideButton =
-
-            Position.X >=
-            ButtonPosition.X
-
-            and
-
-            Position.X <=
-            ButtonPosition.X +
-            ButtonSize.X
-
-            and
-
-            Position.Y >=
-            ButtonPosition.Y
-
-            and
-
-            Position.Y <=
-            ButtonPosition.Y +
-            ButtonSize.Y
-
-        if InsideButton then
-            return
-        end
-
-        self:CloseThemePopup()
-
-    end)
 
 end
 
@@ -1033,7 +1534,7 @@ end
 function Settings:CreateThemeSelector()
 
     local CurrentTheme =
-        self.Theme:GetCurrent()
+        self:GetTheme()
 
     local ThemeButton =
         Instance.new("TextButton")
@@ -1059,7 +1560,7 @@ function Settings:CreateThemeSelector()
         0
 
     ThemeButton.Text =
-        "Tema: " ..
+        "🎨  Tema: " ..
         self.Theme:GetName()
 
     ThemeButton.TextColor3 =
@@ -1119,82 +1620,132 @@ function Settings:CreateThemeSelector()
         ThemeButton
 
     --==================================================
+    -- ARROW
+    --==================================================
+
+    local Arrow =
+        Instance.new("TextLabel")
+
+    Arrow.Name =
+        "Arrow"
+
+    Arrow.Size =
+        UDim2.new(
+            0,
+            30,
+            1,
+            0
+        )
+
+    Arrow.Position =
+        UDim2.new(
+            1,
+            -35,
+            0,
+            0
+        )
+
+    Arrow.BackgroundTransparency =
+        1
+
+    Arrow.Text =
+        "›"
+
+    Arrow.TextColor3 =
+        CurrentTheme.SubText
+
+    Arrow.TextSize =
+        20
+
+    Arrow.Font =
+        Enum.Font.GothamBold
+
+    Arrow.ZIndex =
+        505
+
+    Arrow.Parent =
+        ThemeButton
+
+    --==================================================
     -- HOVER
     --==================================================
 
-    ThemeButton.MouseEnter:Connect(function()
+    ThemeButton.MouseEnter:Connect(
+        function()
 
-        local Tween =
-            TweenService:Create(
+            local Tween =
+                TweenService:Create(
 
-                ThemeButton,
+                    ThemeButton,
 
-                TweenInfo.new(
+                    TweenInfo.new(
+                        0.10,
+                        Enum.EasingStyle.Quad,
+                        Enum.EasingDirection.Out
+                    ),
 
-                    0.10,
+                    {
+                        BackgroundTransparency =
+                            0
+                    }
 
-                    Enum.EasingStyle.Quad,
+                )
 
-                    Enum.EasingDirection.Out
+            Tween:Play()
 
-                ),
+        end
+    )
 
-                {
-                    BackgroundTransparency = 0
-                }
+    ThemeButton.MouseLeave:Connect(
+        function()
 
-            )
+            local Tween =
+                TweenService:Create(
 
-        Tween:Play()
+                    ThemeButton,
 
-    end)
+                    TweenInfo.new(
+                        0.10,
+                        Enum.EasingStyle.Quad,
+                        Enum.EasingDirection.Out
+                    ),
 
-    ThemeButton.MouseLeave:Connect(function()
+                    {
+                        BackgroundTransparency =
+                            0.12
+                    }
 
-        local Tween =
-            TweenService:Create(
+                )
 
-                ThemeButton,
+            Tween:Play()
 
-                TweenInfo.new(
-
-                    0.10,
-
-                    Enum.EasingStyle.Quad,
-
-                    Enum.EasingDirection.Out
-
-                ),
-
-                {
-                    BackgroundTransparency = 0.12
-                }
-
-            )
-
-        Tween:Play()
-
-    end)
+        end
+    )
 
     --==================================================
     -- CLICK
     --==================================================
 
-    ThemeButton.MouseButton1Click:Connect(function()
+    ThemeButton.MouseButton1Click:Connect(
+        function()
 
-        if self.ThemePopup then
+            if self.ThemePopup then
 
-            self:CloseThemePopup()
+                self:CloseThemePopup()
 
-        else
+            else
 
-            self:CreateThemePopup(
-                ThemeButton
-            )
+                self:CreateThemePopup(
+                    ThemeButton
+                )
+
+            end
 
         end
+    )
 
-    end)
+    self.ThemeButton =
+        ThemeButton
 
     return ThemeButton
 
@@ -1220,7 +1771,7 @@ function Settings:Show()
     self:CreateThemeSelector()
 
     --==================================================
-    -- ANIMATION
+    -- ANIMATIONS
     --==================================================
 
     self:CreateToggle(
@@ -1229,7 +1780,8 @@ function Settings:Show()
 
         function()
 
-            return self.Config.UI.Animation
+            return
+                self.Config.UI.Animation == true
 
         end,
 
@@ -1254,7 +1806,8 @@ function Settings:Show()
 
         function()
 
-            return self.Config.UI.ShowLogo
+            return
+                self.Config.UI.ShowLogo == true
 
         end,
 
@@ -1287,7 +1840,8 @@ function Settings:Show()
 
         function()
 
-            return self.Config.UI.LogoDraggable
+            return
+                self.Config.UI.LogoDraggable == true
 
         end,
 
@@ -1312,7 +1866,8 @@ function Settings:Show()
 
         function()
 
-            return self.Config.UI.MainMenuDraggable
+            return
+                self.Config.UI.MainMenuDraggable == true
 
         end,
 
@@ -1335,19 +1890,11 @@ end
 
 function Settings:ApplyTheme()
 
-    --==================================================
-    -- MAIN UI
-    --==================================================
-
     if self.UI then
 
         self.UI:ApplyTheme()
 
     end
-
-    --==================================================
-    -- LOGO
-    --==================================================
 
     if self.Logo then
 
@@ -1355,22 +1902,14 @@ function Settings:ApplyTheme()
 
     end
 
-    --==================================================
-    -- CATEGORIES
-    --==================================================
-
     if self.Categories then
 
         self.Categories:ApplyTheme()
 
     end
 
-    --==================================================
-    -- SETTINGS
-    --==================================================
-
     local CurrentTheme =
-        self.Theme:GetCurrent()
+        self:GetTheme()
 
     if not CurrentTheme
     or not self.Scroll then
@@ -1379,6 +1918,10 @@ function Settings:ApplyTheme()
 
     end
 
+    --==================================================
+    -- SETTINGS OBJECTS
+    --==================================================
+
     for _, Object in
         ipairs(
             self.Scroll:GetDescendants()
@@ -1386,57 +1929,85 @@ function Settings:ApplyTheme()
 
         if Object:IsA("Frame") then
 
-            Object.BackgroundColor3 =
-                CurrentTheme.Card
-
-        elseif Object:IsA("TextLabel") then
-
-            if Object.Font ==
-                Enum.Font.Code then
-
-                Object.TextColor3 =
-                    CurrentTheme.SubText
-
-            else
-
-                Object.TextColor3 =
-                    CurrentTheme.Text
-
-            end
-
-        elseif Object:IsA("TextButton") then
-
             if Object.Name ==
-                "Copy"
+                "Toggle" then
 
-            or Object.Text ==
-                "Copy"
-
-            or Object.Text ==
-                "Copied!"
-
-            or Object.Text ==
-                "N/A" then
-
-                Object.BackgroundColor3 =
-                    self.Theme:GetAccent()
-
-                Object.TextColor3 =
-                    Color3.fromRGB(
-                        255,
-                        255,
-                        255
-                    )
+                -- Toggle será atualizado
+                -- individualmente abaixo.
 
             else
 
                 Object.BackgroundColor3 =
                     CurrentTheme.Card
 
-                Object.TextColor3 =
-                    CurrentTheme.Text
-
             end
+
+        elseif Object:IsA("TextLabel") then
+
+            Object.TextColor3 =
+                CurrentTheme.Text
+
+        elseif Object:IsA("TextButton") then
+
+            Object.BackgroundColor3 =
+                CurrentTheme.Card
+
+            Object.TextColor3 =
+                CurrentTheme.Text
+
+        end
+
+    end
+
+    --==================================================
+    -- UPDATE TOGGLES
+    --==================================================
+
+    for Name, Data in
+        pairs(
+            self.ToggleButtons
+        ) do
+
+        local Success,
+            Value =
+            pcall(
+                Data.GetValue
+            )
+
+        if Success then
+
+            self:UpdateToggleVisual(
+                Data,
+                Value == true,
+                false
+            )
+
+        end
+
+    end
+
+    --==================================================
+    -- THEME BUTTON
+    --==================================================
+
+    if self.ThemeButton
+    and self.ThemeButton.Parent then
+
+        self.ThemeButton.BackgroundColor3 =
+            CurrentTheme.Card
+
+        self.ThemeButton.TextColor3 =
+            CurrentTheme.Text
+
+        local Arrow =
+            self.ThemeButton:FindFirstChild(
+                "Arrow"
+            )
+
+        if Arrow then
+
+            Arrow.TextColor3 =
+                CurrentTheme.SubText
 
         end
 
