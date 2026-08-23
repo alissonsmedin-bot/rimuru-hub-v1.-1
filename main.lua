@@ -1043,5 +1043,5 @@ print(
 )
 
 print(
-    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    "Seja bem vindo ao mundo, Rimuru Hub"
 )
