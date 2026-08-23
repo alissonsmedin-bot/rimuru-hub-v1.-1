@@ -1,6 +1,10 @@
 --// ⭐ RIMURU HUB
 --// Favorites System
 --// Gerenciamento de favoritos + salvamento local
+--// MODULAR INIT COMPATIBLE
+--// SAFE FILESYSTEM
+--// SAFE JSON
+--// MAIN LOADER COMPATIBLE
 
 local Favorites = {}
 
@@ -8,10 +12,21 @@ local Favorites = {}
 -- CONFIGURAÇÃO
 --==================================================
 
-local FILE_NAME = "RimuruHub_Favorites.json"
+local FILE_NAME =
+    "RimuruHub_Favorites.json"
 
--- Favoritos mantidos em memória
+--==================================================
+-- MEMÓRIA
+--==================================================
+
 local FavoriteList = {}
+
+--==================================================
+-- CONTEXTO
+--==================================================
+
+Favorites.Context = nil
+Favorites.Config = nil
 
 --==================================================
 -- SERVIÇOS
@@ -20,18 +35,25 @@ local FavoriteList = {}
 local HttpService
 
 pcall(function()
-HttpService = game:GetService("HttpService")
+
+    HttpService =
+        game:GetService("HttpService")
+
 end)
 
 --==================================================
--- VERIFICAÇÃO DE FILESYSTEM
+-- FILESYSTEM
 --==================================================
 
 local function CanUseFileSystem()
-return
-type(isfile) == "function"
-and type(readfile) == "function"
-and type(writefile) == "function"
+
+    return
+        type(isfile) == "function"
+        and
+        type(readfile) == "function"
+        and
+        type(writefile) == "function"
+
 end
 
 --==================================================
@@ -39,27 +61,45 @@ end
 --==================================================
 
 local function Save()
-if not CanUseFileSystem() then
-return false
-end
 
-if not HttpService then  
-    return false  
-end  
+    if not CanUseFileSystem() then
 
-local success, encoded = pcall(function()  
-    return HttpService:JSONEncode(FavoriteList)  
-end)  
+        return false
 
-if not success then  
-    return false  
-end  
+    end
 
-local saved = pcall(function()  
-    writefile(FILE_NAME, encoded)  
-end)  
+    if not HttpService then
 
-return saved
+        return false
+
+    end
+
+    local Success, Encoded =
+        pcall(function()
+
+            return HttpService:JSONEncode(
+                FavoriteList
+            )
+
+        end)
+
+    if not Success then
+
+        return false
+
+    end
+
+    local Saved =
+        pcall(function()
+
+            writefile(
+                FILE_NAME,
+                Encoded
+            )
+
+        end)
+
+    return Saved
 
 end
 
@@ -68,106 +108,205 @@ end
 --==================================================
 
 local function Load()
-FavoriteList = {}
 
-if not CanUseFileSystem() then  
-    return  
-end  
+    FavoriteList = {}
 
-if not HttpService then  
-    return  
-end  
+    if not CanUseFileSystem() then
 
-if not isfile(FILE_NAME) then  
-    return  
-end  
+        return
 
-local success, content = pcall(function()  
-    return readfile(FILE_NAME)  
-end)  
+    end
 
-if not success or not content or content == "" then  
-    return  
-end  
+    if not HttpService then
 
-local decodedSuccess, decoded = pcall(function()  
-    return HttpService:JSONDecode(content)  
-end)  
+        return
 
-if not decodedSuccess or type(decoded) ~= "table" then  
-    return  
-end  
+    end
 
-for key, value in pairs(decoded) do  
-    if value == true then  
-        FavoriteList[tostring(key)] = true  
-    end  
+    local Exists =
+        pcall(function()
+
+            return isfile(FILE_NAME)
+
+        end)
+
+    if not Exists then
+
+        return
+
+    end
+
+    local FileExists
+
+    pcall(function()
+
+        FileExists =
+            isfile(FILE_NAME)
+
+    end)
+
+    if not FileExists then
+
+        return
+
+    end
+
+    local Success, Content =
+        pcall(function()
+
+            return readfile(
+                FILE_NAME
+            )
+
+        end)
+
+    if not Success
+    or not Content
+    or Content == "" then
+
+        return
+
+    end
+
+    local DecodeSuccess, Decoded =
+        pcall(function()
+
+            return HttpService:JSONDecode(
+                Content
+            )
+
+        end)
+
+    if not DecodeSuccess
+    or type(Decoded) ~= "table" then
+
+        return
+
+    end
+
+    for Key, Value in
+        pairs(Decoded) do
+
+        if Value == true then
+
+            FavoriteList[
+                tostring(Key)
+            ] = true
+
+        end
+
+    end
+
 end
 
+--==================================================
+-- INIT
+--==================================================
+-- Compatível com main.lua
+--==================================================
+
+function Favorites:Init(Context)
+
+    self.Context =
+        Context
+
+    if Context then
+
+        self.Config =
+            Context.Config
+
+    end
+
+    -- Recarrega os favoritos ao inicializar.
+    -- Isso evita depender apenas do carregamento
+    -- feito quando o módulo foi executado.
+
+    Load()
+
+    return true
+
 end
 
 --==================================================
--- INICIALIZAÇÃO
---==================================================
-
-Load()
-
---==================================================
--- ADICIONAR / REMOVER
+-- ADICIONAR
 --==================================================
 
 function Favorites:Add(ID)
-if ID == nil then
-return false
-end
 
-ID = tostring(ID)  
+    if ID == nil then
 
-FavoriteList[ID] = true  
+        return false
 
-Save()  
+    end
 
-return true
+    ID =
+        tostring(ID)
 
-end
+    FavoriteList[ID] =
+        true
 
-function Favorites:Remove(ID)
-if ID == nil then
-return false
-end
+    Save()
 
-ID = tostring(ID)  
-
-FavoriteList[ID] = nil  
-
-Save()  
-
-return true
+    return true
 
 end
 
 --==================================================
--- ALTERNAR FAVORITO
+-- REMOVER
+--==================================================
+
+function Favorites:Remove(ID)
+
+    if ID == nil then
+
+        return false
+
+    end
+
+    ID =
+        tostring(ID)
+
+    FavoriteList[ID] =
+        nil
+
+    Save()
+
+    return true
+
+end
+
+--==================================================
+-- TOGGLE
 --==================================================
 
 function Favorites:Toggle(ID)
-if ID == nil then
-return false
-end
 
-ID = tostring(ID)  
+    if ID == nil then
 
-if FavoriteList[ID] then  
-    FavoriteList[ID] = nil  
-    Save()  
+        return false
 
-    return false  
-else  
-    FavoriteList[ID] = true  
-    Save()  
+    end
 
-    return true  
-end
+    ID =
+        tostring(ID)
+
+    if FavoriteList[ID] then
+
+        FavoriteList[ID] =
+            nil
+
+        Save()
+
+        return false
+
+    end
+
+    FavoriteList[ID] =
+        true
+
+    Save()
+
+    return true
 
 end
 
@@ -176,11 +315,17 @@ end
 --==================================================
 
 function Favorites:IsFavorite(ID)
-if ID == nil then
-return false
-end
 
-return FavoriteList[tostring(ID)] == true
+    if ID == nil then
+
+        return false
+
+    end
+
+    return
+        FavoriteList[
+            tostring(ID)
+        ] == true
 
 end
 
@@ -189,15 +334,25 @@ end
 --==================================================
 
 function Favorites:GetAll()
-local result = {}
 
-for ID, value in pairs(FavoriteList) do  
-    if value == true then  
-        table.insert(result, ID)  
-    end  
-end  
+    local Result =
+        {}
 
-return result
+    for ID, Value in
+        pairs(FavoriteList) do
+
+        if Value == true then
+
+            table.insert(
+                Result,
+                ID
+            )
+
+        end
+
+    end
+
+    return Result
 
 end
 
@@ -206,28 +361,37 @@ end
 --==================================================
 
 function Favorites:GetCount()
-local count = 0
 
-for _, value in pairs(FavoriteList) do  
-    if value == true then  
-        count = count + 1  
-    end  
-end  
+    local Count =
+        0
 
-return count
+    for _, Value in
+        pairs(FavoriteList) do
+
+        if Value == true then
+
+            Count += 1
+
+        end
+
+    end
+
+    return Count
 
 end
 
 --==================================================
--- LIMPAR TODOS
+-- LIMPAR
 --==================================================
 
 function Favorites:Clear()
-FavoriteList = {}
 
-Save()  
+    FavoriteList =
+        {}
 
-return true
+    Save()
+
+    return true
 
 end
 
@@ -236,9 +400,10 @@ end
 --==================================================
 
 function Favorites:Reload()
-Load()
 
-return FavoriteList
+    Load()
+
+    return FavoriteList
 
 end
 
@@ -247,19 +412,23 @@ end
 --==================================================
 
 function Favorites:Save()
-return Save()
+
+    return Save()
+
 end
 
 --==================================================
--- STATUS
+-- FILESYSTEM STATUS
 --==================================================
 
 function Favorites:IsFileSystemAvailable()
-return CanUseFileSystem()
+
+    return CanUseFileSystem()
+
 end
 
 --==================================================
--- EXPORTAR
+-- RETURN
 --==================================================
 
 return Favorites
