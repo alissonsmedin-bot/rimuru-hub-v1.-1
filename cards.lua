@@ -3,6 +3,7 @@
 --// Favorites Compatible
 --// Copy + Favorite System
 --// CLICK SIZE ANIMATION
+--// FAST + SMOOTH CLICK ANIMATION
 --// STABLE LAYOUT VERSION
 --// PREMIUM THEME COMPATIBLE
 --// SAFE THEME COLORS
@@ -10,6 +11,13 @@
 --// BLACKOUT COPY CONTRAST
 
 local Cards = {}
+
+--==================================================
+-- SERVICES
+--==================================================
+
+local TweenService =
+    game:GetService("TweenService")
 
 --==================================================
 -- INIT
@@ -47,12 +55,31 @@ end
 --==================================================
 -- CLICK ANIMATION CONFIG
 --==================================================
+-- +7 pixels no total.
+--
+-- A animação é dividida em:
+--
+-- 1. Crescimento rápido
+-- 2. Pequeno overshoot
+-- 3. Retorno suave
+--
+-- Tempo total aproximado:
+-- 0.15s
+--
+-- Isso deixa o clique rápido sem parecer duro.
+--==================================================
 
 local CLICK_GROW =
-    4
+    7
 
-local CLICK_TIME =
-    0.34
+local CLICK_IN_TIME =
+    0.055
+
+local CLICK_OUT_TIME =
+    0.095
+
+local CLICK_OVERSHOOT =
+    1
 
 --==================================================
 -- BLACKOUT COPY COLORS
@@ -205,12 +232,23 @@ end
 --==================================================
 -- CLICK SIZE ANIMATION
 --==================================================
--- Cresce exatamente 4 pixels.
--- Retorna ao tamanho original após 0.34s.
+-- Cresce até +7 pixels.
+--
 -- Não utiliza UIScale.
+--
+-- A animação usa TweenService para evitar:
+--
+-- * mudança instantânea
+-- * retorno seco
+-- * sensação pesada
+-- * botão "duro"
+--
+-- O pequeno overshoot cria um efeito de "pop".
 --==================================================
 
-function Cards:ClickAnimation(Button)
+function Cards:ClickAnimation(
+    Button
+)
 
     if not Button
     or not Button.Parent then
@@ -219,40 +257,197 @@ function Cards:ClickAnimation(Button)
 
     end
 
+    --==================================================
+    -- CANCELAR ESTADO ANTERIOR
+    --==================================================
+
+    Button:SetAttribute(
+        "ClickTweenActive",
+        false
+    )
+
+    --==================================================
+    -- NOVA ANIMAÇÃO
+    --==================================================
+
+    Button:SetAttribute(
+        "ClickTweenActive",
+        true
+    )
+
+    --==================================================
+    -- TAMANHO ORIGINAL
+    --==================================================
+
     local OriginalSize =
         Button.Size
+
+    --==================================================
+    -- TAMANHO EXPANDIDO
+    --==================================================
 
     local ExpandedSize =
         UDim2.new(
 
             OriginalSize.X.Scale,
-
             OriginalSize.X.Offset
                 + CLICK_GROW,
 
             OriginalSize.Y.Scale,
-
             OriginalSize.Y.Offset
                 + CLICK_GROW
 
         )
 
-    Button.Size =
-        ExpandedSize
+    --==================================================
+    -- OVERSHOOT
+    --==================================================
+    -- Apenas +1 pixel.
+    --
+    -- Isso evita que a animação pareça exagerada.
+    --==================================================
 
-    task.delay(
+    local OvershootSize =
+        UDim2.new(
 
-        CLICK_TIME,
+            OriginalSize.X.Scale,
+            OriginalSize.X.Offset
+                + CLICK_OVERSHOOT,
+
+            OriginalSize.Y.Scale,
+            OriginalSize.Y.Offset
+                + CLICK_OVERSHOOT
+
+        )
+
+    --==================================================
+    -- GROW TWEEN
+    --==================================================
+
+    local GrowTween =
+        TweenService:Create(
+
+            Button,
+
+            TweenInfo.new(
+
+                CLICK_IN_TIME,
+
+                Enum.EasingStyle.Back,
+
+                Enum.EasingDirection.Out
+
+            ),
+
+            {
+                Size =
+                    ExpandedSize
+            }
+
+        )
+
+    --==================================================
+    -- RETURN TWEEN
+    --==================================================
+
+    local ReturnTween =
+        TweenService:Create(
+
+            Button,
+
+            TweenInfo.new(
+
+                CLICK_OUT_TIME,
+
+                Enum.EasingStyle.Quad,
+
+                Enum.EasingDirection.Out
+
+            ),
+
+            {
+                Size =
+                    OriginalSize
+            }
+
+        )
+
+    --==================================================
+    -- START
+    --==================================================
+
+    GrowTween:Play()
+
+    --==================================================
+    -- AFTER GROW
+    --==================================================
+
+    GrowTween.Completed:Connect(
 
         function()
 
-            if Button
-            and Button.Parent then
+            if not Button
+            or not Button.Parent then
 
-                Button.Size =
-                    OriginalSize
+                return
 
             end
+
+            if not Button:GetAttribute(
+                "ClickTweenActive"
+            ) then
+
+                return
+
+            end
+
+            --==================================================
+            -- MICRO OVERSHOOT
+            --==================================================
+
+            Button.Size =
+                OvershootSize
+
+            --==================================================
+            -- RETURN
+            --==================================================
+
+            ReturnTween:Play()
+
+            ReturnTween.Completed:Connect(
+
+                function()
+
+                    if not Button
+                    or not Button.Parent then
+
+                        return
+
+                    end
+
+                    if not Button:GetAttribute(
+                        "ClickTweenActive"
+                    ) then
+
+                        return
+
+                    end
+
+                    --==================================================
+                    -- GARANTIR TAMANHO ORIGINAL
+                    --==================================================
+
+                    Button.Size =
+                        OriginalSize
+
+                    Button:SetAttribute(
+                        "ClickTweenActive",
+                        false
+                    )
+
+                end
+
+            )
 
         end
 
@@ -264,7 +459,9 @@ end
 -- COPY SYSTEM
 --==================================================
 
-function Cards:Copy(ID)
+function Cards:Copy(
+    ID
+)
 
     if setclipboard then
 
@@ -308,7 +505,9 @@ end
 -- FAVORITE STATUS
 --==================================================
 
-function Cards:IsFavorite(ID)
+function Cards:IsFavorite(
+    ID
+)
 
     if not self.Favorites then
         return false
@@ -368,7 +567,9 @@ function Cards:UpdateFavoriteButton(
     end
 
     local IsFavorite =
-        self:IsFavorite(ID)
+        self:IsFavorite(
+            ID
+        )
 
     --==================================================
     -- FAVORITADO
@@ -878,7 +1079,9 @@ function Cards:CreateSoundCard(
                 CopyButton
             )
 
-            if self:Copy(ID) then
+            if self:Copy(
+                ID
+            ) then
 
                 CopyButton.Text =
                     "Copied!"
