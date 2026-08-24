@@ -1,7 +1,5 @@
 --// 💥 RIMURU HUB
 --// Categories System
---// UPDATED SOUND CATEGORY SYSTEM
---// ONLY CURRENT SOUND DATABASE
 --// ALL CATEGORY SYSTEM
 --// FAVORITE FILTER
 --// M1 FILTER
@@ -28,9 +26,6 @@
 --// ALL SOUND COLLECTION FIX
 --// PREVENT CONFIGURATION MIXING
 --// SAFE RAPID CATEGORY SWITCHING
---// OUTROS EXCLUDED
---// NO UNKNOWN / EMPTY CATEGORY
---// CATEGORY ORDER STABILIZED
 
 local TweenService = game:GetService("TweenService")
 
@@ -41,40 +36,11 @@ local Categories = {}
 --==================================================
 
 local CategoryIcons = {
-
-    ["ALL"] = "🏠",
-
-    ["Configuração"] = "⚙️",
-
-    -- Jujutsu / JJS
-    ["Gojo"] = "🔵",
-    ["Sukuna"] = "👹",
-    ["Heian Sukuna Sounds"] = "👹",
-    ["Mahoraga"] = "☸️",
-    ["Melee"] = "⚔️",
-
-    -- Fallback
-    ["Outros"] = "📁",
-    ["Outro"] = "📁"
-
-}
-
---==================================================
--- EXCLUDED CATEGORIES
---==================================================
--- Essas categorias NÃO serão criadas na interface
--- e também não serão adicionadas ao ALL.
---
--- Atualmente "Outros" será ignorado porque os sons
--- dessa categoria serão adicionados posteriormente.
-
-local ExcludedCategories = {
-
-    ["Outros"] = true,
-    ["Outro"] = true,
-    ["Configuração"] = true,
-    ["ALL"] = true
-
+["ALL"] = "🏠",
+["Outros"] = "📁",
+["Outro"] = "📁",
+["Heian Sukuna Sounds"] = "👹",
+["Configuração"] = "⚙️"
 }
 
 --==================================================
@@ -83,109 +49,84 @@ local ExcludedCategories = {
 
 function Categories:Init(Context)
 
-    Context = Context or {}
+Context = Context or {}  
 
-    self.Context = Context
+self.Context = Context  
+self.Config = Context.Config  
+self.Sounds = Context.Sounds  
+self.Theme = Context.Theme  
+self.UI = Context.UI  
+self.Cards = Context.Cards  
+self.Favorites = Context.Favorites  
+self.Search = Context.Search  
+self.Settings = Context.Settings  
 
-    self.Config = Context.Config
-    self.Sounds = Context.Sounds
-    self.Theme = Context.Theme
-    self.UI = Context.UI
-    self.Cards = Context.Cards
-    self.Favorites = Context.Favorites
-    self.Search = Context.Search
-    self.Settings = Context.Settings
+if self.UI then  
+    self.Sidebar = self.UI.Sidebar  
+    self.Scroll = self.UI.Scroll  
+    self.ContentTitle = self.UI.ContentTitle  
+end  
 
-    if self.UI then
+self.SelectedButton = nil  
+self.CategoryButtons = {}  
 
-        self.Sidebar =
-            self.UI.Sidebar
+self.AllSounds = {}  
 
-        self.Scroll =
-            self.UI.Scroll
+self.CurrentCategory = "ALL"  
+self.CurrentFilter = "All"  
 
-        self.ContentTitle =
-            self.UI.ContentTitle
+--==================================================  
+-- CONTEXT  
+--==================================================  
 
-    end
+self.CurrentContext = "NORMAL"  
 
-    self.SelectedButton = nil
+-- Token utilizado para invalidar trocas  
+-- antigas de categoria.  
+self.ContextSwitchToken = 0  
 
-    self.CategoryButtons = {}
+self.FilterButton = nil  
+self.FilterMenu = nil  
+self.FilterScroll = nil  
+self.FilterStroke = nil  
 
-    self.AllSounds = {}
+--==================================================  
+-- CLICK ANIMATION  
+--==================================================  
 
-    self.CurrentCategory =
-        "ALL"
+self.CategoryClickAnimation = true  
 
-    self.CurrentFilter =
-        "All"
+self.CategoryClickHeight = 4  
 
-    --==================================================
-    -- CONTEXT
-    --==================================================
+self.CategoryClickDuration = 0.34  
 
-    self.CurrentContext =
-        "NORMAL"
+self.CategoryClickExpandTime = 0.07  
 
-    self.ContextSwitchToken =
-        0
+self.CategoryClickReturnTime = 0.10  
 
-    self.FilterButton = nil
-    self.FilterMenu = nil
-    self.FilterScroll = nil
-    self.FilterStroke = nil
+--==================================================  
+-- FILTER RESOLVERS  
+--==================================================  
 
-    --==================================================
-    -- CLICK ANIMATION
-    --==================================================
+self.FilterResolvers = {  
 
-    self.CategoryClickAnimation =
-        true
+    ["All"] = function()  
+        return self:BuildAllSounds()  
+    end,  
 
-    self.CategoryClickHeight =
-        4
+    ["Favorite"] = function()  
+        return self:GetFavoriteSounds()  
+    end,  
 
-    self.CategoryClickDuration =
-        0.34
+    ["M1"] = function()  
+        return self:GetM1Sounds()  
+    end,  
 
-    self.CategoryClickExpandTime =
-        0.07
+    ["Hit"] = function()  
+        return self:GetHitSounds()  
+    end  
 
-    self.CategoryClickReturnTime =
-        0.10
-
-    --==================================================
-    -- FILTER RESOLVERS
-    --==================================================
-
-    self.FilterResolvers = {
-
-        ["All"] = function()
-
-            return self:BuildAllSounds()
-
-        end,
-
-        ["Favorite"] = function()
-
-            return self:GetFavoriteSounds()
-
-        end,
-
-        ["M1"] = function()
-
-            return self:GetM1Sounds()
-
-        end,
-
-        ["Hit"] = function()
-
-            return self:GetHitSounds()
-
-        end
-
-    }
+}
 
 end
 
@@ -195,56 +136,7 @@ end
 
 function Categories:GetIcon(CategoryName)
 
-    return CategoryIcons[
-        CategoryName
-    ] or "📁"
-
-end
-
---==================================================
--- CHECK EXCLUDED CATEGORY
---==================================================
-
-function Categories:IsExcludedCategory(
-    CategoryName
-)
-
-    if type(CategoryName) ~= "string" then
-        return true
-    end
-
-    return ExcludedCategories[
-        CategoryName
-    ] == true
-
-end
-
---==================================================
--- VALID CATEGORY
---==================================================
-
-function Categories:IsValidCategory(
-    CategoryName,
-    CategoryData
-)
-
-    if type(CategoryName) ~= "string" then
-        return false
-    end
-
-    if self:IsExcludedCategory(
-        CategoryName
-    ) then
-
-        return false
-
-    end
-
-    if type(CategoryData) ~= "table" then
-        return false
-    end
-
-    return true
+return CategoryIcons[CategoryName] or "📁"
 
 end
 
@@ -254,57 +146,45 @@ end
 
 function Categories:SetNormalStyle(Button)
 
-    if not Button then
-        return
-    end
+if not Button then  
+    return  
+end  
 
-    if not self.Theme then
-        return
-    end
+if not self.Theme then  
+    return  
+end  
 
-    if type(self.Theme.GetNormalColor)
-        ~= "function" then
+if type(self.Theme.GetNormalColor) ~= "function" then  
+    return  
+end  
 
-        return
+local Success, Color = pcall(function()  
 
-    end
+    return self.Theme:GetNormalColor()  
 
-    local Success, Color =
-        pcall(function()
+end)  
 
-            return self.Theme:GetNormalColor()
+if Success and Color then  
 
-        end)
+    Button.BackgroundColor3 = Color  
 
-    if Success and Color then
+end  
 
-        Button.BackgroundColor3 =
-            Color
+if type(self.Theme.GetNormalTextColor) == "function" then  
 
-    end
+    local TextSuccess, TextColor = pcall(function()  
 
-    if type(
-        self.Theme.GetNormalTextColor
-    ) == "function" then
+        return self.Theme:GetNormalTextColor()  
 
-        local TextSuccess,
-            TextColor =
-            pcall(function()
+    end)  
 
-                return self.Theme:
-                    GetNormalTextColor()
+    if TextSuccess and TextColor then  
 
-            end)
+        Button.TextColor3 = TextColor  
 
-        if TextSuccess
-        and TextColor then
+    end  
 
-            Button.TextColor3 =
-                TextColor
-
-        end
-
-    end
+end
 
 end
 
@@ -314,58 +194,45 @@ end
 
 function Categories:SetSelectedStyle(Button)
 
-    if not Button then
-        return
-    end
+if not Button then  
+    return  
+end  
 
-    if not self.Theme then
-        return
-    end
+if not self.Theme then  
+    return  
+end  
 
-    if type(
-        self.Theme.GetSelectedColor
-    ) ~= "function" then
+if type(self.Theme.GetSelectedColor) ~= "function" then  
+    return  
+end  
 
-        return
+local Success, Color = pcall(function()  
 
-    end
+    return self.Theme:GetSelectedColor()  
 
-    local Success, Color =
-        pcall(function()
+end)  
 
-            return self.Theme:GetSelectedColor()
+if Success and Color then  
 
-        end)
+    Button.BackgroundColor3 = Color  
 
-    if Success and Color then
+end  
 
-        Button.BackgroundColor3 =
-            Color
+if type(self.Theme.GetSelectedTextColor) == "function" then  
 
-    end
+    local TextSuccess, TextColor = pcall(function()  
 
-    if type(
-        self.Theme.GetSelectedTextColor
-    ) == "function" then
+        return self.Theme:GetSelectedTextColor()  
 
-        local TextSuccess,
-            TextColor =
-            pcall(function()
+    end)  
 
-                return self.Theme:
-                    GetSelectedTextColor()
+    if TextSuccess and TextColor then  
 
-            end)
+        Button.TextColor3 = TextColor  
 
-        if TextSuccess
-        and TextColor then
+    end  
 
-            Button.TextColor3 =
-                TextColor
-
-        end
-
-    end
+end
 
 end
 
@@ -375,69 +242,88 @@ end
 
 function Categories:InvalidateContext()
 
-    self.ContextSwitchToken =
-        (self.ContextSwitchToken or 0) + 1
+self.ContextSwitchToken =  
+    (self.ContextSwitchToken or 0) + 1  
 
-    return self.ContextSwitchToken
+return self.ContextSwitchToken
 
 end
 
 --==================================================
 -- HIDE CONFIGURATION
 --==================================================
+-- Esta função existe para garantir que o Settings
+-- nunca continue sendo tratado como contexto ativo
+-- quando o usuário muda para outra categoria.
+
+-- Funciona mesmo que Settings:Hide() não exista.
+--==================================================
 
 function Categories:HideConfiguration()
 
-    if self.CurrentContext ==
-        "CONFIGURATION" then
+--==================================================  
+-- INVALIDATE OLD SETTINGS CONTEXT  
+--==================================================  
 
-        self.CurrentContext =
-            "NORMAL"
+if self.CurrentContext == "CONFIGURATION" then  
 
-    end
+    self.CurrentContext = "NORMAL"  
 
-    if self.Settings then
+end  
 
-        if type(
-            self.Settings.CloseThemePopup
-        ) == "function" then
+--==================================================  
+-- CLOSE SETTINGS POPUP  
+--==================================================  
 
-            pcall(function()
+if self.Settings then  
 
-                self.Settings:
-                    CloseThemePopup()
+    if type(self.Settings.CloseThemePopup) == "function" then  
 
-            end)
+        pcall(function()  
 
-        end
+            self.Settings:CloseThemePopup()  
 
-        if type(
-            self.Settings.Hide
-        ) == "function" then
+        end)  
 
-            pcall(function()
+    end  
 
-                self.Settings:Hide()
+    --==================================================  
+    -- OPTIONAL HIDE  
+    --==================================================  
+    -- Caso futuramente exista Settings:Hide(),  
+    -- ele será usado automaticamente.  
 
-            end)
+    if type(self.Settings.Hide) == "function" then  
 
-        end
+        pcall(function()  
 
-        if type(
-            self.Settings.ToggleButtons
-        ) == "table" then
+            self.Settings:Hide()  
 
-            self.Settings.ToggleButtons =
-                {}
+        end)  
 
-        end
+    end  
 
-        self.Settings.ThemeButton =
-            nil
+    --==================================================  
+    -- CLEAR SETTINGS REFERENCES  
+    --==================================================  
+    -- Isso impede que elementos antigos sejam  
+    -- reutilizados acidentalmente.  
 
-    end
+    if type(self.Settings.ToggleButtons) == "table" then  
 
-    self:ClearContent()
+        self.Settings.ToggleButtons = {}  
+
+    end  
+
+    self.Settings.ThemeButton = nil  
+
+end  
+
+--==================================================  
+-- CLEAR CONTENT  
+--==================================================  
+
+self:ClearContent()
 
 end
 
@@ -447,59 +333,73 @@ end
 
 function Categories:EnterConfiguration()
 
-    local Token =
-        self:InvalidateContext()
+local Token =  
+    self:InvalidateContext()  
 
-    self.CurrentContext =
-        "CONFIGURATION"
+self.CurrentContext =  
+    "CONFIGURATION"  
 
-    self.CurrentCategory =
-        "Configuração"
+self.CurrentCategory =  
+    "Configuração"  
 
-    self.CurrentFilter =
-        "All"
+self.CurrentFilter =  
+    "All"  
 
-    self:ClearSearchContext()
+self:ClearSearchContext()  
 
-    self:CloseFilterMenu()
+self:CloseFilterMenu()  
 
-    if self.FilterButton then
+if self.FilterButton then  
 
-        self.FilterButton.Visible =
-            false
+    self.FilterButton.Visible = false  
 
-    end
+end  
 
-    self:ClearContent()
+--==================================================  
+-- CLEAR OLD SOUND CONTENT  
+--==================================================  
 
-    if self.ContentTitle then
+self:ClearContent()  
 
-        self.ContentTitle.Text =
-            "Configuração"
+--==================================================  
+-- TITLE  
+--==================================================  
 
-    end
+if self.ContentTitle then  
 
-    if self.Settings
-    and type(
-        self.Settings.Show
-    ) == "function" then
+    self.ContentTitle.Text =  
+        "Configuração"  
 
-        pcall(function()
+end  
 
-            self.Settings:Show()
+--==================================================  
+-- SHOW SETTINGS  
+--==================================================  
 
-        end)
+if self.Settings  
+and type(self.Settings.Show) == "function" then  
 
-    end
+    pcall(function()  
 
-    if Token ~=
-        self.ContextSwitchToken then
+        self.Settings:Show()  
 
-        return false
+    end)  
 
-    end
+end  
 
-    return true
+--==================================================  
+-- SAFETY CHECK  
+--==================================================  
+-- Se outra troca aconteceu enquanto Show() rodava,  
+-- não deixamos o contexto antigo continuar válido.  
+
+if Token ~= self.ContextSwitchToken then  
+
+    return false  
+
+end  
+
+return true
 
 end
 
@@ -509,51 +409,54 @@ end
 
 function Categories:LeaveConfiguration()
 
-    if self.CurrentContext ~=
-        "CONFIGURATION"
-    and self.CurrentCategory ~=
-        "Configuração" then
+if self.CurrentContext ~= "CONFIGURATION"  
+and self.CurrentCategory ~= "Configuração" then  
 
-        return
+    return  
 
-    end
+end  
 
-    self:InvalidateContext()
+self:InvalidateContext()  
 
-    self.CurrentContext =
-        "NORMAL"
+self.CurrentContext =  
+    "NORMAL"  
 
-    if self.Settings
-    and type(
-        self.Settings.CloseThemePopup
-    ) == "function" then
+--==================================================  
+-- CLOSE SETTINGS POPUP  
+--==================================================  
 
-        pcall(function()
+if self.Settings  
+and type(self.Settings.CloseThemePopup) == "function" then  
 
-            self.Settings:
-                CloseThemePopup()
+    pcall(function()  
 
-        end)
+        self.Settings:CloseThemePopup()  
 
-    end
+    end)  
 
-    if self.Settings then
+end  
 
-        if type(
-            self.Settings.ToggleButtons
-        ) == "table" then
+--==================================================  
+-- CLEAR SETTINGS STATE  
+--==================================================  
 
-            self.Settings.ToggleButtons =
-                {}
+if self.Settings then  
 
-        end
+    if type(self.Settings.ToggleButtons) == "table" then  
 
-        self.Settings.ThemeButton =
-            nil
+        self.Settings.ToggleButtons = {}  
 
-    end
+    end  
 
-    self:ClearContent()
+    self.Settings.ThemeButton = nil  
+
+end  
+
+--==================================================  
+-- CLEAR SHARED CONTENT  
+--==================================================  
+
+self:ClearContent()
 
 end
 
@@ -563,128 +466,98 @@ end
 
 function Categories:AnimateCategoryClick(Button)
 
-    if not Button
-    or not Button.Parent then
+if not Button or not Button.Parent then  
+    return  
+end  
 
-        return
+if self.CategoryClickAnimation == false then  
+    return  
+end  
 
-    end
+local OriginalSize =  
+    Button.Size  
 
-    if self.CategoryClickAnimation ==
-        false then
+local ExtraHeight =  
+    self.CategoryClickHeight or 4  
 
-        return
+local Duration =  
+    self.CategoryClickDuration or 0.34  
 
-    end
+local ExpandTime =  
+    self.CategoryClickExpandTime or 0.07  
 
-    local OriginalSize =
-        Button.Size
+local ReturnTime =  
+    self.CategoryClickReturnTime or 0.10  
 
-    local ExtraHeight =
-        self.CategoryClickHeight
-        or 4
+local Token =  
+    (Button:GetAttribute("CategoryAnimationToken") or 0) + 1  
 
-    local Duration =
-        self.CategoryClickDuration
-        or 0.34
+Button:SetAttribute(  
+    "CategoryAnimationToken",  
+    Token  
+)  
 
-    local ExpandTime =
-        self.CategoryClickExpandTime
-        or 0.07
+local ExpandedSize =  
+    UDim2.new(  
+        OriginalSize.X.Scale,  
+        OriginalSize.X.Offset,  
+        OriginalSize.Y.Scale,  
+        OriginalSize.Y.Offset + ExtraHeight  
+    )  
 
-    local ReturnTime =
-        self.CategoryClickReturnTime
-        or 0.10
+local ExpandTween =  
+    TweenService:Create(  
 
-    local Token =
-        (Button:GetAttribute(
-            "CategoryAnimationToken"
-        ) or 0) + 1
+        Button,  
 
-    Button:SetAttribute(
-        "CategoryAnimationToken",
-        Token
-    )
+        TweenInfo.new(  
+            ExpandTime,  
+            Enum.EasingStyle.Quad,  
+            Enum.EasingDirection.Out  
+        ),  
 
-    local ExpandedSize =
-        UDim2.new(
+        {  
+            Size = ExpandedSize  
+        }  
 
-            OriginalSize.X.Scale,
-            OriginalSize.X.Offset,
+    )  
 
-            OriginalSize.Y.Scale,
-            OriginalSize.Y.Offset
-                + ExtraHeight
+ExpandTween:Play()  
 
-        )
+task.delay(Duration, function()  
 
-    local ExpandTween =
-        TweenService:Create(
+    if not Button or not Button.Parent then  
+        return  
+    end  
 
-            Button,
+    if Button:GetAttribute(  
+        "CategoryAnimationToken"  
+    ) ~= Token then  
 
-            TweenInfo.new(
+        return  
 
-                ExpandTime,
+    end  
 
-                Enum.EasingStyle.Quad,
+    local ReturnTween =  
+        TweenService:Create(  
 
-                Enum.EasingDirection.Out
+            Button,  
 
-            ),
+            TweenInfo.new(  
+                ReturnTime,  
+                Enum.EasingStyle.Quad,  
+                Enum.EasingDirection.Out  
+            ),  
 
-            {
-                Size = ExpandedSize
-            }
+            {  
+                Size = OriginalSize  
+            }  
 
-        )
+        )  
 
-    ExpandTween:Play()
+    ReturnTween:Play()  
 
-    task.delay(
-        Duration,
-        function()
-
-            if not Button
-            or not Button.Parent then
-
-                return
-
-            end
-
-            if Button:GetAttribute(
-                "CategoryAnimationToken"
-            ) ~= Token then
-
-                return
-
-            end
-
-            local ReturnTween =
-                TweenService:Create(
-
-                    Button,
-
-                    TweenInfo.new(
-
-                        ReturnTime,
-
-                        Enum.EasingStyle.Quad,
-
-                        Enum.EasingDirection.Out
-
-                    ),
-
-                    {
-                        Size = OriginalSize
-                    }
-
-                )
-
-            ReturnTween:Play()
-
-        end
-    )
+end)
 
 end
 
@@ -692,116 +565,25 @@ end
 -- VALID SOUND DATA
 --==================================================
 
-function Categories:IsValidSoundData(
-    SoundData
-)
+function Categories:IsValidSoundData(SoundData)
 
-    if type(SoundData) ~= "table" then
-        return false
-    end
+if type(SoundData) ~= "table" then  
+    return false  
+end  
 
-    if type(SoundData[1]) ~= "string" then
-        return false
-    end
+if type(SoundData[1]) ~= "string" then  
+    return false  
+end  
 
-    if SoundData[1] == "" then
-        return false
-    end
+if SoundData[1] == "" then  
+    return false  
+end  
 
-    if SoundData[2] == nil then
-        return false
-    end
+if SoundData[2] == nil then  
+    return false  
+end  
 
-    return true
-
-end
-
---==================================================
--- GET SORTED SOUND CATEGORIES
---==================================================
-
-function Categories:GetSoundCategoryNames()
-
-    local Result = {}
-
-    if type(self.Sounds) ~= "table" then
-
-        return Result
-
-    end
-
-    for CategoryName,
-        CategoryData in pairs(
-            self.Sounds
-        ) do
-
-        if self:IsValidCategory(
-            CategoryName,
-            CategoryData
-        ) then
-
-            table.insert(
-                Result,
-                CategoryName
-            )
-
-        end
-
-    end
-
-    table.sort(
-        Result,
-        function(A, B)
-
-            --==================================================
-            -- PRIORITY CATEGORIES
-            --==================================================
-
-            local Priority = {
-
-                ["Gojo"] = 1,
-                ["Sukuna"] = 2,
-                ["Heian Sukuna Sounds"] = 3,
-                ["Mahoraga"] = 4,
-                ["Melee"] = 5
-
-            }
-
-            local PA =
-                Priority[A]
-
-            local PB =
-                Priority[B]
-
-            if PA and PB then
-
-                return PA < PB
-
-            end
-
-            if PA then
-                return true
-            end
-
-            if PB then
-                return false
-            end
-
-            --==================================================
-            -- ALPHABETICAL
-            --==================================================
-
-            return string.lower(
-                tostring(A)
-            ) <
-            string.lower(
-                tostring(B)
-            )
-
-        end
-    )
-
-    return Result
+return true
 
 end
 
@@ -811,71 +593,103 @@ end
 
 function Categories:BuildAllSounds()
 
-    self.AllSounds = {}
+self.AllSounds = {}  
 
-    if type(self.Sounds) ~= "table" then
+if type(self.Sounds) ~= "table" then  
+    return self.AllSounds  
+end  
 
-        return self.AllSounds
+local CategoryNames = {}  
 
-    end
+for CategoryName, CategoryData in pairs(  
+    self.Sounds  
+) do  
 
-    local SeenIDs = {}
+    if CategoryName ~= "ALL"  
+    and CategoryName ~= "Configuração"  
+    and type(CategoryData) == "table" then  
 
-    local CategoryNames =
-        self:GetSoundCategoryNames()
+        table.insert(  
+            CategoryNames,  
+            CategoryName  
+        )  
 
-    for _, CategoryName in ipairs(
-        CategoryNames
-    ) do
+    end  
 
-        local CategoryData =
-            self.Sounds[
-                CategoryName
-            ]
+end  
 
-        if type(CategoryData) == "table" then
+table.sort(  
+    CategoryNames,  
+    function(A, B)  
 
-            for _, SoundData in ipairs(
-                CategoryData
-            ) do
+        if A == "Outros"  
+        and B ~= "Outros" then  
 
-                if self:IsValidSoundData(
-                    SoundData
-                ) then
+            return true  
 
-                    local SoundID =
-                        tostring(
-                            SoundData[2]
-                        )
+        end  
 
-                    --==================================================
-                    -- NO DUPLICATION
-                    --==================================================
+        if B == "Outros"  
+        and A ~= "Outros" then  
 
-                    if not SeenIDs[
-                        SoundID
-                    ] then
+            return false  
 
-                        SeenIDs[
-                            SoundID
-                        ] = true
+        end  
 
-                        table.insert(
-                            self.AllSounds,
-                            SoundData
-                        )
+        if A == "Heian Sukuna Sounds"  
+        and B ~= "Heian Sukuna Sounds" then  
 
-                    end
+            return true  
 
-                end
+        end  
 
-            end
+        if B == "Heian Sukuna Sounds"  
+        and A ~= "Heian Sukuna Sounds" then  
 
-        end
+            return false  
 
-    end
+        end  
 
-    return self.AllSounds
+        return tostring(A) < tostring(B)  
+
+    end  
+)  
+
+--==================================================  
+-- COLLECT  
+--==================================================  
+
+for _, CategoryName in ipairs(  
+    CategoryNames  
+) do  
+
+    local CategoryData =  
+        self.Sounds[CategoryName]  
+
+    if type(CategoryData) == "table" then  
+
+        for _, SoundData in ipairs(  
+            CategoryData  
+        ) do  
+
+            if self:IsValidSoundData(  
+                SoundData  
+            ) then  
+
+                table.insert(  
+                    self.AllSounds,  
+                    SoundData  
+                )  
+
+            end  
+
+        end  
+
+    end  
+
+end  
+
+return self.AllSounds
 
 end
 
@@ -885,29 +699,23 @@ end
 
 function Categories:ClearContent()
 
-    if not self.Scroll then
-        return
-    end
+if not self.Scroll then  
+    return  
+end  
 
-    for _, Object in ipairs(
-        self.Scroll:GetChildren()
-    ) do
+for _, Object in ipairs(  
+    self.Scroll:GetChildren()  
+) do  
 
-        if not Object:IsA(
-            "UIListLayout"
-        )
-        and not Object:IsA(
-            "UIPadding"
-        )
-        and not Object:IsA(
-            "UIGridLayout"
-        ) then
+    if not Object:IsA("UIListLayout")  
+    and not Object:IsA("UIPadding")  
+    and not Object:IsA("UIGridLayout") then  
 
-            Object:Destroy()
+        Object:Destroy()  
 
-        end
+    end  
 
-    end
+end
 
 end
 
@@ -917,23 +725,20 @@ end
 
 function Categories:NotifySearch()
 
-    if self.Search
-    and type(
-        self.Search.OnContextChanged
-    ) == "function" then
+if self.Search  
+and type(self.Search.OnContextChanged) == "function" then  
 
-        task.defer(function()
+    task.defer(function()  
 
-            pcall(function()
+        pcall(function()  
 
-                self.Search:
-                    OnContextChanged()
+            self.Search:OnContextChanged()  
 
-            end)
+        end)  
 
-        end)
+    end)  
 
-    end
+end
 
 end
 
@@ -943,19 +748,16 @@ end
 
 function Categories:ClearSearchContext()
 
-    if self.Search
-    and type(
-        self.Search.ClearForContext
-    ) == "function" then
+if self.Search  
+and type(self.Search.ClearForContext) == "function" then  
 
-        pcall(function()
+    pcall(function()  
 
-            self.Search:
-                ClearForContext()
+        self.Search:ClearForContext()  
 
-        end)
+    end)  
 
-    end
+end
 
 end
 
@@ -965,58 +767,55 @@ end
 
 function Categories:GetFavoriteSounds()
 
-    local Result = {}
+local Result = {}  
 
-    if not self.Favorites then
-        return Result
-    end
+if not self.Favorites then  
+    return Result  
+end  
 
-    local AllSounds =
-        self:BuildAllSounds()
+local AllSounds =  
+    self:BuildAllSounds()  
 
-    if type(
-        self.Favorites.IsFavorite
-    ) ~= "function" then
+if type(self.Favorites.IsFavorite) ~= "function" then  
+    return Result  
+end  
 
-        return Result
+for _, SoundData in ipairs(  
+    AllSounds  
+) do  
 
-    end
+    if self:IsValidSoundData(  
+        SoundData  
+    ) then  
 
-    for _, SoundData in ipairs(
-        AllSounds
-    ) do
+        local ID =  
+            SoundData[2]  
 
-        if self:IsValidSoundData(
-            SoundData
-        ) then
+        local Success,  
+            IsFavorite =  
+            pcall(function()  
 
-            local ID =
-                SoundData[2]
+                return self.Favorites:IsFavorite(  
+                    ID  
+                )  
 
-            local Success,
-                IsFavorite =
-                pcall(function()
+            end)  
 
-                    return self.Favorites:
-                        IsFavorite(ID)
+        if Success  
+        and IsFavorite == true then  
 
-                end)
+            table.insert(  
+                Result,  
+                SoundData  
+            )  
 
-            if Success
-            and IsFavorite == true then
+        end  
 
-                table.insert(
-                    Result,
-                    SoundData
-                )
+    end  
 
-            end
+end  
 
-        end
-
-    end
-
-    return Result
+return Result
 
 end
 
@@ -1024,23 +823,21 @@ end
 -- GET SOUND NAME
 --==================================================
 
-function Categories:GetSoundName(
-    SoundData
+function Categories:GetSoundName(SoundData)
+
+if not self:IsValidSoundData(  
+    SoundData  
+) then  
+
+    return ""  
+
+end  
+
+return string.lower(  
+    tostring(  
+        SoundData[1]  
+    )  
 )
-
-    if not self:IsValidSoundData(
-        SoundData
-    ) then
-
-        return ""
-
-    end
-
-    return string.lower(
-        tostring(
-            SoundData[1]
-        )
-    )
 
 end
 
@@ -1048,60 +845,56 @@ end
 -- GET SOUNDS BY NAME
 --==================================================
 
-function Categories:GetSoundsByName(
-    SearchText
-)
+function Categories:GetSoundsByName(SearchText)
 
-    local Result = {}
+local Result = {}  
 
-    SearchText =
-        string.lower(
-            tostring(
-                SearchText or ""
-            )
-        )
+SearchText =  
+    string.lower(  
+        tostring(  
+            SearchText or ""  
+        )  
+    )  
 
-    if SearchText == "" then
+if SearchText == "" then  
+    return Result  
+end  
 
-        return Result
+local AllSounds =  
+    self:BuildAllSounds()  
 
-    end
+for _, SoundData in ipairs(  
+    AllSounds  
+) do  
 
-    local AllSounds =
-        self:BuildAllSounds()
+    if self:IsValidSoundData(  
+        SoundData  
+    ) then  
 
-    for _, SoundData in ipairs(
-        AllSounds
-    ) do
+        local Name =  
+            self:GetSoundName(  
+                SoundData  
+            )  
 
-        if self:IsValidSoundData(
-            SoundData
-        ) then
+        if string.find(  
+            Name,  
+            SearchText,  
+            1,  
+            true  
+        ) then  
 
-            local Name =
-                self:GetSoundName(
-                    SoundData
-                )
+            table.insert(  
+                Result,  
+                SoundData  
+            )  
 
-            if string.find(
-                Name,
-                SearchText,
-                1,
-                true
-            ) then
+        end  
 
-                table.insert(
-                    Result,
-                    SoundData
-                )
+    end  
 
-            end
+end  
 
-        end
-
-    end
-
-    return Result
+return Result
 
 end
 
@@ -1111,9 +904,9 @@ end
 
 function Categories:GetM1Sounds()
 
-    return self:GetSoundsByName(
-        "m1"
-    )
+return self:GetSoundsByName(  
+    "m1"  
+)
 
 end
 
@@ -1123,9 +916,9 @@ end
 
 function Categories:GetHitSounds()
 
-    return self:GetSoundsByName(
-        "hit"
-    )
+return self:GetSoundsByName(  
+    "hit"  
+)
 
 end
 
@@ -1135,96 +928,77 @@ end
 
 function Categories:GetCurrentSounds()
 
-    if self.CurrentCategory ==
-        "Configuração" then
+if self.CurrentCategory ==  
+    "Configuração" then  
 
-        return {}
+    return {}  
 
-    end
+end  
 
-    --==================================================
-    -- NORMAL CATEGORY
-    --==================================================
+--==================================================  
+-- CATEGORY  
+--==================================================  
 
-    if self.CurrentCategory ~=
-        "ALL" then
+if self.CurrentCategory ~= "ALL" then  
 
-        local Category =
-            self.Sounds
-            and self.Sounds[
-                self.CurrentCategory
-            ]
+    local Category =  
+        self.Sounds  
+        and self.Sounds[  
+            self.CurrentCategory  
+        ]  
 
-        if type(Category) == "table" then
+    if type(Category) == "table" then  
 
-            local Result = {}
+        local Result = {}  
 
-            local SeenIDs = {}
+        for _, Data in ipairs(  
+            Category  
+        ) do  
 
-            for _, Data in ipairs(
-                Category
-            ) do
+            if self:IsValidSoundData(  
+                Data  
+            ) then  
 
-                if self:IsValidSoundData(
-                    Data
-                ) then
+                table.insert(  
+                    Result,  
+                    Data  
+                )  
 
-                    local ID =
-                        tostring(
-                            Data[2]
-                        )
+            end  
 
-                    if not SeenIDs[
-                        ID
-                    ] then
+        end  
 
-                        SeenIDs[ID] =
-                            true
+        return Result  
 
-                        table.insert(
-                            Result,
-                            Data
-                        )
+    end  
 
-                    end
+end  
 
-                end
+--==================================================  
+-- FILTER  
+--==================================================  
 
-            end
+local Resolver =  
+    self.FilterResolvers[  
+        self.CurrentFilter  
+    ]  
 
-            return Result
+if type(Resolver) == "function" then  
 
-        end
+    local Success,  
+        Result =  
+        pcall(Resolver)  
 
-        return {}
+    if Success  
+    and type(Result) == "table" then  
 
-    end
+        return Result  
 
-    --==================================================
-    -- ALL FILTER
-    --==================================================
+    end  
 
-    local Resolver =
-        self.FilterResolvers[
-            self.CurrentFilter
-        ]
+end  
 
-    if type(Resolver) == "function" then
-
-        local Success,
-            Result =
-            pcall(Resolver)
-
-        if Success
-        and type(Result) == "table" then
-
-            return Result
-
-        end
-
-    end
-
-    return self:BuildAllSounds()
+return self:BuildAllSounds()
 
 end
 
@@ -1234,7 +1008,7 @@ end
 
 function Categories:GetCurrentCategory()
 
-    return self.CurrentCategory
+return self.CurrentCategory
 
 end
 
@@ -1244,7 +1018,7 @@ end
 
 function Categories:GetCurrentFilter()
 
-    return self.CurrentFilter
+return self.CurrentFilter
 
 end
 
@@ -1254,28 +1028,28 @@ end
 
 function Categories:UpdateFilterButton()
 
-    if not self.FilterButton then
-        return
-    end
+if not self.FilterButton then  
+    return  
+end  
 
-    local Labels = {
+local Labels = {  
 
-        ["All"] = "All",
+    ["All"] = "All",  
 
-        ["Favorite"] =
-            "★ Favorite",
+    ["Favorite"] =  
+        "★ Favorite",  
 
-        ["M1"] = "M1",
+    ["M1"] = "M1",  
 
-        ["Hit"] = "Hit"
+    ["Hit"] = "Hit"  
 
-    }
+}  
 
-    self.FilterButton.Text =
-        Labels[
-            self.CurrentFilter
-        ]
-        or "All"
+self.FilterButton.Text =  
+    Labels[  
+        self.CurrentFilter  
+    ]  
+    or "All"
 
 end
 
@@ -1285,12 +1059,12 @@ end
 
 function Categories:CloseFilterMenu()
 
-    if self.FilterMenu then
+if self.FilterMenu then  
 
-        self.FilterMenu.Visible =
-            false
+    self.FilterMenu.Visible =  
+        false  
 
-    end
+end
 
 end
 
@@ -1299,109 +1073,98 @@ end
 --==================================================
 
 function Categories:CreateFilterOption(
-    Parent,
-    Name,
-    Text,
-    Order,
-    Callback
+Parent,
+Name,
+Text,
+Order,
+Callback
 )
 
-    if not Parent then
-        return nil
-    end
+if not Parent then  
+    return nil  
+end  
 
-    if not self.Theme then
-        return nil
-    end
+local CurrentTheme =  
+    self.Theme:GetCurrent()  
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+local Button =  
+    Instance.new("TextButton")  
 
-    local Button =
-        Instance.new("TextButton")
+Button.Name =  
+    Name  
 
-    Button.Name =
-        Name
+Button.Size =  
+    UDim2.new(  
+        1,  
+        -10,  
+        0,  
+        32  
+    )  
 
-    Button.Size =
-        UDim2.new(
-            1,
-            -10,
-            0,
-            32
-        )
+Button.BackgroundColor3 =  
+    CurrentTheme.Button  
 
-    Button.BackgroundColor3 =
-        CurrentTheme.Button
+Button.BorderSizePixel =  
+    0  
 
-    Button.BorderSizePixel =
-        0
+Button.Text =  
+    Text  
 
-    Button.Text =
-        Text
+Button.TextColor3 =  
+    CurrentTheme.Text  
 
-    Button.TextColor3 =
-        CurrentTheme.Text
+Button.TextSize =  
+    11  
 
-    Button.TextSize =
-        11
+Button.Font =  
+    Enum.Font.GothamMedium  
 
-    Button.Font =
-        Enum.Font.GothamMedium
+Button.AutoButtonColor =  
+    false  
 
-    Button.AutoButtonColor =
-        false
+Button.TextXAlignment =  
+    Enum.TextXAlignment.Left  
 
-    Button.TextXAlignment =
-        Enum.TextXAlignment.Left
+Button.LayoutOrder =  
+    Order  
 
-    Button.LayoutOrder =
-        Order
+Button.ZIndex =  
+    802  
 
-    Button.ZIndex =
-        802
+Button.Parent =  
+    Parent  
 
-    Button.Parent =
-        Parent
+local Padding =  
+    Instance.new("UIPadding")  
 
-    local Padding =
-        Instance.new("UIPadding")
+Padding.PaddingLeft =  
+    UDim.new(0, 9)  
 
-    Padding.PaddingLeft =
-        UDim.new(
-            0,
-            9
-        )
+Padding.Parent =  
+    Button  
 
-    Padding.Parent =
-        Button
+local Corner =  
+    Instance.new("UICorner")  
 
-    local Corner =
-        Instance.new("UICorner")
+Corner.CornerRadius =  
+    UDim.new(0, 6)  
 
-    Corner.CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
+Corner.Parent =  
+    Button  
 
-    Corner.Parent =
-        Button
+Button.MouseButton1Click:Connect(  
+    function()  
 
-    Button.MouseButton1Click:Connect(
-        function()
+        if type(Callback) == "function" then  
 
-            if type(Callback)
-                == "function" then
+            Callback()  
 
-                Callback()
+        end  
 
-            end
+    end  
+)  
 
-        end
-    )
-
-    return Button
+return Button
 
 end
 
@@ -1411,251 +1174,232 @@ end
 
 function Categories:CreateFilterMenu()
 
-    if self.FilterMenu then
-        return
-    end
+if self.FilterMenu then  
+    return  
+end  
 
-    if not self.ContentTitle then
-        return
-    end
+if not self.ContentTitle then  
+    return  
+end  
 
-    if not self.Theme then
-        return
-    end
+local CurrentTheme =  
+    self.Theme:GetCurrent()  
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+local Parent =  
+    self.ContentTitle.Parent  
 
-    local Parent =
-        self.ContentTitle.Parent
-
-    if not Parent then
-        return
-    end
+if not Parent then  
+    return  
+end  
 
-    local Menu =
-        Instance.new("Frame")
+local Menu =  
+    Instance.new("Frame")  
 
-    Menu.Name =
-        "FilterMenu"
+Menu.Name =  
+    "FilterMenu"  
 
-    Menu.Size =
-        UDim2.new(
-            0,
-            120,
-            0,
-            112
-        )
+Menu.Size =  
+    UDim2.new(  
+        0,  
+        120,  
+        0,  
+        112  
+    )  
 
-    Menu.Position =
-        UDim2.new(
-            1,
-            -130,
-            0,
-            42
-        )
+Menu.Position =  
+    UDim2.new(  
+        1,  
+        -130,  
+        0,  
+        42  
+    )  
 
-    Menu.BackgroundColor3 =
-        CurrentTheme.Content
+Menu.BackgroundColor3 =  
+    CurrentTheme.Content  
 
-    Menu.BorderSizePixel =
-        0
+Menu.BorderSizePixel =  
+    0  
 
-    Menu.ZIndex =
-        800
+Menu.ZIndex =  
+    800  
 
-    Menu.Visible =
-        false
+Menu.Visible =  
+    false  
 
-    Menu.ClipsDescendants =
-        true
+Menu.ClipsDescendants =  
+    true  
 
-    Menu.Parent =
-        Parent
+Menu.Parent =  
+    Parent  
 
-    local MenuCorner =
-        Instance.new("UICorner")
+local MenuCorner =  
+    Instance.new("UICorner")  
 
-    MenuCorner.CornerRadius =
-        UDim.new(
-            0,
-            8
-        )
+MenuCorner.CornerRadius =  
+    UDim.new(0, 8)  
 
-    MenuCorner.Parent =
-        Menu
+MenuCorner.Parent =  
+    Menu  
 
-    local MenuStroke =
-        Instance.new("UIStroke")
+local MenuStroke =  
+    Instance.new("UIStroke")  
 
-    MenuStroke.Color =
-        self.Theme:GetAccent()
+MenuStroke.Color =  
+    self.Theme:GetAccent()  
 
-    MenuStroke.Thickness =
-        1
+MenuStroke.Thickness =  
+    1  
 
-    MenuStroke.Parent =
-        Menu
+MenuStroke.Parent =  
+    Menu  
 
-    self.FilterMenu =
-        Menu
+self.FilterMenu =  
+    Menu  
 
-    self.FilterStroke =
-        MenuStroke
+self.FilterStroke =  
+    MenuStroke  
 
-    --==================================================
-    -- SCROLL
-    --==================================================
+--==================================================  
+-- SCROLL  
+--==================================================  
 
-    local FilterScroll =
-        Instance.new("ScrollingFrame")
+local FilterScroll =  
+    Instance.new("ScrollingFrame")  
 
-    FilterScroll.Name =
-        "FilterScroll"
-
-    FilterScroll.Size =
-        UDim2.new(
-            1,
-            -4,
-            1,
-            -4
-        )
-
-    FilterScroll.Position =
-        UDim2.new(
-            0,
-            2,
-            0,
-            2
-        )
-
-    FilterScroll.BackgroundTransparency =
-        1
-
-    FilterScroll.BorderSizePixel =
-        0
-
-    FilterScroll.ScrollBarThickness =
-        3
-
-    FilterScroll.ScrollBarImageColor3 =
-        self.Theme:GetAccent()
-
-    FilterScroll.CanvasSize =
-        UDim2.new(
-            0,
-            0,
-            0,
-            0
-        )
+FilterScroll.Name =  
+    "FilterScroll"  
 
-    FilterScroll.AutomaticCanvasSize =
-        Enum.AutomaticSize.Y
+FilterScroll.Size =  
+    UDim2.new(  
+        1,  
+        -4,  
+        1,  
+        -4  
+    )  
 
-    FilterScroll.ScrollingDirection =
-        Enum.ScrollingDirection.Y
+FilterScroll.Position =  
+    UDim2.new(  
+        0,  
+        2,  
+        0,  
+        2  
+    )  
 
-    FilterScroll.ZIndex =
-        801
+FilterScroll.BackgroundTransparency =  
+    1  
 
-    FilterScroll.Parent =
-        Menu
+FilterScroll.BorderSizePixel =  
+    0  
 
-    self.FilterScroll =
-        FilterScroll
+FilterScroll.ScrollBarThickness =  
+    3  
 
-    local Layout =
-        Instance.new("UIListLayout")
+FilterScroll.ScrollBarImageColor3 =  
+    self.Theme:GetAccent()  
 
-    Layout.SortOrder =
-        Enum.SortOrder.LayoutOrder
+FilterScroll.CanvasSize =  
+    UDim2.new(  
+        0,  
+        0,  
+        0,  
+        0  
+    )  
 
-    Layout.Padding =
-        UDim.new(
-            0,
-            5
-        )
+FilterScroll.AutomaticCanvasSize =  
+    Enum.AutomaticSize.Y  
 
-    Layout.Parent =
-        FilterScroll
+FilterScroll.ScrollingDirection =  
+    Enum.ScrollingDirection.Y  
 
-    local Padding =
-        Instance.new("UIPadding")
+FilterScroll.ZIndex =  
+    801  
 
-    Padding.PaddingTop =
-        UDim.new(
-            0,
-            3
-        )
+FilterScroll.Parent =  
+    Menu  
 
-    Padding.PaddingBottom =
-        UDim.new(
-            0,
-            3
-        )
+local Layout =  
+    Instance.new("UIListLayout")  
 
-    Padding.Parent =
-        FilterScroll
+Layout.SortOrder =  
+    Enum.SortOrder.LayoutOrder  
 
-    --==================================================
-    -- OPTIONS
-    --==================================================
+Layout.Padding =  
+    UDim.new(0, 5)  
 
-    local Options = {
+Layout.Parent =  
+    FilterScroll  
 
-        {
-            "All",
-            "All",
-            1
-        },
+local Padding =  
+    Instance.new("UIPadding")  
 
-        {
-            "Favorite",
-            "★ Favorite",
-            2
-        },
+Padding.PaddingTop =  
+    UDim.new(0, 3)  
 
-        {
-            "M1",
-            "M1",
-            3
-        },
+Padding.PaddingBottom =  
+    UDim.new(0, 3)  
 
-        {
-            "Hit",
-            "Hit",
-            4
-        }
+Padding.Parent =  
+    FilterScroll  
 
-    }
+--==================================================  
+-- OPTIONS  
+--==================================================  
 
-    for _, Option in ipairs(
-        Options
-    ) do
+local Options = {  
 
-        self:CreateFilterOption(
+    {  
+        "All",  
+        "All",  
+        1  
+    },  
 
-            FilterScroll,
+    {  
+        "Favorite",  
+        "★ Favorite",  
+        2  
+    },  
 
-            Option[1],
+    {  
+        "M1",  
+        "M1",  
+        3  
+    },  
 
-            Option[2],
+    {  
+        "Hit",  
+        "Hit",  
+        4  
+    }  
 
-            Option[3],
+}  
 
-            function()
+for _, Option in ipairs(  
+    Options  
+) do  
 
-                self:SetFilter(
-                    Option[1]
-                )
+    self:CreateFilterOption(  
 
-                self:CloseFilterMenu()
+        FilterScroll,  
 
-            end
+        Option[1],  
 
-        )
+        Option[2],  
 
-    end
+        Option[3],  
+
+        function()  
+
+            self:SetFilter(  
+                Option[1]  
+            )  
+
+            self:CloseFilterMenu()  
+
+        end  
+
+    )  
+
+end
 
 end
 
@@ -1665,121 +1409,114 @@ end
 
 function Categories:CreateFilterButton()
 
-    if self.FilterButton then
-        return
-    end
+if self.FilterButton then  
+    return  
+end  
 
-    if not self.ContentTitle then
-        return
-    end
+if not self.ContentTitle then  
+    return  
+end  
 
-    if not self.Theme then
-        return
-    end
+local CurrentTheme =  
+    self.Theme:GetCurrent()  
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+local Parent =  
+    self.ContentTitle.Parent  
 
-    local Parent =
-        self.ContentTitle.Parent
+if not Parent then  
+    return  
+end  
 
-    if not Parent then
-        return
-    end
+local Button =  
+    Instance.new("TextButton")  
 
-    local Button =
-        Instance.new("TextButton")
+Button.Name =  
+    "FilterButton"  
 
-    Button.Name =
-        "FilterButton"
+Button.Size =  
+    UDim2.new(  
+        0,  
+        105,  
+        0,  
+        28  
+    )  
 
-    Button.Size =
-        UDim2.new(
-            0,
-            105,
-            0,
-            28
-        )
+Button.Position =  
+    UDim2.new(  
+        1,  
+        -115,  
+        0,  
+        8  
+    )  
 
-    Button.Position =
-        UDim2.new(
-            1,
-            -115,
-            0,
-            8
-        )
+Button.BackgroundColor3 =  
+    CurrentTheme.Button  
 
-    Button.BackgroundColor3 =
-        CurrentTheme.Button
+Button.BorderSizePixel =  
+    0  
 
-    Button.BorderSizePixel =
-        0
+Button.Text =  
+    "All"  
 
-    Button.Text =
-        "All"
+Button.TextColor3 =  
+    CurrentTheme.Text  
 
-    Button.TextColor3 =
-        CurrentTheme.Text
+Button.TextSize =  
+    10  
 
-    Button.TextSize =
-        10
+Button.Font =  
+    Enum.Font.GothamMedium  
 
-    Button.Font =
-        Enum.Font.GothamMedium
+Button.AutoButtonColor =  
+    false  
 
-    Button.AutoButtonColor =
-        false
+Button.ZIndex =  
+    700  
 
-    Button.ZIndex =
-        700
+Button.Parent =  
+    Parent  
 
-    Button.Parent =
-        Parent
+local Corner =  
+    Instance.new("UICorner")  
 
-    local Corner =
-        Instance.new("UICorner")
+Corner.CornerRadius =  
+    UDim.new(0, 7)  
 
-    Corner.CornerRadius =
-        UDim.new(
-            0,
-            7
-        )
+Corner.Parent =  
+    Button  
 
-    Corner.Parent =
-        Button
+local Stroke =  
+    Instance.new("UIStroke")  
 
-    local Stroke =
-        Instance.new("UIStroke")
+Stroke.Color =  
+    self.Theme:GetAccent()  
 
-    Stroke.Color =
-        self.Theme:GetAccent()
+Stroke.Thickness =  
+    1  
 
-    Stroke.Thickness =
-        1
+Stroke.Parent =  
+    Button  
 
-    Stroke.Parent =
-        Button
+self.FilterButton =  
+    Button  
 
-    self.FilterButton =
-        Button
+self.FilterStroke =  
+    Stroke  
 
-    self.FilterStroke =
-        Stroke
+self:CreateFilterMenu()  
 
-    self:CreateFilterMenu()
+Button.MouseButton1Click:Connect(  
+    function()  
 
-    Button.MouseButton1Click:Connect(
-        function()
+        if not self.FilterMenu then  
+            return  
+        end  
 
-            if not self.FilterMenu then
-                return
-            end
+        self.FilterMenu.Visible =  
+            not self.FilterMenu.Visible  
 
-            self.FilterMenu.Visible =
-                not self.FilterMenu.Visible
-
-        end
-    )
+    end  
+)
 
 end
 
@@ -1787,70 +1524,51 @@ end
 -- CREATE CARDS FROM DATA
 --==================================================
 
-function Categories:RenderSounds(
-    Sounds
-)
+function Categories:RenderSounds(Sounds)
 
-    self:LeaveConfiguration()
+--==================================================  
+-- ALWAYS EXIT CONFIGURATION FIRST  
+--==================================================  
 
-    self:ClearContent()
+self:LeaveConfiguration()  
 
-    if not self.Cards
-    or type(
-        self.Cards.CreateSoundCard
-    ) ~= "function" then
+self:ClearContent()  
 
-        warn(
-            "[RIMURU HUB] Cards.CreateSoundCard não está disponível."
-        )
+if not self.Cards  
+or type(self.Cards.CreateSoundCard) ~= "function" then  
 
-        return
+    warn(  
+        "[RIMURU HUB] Cards.CreateSoundCard não está disponível."  
+    )  
 
-    end
+    return  
 
-    if type(Sounds) ~= "table" then
-        return
-    end
+end  
 
-    local CardIndex =
-        0
+if type(Sounds) ~= "table" then  
+    return  
+end  
 
-    local RenderedIDs = {}
+local CardIndex = 0  
 
-    for _, Data in ipairs(
-        Sounds
-    ) do
+for _, Data in ipairs(  
+    Sounds  
+) do  
 
-        if self:IsValidSoundData(
-            Data
-        ) then
+    if self:IsValidSoundData(  
+        Data  
+    ) then  
 
-            local ID =
-                tostring(
-                    Data[2]
-                )
+        CardIndex += 1  
 
-            if not RenderedIDs[
-                ID
-            ] then
+        self.Cards:CreateSoundCard(  
+            CardIndex,  
+            Data  
+        )  
 
-                RenderedIDs[
-                    ID
-                ] = true
+    end  
 
-                CardIndex += 1
-
-                self.Cards:
-                    CreateSoundCard(
-                        CardIndex,
-                        Data
-                    )
-
-            end
-
-        end
-
-    end
+end
 
 end
 
@@ -1860,45 +1578,43 @@ end
 
 function Categories:ShowAll()
 
-    self:LeaveConfiguration()
+self:LeaveConfiguration()  
 
-    self:InvalidateContext()
+self:InvalidateContext()  
 
-    self.CurrentContext =
-        "NORMAL"
+self.CurrentContext =  
+    "NORMAL"  
 
-    self.CurrentCategory =
-        "ALL"
+self.CurrentCategory =  
+    "ALL"  
 
-    self.CurrentFilter =
-        "All"
+self.CurrentFilter =  
+    "All"  
 
-    if self.FilterButton then
+if self.FilterButton then  
 
-        self.FilterButton.Visible =
-            true
+    self.FilterButton.Visible =  
+        true  
 
-    end
+end  
 
-    self:CloseFilterMenu()
+self:CloseFilterMenu()  
 
-    self:UpdateFilterButton()
+if self.ContentTitle then  
 
-    if self.ContentTitle then
+    self.ContentTitle.Text =  
+        "ALL"  
 
-        self.ContentTitle.Text =
-            "ALL"
+end  
 
-    end
+local Sounds =  
+    self:GetCurrentSounds()  
 
-    local Sounds =
-        self:GetCurrentSounds()
+self:RenderSounds(  
+    Sounds  
+)  
 
-    self:RenderSounds(
-        Sounds
-    )
-
-    self:NotifySearch()
+self:NotifySearch()
 
 end
 
@@ -1908,45 +1624,43 @@ end
 
 function Categories:ShowFavorites()
 
-    self:LeaveConfiguration()
+self:LeaveConfiguration()  
 
-    self:InvalidateContext()
+self:InvalidateContext()  
 
-    self.CurrentContext =
-        "NORMAL"
+self.CurrentContext =  
+    "NORMAL"  
 
-    self.CurrentCategory =
-        "ALL"
+self.CurrentCategory =  
+    "ALL"  
 
-    self.CurrentFilter =
-        "Favorite"
+self.CurrentFilter =  
+    "Favorite"  
 
-    if self.FilterButton then
+if self.FilterButton then  
 
-        self.FilterButton.Visible =
-            true
+    self.FilterButton.Visible =  
+        true  
 
-    end
+end  
 
-    self:CloseFilterMenu()
+self:CloseFilterMenu()  
 
-    self:UpdateFilterButton()
+if self.ContentTitle then  
 
-    if self.ContentTitle then
+    self.ContentTitle.Text =  
+        "ALL"  
 
-        self.ContentTitle.Text =
-            "ALL"
+end  
 
-    end
+local Sounds =  
+    self:GetFavoriteSounds()  
 
-    local Sounds =
-        self:GetFavoriteSounds()
+self:RenderSounds(  
+    Sounds  
+)  
 
-    self:RenderSounds(
-        Sounds
-    )
-
-    self:NotifySearch()
+self:NotifySearch()
 
 end
 
@@ -1956,45 +1670,43 @@ end
 
 function Categories:ShowM1()
 
-    self:LeaveConfiguration()
+self:LeaveConfiguration()  
 
-    self:InvalidateContext()
+self:InvalidateContext()  
 
-    self.CurrentContext =
-        "NORMAL"
+self.CurrentContext =  
+    "NORMAL"  
 
-    self.CurrentCategory =
-        "ALL"
+self.CurrentCategory =  
+    "ALL"  
 
-    self.CurrentFilter =
-        "M1"
+self.CurrentFilter =  
+    "M1"  
 
-    if self.FilterButton then
+if self.FilterButton then  
 
-        self.FilterButton.Visible =
-            true
+    self.FilterButton.Visible =  
+        true  
 
-    end
+end  
 
-    self:CloseFilterMenu()
+self:CloseFilterMenu()  
 
-    self:UpdateFilterButton()
+if self.ContentTitle then  
 
-    if self.ContentTitle then
+    self.ContentTitle.Text =  
+        "ALL"  
 
-        self.ContentTitle.Text =
-            "ALL"
+end  
 
-    end
+local Sounds =  
+    self:GetM1Sounds()  
 
-    local Sounds =
-        self:GetM1Sounds()
+self:RenderSounds(  
+    Sounds  
+)  
 
-    self:RenderSounds(
-        Sounds
-    )
-
-    self:NotifySearch()
+self:NotifySearch()
 
 end
 
@@ -2004,45 +1716,43 @@ end
 
 function Categories:ShowHit()
 
-    self:LeaveConfiguration()
+self:LeaveConfiguration()  
 
-    self:InvalidateContext()
+self:InvalidateContext()  
 
-    self.CurrentContext =
-        "NORMAL"
+self.CurrentContext =  
+    "NORMAL"  
 
-    self.CurrentCategory =
-        "ALL"
+self.CurrentCategory =  
+    "ALL"  
 
-    self.CurrentFilter =
-        "Hit"
+self.CurrentFilter =  
+    "Hit"  
 
-    if self.FilterButton then
+if self.FilterButton then  
 
-        self.FilterButton.Visible =
-            true
+    self.FilterButton.Visible =  
+        true  
 
-    end
+end  
 
-    self:CloseFilterMenu()
+self:CloseFilterMenu()  
 
-    self:UpdateFilterButton()
+if self.ContentTitle then  
 
-    if self.ContentTitle then
+    self.ContentTitle.Text =  
+        "ALL"  
 
-        self.ContentTitle.Text =
-            "ALL"
+end  
 
-    end
+local Sounds =  
+    self:GetHitSounds()  
 
-    local Sounds =
-        self:GetHitSounds()
+self:RenderSounds(  
+    Sounds  
+)  
 
-    self:RenderSounds(
-        Sounds
-    )
-
-    self:NotifySearch()
+self:NotifySearch()
 
 end
 
@@ -2050,124 +1760,111 @@ end
 -- SHOW CATEGORY
 --==================================================
 
-function Categories:ShowCategory(
-    CategoryName
-)
+function Categories:ShowCategory(CategoryName)
 
-    if type(CategoryName) ~= "string" then
-        return
-    end
+if type(CategoryName) ~= "string" then  
+    return  
+end  
 
-    --==================================================
-    -- CONFIGURATION
-    --==================================================
+--==================================================  
+-- CONFIGURATION  
+--==================================================  
 
-    if CategoryName ==
-        "Configuração" then
+if CategoryName ==  
+    "Configuração" then  
 
-        self:EnterConfiguration()
+    self:EnterConfiguration()  
 
-        return
+    return  
 
-    end
+end  
 
-    --==================================================
-    -- INVALID / EXCLUDED CATEGORY
-    --==================================================
+--==================================================  
+-- LEAVE CONFIGURATION  
+--==================================================  
 
-    if CategoryName ~=
-        "ALL"
-    and self:IsExcludedCategory(
-        CategoryName
-    ) then
+self:LeaveConfiguration()  
 
-        return
+self:InvalidateContext()  
 
-    end
+self.CurrentContext =  
+    "NORMAL"  
 
-    --==================================================
-    -- LEAVE CONFIGURATION
-    --==================================================
+--==================================================  
+-- CLEAR SEARCH  
+--==================================================  
 
-    self:LeaveConfiguration()
+self:ClearSearchContext()  
 
-    self:InvalidateContext()
+--==================================================  
+-- ALL  
+--==================================================  
 
-    self.CurrentContext =
-        "NORMAL"
+if CategoryName == "ALL" then  
 
-    self:ClearSearchContext()
+    self.CurrentCategory =  
+        "ALL"  
 
-    --==================================================
-    -- ALL
-    --==================================================
+    self.CurrentFilter =  
+        "All"  
 
-    if CategoryName ==
-        "ALL" then
+    self:UpdateFilterButton()  
 
-        self.CurrentCategory =
-            "ALL"
+    self:ShowAll()  
 
-        self.CurrentFilter =
-            "All"
+    return  
 
-        self:UpdateFilterButton()
+end  
 
-        self:ShowAll()
+--==================================================  
+-- NORMAL CATEGORY  
+--==================================================  
 
-        return
+self.CurrentCategory =  
+    CategoryName  
 
-    end
+self.CurrentFilter =  
+    "All"  
 
-    --==================================================
-    -- NORMAL CATEGORY
-    --==================================================
+self:UpdateFilterButton()  
 
-    self.CurrentCategory =
-        CategoryName
+if self.FilterButton then  
 
-    self.CurrentFilter =
-        "All"
+    self.FilterButton.Visible =  
+        false  
 
-    self:UpdateFilterButton()
+end  
 
-    if self.FilterButton then
+self:CloseFilterMenu()  
 
-        self.FilterButton.Visible =
-            false
+if self.ContentTitle then  
 
-    end
+    self.ContentTitle.Text =  
+        CategoryName  
 
-    self:CloseFilterMenu()
+end  
 
-    if self.ContentTitle then
+local Category =  
+    self.Sounds  
+    and self.Sounds[  
+        CategoryName  
+    ]  
 
-        self.ContentTitle.Text =
-            CategoryName
+if type(Category) ~= "table" then  
 
-    end
+    self:ClearContent()  
 
-    local Category =
-        self.Sounds
-        and self.Sounds[
-            CategoryName
-        ]
+    self:NotifySearch()  
 
-    if type(Category) ~= "table" then
+    return  
 
-        self:ClearContent()
+end  
 
-        self:NotifySearch()
+self:RenderSounds(  
+    Category  
+)  
 
-        return
-
-    end
-
-    self:RenderSounds(
-        Category
-    )
-
-    self:NotifySearch()
+self:NotifySearch()
 
 end
 
@@ -2177,7 +1874,7 @@ end
 
 function Categories:ShowConfiguration()
 
-    self:EnterConfiguration()
+self:EnterConfiguration()
 
 end
 
@@ -2185,29 +1882,27 @@ end
 -- SELECT BUTTON
 --==================================================
 
-function Categories:SelectButton(
-    Button
+function Categories:SelectButton(Button)
+
+if not Button then  
+    return  
+end  
+
+if self.SelectedButton  
+and self.SelectedButton ~= Button then  
+
+    self:SetNormalStyle(  
+        self.SelectedButton  
+    )  
+
+end  
+
+self.SelectedButton =  
+    Button  
+
+self:SetSelectedStyle(  
+    Button  
 )
-
-    if not Button then
-        return
-    end
-
-    if self.SelectedButton
-    and self.SelectedButton ~= Button then
-
-        self:SetNormalStyle(
-            self.SelectedButton
-        )
-
-    end
-
-    self.SelectedButton =
-        Button
-
-    self:SetSelectedStyle(
-        Button
-    )
 
 end
 
@@ -2216,147 +1911,147 @@ end
 --==================================================
 
 function Categories:CreateCategoryButton(
-    CategoryName,
-    Order,
-    ShowSoundCategory
+CategoryName,
+Order,
+ShowSoundCategory
 )
 
-    if ShowSoundCategory == nil then
+if ShowSoundCategory == nil then  
 
-        ShowSoundCategory =
-            true
+    ShowSoundCategory =  
+        true  
 
-    end
+end  
 
-    if not self.Sidebar then
-        return nil
-    end
+if not self.Sidebar then  
+    return nil  
+end  
 
-    local Button =
-        Instance.new("TextButton")
+local Button =  
+    Instance.new("TextButton")  
 
-    Button.Name =
-        CategoryName
+Button.Name =  
+    CategoryName  
 
-    Button.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            38
-        )
+Button.Size =  
+    UDim2.new(  
+        1,  
+        0,  
+        0,  
+        38  
+    )  
 
-    self:SetNormalStyle(
-        Button
-    )
+self:SetNormalStyle(  
+    Button  
+)  
 
-    Button.BorderSizePixel =
-        0
+Button.BorderSizePixel =  
+    0  
 
-    Button.Text =
-        self:GetIcon(
-            CategoryName
-        )
-        .. "  "
-        .. CategoryName
+Button.Text =  
+    self:GetIcon(  
+        CategoryName  
+    )  
+    .. "  "  
+    .. CategoryName  
 
-    Button.TextSize =
-        11
+Button.TextSize =  
+    11  
 
-    Button.Font =
-        Enum.Font.GothamMedium
+Button.Font =  
+    Enum.Font.GothamMedium  
 
-    Button.TextXAlignment =
-        Enum.TextXAlignment.Left
+Button.TextXAlignment =  
+    Enum.TextXAlignment.Left  
 
-    Button.AutoButtonColor =
-        false
+Button.AutoButtonColor =  
+    false  
 
-    Button.LayoutOrder =
-        Order
+Button.LayoutOrder =  
+    Order  
 
-    Button.ZIndex =
-        503
+Button.ZIndex =  
+    503  
 
-    Button.Parent =
-        self.Sidebar
+Button.Parent =  
+    self.Sidebar  
 
-    local ButtonPadding =
-        Instance.new("UIPadding")
+local ButtonPadding =  
+    Instance.new("UIPadding")  
 
-    ButtonPadding.PaddingLeft =
-        UDim.new(
-            0,
-            10
-        )
+ButtonPadding.PaddingLeft =  
+    UDim.new(  
+        0,  
+        10  
+    )  
 
-    ButtonPadding.Parent =
-        Button
+ButtonPadding.Parent =  
+    Button  
 
-    local ButtonCorner =
-        Instance.new("UICorner")
+local ButtonCorner =  
+    Instance.new("UICorner")  
 
-    ButtonCorner.CornerRadius =
-        UDim.new(
-            0,
-            7
-        )
+ButtonCorner.CornerRadius =  
+    UDim.new(  
+        0,  
+        7  
+    )  
 
-    ButtonCorner.Parent =
-        Button
+ButtonCorner.Parent =  
+    Button  
 
-    Button.MouseButton1Click:Connect(
-        function()
+Button.MouseButton1Click:Connect(  
+    function()  
 
-            self:SelectButton(
-                Button
-            )
+        self:SelectButton(  
+            Button  
+        )  
 
-            self:AnimateCategoryClick(
-                Button
-            )
+        self:AnimateCategoryClick(  
+            Button  
+        )  
 
-            if ShowSoundCategory then
+        if ShowSoundCategory then  
 
-                self:ShowCategory(
-                    CategoryName
-                )
+            self:ShowCategory(  
+                CategoryName  
+            )  
 
-                return
+            return  
 
-            end
+        end  
 
-            if CategoryName ==
-                "Configuração" then
+        if CategoryName ==  
+            "Configuração" then  
 
-                self:ShowConfiguration()
+            self:ShowConfiguration()  
 
-            else
+        else  
 
-                self:LeaveConfiguration()
+            self:LeaveConfiguration()  
 
-                self:ClearSearchContext()
+            self:ClearSearchContext()  
 
-                if self.FilterButton then
+            if self.FilterButton then  
 
-                    self.FilterButton.Visible =
-                        false
+                self.FilterButton.Visible =  
+                    false  
 
-                end
+            end  
 
-                self:CloseFilterMenu()
+            self:CloseFilterMenu()  
 
-            end
+        end  
 
-        end
-    )
+    end  
+)  
 
-    self.CategoryButtons[
-        CategoryName
-    ] =
-        Button
+self.CategoryButtons[  
+    CategoryName  
+] =  
+    Button  
 
-    return Button
+return Button
 
 end
 
@@ -2366,92 +2061,139 @@ end
 
 function Categories:CreateCategories()
 
-    --==================================================
-    -- CLEAN OLD BUTTONS
-    --==================================================
+--==================================================  
+-- CLEAN OLD BUTTONS  
+--==================================================  
 
-    for _, Button in pairs(
-        self.CategoryButtons
-    ) do
+for _, Button in pairs(  
+    self.CategoryButtons  
+) do  
 
-        if Button
-        and Button.Parent then
+    if Button  
+    and Button.Parent then  
 
-            Button:Destroy()
+        Button:Destroy()  
 
-        end
+    end  
 
-    end
+end  
 
-    self.CategoryButtons =
-        {}
+self.CategoryButtons = {}  
 
-    self.SelectedButton =
-        nil
+self.SelectedButton = nil  
 
-    local CategoryIndex =
-        0
+local CategoryIndex = 0  
 
-    --==================================================
-    -- ALL ALWAYS FIRST
-    --==================================================
+--==================================================  
+-- ALL FIRST  
+--==================================================  
 
-    CategoryIndex += 1
+CategoryIndex += 1  
 
-    self.AllButton =
-        self:CreateCategoryButton(
-            "ALL",
-            CategoryIndex,
-            true
-        )
+self.AllButton =  
+    self:CreateCategoryButton(  
+        "ALL",  
+        CategoryIndex,  
+        true  
+    )  
 
-    --==================================================
-    -- SOUND CATEGORIES
-    --==================================================
+--==================================================  
+-- SOUND CATEGORIES  
+--==================================================  
 
-    local SoundCategoryNames =
-        self:GetSoundCategoryNames()
+local SoundCategoryNames = {}  
 
-    for _, CategoryName in ipairs(
-        SoundCategoryNames
-    ) do
+if type(self.Sounds) == "table" then  
 
-        CategoryIndex += 1
+    for CategoryName, CategoryData in pairs(  
+        self.Sounds  
+    ) do  
 
-        self:CreateCategoryButton(
+        if CategoryName ~= "ALL"  
+        and CategoryName ~= "Configuração"  
+        and type(CategoryData) == "table" then  
 
-            CategoryName,
+            table.insert(  
+                SoundCategoryNames,  
+                CategoryName  
+            )  
 
-            CategoryIndex,
+        end  
 
-            true
+    end  
 
-        )
+end  
 
-    end
+table.sort(  
+    SoundCategoryNames,  
+    function(A, B)  
 
-    --==================================================
-    -- CONFIGURATION
-    --==================================================
+        if A == "Outros"  
+        and B ~= "Outros" then  
 
-    self.ConfigButton =
-        self:CreateCategoryButton(
+            return true  
 
-            "Configuração",
+        end  
 
-            CategoryIndex + 1,
+        if B == "Outros"  
+        and A ~= "Outros" then  
 
-            false
+            return false  
 
-        )
+        end  
 
-    --==================================================
-    -- FILTER
-    --==================================================
+        if A == "Heian Sukuna Sounds"  
+        and B ~= "Heian Sukuna Sounds" then  
 
-    self:CreateFilterButton()
+            return true  
 
-    return CategoryIndex + 1
+        end  
+
+        if B == "Heian Sukuna Sounds"  
+        and A ~= "Heian Sukuna Sounds" then  
+
+            return false  
+
+        end  
+
+        return tostring(A) <  
+            tostring(B)  
+
+    end  
+)  
+
+for _, CategoryName in ipairs(  
+    SoundCategoryNames  
+) do  
+
+    CategoryIndex += 1  
+
+    self:CreateCategoryButton(  
+        CategoryName,  
+        CategoryIndex,  
+        true  
+    )  
+
+end  
+
+--==================================================  
+-- CONFIGURATION  
+--==================================================  
+
+self.ConfigButton =  
+    self:CreateCategoryButton(  
+        "Configuração",  
+        CategoryIndex + 1,  
+        false  
+    )  
+
+--==================================================  
+-- FILTER  
+--==================================================  
+
+self:CreateFilterButton()  
+
+return CategoryIndex + 1
 
 end
 
@@ -2461,35 +2203,35 @@ end
 
 function Categories:SetDefaultCategory()
 
-    local AllButton =
-        self.CategoryButtons[
-            "ALL"
-        ]
+local AllButton =  
+    self.CategoryButtons[  
+        "ALL"  
+    ]  
 
-    if not AllButton then
-        return
-    end
+if not AllButton then  
+    return  
+end  
 
-    self:LeaveConfiguration()
+self:LeaveConfiguration()  
 
-    self:InvalidateContext()
+self:InvalidateContext()  
 
-    self.CurrentContext =
-        "NORMAL"
+self.CurrentContext =  
+    "NORMAL"  
 
-    self.CurrentCategory =
-        "ALL"
+self.CurrentCategory =  
+    "ALL"  
 
-    self.CurrentFilter =
-        "All"
+self.CurrentFilter =  
+    "All"  
 
-    self:UpdateFilterButton()
+self:UpdateFilterButton()  
 
-    self:ShowAll()
+self:ShowAll()  
 
-    self:SelectButton(
-        AllButton
-    )
+self:SelectButton(  
+    AllButton  
+)
 
 end
 
@@ -2499,7 +2241,7 @@ end
 
 function Categories:GetSelectedButton()
 
-    return self.SelectedButton
+return self.SelectedButton
 
 end
 
@@ -2508,12 +2250,12 @@ end
 --==================================================
 
 function Categories:GetButton(
-    CategoryName
+CategoryName
 )
 
-    return self.CategoryButtons[
-        CategoryName
-    ]
+return self.CategoryButtons[  
+    CategoryName  
+]
 
 end
 
@@ -2523,7 +2265,7 @@ end
 
 function Categories:GetAllSounds()
 
-    return self:BuildAllSounds()
+return self:BuildAllSounds()
 
 end
 
@@ -2533,7 +2275,7 @@ end
 
 function Categories:GetAllSoundCount()
 
-    return #self:BuildAllSounds()
+return #self:BuildAllSounds()
 
 end
 
@@ -2543,7 +2285,7 @@ end
 
 function Categories:GetFavoriteSoundCount()
 
-    return #self:GetFavoriteSounds()
+return #self:GetFavoriteSounds()
 
 end
 
@@ -2552,67 +2294,68 @@ end
 --==================================================
 
 function Categories:SetFilter(
-    FilterName
+FilterName
 )
 
-    if type(FilterName) ~= "string" then
-        return
-    end
+if type(FilterName) ~= "string" then  
+    return  
+end  
 
-    if not self.FilterResolvers[
-        FilterName
-    ] then
+if not self.FilterResolvers[  
+    FilterName  
+] then  
 
-        return
+    return  
 
-    end
+end  
 
-    self:LeaveConfiguration()
+--==================================================  
+-- LEAVE CONFIGURATION  
+--==================================================  
 
-    self:InvalidateContext()
+self:LeaveConfiguration()  
 
-    self.CurrentContext =
-        "NORMAL"
+self:InvalidateContext()  
 
-    self.CurrentCategory =
-        "ALL"
+self.CurrentContext =  
+    "NORMAL"  
 
-    self.CurrentFilter =
-        FilterName
+self.CurrentCategory =  
+    "ALL"  
 
-    self:ClearSearchContext()
+self.CurrentFilter =  
+    FilterName  
 
-    self:UpdateFilterButton()
+self:ClearSearchContext()  
 
-    if self.FilterButton then
+self:UpdateFilterButton()  
 
-        self.FilterButton.Visible =
-            true
+if self.FilterButton then  
 
-    end
+    self.FilterButton.Visible =  
+        true  
 
-    self:CloseFilterMenu()
+end  
 
-    if FilterName ==
-        "Favorite" then
+self:CloseFilterMenu()  
 
-        self:ShowFavorites()
+if FilterName == "Favorite" then  
 
-    elseif FilterName ==
-        "M1" then
+    self:ShowFavorites()  
 
-        self:ShowM1()
+elseif FilterName == "M1" then  
 
-    elseif FilterName ==
-        "Hit" then
+    self:ShowM1()  
 
-        self:ShowHit()
+elseif FilterName == "Hit" then  
 
-    else
+    self:ShowHit()  
 
-        self:ShowAll()
+else  
 
-    end
+    self:ShowAll()  
+
+end
 
 end
 
@@ -2621,24 +2364,24 @@ end
 --==================================================
 
 function Categories:RegisterFilter(
-    FilterName,
-    Resolver
+FilterName,
+Resolver
 )
 
-    if type(FilterName) ~= "string" then
-        return false
-    end
+if type(FilterName) ~= "string" then  
+    return false  
+end  
 
-    if type(Resolver) ~= "function" then
-        return false
-    end
+if type(Resolver) ~= "function" then  
+    return false  
+end  
 
-    self.FilterResolvers[
-        FilterName
-    ] =
-        Resolver
+self.FilterResolvers[  
+    FilterName  
+] =  
+    Resolver  
 
-    return true
+return true
 
 end
 
@@ -2648,94 +2391,93 @@ end
 
 function Categories:RefreshCurrent()
 
-    --==================================================
-    -- CONFIGURATION
-    --==================================================
+--==================================================  
+-- CONFIGURATION  
+--==================================================  
 
-    if self.CurrentCategory ==
-        "Configuração" then
+if self.CurrentCategory ==  
+    "Configuração" then  
 
-        self:EnterConfiguration()
+    self:EnterConfiguration()  
 
-        return
+    return  
 
-    end
+end  
 
-    --==================================================
-    -- NORMAL CONTEXT
-    --==================================================
+--==================================================  
+-- NORMAL CONTEXT  
+--==================================================  
 
-    self:LeaveConfiguration()
+self:LeaveConfiguration()  
 
-    self:InvalidateContext()
+self:InvalidateContext()  
 
-    self.CurrentContext =
-        "NORMAL"
+self.CurrentContext =  
+    "NORMAL"  
 
-    --==================================================
-    -- NORMAL CATEGORY
-    --==================================================
+--==================================================  
+-- NORMAL CATEGORY  
+--==================================================  
 
-    if self.CurrentCategory ~=
-        "ALL" then
+if self.CurrentCategory ~= "ALL" then  
 
-        local Category =
-            self.Sounds
-            and self.Sounds[
-                self.CurrentCategory
-            ]
+    local Category =  
+        self.Sounds  
+        and self.Sounds[  
+            self.CurrentCategory  
+        ]  
 
-        if type(Category) == "table" then
+    if type(Category) == "table" then  
 
-            if self.ContentTitle then
+        if self.ContentTitle then  
 
-                self.ContentTitle.Text =
-                    self.CurrentCategory
+            self.ContentTitle.Text =  
+                self.CurrentCategory  
 
-            end
+        end  
 
-            self:RenderSounds(
-                Category
-            )
+        self:RenderSounds(  
+            Category  
+        )  
 
-            return
+        return  
 
-        end
+    end  
 
-    end
+end  
 
-    --==================================================
-    -- ALL / FILTER
-    --==================================================
+--==================================================  
+-- ALL / FILTER  
+--==================================================  
 
-    if self.CurrentFilter ==
-        "Favorite" then
+if self.CurrentFilter ==  
+    "Favorite" then  
 
-        self:ShowFavorites()
+    self:ShowFavorites()  
 
-        return
+    return  
 
-    end
+end  
 
-    if self.CurrentFilter ==
-        "M1" then
+if self.CurrentFilter ==  
+    "M1" then  
 
-        self:ShowM1()
+    self:ShowM1()  
 
-        return
+    return  
 
-    end
+end  
 
-    if self.CurrentFilter ==
-        "Hit" then
+if self.CurrentFilter ==  
+    "Hit" then  
 
-        self:ShowHit()
+    self:ShowHit()  
 
-        return
+    return  
 
-    end
+end  
 
-    self:ShowAll()
+self:ShowAll()
 
 end
 
@@ -2745,127 +2487,103 @@ end
 
 function Categories:ApplyTheme()
 
-    if not self.Theme then
-        return
-    end
+if not self.Theme then  
+    return  
+end  
 
-    --==================================================
-    -- CATEGORY BUTTONS
-    --==================================================
+for _, Button in pairs(  
+    self.CategoryButtons  
+) do  
 
-    for _, Button in pairs(
-        self.CategoryButtons
-    ) do
+    if Button  
+    and Button.Parent then  
 
-        if Button
-        and Button.Parent then
+        if Button ==  
+            self.SelectedButton then  
 
-            if Button ==
-                self.SelectedButton then
+            self:SetSelectedStyle(  
+                Button  
+            )  
 
-                self:SetSelectedStyle(
-                    Button
-                )
+        else  
 
-            else
+            self:SetNormalStyle(  
+                Button  
+            )  
 
-                self:SetNormalStyle(
-                    Button
-                )
+        end  
 
-            end
+    end  
 
-        end
+end  
 
-    end
+if self.FilterButton then  
 
-    --==================================================
-    -- FILTER BUTTON
-    --==================================================
+    local CurrentTheme =  
+        self.Theme:GetCurrent()  
 
-    if self.FilterButton then
+    self.FilterButton.BackgroundColor3 =  
+        CurrentTheme.Button  
 
-        local CurrentTheme =
-            self.Theme:GetCurrent()
+    self.FilterButton.TextColor3 =  
+        CurrentTheme.Text  
 
-        self.FilterButton.BackgroundColor3 =
-            CurrentTheme.Button
+end  
 
-        self.FilterButton.TextColor3 =
-            CurrentTheme.Text
+if self.FilterStroke then  
 
-    end
+    self.FilterStroke.Color =  
+        self.Theme:GetAccent()  
 
-    --==================================================
-    -- FILTER STROKE
-    --==================================================
+end  
 
-    if self.FilterStroke then
+if self.FilterMenu then  
 
-        self.FilterStroke.Color =
-            self.Theme:GetAccent()
+    local CurrentTheme =  
+        self.Theme:GetCurrent()  
 
-    end
+    self.FilterMenu.BackgroundColor3 =  
+        CurrentTheme.Content  
 
-    --==================================================
-    -- FILTER MENU
-    --==================================================
+    local MenuStroke =  
+        self.FilterMenu:FindFirstChildOfClass(  
+            "UIStroke"  
+        )  
 
-    if self.FilterMenu then
+    if MenuStroke then  
 
-        local CurrentTheme =
-            self.Theme:GetCurrent()
+        MenuStroke.Color =  
+            self.Theme:GetAccent()  
 
-        self.FilterMenu.BackgroundColor3 =
-            CurrentTheme.Content
+    end  
 
-        local MenuStroke =
-            self.FilterMenu:
-                FindFirstChildOfClass(
-                    "UIStroke"
-                )
+end  
 
-        if MenuStroke then
+if self.FilterScroll then  
 
-            MenuStroke.Color =
-                self.Theme:GetAccent()
+    self.FilterScroll.ScrollBarImageColor3 =  
+        self.Theme:GetAccent()  
 
-        end
+    local CurrentTheme =  
+        self.Theme:GetCurrent()  
 
-    end
+    for _, Button in ipairs(  
+        self.FilterScroll:GetChildren()  
+    ) do  
 
-    --==================================================
-    -- FILTER SCROLL
-    --==================================================
+        if Button:IsA("TextButton") then  
 
-    if self.FilterScroll then
+            Button.BackgroundColor3 =  
+                CurrentTheme.Button  
 
-        self.FilterScroll:
-            ScrollBarImageColor3 =
-            self.Theme:GetAccent()
+            Button.TextColor3 =  
+                CurrentTheme.Text  
 
-        local CurrentTheme =
-            self.Theme:GetCurrent()
+        end  
 
-        for _, Button in ipairs(
-            self.FilterScroll:GetChildren()
-        ) do
+    end  
 
-            if Button:IsA(
-                "TextButton"
-            ) then
-
-                Button.BackgroundColor3 =
-                    CurrentTheme.Button
-
-                Button.TextColor3 =
-                    CurrentTheme.Text
-
-            end
-
-        end
-
-    end
+end
 
 end
 
