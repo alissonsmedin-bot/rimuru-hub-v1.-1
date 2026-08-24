@@ -270,6 +270,59 @@ local Categories = {
 
     },
 
+        --==================================================
+    -- MEGUMI
+    --==================================================
+
+    ["Megumi"] = {
+
+        {"Rabbit Escape Spawn", "17206057016"},
+        {"Nue Spawn", "17269358415"},
+        {"Nue Hit 1", "17269354824"},
+        {"Toad Spawn", "17269355559"},
+        {"Totality Spawn", "17392238439"},
+        {"Totality Slash", "17392240969"},
+        {"Max Elephant Spawn", "17457463445"},
+        {"Great Serpent Spawn", "17513691442"},
+        {"Mahoraga Summon", "17607886466"},
+        {"Shadow Enter", "4459057272"},
+        {"Shadow Leave", "17206056478"},
+        {"Awakening", "125901185360744"},
+
+        {"Max Elephant Start", "17206057404"},
+        {"Max Elephant Hit", "4086190876"},
+        {"Max Elephant Despawn", "17457463045"},
+        {"Max Elephant Explode", "4459572763"},
+
+        {"Great Serpent Start", "17513691601"},
+        {"Great Serpent Spin", "8120249833"},
+        {"Great Serpent Fly", "3778630178"},
+        {"Great Serpent Hit", "17513691220"},
+        {"Great Serpent Despawn", "17513690981"},
+        {"Great Serpent Despawn 2", "17392238770"},
+
+        {"Shadow Swarm Grab", "9105467029"},
+        {"Shadow Swarm Rush", "3084314259"},
+        {"Shadow Swarm Launch", "9114362943"},
+
+        {"Mahoraga Timer", "17607887277"},
+        {"Mahoraga Summon Christmas", "9038469500"},
+        {"Mahoraga Appear", "17607885989"},
+        {"Mahoraga Moving", "17607887774"},
+        {"Mahoraga Music", "15583493700"},
+        {"Mahoraga Hit", "17607886878"},
+
+        {"Nue Hit 2", "3929458922"},
+
+        {"Toad Fly", "17269355114"},
+        {"Toad Grab", "9105467029"},
+        {"Toad Hit", "17269354737"},
+        {"Toad Flyback", "17269354618"},
+        {"Toad Despawn", "17269355252"},
+
+        {"Totality Slash Hit", "3932141920"},
+    },
+    
     --==================================================
     -- CHOSO
     --==================================================
