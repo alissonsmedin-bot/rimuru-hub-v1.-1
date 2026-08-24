@@ -60,6 +60,8 @@ local CategoryIcons = {
 
     ["Power"] = "⚡",
 
+    ["Megumi"] = "🐺",
+    
     ["Choso"] = "🩸",
 
     ["Gojo"] = "🔵",
