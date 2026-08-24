@@ -98,7 +98,7 @@ local SHADOW_TRANSPARENCY = 0.92
 local SHADOW_MIN_TRANSPARENCY = 0.915
 local SHADOW_MAX_TRANSPARENCY = 0.94
 
-local SHADOW_PULSE_SPEED = 0.75
+local SHADOW_PULSE_SPEED = 0.77
 
 --==================================================
 -- SEARCH
@@ -1953,7 +1953,7 @@ ContentTitle.TextColor3 =
 	)  
 
 ContentTitle.TextSize =  
-	17  
+	15 
 
 ContentTitle.Font =  
 	Enum.Font.GothamBold  
@@ -1998,7 +1998,7 @@ SearchBar.Position =
 		0,  
 		10,  
 		0,  
-		39  
+		34 
 	)  
 
 SearchBar.Size =  
@@ -2346,7 +2346,7 @@ Scroll.Position =
 		0,  
 		10,  
 		0,  
-		80  
+		75  
 	)  
 
 Scroll.Size =  
@@ -2354,7 +2354,7 @@ Scroll.Size =
 		1,  
 		-20,  
 		1,  
-		-90  
+		-85  
 	)  
 
 Scroll.BackgroundTransparency =  
