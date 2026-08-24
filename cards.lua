@@ -8,7 +8,6 @@
 --// SAFE THEME COLORS
 --// RGB ACCENT COMPATIBLE
 --// BLACKOUT COPY CONTRAST
---// COMPACT TITLE VERSION
 
 local Cards = {}
 
@@ -18,71 +17,70 @@ local Cards = {}
 
 function Cards:Init(Context)
 
-    self.Context =
-        Context
+self.Context =
+Context
 
-    self.Config =
-        Context.Config
+self.Config =
+Context.Config
 
-    self.Sounds =
-        Context.Sounds
+self.Sounds =
+Context.Sounds
 
-    self.Theme =
-        Context.Theme
+self.Theme =
+Context.Theme
 
-    self.UI =
-        Context.UI
+self.UI =
+Context.UI
 
-    self.Scroll =
-        self.UI.Scroll
+self.Scroll =
+self.UI.Scroll
 
-    --==================================================
-    -- FAVORITES
-    --==================================================
+--==================================================
+-- FAVORITES
+--==================================================
 
-    self.Favorites =
-        Context.Favorites
+self.Favorites =
+Context.Favorites
 
 end
 
 --==================================================
 -- CLICK ANIMATION CONFIG
 --==================================================
--- Crescimento visual de 7 pixels.
--- Não utiliza UIScale.
--- O tamanho original é restaurado automaticamente.
 
 local CLICK_GROW =
-    7
+4
 
 local CLICK_TIME =
-    0.34
+0.34
 
 --==================================================
 -- BLACKOUT COPY COLORS
 --==================================================
--- Blackout:
+-- SOMENTE o tema Blackout utiliza:
+
 -- Fundo: branco
 -- Texto: preto
---
--- Outros temas:
+
+-- Todos os outros temas continuam usando:
+
 -- Fundo: Accent
 -- Texto: branco
 --==================================================
 
 local BLACKOUT_COPY_BACKGROUND =
-    Color3.fromRGB(
-        255,
-        255,
-        255
-    )
+Color3.fromRGB(
+255,
+255,
+255
+)
 
 local BLACKOUT_COPY_TEXT =
-    Color3.fromRGB(
-        0,
-        0,
-        0
-    )
+Color3.fromRGB(
+0,
+0,
+0
+)
 
 --==================================================
 -- CHECK BLACKOUT
@@ -90,171 +88,175 @@ local BLACKOUT_COPY_TEXT =
 
 function Cards:IsBlackout()
 
-    if not self.Theme then
-        return false
-    end
+if not self.Theme then
+return false
+end
 
-    --==================================================
-    -- GET NAME
-    --==================================================
+--==================================================
+-- GET NAME
+--==================================================
 
-    if type(self.Theme.GetName) == "function" then
+if type(self.Theme.GetName) == "function" then
 
-        local Success, Name =
-            pcall(function()
+local Success, Name =    
+    pcall(function()    
 
-                return self.Theme:GetName()
+        return self.Theme:GetName()    
 
-            end)
+    end)    
 
-        if Success then
+if Success then    
 
-            return Name ==
-                "Blackout"
+    return Name ==    
+        "Blackout"    
 
-        end
+end
 
-    end
+end
 
-    --==================================================
-    -- FALLBACK CURRENT THEME
-    --==================================================
+--==================================================
+-- FALLBACK CURRENT THEME
+--==================================================
 
-    if type(self.Theme.GetCurrent) ~= "function" then
-        return false
-    end
+if type(self.Theme.GetCurrent) ~= "function" then
+return false
+end
 
-    local Success, CurrentTheme =
-        pcall(function()
+local Success, CurrentTheme =
+pcall(function()
 
-            return self.Theme:GetCurrent()
+return self.Theme:GetCurrent()    
 
-        end)
+end)
 
-    if not Success
-    or not CurrentTheme then
+if not Success
+or not CurrentTheme then
 
-        return false
+return false
 
-    end
+end
 
-    return CurrentTheme.Name ==
-        "Blackout"
+return CurrentTheme.Name ==
+"Blackout"
 
 end
 
 --==================================================
 -- APPLY COPY STYLE
 --==================================================
+-- Blackout:
+-- branco + preto
+
+-- Outros temas:
+-- Accent + branco
+--==================================================
 
 function Cards:ApplyCopyStyle(
-    CopyButton
+CopyButton
 )
 
-    if not CopyButton then
-        return
-    end
+if not CopyButton then
+return
+end
 
-    if not self.Theme then
-        return
-    end
+if not self.Theme then
+return
+end
 
-    if self:IsBlackout() then
+if self:IsBlackout() then
 
-        CopyButton.BackgroundColor3 =
-            BLACKOUT_COPY_BACKGROUND
+CopyButton.BackgroundColor3 =    
+    BLACKOUT_COPY_BACKGROUND    
 
-        CopyButton.TextColor3 =
-            BLACKOUT_COPY_TEXT
+CopyButton.TextColor3 =    
+    BLACKOUT_COPY_TEXT
 
-    else
+else
 
-        local Accent
+local Accent    
 
-        local Success =
-            pcall(function()
+local Success =    
+    pcall(function()    
 
-                Accent =
-                    self.Theme:GetAccent()
+        Accent =    
+            self.Theme:GetAccent()    
 
-            end)
+    end)    
 
-        if Success
-        and Accent then
+if Success    
+and Accent then    
 
-            CopyButton.BackgroundColor3 =
-                Accent
+    CopyButton.BackgroundColor3 =    
+        Accent    
 
-        end
+end    
 
-        CopyButton.TextColor3 =
-            Color3.fromRGB(
-                255,
-                255,
-                255
-            )
+CopyButton.TextColor3 =    
+    Color3.fromRGB(    
+        255,    
+        255,    
+        255    
+    )
 
-    end
+end
 
 end
 
 --==================================================
 -- CLICK SIZE ANIMATION
 --==================================================
--- Cresce exatamente 7 pixels em largura e altura.
--- O tamanho original é salvo antes da animação.
---
--- Não utiliza UIScale para evitar conflitos
--- com o layout e outros elementos da interface.
+-- Cresce exatamente 4 pixels.
+-- Retorna ao tamanho original após 0.34s.
+-- Não utiliza UIScale.
 --==================================================
 
 function Cards:ClickAnimation(Button)
 
-    if not Button
-    or not Button.Parent then
+if not Button
+or not Button.Parent then
 
-        return
+return
 
-    end
+end
 
-    local OriginalSize =
-        Button.Size
+local OriginalSize =
+Button.Size
 
-    local ExpandedSize =
-        UDim2.new(
+local ExpandedSize =
+UDim2.new(
 
-            OriginalSize.X.Scale,
+OriginalSize.X.Scale,    
 
-            OriginalSize.X.Offset
-                + CLICK_GROW,
+    OriginalSize.X.Offset    
+        + CLICK_GROW,    
 
-            OriginalSize.Y.Scale,
+    OriginalSize.Y.Scale,    
 
-            OriginalSize.Y.Offset
-                + CLICK_GROW
+    OriginalSize.Y.Offset    
+        + CLICK_GROW    
 
-        )
+)
 
-    Button.Size =
-        ExpandedSize
+Button.Size =
+ExpandedSize
 
-    task.delay(
+task.delay(
 
-        CLICK_TIME,
+CLICK_TIME,    
 
-        function()
+function()    
 
-            if Button
-            and Button.Parent then
+    if Button    
+    and Button.Parent then    
 
-                Button.Size =
-                    OriginalSize
+        Button.Size =    
+            OriginalSize    
 
-            end
+    end    
 
-        end
+end
 
-    )
+)
 
 end
 
@@ -264,41 +266,41 @@ end
 
 function Cards:Copy(ID)
 
-    if setclipboard then
+if setclipboard then
 
-        local Success =
-            pcall(function()
+local Success =    
+    pcall(function()    
 
-                setclipboard(
-                    tostring(ID)
-                )
+        setclipboard(    
+            tostring(ID)    
+        )    
 
-            end)
+    end)    
 
-        if Success then
-            return true
-        end
+if Success then    
+    return true    
+end
 
-    end
+end
 
-    if toclipboard then
+if toclipboard then
 
-        local Success =
-            pcall(function()
+local Success =    
+    pcall(function()    
 
-                toclipboard(
-                    tostring(ID)
-                )
+        toclipboard(    
+            tostring(ID)    
+        )    
 
-            end)
+    end)    
 
-        if Success then
-            return true
-        end
+if Success then    
+    return true    
+end
 
-    end
+end
 
-    return false
+return false
 
 end
 
@@ -308,26 +310,26 @@ end
 
 function Cards:IsFavorite(ID)
 
-    if not self.Favorites then
-        return false
-    end
+if not self.Favorites then
+return false
+end
 
-    local Success, Result =
-        pcall(function()
+local Success, Result =
+pcall(function()
 
-            return self.Favorites:IsFavorite(
-                ID
-            )
+return self.Favorites:IsFavorite(    
+        ID    
+    )    
 
-        end)
+end)
 
-    if Success then
+if Success then
 
-        return Result == true
+return Result == true
 
-    end
+end
 
-    return false
+return false
 
 end
 
@@ -339,135 +341,148 @@ end
 --==================================================
 
 function Cards:UpdateFavoriteButton(
-    Button,
-    ID
+Button,
+ID
 )
 
-    if not Button then
-        return
-    end
+if not Button then
+return
+end
 
-    if not self.Theme then
-        return
-    end
+if not self.Theme then
+return
+end
 
-    local Success, CurrentTheme =
-        pcall(function()
+local Success, CurrentTheme =
+pcall(function()
 
-            return self.Theme:GetCurrent()
+return self.Theme:GetCurrent()    
 
-        end)
+end)
 
-    if not Success
-    or not CurrentTheme then
+if not Success
+or not CurrentTheme then
 
-        return
+return
 
-    end
+end
 
-    local IsFavorite =
-        self:IsFavorite(ID)
+local IsFavorite =
+self:IsFavorite(ID)
 
-    --==================================================
-    -- FAVORITADO
-    --==================================================
+--==================================================
+-- FAVORITADO
+--==================================================
 
-    if IsFavorite then
+if IsFavorite then
 
-        Button.Text =
-            "★"
+Button.Text =    
+    "★"    
 
-        local Accent
+local Accent    
 
-        local AccentSuccess =
-            pcall(function()
+local AccentSuccess =    
+    pcall(function()    
 
-                Accent =
-                    self.Theme:GetAccent()
+        Accent =    
+            self.Theme:GetAccent()    
 
-            end)
+    end)    
 
-        if AccentSuccess
-        and Accent then
+if AccentSuccess    
+and Accent then    
 
-            Button.TextColor3 =
-                Accent
+    Button.TextColor3 =    
+        Accent    
 
-        else
+else    
 
-            Button.TextColor3 =
-                CurrentTheme.Text
+    Button.TextColor3 =    
+        CurrentTheme.Text    
 
-        end
+end
 
-    --==================================================
-    -- NÃO FAVORITADO
-    --==================================================
+--==================================================
+-- NÃO FAVORITADO
+--==================================================
 
-    else
+else
 
-        Button.Text =
-            "☆"
+Button.Text =    
+    "☆"    
 
-        Button.TextColor3 =
-            CurrentTheme.SubText
-            or CurrentTheme.Text
+Button.TextColor3 =    
+    CurrentTheme.SubText    
+    or CurrentTheme.Text
 
-    end
+end
 
 end
 
 --==================================================
 -- TOGGLE FAVORITE
 --==================================================
+-- O Favorites.lua controla o estado.
+-- Esta função apenas altera o estado e depois
+-- pede para UpdateFavoriteButton atualizar
+-- o visual.
+--==================================================
 
 function Cards:ToggleFavorite(
-    ID,
-    Button
+ID,
+Button
 )
 
-    if not self.Favorites then
+if not self.Favorites then
 
-        warn(
-            "⚠️ Rimuru Hub: módulo Favorites não encontrado."
-        )
+warn(    
+    "⚠️ Rimuru Hub: módulo Favorites não encontrado."    
+)    
 
-        return
+return
 
-    end
+end
 
-    if not Button then
-        return
-    end
+if not Button then
+return
+end
 
-    local Success, Result =
-        pcall(function()
+local Success, Result =
+pcall(function()
 
-            return self.Favorites:Toggle(
-                ID
-            )
+return self.Favorites:Toggle(    
+        ID    
+    )    
 
-        end)
+end)
 
-    if not Success then
+if not Success then
 
-        warn(
-            "⚠️ Rimuru Hub: erro ao alterar favorito:",
-            Result
-        )
+warn(    
+    "⚠️ Rimuru Hub: erro ao alterar favorito:",    
+    Result    
+)    
 
-        return
+return
 
-    end
+end
 
-    --==================================================
-    -- ATUALIZA VISUAL
-    --==================================================
+--==================================================
+-- RESULTADO
+--==================================================
+-- Result:
+-- true  = adicionado
+-- false = removido
 
-    self:UpdateFavoriteButton(
-        Button,
-        ID
-    )
+-- Não usamos Result para desenhar a estrela.
+-- A função UpdateFavoriteButton consulta
+-- diretamente o Favorites.lua.
+--==================================================
+
+self:UpdateFavoriteButton(
+Button,
+ID
+)
 
 end
 
@@ -476,449 +491,446 @@ end
 --==================================================
 
 function Cards:CreateSoundCard(
-    Index,
-    Data
+Index,
+Data
 )
 
-    if type(Data) ~= "table" then
-        return
-    end
-
-    if not self.Theme then
-        return
-    end
-
-    local CurrentTheme =
-        self.Theme:GetCurrent()
-
-    if not CurrentTheme then
-        return
-    end
-
-    local Name =
-        tostring(
-            Data[1]
-            or "Unknown"
-        )
-
-    local ID =
-        tostring(
-            Data[2]
-            or ""
-        )
-
-    --==================================================
-    -- CARD
-    --==================================================
-
-    local Card =
-        Instance.new(
-            "Frame"
-        )
-
-    Card.Name =
-        "Sound_" .. tostring(Index)
-
-    Card.Size =
-        UDim2.new(
-            1,
-            -5,
-            0,
-            48
-        )
-
-    Card.BackgroundColor3 =
-        CurrentTheme.Card
-        or CurrentTheme.Content
-
-    Card.BorderSizePixel =
-        0
-
-    Card.LayoutOrder =
-        Index
-
-    Card.ZIndex =
-        504
-
-    Card.Parent =
-        self.Scroll
-
-    --==================================================
-    -- CARD CORNER
-    --==================================================
-
-    local CardCorner =
-        Instance.new(
-            "UICorner"
-        )
-
-    CardCorner.CornerRadius =
-        UDim.new(
-            0,
-            8
-        )
-
-    CardCorner.Parent =
-        Card
-
-    --==================================================
-    -- NAME
-    --==================================================
-    -- Ajustado para ficar menor e mais elegante.
-    -- Não ocupa espaço excessivo no card.
-    --==================================================
-
-    local NameLabel =
-        Instance.new(
-            "TextLabel"
-        )
-
-    NameLabel.Name =
-        "Name"
-
-    NameLabel.Position =
-        UDim2.new(
-            0,
-            12,
-            0,
-            6
-        )
+if type(Data) ~= "table" then
+return
+end
+
+if not self.Theme then
+return
+end
+
+local CurrentTheme =
+self.Theme:GetCurrent()
+
+if not CurrentTheme then
+return
+end
+
+local Name =
+tostring(
+Data[1]
+or "Unknown"
+)
+
+local ID =
+tostring(
+Data[2]
+or ""
+)
+
+--==================================================
+-- CARD
+--==================================================
+
+local Card =
+Instance.new(
+"Frame"
+)
+
+Card.Name =
+"Sound_" .. tostring(Index)
+
+Card.Size =
+UDim2.new(
+1,
+-5,
+0,
+48
+)
+
+Card.BackgroundColor3 =
+CurrentTheme.Card
+or CurrentTheme.Content
+
+Card.BorderSizePixel =
+0
+
+Card.LayoutOrder =
+Index
+
+Card.ZIndex =
+504
+
+Card.Parent =
+self.Scroll
+
+--==================================================
+-- CARD CORNER
+--==================================================
+
+local CardCorner =
+Instance.new(
+"UICorner"
+)
+
+CardCorner.CornerRadius =
+UDim.new(
+0,
+8
+)
+
+CardCorner.Parent =
+Card
+
+--==================================================
+-- NAME
+--==================================================
+
+local NameLabel =
+Instance.new(
+"TextLabel"
+)
+
+NameLabel.Name =
+"Name"
+
+NameLabel.Position =
+UDim2.new(
+0,
+12,
+0,
+5
+)
+
+NameLabel.Size =
+UDim2.new(
+1,
+-130,
+0,
+18
+)
 
-    NameLabel.Size =
-        UDim2.new(
-            1,
-            -130,
-            0,
-            16
-        )
+NameLabel.BackgroundTransparency =
+1
 
-    NameLabel.BackgroundTransparency =
-        1
+NameLabel.Text =
+Name
+
+NameLabel.TextColor3 =
+CurrentTheme.Text
+
+NameLabel.TextSize =
+12
+
+NameLabel.Font =
+Enum.Font.GothamMedium
+
+NameLabel.TextXAlignment =
+Enum.TextXAlignment.Left
+
+NameLabel.TextTruncate =
+Enum.TextTruncate.AtEnd
+
+NameLabel.ZIndex =
+505
 
-    NameLabel.Text =
-        Name
-
-    NameLabel.TextColor3 =
-        CurrentTheme.Text
+NameLabel.Parent =
+Card
 
-    NameLabel.TextSize =
-        11
-
-    NameLabel.Font =
-        Enum.Font.GothamMedium
-
-    NameLabel.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    NameLabel.TextYAlignment =
-        Enum.TextYAlignment.Center
-
-    NameLabel.TextTruncate =
-        Enum.TextTruncate.AtEnd
-
-    NameLabel.ZIndex =
-        505
-
-    NameLabel.Parent =
-        Card
-
-    --==================================================
-    -- ID
-    --==================================================
+--==================================================
+-- ID
+--==================================================
 
-    local IDLabel =
-        Instance.new(
-            "TextLabel"
-        )
+local IDLabel =
+Instance.new(
+"TextLabel"
+)
 
-    IDLabel.Name =
-        "ID"
+IDLabel.Name =
+"ID"
 
-    IDLabel.Position =
-        UDim2.new(
-            0,
-            12,
-            0,
-            24
-        )
-
-    IDLabel.Size =
-        UDim2.new(
-            1,
-            -130,
-            0,
-            14
-        )
-
-    IDLabel.BackgroundTransparency =
-        1
+IDLabel.Position =
+UDim2.new(
+0,
+12,
+0,
+25
+)
 
-    IDLabel.Text =
-        ID
+IDLabel.Size =
+UDim2.new(
+1,
+-130,
+0,
+16
+)
 
-    IDLabel.TextColor3 =
-        CurrentTheme.SubText
-        or CurrentTheme.Text
+IDLabel.BackgroundTransparency =
+1
 
-    IDLabel.TextSize =
-        9
+IDLabel.Text =
+ID
 
-    IDLabel.Font =
-        Enum.Font.Code
+IDLabel.TextColor3 =
+CurrentTheme.SubText
+or CurrentTheme.Text
 
-    IDLabel.TextXAlignment =
-        Enum.TextXAlignment.Left
+IDLabel.TextSize =
+10
 
-    IDLabel.TextYAlignment =
-        Enum.TextYAlignment.Center
+IDLabel.Font =
+Enum.Font.Code
 
-    IDLabel.ZIndex =
-        505
+IDLabel.TextXAlignment =
+Enum.TextXAlignment.Left
 
-    IDLabel.Parent =
-        Card
+IDLabel.ZIndex =
+505
 
-    --==================================================
-    -- FAVORITE BUTTON
-    --==================================================
+IDLabel.Parent =
+Card
 
-    local FavoriteButton =
-        Instance.new(
-            "TextButton"
-        )
+--==================================================
+-- FAVORITE BUTTON
+--==================================================
 
-    FavoriteButton.Name =
-        "Favorite"
+local FavoriteButton =
+Instance.new(
+"TextButton"
+)
 
-    FavoriteButton.Size =
-        UDim2.new(
-            0,
-            28,
-            0,
-            28
-        )
+FavoriteButton.Name =
+"Favorite"
 
-    FavoriteButton.Position =
-        UDim2.new(
-            1,
-            -98,
-            0.5,
-            -14
-        )
-
-    FavoriteButton.BackgroundColor3 =
-        CurrentTheme.Button
-        or CurrentTheme.Card
-
-    FavoriteButton.BorderSizePixel =
-        0
+FavoriteButton.Size =
+UDim2.new(
+0,
+28,
+0,
+28
+)
 
-    FavoriteButton.TextSize =
-        18
+FavoriteButton.Position =
+UDim2.new(
+1,
+-98,
+0.5,
+-14
+)
 
-    FavoriteButton.Font =
-        Enum.Font.GothamBold
+FavoriteButton.BackgroundColor3 =
+CurrentTheme.Button
+or CurrentTheme.Card
 
-    FavoriteButton.AutoButtonColor =
-        false
+FavoriteButton.BorderSizePixel =
+0
 
-    FavoriteButton.ZIndex =
-        506
+FavoriteButton.TextSize =
+18
 
-    FavoriteButton.Parent =
-        Card
+FavoriteButton.Font =
+Enum.Font.GothamBold
 
-    --==================================================
-    -- FAVORITE CORNER
-    --==================================================
+FavoriteButton.AutoButtonColor =
+false
 
-    local FavoriteCorner =
-        Instance.new(
-            "UICorner"
-        )
+FavoriteButton.ZIndex =
+506
 
-    FavoriteCorner.CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
+FavoriteButton.Parent =
+Card
 
-    FavoriteCorner.Parent =
-        FavoriteButton
+--==================================================
+-- FAVORITE CORNER
+--==================================================
 
-    --==================================================
-    -- FAVORITE STATE
-    --==================================================
+local FavoriteCorner =
+Instance.new(
+"UICorner"
+)
 
-    self:UpdateFavoriteButton(
-        FavoriteButton,
-        ID
-    )
+FavoriteCorner.CornerRadius =
+UDim.new(
+0,
+6
+)
 
-    --==================================================
-    -- FAVORITE EVENT
-    --==================================================
+FavoriteCorner.Parent =
+FavoriteButton
 
-    FavoriteButton.MouseButton1Click:Connect(
+--==================================================
+-- FAVORITE STATE
+--==================================================
 
-        function()
+self:UpdateFavoriteButton(
 
-            self:ClickAnimation(
-                FavoriteButton
-            )
+FavoriteButton,    
 
-            self:ToggleFavorite(
-                ID,
-                FavoriteButton
-            )
+ID
 
-        end
+)
 
-    )
+--==================================================
+-- FAVORITE EVENT
+--==================================================
 
-    --==================================================
-    -- COPY BUTTON
-    --==================================================
+FavoriteButton.MouseButton1Click:Connect(
 
-    local CopyButton =
-        Instance.new(
-            "TextButton"
-        )
+function()    
 
-    CopyButton.Name =
-        "Copy"
+    self:ClickAnimation(    
+        FavoriteButton    
+    )    
 
-    CopyButton.Size =
-        UDim2.new(
-            0,
-            55,
-            0,
-            28
-        )
+    self:ToggleFavorite(    
 
-    CopyButton.Position =
-        UDim2.new(
-            1,
-            -65,
-            0.5,
-            -14
-        )
+        ID,    
 
-    CopyButton.BackgroundTransparency =
-        0
+        FavoriteButton    
 
-    CopyButton.BorderSizePixel =
-        0
+    )    
 
-    CopyButton.Text =
-        "Copy"
+end
 
-    CopyButton.TextSize =
-        10
+)
 
-    CopyButton.Font =
-        Enum.Font.GothamBold
+--==================================================
+-- COPY BUTTON
+--==================================================
 
-    CopyButton.AutoButtonColor =
-        false
+local CopyButton =
+Instance.new(
+"TextButton"
+)
 
-    CopyButton.ZIndex =
-        506
+CopyButton.Name =
+"Copy"
 
-    CopyButton.Parent =
-        Card
+CopyButton.Size =
+UDim2.new(
+0,
+55,
+0,
+28
+)
 
-    --==================================================
-    -- COPY STYLE
-    --==================================================
+CopyButton.Position =
+UDim2.new(
+1,
+-65,
+0.5,
+-14
+)
 
-    self:ApplyCopyStyle(
-        CopyButton
-    )
+CopyButton.BackgroundTransparency =
+0
 
-    --==================================================
-    -- COPY CORNER
-    --==================================================
+CopyButton.BorderSizePixel =
+0
 
-    local CopyCorner =
-        Instance.new(
-            "UICorner"
-        )
+CopyButton.Text =
+"Copy"
 
-    CopyCorner.CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
+CopyButton.TextSize =
+10
 
-    CopyCorner.Parent =
-        CopyButton
+CopyButton.Font =
+Enum.Font.GothamBold
 
-    --==================================================
-    -- COPY EVENT
-    --==================================================
+CopyButton.AutoButtonColor =
+false
 
-    CopyButton.MouseButton1Click:Connect(
+CopyButton.ZIndex =
+506
 
-        function()
+CopyButton.Parent =
+Card
 
-            self:ClickAnimation(
-                CopyButton
-            )
+--==================================================
+-- COPY STYLE
+--==================================================
 
-            if self:Copy(ID) then
+self:ApplyCopyStyle(
+CopyButton
+)
 
-                CopyButton.Text =
-                    "Copied!"
+--==================================================
+-- COPY CORNER
+--==================================================
 
-                task.delay(
+local CopyCorner =
+Instance.new(
+"UICorner"
+)
 
-                    0.8,
+CopyCorner.CornerRadius =
+UDim.new(
+0,
+6
+)
 
-                    function()
+CopyCorner.Parent =
+CopyButton
 
-                        if CopyButton
-                        and CopyButton.Parent then
+--==================================================
+-- COPY EVENT
+--==================================================
 
-                            CopyButton.Text =
-                                "Copy"
+CopyButton.MouseButton1Click:Connect(
 
-                        end
+function()    
 
-                    end
+    self:ClickAnimation(    
+        CopyButton    
+    )    
 
-                )
+    if self:Copy(ID) then    
 
-            else
+        CopyButton.Text =    
+            "Copied!"    
 
-                CopyButton.Text =
-                    "N/A"
+        task.delay(    
 
-                task.delay(
+            0.8,    
 
-                    0.8,
+            function()    
 
-                    function()
+                if CopyButton    
+                and CopyButton.Parent then    
 
-                        if CopyButton
-                        and CopyButton.Parent then
+                    CopyButton.Text =    
+                        "Copy"    
 
-                            CopyButton.Text =
-                                "Copy"
+                end    
 
-                        end
+            end    
 
-                    end
+        )    
 
-                )
+    else    
 
-            end
+        CopyButton.Text =    
+            "N/A"    
 
-        end
+        task.delay(    
 
-    )
+            0.8,    
 
-    return Card
+            function()    
+
+                if CopyButton    
+                and CopyButton.Parent then    
+
+                    CopyButton.Text =    
+                        "Copy"    
+
+                end    
+
+            end    
+
+        )    
+
+    end    
+
+end
+
+)
+
+return Card
 
 end
 
@@ -928,126 +940,125 @@ end
 
 function Cards:ApplyTheme()
 
-    if not self.Scroll then
-        return
-    end
+if not self.Scroll then
+return
+end
 
-    if not self.Theme then
-        return
-    end
+if not self.Theme then
+return
+end
 
-    local CurrentTheme =
-        self.Theme:GetCurrent()
+local CurrentTheme =
+self.Theme:GetCurrent()
 
-    if not CurrentTheme then
-        return
-    end
+if not CurrentTheme then
+return
+end
 
-    for _, Card in
-        ipairs(
-            self.Scroll:GetChildren()
-        ) do
+for _, Card in
+ipairs(
+self.Scroll:GetChildren()
+) do
 
-        if Card:IsA("Frame")
-        and Card.Name:sub(1, 6) ==
-            "Sound_" then
+if Card:IsA("Frame")    
+and Card.Name:sub(1, 6) ==    
+    "Sound_" then    
 
-            --==================================================
-            -- CARD
-            --==================================================
+    --==================================================    
+    -- CARD    
+    --==================================================    
 
-            Card.BackgroundColor3 =
-                CurrentTheme.Card
-                or CurrentTheme.Content
+    Card.BackgroundColor3 =    
+        CurrentTheme.Card    
+        or CurrentTheme.Content    
 
-            --==================================================
-            -- NAME
-            --==================================================
+    --==================================================    
+    -- NAME    
+    --==================================================    
 
-            local NameLabel =
-                Card:FindFirstChild(
-                    "Name"
-                )
+    local NameLabel =    
+        Card:FindFirstChild(    
+            "Name"    
+        )    
 
-            if NameLabel then
+    if NameLabel then    
 
-                NameLabel.TextColor3 =
-                    CurrentTheme.Text
+        NameLabel.TextColor3 =    
+            CurrentTheme.Text    
 
-            end
+    end    
 
-            --==================================================
-            -- ID
-            --==================================================
+    --==================================================    
+    -- ID    
+    --==================================================    
 
-            local IDLabel =
-                Card:FindFirstChild(
-                    "ID"
-                )
+    local IDLabel =    
+        Card:FindFirstChild(    
+            "ID"    
+        )    
 
-            if IDLabel then
+    if IDLabel then    
 
-                IDLabel.TextColor3 =
-                    CurrentTheme.SubText
-                    or CurrentTheme.Text
+        IDLabel.TextColor3 =    
+            CurrentTheme.SubText    
+            or CurrentTheme.Text    
 
-            end
+    end    
 
-            --==================================================
-            -- FAVORITE
-            --==================================================
+    --==================================================    
+    -- FAVORITE    
+    --==================================================    
 
-            local FavoriteButton =
-                Card:FindFirstChild(
-                    "Favorite"
-                )
+    local FavoriteButton =    
+        Card:FindFirstChild(    
+            "Favorite"    
+        )    
 
-            if FavoriteButton then
+    if FavoriteButton then    
 
-                FavoriteButton.BackgroundColor3 =
-                    CurrentTheme.Button
-                    or CurrentTheme.Card
+        FavoriteButton.BackgroundColor3 =    
+            CurrentTheme.Button    
+            or CurrentTheme.Card    
 
-                local StoredID =
-                    ""
+        local StoredID = ""    
 
-                if IDLabel then
+        if IDLabel then    
 
-                    StoredID =
-                        IDLabel.Text
+            StoredID =    
+                IDLabel.Text    
 
-                end
+        end    
 
-                self:UpdateFavoriteButton(
+        self:UpdateFavoriteButton(    
 
-                    FavoriteButton,
+            FavoriteButton,    
 
-                    StoredID
+            StoredID    
 
-                )
+        )    
 
-            end
+    end    
 
-            --==================================================
-            -- COPY
-            --==================================================
+    --==================================================    
+    -- COPY    
+    --==================================================    
 
-            local CopyButton =
-                Card:FindFirstChild(
-                    "Copy"
-                )
+    local CopyButton =    
+        Card:FindFirstChild(    
+            "Copy"    
+        )    
 
-            if CopyButton then
+    if CopyButton then    
 
-                self:ApplyCopyStyle(
-                    CopyButton
-                )
+        self:ApplyCopyStyle(    
+            CopyButton    
+        )    
 
-            end
+    end    
 
-        end
+end
 
-    end
+end
 
 end
 
@@ -1056,38 +1067,38 @@ end
 --==================================================
 
 function Cards:RefreshCard(
-    Card
+Card
 )
 
-    if not Card
-    or not Card.Parent then
+if not Card
+or not Card.Parent then
 
-        return
+return
 
-    end
+end
 
-    local IDLabel =
-        Card:FindFirstChild(
-            "ID"
-        )
+local IDLabel =
+Card:FindFirstChild(
+"ID"
+)
 
-    local FavoriteButton =
-        Card:FindFirstChild(
-            "Favorite"
-        )
+local FavoriteButton =
+Card:FindFirstChild(
+"Favorite"
+)
 
-    if IDLabel
-    and FavoriteButton then
+if IDLabel
+and FavoriteButton then
 
-        self:UpdateFavoriteButton(
+self:UpdateFavoriteButton(    
 
-            FavoriteButton,
+    FavoriteButton,    
 
-            IDLabel.Text
+    IDLabel.Text    
 
-        )
+)
 
-    end
+end
 
 end
 
@@ -1097,26 +1108,26 @@ end
 
 function Cards:Refresh()
 
-    if not self.Scroll then
-        return
-    end
+if not self.Scroll then
+return
+end
 
-    for _, Object in
-        ipairs(
-            self.Scroll:GetChildren()
-        ) do
+for _, Object in
+ipairs(
+self.Scroll:GetChildren()
+) do
 
-        if Object:IsA("Frame")
-        and Object.Name:sub(1, 6) ==
-            "Sound_" then
+if Object:IsA("Frame")    
+and Object.Name:sub(1, 6) ==    
+    "Sound_" then    
 
-            self:RefreshCard(
-                Object
-            )
+    self:RefreshCard(    
+        Object    
+    )    
 
-        end
+end
 
-    end
+end
 
 end
 
