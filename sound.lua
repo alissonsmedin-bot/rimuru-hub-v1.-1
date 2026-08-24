@@ -256,9 +256,9 @@ local Categories = {
         {"Fight Miss Hit", "92658796918459"},
         {"Special Hit", "77456429238350"},
         {"Cursed Remedy Hit", "83588770043956"},
-        {"Seven Souls Hit", "127769542531541"}
+        {"Seven Souls Hit", "127769542531541"},
         {"Power", "96632806833838"}
-        
+
     },
 
     --==================================================
@@ -269,7 +269,7 @@ local Categories = {
 
         {"Rabbit Escape Spawn", "17206057016"},
         {"Nue Spawn", "17269358415"},
-        {"Nue Hit 1", "17269354824"},
+        {"Nue Hit 1", "117269354824"},
         {"Toad Spawn", "17269355559"},
         {"Totality Spawn", "17392238439"},
         {"Totality Slash", "17392240969"},
@@ -313,7 +313,7 @@ local Categories = {
 
         {"Totality Slash Hit", "3932141920"},
     },
-    
+
     --==================================================
     -- CHOSO
     --==================================================
@@ -757,20 +757,20 @@ local Categories = {
         {"I thought you were strong", "136221786218148"},
         {"Loud Anime", "6797864253"},
         {"Loud Burp", "125254353961998"},
-        {"Mario Bros. Death Sound (alt) ⭐", "7361042352"},
+        {"Mario Bros. Death Sound (alt)", "7361042352"},
         {"Mario Star Song", "8399934126"},
         {"Mr Squidward", "7198382725"},
         {"Meme Laugh", "8647630325"},
         {"Meme Scream / Rake", "6343741731"},
         {"Nani (alt)", "127508291787866"},
         {"Oh My GAWD, I won", "1352824542"},
-        {"Rick Roll (alt versions) ⭐", "5560182875"},
+        {"Rick Roll (alt versions)", "5560182875"},
         {"Spring", "105266638590279"},
         {"SpongeBob Sad Sound", "8904888220"},
-        {"Sus ⭐", "7704160053"},
+        {"Sus", "7704160053"},
         {"This is too easy", "5352458739"},
         {"UI Click", "6895079853"},
-        {"Vine Boom ⭐", "9060808331"},
+        {"Vine Boom", "9060808331"},
         {"Wake Up Bozo", "9042248317"},
         {"Well, boys, we did it", "6726104707"},
         {"Rick Roll", "7859591812"},
