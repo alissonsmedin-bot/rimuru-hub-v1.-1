@@ -1,6 +1,7 @@
 --// 💥 RIMURU HUB
 --// UI SYSTEM
 --// PREMIUM NEON UI
+--// GITHUB LOGO INTEGRATED
 --// SEARCH REMOVED FROM UI
 --// SEARCH SYSTEM COMPATIBLE
 --// SAFE THEME COMPATIBILITY
@@ -93,6 +94,13 @@ local SHADOW_MAX_TRANSPARENCY = 0.94
 local SHADOW_PULSE_SPEED = 0.77
 
 --==================================================
+-- GITHUB LOGO
+--==================================================
+
+local HEADER_LOGO_IMAGE =
+	"https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/main/1000086171-removebg-preview.png"
+
+--==================================================
 -- FALLBACK COLORS
 --==================================================
 
@@ -149,6 +157,7 @@ local FALLBACK_WHITE = Color3.fromRGB(
 --==================================================
 
 local function SafeColor(Value, Fallback)
+
 	if typeof(Value) == "Color3" then
 		return Value
 	end
@@ -157,6 +166,7 @@ local function SafeColor(Value, Fallback)
 end
 
 local function SafeNumber(Value, Fallback)
+
 	if type(Value) == "number" then
 		return Value
 	end
@@ -230,12 +240,15 @@ local function GetCurrentTheme(Theme)
 	if type(Theme.GetCurrent) == "function" then
 
 		local Success, Result = pcall(function()
+
 			return Theme:GetCurrent()
+
 		end)
 
 		if Success and type(Result) == "table" then
 			Current = Result
 		end
+
 	end
 
 	if not Current and type(Theme.CurrentTheme) == "table" then
@@ -294,6 +307,7 @@ local function GetCurrentTheme(Theme)
 	)
 
 	return Current
+
 end
 
 --==================================================
@@ -309,38 +323,53 @@ local function GetThemeName(Theme)
 	if type(Theme.GetName) == "function" then
 
 		local Success, Result = pcall(function()
+
 			return Theme:GetName()
+
 		end)
 
 		if Success and Result ~= nil then
+
 			return tostring(Result)
+
 		end
+
 	end
 
 	if type(Theme.GetCurrentName) == "function" then
 
 		local Success, Result = pcall(function()
+
 			return Theme:GetCurrentName()
+
 		end)
 
 		if Success and Result ~= nil then
+
 			return tostring(Result)
+
 		end
+
 	end
 
 	if Theme.CurrentThemeName then
+
 		return tostring(
 			Theme.CurrentThemeName
 		)
+
 	end
 
 	local Current = GetCurrentTheme(Theme)
 
 	if Current.Name then
+
 		return tostring(Current.Name)
+
 	end
 
 	return "Rimuru Dark"
+
 end
 
 --==================================================
@@ -363,14 +392,16 @@ function UI:EnsureThemeCompatibility()
 
 		Theme.GetNormalColor = function(Self)
 
-			local Current = GetCurrentTheme(Self)
+			local Current =
+				GetCurrentTheme(Self)
 
-			local Name = string.lower(
-				tostring(
-					Current.Name
-						or GetThemeName(Self)
+			local Name =
+				string.lower(
+					tostring(
+						Current.Name
+							or GetThemeName(Self)
+					)
 				)
-			)
 
 			if string.find(
 				Name,
@@ -384,6 +415,7 @@ function UI:EnsureThemeCompatibility()
 					8,
 					8
 				)
+
 			end
 
 			return SafeColor(
@@ -391,7 +423,9 @@ function UI:EnsureThemeCompatibility()
 					or Current.Card,
 				FALLBACK_CARD
 			)
+
 		end
+
 	end
 
 	--==================================================
@@ -402,14 +436,16 @@ function UI:EnsureThemeCompatibility()
 
 		Theme.GetNormalTextColor = function(Self)
 
-			local Current = GetCurrentTheme(Self)
+			local Current =
+				GetCurrentTheme(Self)
 
-			local Name = string.lower(
-				tostring(
-					Current.Name
-						or GetThemeName(Self)
+			local Name =
+				string.lower(
+					tostring(
+						Current.Name
+							or GetThemeName(Self)
+					)
 				)
-			)
 
 			if string.find(
 				Name,
@@ -419,13 +455,16 @@ function UI:EnsureThemeCompatibility()
 			) then
 
 				return FALLBACK_WHITE
+
 			end
 
 			return SafeColor(
 				Current.Text,
 				FALLBACK_TEXT
 			)
+
 		end
+
 	end
 
 	--==================================================
@@ -436,14 +475,16 @@ function UI:EnsureThemeCompatibility()
 
 		Theme.GetSelectedColor = function(Self)
 
-			local Current = GetCurrentTheme(Self)
+			local Current =
+				GetCurrentTheme(Self)
 
-			local Name = string.lower(
-				tostring(
-					Current.Name
-						or GetThemeName(Self)
+			local Name =
+				string.lower(
+					tostring(
+						Current.Name
+							or GetThemeName(Self)
+					)
 				)
-			)
 
 			if string.find(
 				Name,
@@ -453,26 +494,34 @@ function UI:EnsureThemeCompatibility()
 			) then
 
 				return FALLBACK_WHITE
+
 			end
 
 			if type(Self.GetAccent) == "function" then
 
-				local Success, Result = pcall(function()
-					return Self:GetAccent()
-				end)
+				local Success, Result =
+					pcall(function()
+
+						return Self:GetAccent()
+
+					end)
 
 				if Success
 					and typeof(Result) == "Color3" then
 
 					return Result
+
 				end
+
 			end
 
 			return SafeColor(
 				Current.Accent,
 				FALLBACK_ACCENT
 			)
+
 		end
+
 	end
 
 	--==================================================
@@ -483,14 +532,16 @@ function UI:EnsureThemeCompatibility()
 
 		Theme.GetSelectedTextColor = function(Self)
 
-			local Current = GetCurrentTheme(Self)
+			local Current =
+				GetCurrentTheme(Self)
 
-			local Name = string.lower(
-				tostring(
-					Current.Name
-						or GetThemeName(Self)
+			local Name =
+				string.lower(
+					tostring(
+						Current.Name
+							or GetThemeName(Self)
+					)
 				)
-			)
 
 			if string.find(
 				Name,
@@ -500,13 +551,16 @@ function UI:EnsureThemeCompatibility()
 			) then
 
 				return FALLBACK_BLACK
+
 			end
 
 			return SafeColor(
 				Current.Text,
 				FALLBACK_TEXT
 			)
+
 		end
+
 	end
 
 end
@@ -519,23 +573,33 @@ function UI:GetAccent()
 
 	local Theme = self.Theme
 
-	if Theme and type(Theme.GetAccent) == "function" then
+	if Theme
+		and type(Theme.GetAccent) == "function" then
 
-		local Success, Result = pcall(function()
-			return Theme:GetAccent()
-		end)
+		local Success, Result =
+			pcall(function()
 
-		if Success and typeof(Result) == "Color3" then
+				return Theme:GetAccent()
+
+			end)
+
+		if Success
+			and typeof(Result) == "Color3" then
+
 			return Result
+
 		end
+
 	end
 
-	local Current = GetCurrentTheme(Theme)
+	local Current =
+		GetCurrentTheme(Theme)
 
 	return SafeColor(
 		Current.Accent,
 		FALLBACK_ACCENT
 	)
+
 end
 
 --==================================================
@@ -546,18 +610,27 @@ function UI:GetGlowColor()
 
 	local Theme = self.Theme
 
-	if Theme and type(Theme.GetGlowColor) == "function" then
+	if Theme
+		and type(Theme.GetGlowColor) == "function" then
 
-		local Success, Result = pcall(function()
-			return Theme:GetGlowColor()
-		end)
+		local Success, Result =
+			pcall(function()
 
-		if Success and typeof(Result) == "Color3" then
+				return Theme:GetGlowColor()
+
+			end)
+
+		if Success
+			and typeof(Result) == "Color3" then
+
 			return Result
+
 		end
+
 	end
 
 	return self:GetAccent()
+
 end
 
 --==================================================
@@ -568,23 +641,34 @@ function UI:GetLogoBorderColor()
 
 	local Theme = self.Theme
 
-	if Theme and type(Theme.GetLogoBorder) == "function" then
+	if Theme
+		and type(Theme.GetLogoBorder) == "function" then
 
-		local Success, Result = pcall(function()
-			return Theme:GetLogoBorder()
-		end)
+		local Success, Result =
+			pcall(function()
 
-		if Success and typeof(Result) == "Color3" then
+				return Theme:GetLogoBorder()
+
+			end)
+
+		if Success
+			and typeof(Result) == "Color3" then
+
 			return Result
+
 		end
+
 	end
 
-	local Current = GetCurrentTheme(Theme)
+	local Current =
+		GetCurrentTheme(Theme)
 
 	return SafeColor(
-		Current.LogoBorder or Current.Accent,
+		Current.LogoBorder
+			or Current.Accent,
 		FALLBACK_ACCENT
 	)
+
 end
 
 --==================================================
@@ -596,23 +680,32 @@ function UI:GetBackgroundTransparency()
 	local Theme = self.Theme
 
 	if Theme
-		and type(Theme.GetBackgroundTransparency) == "function" then
+		and type(
+			Theme.GetBackgroundTransparency
+		) == "function" then
 
-		local Success, Result = pcall(function()
-			return Theme:GetBackgroundTransparency()
-		end)
+		local Success, Result =
+			pcall(function()
 
-		if Success and type(Result) == "number" then
+				return Theme:GetBackgroundTransparency()
+
+			end)
+
+		if Success
+			and type(Result) == "number" then
 
 			return math.clamp(
 				Result,
 				0,
 				1
 			)
+
 		end
+
 	end
 
-	local Current = GetCurrentTheme(Theme)
+	local Current =
+		GetCurrentTheme(Theme)
 
 	return math.clamp(
 		SafeNumber(
@@ -622,6 +715,7 @@ function UI:GetBackgroundTransparency()
 		0,
 		1
 	)
+
 end
 
 --==================================================
@@ -630,13 +724,17 @@ end
 
 function UI:ShouldUseGlow()
 
-	local Current = GetCurrentTheme(self.Theme)
+	local Current =
+		GetCurrentTheme(self.Theme)
 
 	if Current.GlowEnabled ~= nil then
+
 		return Current.GlowEnabled == true
+
 	end
 
 	return false
+
 end
 
 --==================================================
@@ -645,13 +743,17 @@ end
 
 function UI:ShouldUseShadow()
 
-	local Current = GetCurrentTheme(self.Theme)
+	local Current =
+		GetCurrentTheme(self.Theme)
 
 	if Current.ShadowEnabled ~= nil then
+
 		return Current.ShadowEnabled == true
+
 	end
 
 	return false
+
 end
 
 --==================================================
@@ -660,7 +762,8 @@ end
 
 function UI:Init(Context)
 
-	self.Context = Context or {}
+	self.Context =
+		Context or {}
 
 	self.Player =
 		self.Context.Player
@@ -673,6 +776,7 @@ function UI:Init(Context)
 		)
 
 		return false
+
 	end
 
 	self.PlayerGui =
@@ -681,20 +785,28 @@ function UI:Init(Context)
 			"PlayerGui"
 		)
 
-	self.Config = self.Context.Config
-	self.Theme = self.Context.Theme
+	self.Config =
+		self.Context.Config
+
+	self.Theme =
+		self.Context.Theme
 
 	self.AnimationBusy = false
+
 	self.AnimationToken = 0
 
 	self.NeonConnection = nil
+
 	self.NeonTime = 0
 
 	self:EnsureThemeCompatibility()
 
-	local Success, Error = pcall(function()
-		self:Create()
-	end)
+	local Success, Error =
+		pcall(function()
+
+			self:Create()
+
+		end)
 
 	if not Success then
 
@@ -707,9 +819,11 @@ function UI:Init(Context)
 		)
 
 		return false
+
 	end
 
 	return true
+
 end
 
 --==================================================
@@ -730,9 +844,13 @@ function UI:RemoveOld()
 			)
 
 		if Old then
+
 			Old:Destroy()
+
 		end
+
 	end)
+
 end
 
 --==================================================
@@ -750,47 +868,62 @@ function UI:Create()
 	-- SCREEN GUI
 	--==================================================
 
-	local Gui = Instance.new("ScreenGui")
+	local Gui =
+		Instance.new("ScreenGui")
 
-	Gui.Name = "RimuruHub"
+	Gui.Name =
+		"RimuruHub"
 
-	Gui.ResetOnSpawn = false
+	Gui.ResetOnSpawn =
+		false
 
-	Gui.IgnoreGuiInset = true
+	Gui.IgnoreGuiInset =
+		true
 
 	Gui.ZIndexBehavior =
 		Enum.ZIndexBehavior.Global
 
-	Gui.DisplayOrder = 999999
+	Gui.DisplayOrder =
+		999999
 
-	Gui.Parent = self.PlayerGui
+	Gui.Parent =
+		self.PlayerGui
 
-	self.Gui = Gui
+	self.Gui =
+		Gui
 
 	--==================================================
 	-- SHADOW
 	--==================================================
 
-	local Shadow = Instance.new("Frame")
+	local Shadow =
+		Instance.new("Frame")
 
-	Shadow.Name = "InterfaceShadow"
+	Shadow.Name =
+		"InterfaceShadow"
 
-	Shadow.Size = UDim2.new(
-		0,
-		600 + SHADOW_PADDING * 2,
-		0,
-		400 + SHADOW_PADDING * 2
-	)
+	Shadow.Size =
+		UDim2.new(
+			0,
+			600 + SHADOW_PADDING * 2,
+			0,
+			400 + SHADOW_PADDING * 2
+		)
 
-	Shadow.Position = UDim2.new(
-		0.5,
-		-300 - SHADOW_PADDING,
-		0.5,
-		-200 - SHADOW_PADDING
-	)
+	Shadow.Position =
+		UDim2.new(
+			0.5,
+			-300 - SHADOW_PADDING,
+			0.5,
+			-200 - SHADOW_PADDING
+		)
 
 	Shadow.BackgroundColor3 =
-		Color3.fromRGB(0, 0, 0)
+		Color3.fromRGB(
+			0,
+			0,
+			0
+		)
 
 	Shadow.BackgroundTransparency =
 		SafeNumber(
@@ -798,13 +931,17 @@ function UI:Create()
 			SHADOW_TRANSPARENCY
 		)
 
-	Shadow.BorderSizePixel = 0
+	Shadow.BorderSizePixel =
+		0
 
-	Shadow.Visible = false
+	Shadow.Visible =
+		false
 
-	Shadow.ZIndex = 498
+	Shadow.ZIndex =
+		498
 
-	Shadow.Parent = Gui
+	Shadow.Parent =
+		Gui
 
 	local ShadowCorner =
 		Instance.new("UICorner")
@@ -815,31 +952,37 @@ function UI:Create()
 			CORNER_RADIUS + 5
 		)
 
-	ShadowCorner.Parent = Shadow
+	ShadowCorner.Parent =
+		Shadow
 
-	self.Shadow = Shadow
+	self.Shadow =
+		Shadow
 
 	--==================================================
 	-- MAIN
 	--==================================================
 
-	local Main = Instance.new("Frame")
+	local Main =
+		Instance.new("Frame")
 
-	Main.Name = "Main"
+	Main.Name =
+		"Main"
 
-	Main.Size = UDim2.new(
-		0,
-		600,
-		0,
-		400
-	)
+	Main.Size =
+		UDim2.new(
+			0,
+			600,
+			0,
+			400
+		)
 
-	Main.Position = UDim2.new(
-		0.5,
-		-300,
-		0.5,
-		-200
-	)
+	Main.Position =
+		UDim2.new(
+			0.5,
+			-300,
+			0.5,
+			-200
+		)
 
 	Main.BackgroundColor3 =
 		SafeColor(
@@ -847,19 +990,26 @@ function UI:Create()
 			FALLBACK_BACKGROUND
 		)
 
-	Main.BackgroundTransparency = 0.10
+	Main.BackgroundTransparency =
+		0.10
 
-	Main.BorderSizePixel = 0
+	Main.BorderSizePixel =
+		0
 
-	Main.Visible = false
+	Main.Visible =
+		false
 
-	Main.ZIndex = 500
+	Main.ZIndex =
+		500
 
-	Main.ClipsDescendants = true
+	Main.ClipsDescendants =
+		true
 
-	Main.Parent = Gui
+	Main.Parent =
+		Gui
 
-	self.Main = Main
+	self.Main =
+		Main
 
 	self.OriginalPosition =
 		Main.Position
@@ -874,13 +1024,17 @@ function UI:Create()
 	local MainScale =
 		Instance.new("UIScale")
 
-	MainScale.Name = "MenuScale"
+	MainScale.Name =
+		"MenuScale"
 
-	MainScale.Scale = 1
+	MainScale.Scale =
+		1
 
-	MainScale.Parent = Main
+	MainScale.Parent =
+		Main
 
-	self.MainScale = MainScale
+	self.MainScale =
+		MainScale
 
 	--==================================================
 	-- CORNER
@@ -895,9 +1049,11 @@ function UI:Create()
 			CORNER_RADIUS
 		)
 
-	MainCorner.Parent = Main
+	MainCorner.Parent =
+		Main
 
-	self.MainCorner = MainCorner
+	self.MainCorner =
+		MainCorner
 
 	--==================================================
 	-- BORDER
@@ -921,9 +1077,11 @@ function UI:Create()
 	MainStroke.ApplyStrokeMode =
 		Enum.ApplyStrokeMode.Border
 
-	MainStroke.Parent = Main
+	MainStroke.Parent =
+		Main
 
-	self.MainStroke = MainStroke
+	self.MainStroke =
+		MainStroke
 
 	--==================================================
 	-- GLOW
@@ -932,20 +1090,31 @@ function UI:Create()
 	local Glow =
 		Instance.new("Frame")
 
-	Glow.Name = "NeonGlow"
+	Glow.Name =
+		"NeonGlow"
 
 	Glow.Size =
-		UDim2.new(1, 0, 1, 0)
+		UDim2.new(
+			1,
+			0,
+			1,
+			0
+		)
 
-	Glow.BackgroundTransparency = 1
+	Glow.BackgroundTransparency =
+		1
 
-	Glow.BorderSizePixel = 0
+	Glow.BorderSizePixel =
+		0
 
-	Glow.ZIndex = 499
+	Glow.ZIndex =
+		499
 
-	Glow.ClipsDescendants = true
+	Glow.ClipsDescendants =
+		true
 
-	Glow.Parent = Main
+	Glow.Parent =
+		Main
 
 	local GlowCorner =
 		Instance.new("UICorner")
@@ -956,7 +1125,8 @@ function UI:Create()
 			CORNER_RADIUS
 		)
 
-	GlowCorner.Parent = Glow
+	GlowCorner.Parent =
+		Glow
 
 	local GlowStroke =
 		Instance.new("UIStroke")
@@ -970,15 +1140,20 @@ function UI:Create()
 	GlowStroke.Thickness =
 		GLOW_THICKNESS
 
-	GlowStroke.Transparency = 1
+	GlowStroke.Transparency =
+		1
 
 	GlowStroke.ApplyStrokeMode =
 		Enum.ApplyStrokeMode.Border
 
-	GlowStroke.Parent = Glow
+	GlowStroke.Parent =
+		Glow
 
-	self.Glow = Glow
-	self.GlowStroke = GlowStroke
+	self.Glow =
+		Glow
+
+	self.GlowStroke =
+		GlowStroke
 
 	--==================================================
 	-- BACKGROUND IMAGE
@@ -991,11 +1166,18 @@ function UI:Create()
 		"ThemeBackground"
 
 	Background.Size =
-		UDim2.new(1, 0, 1, 0)
+		UDim2.new(
+			1,
+			0,
+			1,
+			0
+		)
 
-	Background.BackgroundTransparency = 1
+	Background.BackgroundTransparency =
+		1
 
-	Background.BorderSizePixel = 0
+	Background.BorderSizePixel =
+		0
 
 	Background.ScaleType =
 		Enum.ScaleType.Crop
@@ -1003,11 +1185,14 @@ function UI:Create()
 	Background.ImageTransparency =
 		self:GetBackgroundTransparency()
 
-	Background.ZIndex = 501
+	Background.ZIndex =
+		501
 
-	Background.Visible = false
+	Background.Visible =
+		false
 
-	Background.Parent = Main
+	Background.Parent =
+		Main
 
 	local BackgroundCorner =
 		Instance.new("UICorner")
@@ -1021,7 +1206,8 @@ function UI:Create()
 	BackgroundCorner.Parent =
 		Background
 
-	self.Background = Background
+	self.Background =
+		Background
 
 	--==================================================
 	-- HEADER
@@ -1030,7 +1216,8 @@ function UI:Create()
 	local Header =
 		Instance.new("Frame")
 
-	Header.Name = "Header"
+	Header.Name =
+		"Header"
 
 	Header.Size =
 		UDim2.new(
@@ -1040,13 +1227,17 @@ function UI:Create()
 			58
 		)
 
-	Header.BackgroundTransparency = 1
+	Header.BackgroundTransparency =
+		1
 
-	Header.ZIndex = 502
+	Header.ZIndex =
+		502
 
-	Header.Parent = Main
+	Header.Parent =
+		Main
 
-	self.Header = Header
+	self.Header =
+		Header
 
 	--==================================================
 	-- LOGO
@@ -1074,19 +1265,31 @@ function UI:Create()
 			8
 		)
 
-	HeaderLogo.BackgroundTransparency = 1
+	HeaderLogo.BackgroundTransparency =
+		1
+
+	--==================================================
+	-- GITHUB IMAGE
+	--==================================================
 
 	HeaderLogo.Image =
-		"rbxassetid://6691708227"
+		HEADER_LOGO_IMAGE
 
 	HeaderLogo.ScaleType =
 		Enum.ScaleType.Fit
 
-	HeaderLogo.ZIndex = 502
+	HeaderLogo.ZIndex =
+		502
 
-	HeaderLogo.Parent = Header
+	HeaderLogo.Parent =
+		Header
 
-	self.HeaderLogo = HeaderLogo
+	self.HeaderLogo =
+		HeaderLogo
+
+	--==================================================
+	-- LOGO BORDER
+	--==================================================
 
 	local LogoStroke =
 		Instance.new("UIStroke")
@@ -1097,13 +1300,17 @@ function UI:Create()
 	LogoStroke.Color =
 		self:GetLogoBorderColor()
 
-	LogoStroke.Thickness = 1.5
+	LogoStroke.Thickness =
+		1.5
 
-	LogoStroke.Transparency = 0.20
+	LogoStroke.Transparency =
+		0.20
 
-	LogoStroke.Parent = HeaderLogo
+	LogoStroke.Parent =
+		HeaderLogo
 
-	self.LogoStroke = LogoStroke
+	self.LogoStroke =
+		LogoStroke
 
 	--==================================================
 	-- TITLE
@@ -1112,7 +1319,8 @@ function UI:Create()
 	local Title =
 		Instance.new("TextLabel")
 
-	Title.Name = "Title"
+	Title.Name =
+		"Title"
 
 	Title.Position =
 		UDim2.new(
@@ -1130,9 +1338,11 @@ function UI:Create()
 			25
 		)
 
-	Title.BackgroundTransparency = 1
+	Title.BackgroundTransparency =
+		1
 
-	Title.Text = "Rimuru Hub"
+	Title.Text =
+		"Rimuru Hub"
 
 	Title.TextColor3 =
 		SafeColor(
@@ -1140,7 +1350,8 @@ function UI:Create()
 			FALLBACK_TEXT
 		)
 
-	Title.TextSize = 19
+	Title.TextSize =
+		19
 
 	Title.Font =
 		Enum.Font.GothamBold
@@ -1148,11 +1359,14 @@ function UI:Create()
 	Title.TextXAlignment =
 		Enum.TextXAlignment.Left
 
-	Title.ZIndex = 502
+	Title.ZIndex =
+		502
 
-	Title.Parent = Header
+	Title.Parent =
+		Header
 
-	self.Title = Title
+	self.Title =
+		Title
 
 	--==================================================
 	-- SUBTITLE
@@ -1161,7 +1375,8 @@ function UI:Create()
 	local Subtitle =
 		Instance.new("TextLabel")
 
-	Subtitle.Name = "Subtitle"
+	Subtitle.Name =
+		"Subtitle"
 
 	Subtitle.Position =
 		UDim2.new(
@@ -1173,15 +1388,17 @@ function UI:Create()
 
 	Subtitle.Size =
 		UDim2.new(
-			1,
-			-75,
-			0,
-			18
-		)
+		1,
+		-75,
+		0,
+		18
+	)
 
-	Subtitle.BackgroundTransparency = 1
+	Subtitle.BackgroundTransparency =
+		1
 
-	Subtitle.Text = "Sound Library"
+	Subtitle.Text =
+		"Sound Library"
 
 	Subtitle.TextColor3 =
 		SafeColor(
@@ -1189,7 +1406,8 @@ function UI:Create()
 			FALLBACK_SUBTEXT
 		)
 
-	Subtitle.TextSize = 11
+	Subtitle.TextSize =
+		11
 
 	Subtitle.Font =
 		Enum.Font.Gotham
@@ -1197,11 +1415,14 @@ function UI:Create()
 	Subtitle.TextXAlignment =
 		Enum.TextXAlignment.Left
 
-	Subtitle.ZIndex = 502
+	Subtitle.ZIndex =
+		502
 
-	Subtitle.Parent = Header
+	Subtitle.Parent =
+		Header
 
-	self.Subtitle = Subtitle
+	self.Subtitle =
+		Subtitle
 
 	--==================================================
 	-- CLOSE
@@ -1210,7 +1431,8 @@ function UI:Create()
 	local Close =
 		Instance.new("TextButton")
 
-	Close.Name = "Close"
+	Close.Name =
+		"Close"
 
 	Close.Size =
 		UDim2.new(
@@ -1234,9 +1456,11 @@ function UI:Create()
 			FALLBACK_CARD
 		)
 
-	Close.BorderSizePixel = 0
+	Close.BorderSizePixel =
+		0
 
-	Close.Text = "X"
+	Close.Text =
+		"X"
 
 	Close.TextColor3 =
 		SafeColor(
@@ -1244,16 +1468,20 @@ function UI:Create()
 			FALLBACK_TEXT
 		)
 
-	Close.TextSize = 12
+	Close.TextSize =
+		12
 
 	Close.Font =
 		Enum.Font.GothamBold
 
-	Close.AutoButtonColor = false
+	Close.AutoButtonColor =
+		false
 
-	Close.ZIndex = 503
+	Close.ZIndex =
+		503
 
-	Close.Parent = Header
+	Close.Parent =
+		Header
 
 	local CloseCorner =
 		Instance.new("UICorner")
@@ -1264,7 +1492,8 @@ function UI:Create()
 			SMALL_CORNER_RADIUS
 		)
 
-	CloseCorner.Parent = Close
+	CloseCorner.Parent =
+		Close
 
 	local CloseStroke =
 		Instance.new("UIStroke")
@@ -1272,14 +1501,20 @@ function UI:Create()
 	CloseStroke.Color =
 		self:GetAccent()
 
-	CloseStroke.Thickness = 1
+	CloseStroke.Thickness =
+		1
 
-	CloseStroke.Transparency = 0.35
+	CloseStroke.Transparency =
+		0.35
 
-	CloseStroke.Parent = Close
+	CloseStroke.Parent =
+		Close
 
-	self.Close = Close
-	self.CloseStroke = CloseStroke
+	self.Close =
+		Close
+
+	self.CloseStroke =
+		CloseStroke
 
 	--==================================================
 	-- SIDEBAR
@@ -1288,7 +1523,8 @@ function UI:Create()
 	local Sidebar =
 		Instance.new("Frame")
 
-	Sidebar.Name = "Sidebar"
+	Sidebar.Name =
+		"Sidebar"
 
 	Sidebar.Position =
 		UDim2.new(
@@ -1312,13 +1548,17 @@ function UI:Create()
 			FALLBACK_CONTENT
 		)
 
-	Sidebar.BackgroundTransparency = 0.10
+	Sidebar.BackgroundTransparency =
+		0.10
 
-	Sidebar.BorderSizePixel = 0
+	Sidebar.BorderSizePixel =
+		0
 
-	Sidebar.ZIndex = 502
+	Sidebar.ZIndex =
+		502
 
-	Sidebar.Parent = Main
+	Sidebar.Parent =
+		Main
 
 	local SidebarCorner =
 		Instance.new("UICorner")
@@ -1329,7 +1569,8 @@ function UI:Create()
 			11
 		)
 
-	SidebarCorner.Parent = Sidebar
+	SidebarCorner.Parent =
+		Sidebar
 
 	local SidebarStroke =
 		Instance.new("UIStroke")
@@ -1337,39 +1578,59 @@ function UI:Create()
 	SidebarStroke.Color =
 		self:GetAccent()
 
-	SidebarStroke.Thickness = 1
+	SidebarStroke.Thickness =
+		1
 
-	SidebarStroke.Transparency = 0.65
+	SidebarStroke.Transparency =
+		0.65
 
-	SidebarStroke.Parent = Sidebar
+	SidebarStroke.Parent =
+		Sidebar
 
 	local SidebarPadding =
 		Instance.new("UIPadding")
 
 	SidebarPadding.PaddingTop =
-		UDim.new(0, 8)
+		UDim.new(
+			0,
+			8
+		)
 
 	SidebarPadding.PaddingLeft =
-		UDim.new(0, 7)
+		UDim.new(
+			0,
+			7
+		)
 
 	SidebarPadding.PaddingRight =
-		UDim.new(0, 7)
+		UDim.new(
+			0,
+			7
+		)
 
-	SidebarPadding.Parent = Sidebar
+	SidebarPadding.Parent =
+		Sidebar
 
 	local SidebarLayout =
 		Instance.new("UIListLayout")
 
 	SidebarLayout.Padding =
-		UDim.new(0, 5)
+		UDim.new(
+			0,
+			5
+		)
 
 	SidebarLayout.SortOrder =
 		Enum.SortOrder.LayoutOrder
 
-	SidebarLayout.Parent = Sidebar
+	SidebarLayout.Parent =
+		Sidebar
 
-	self.Sidebar = Sidebar
-	self.SidebarStroke = SidebarStroke
+	self.Sidebar =
+		Sidebar
+
+	self.SidebarStroke =
+		SidebarStroke
 
 	--==================================================
 	-- CONTENT
@@ -1378,7 +1639,8 @@ function UI:Create()
 	local Content =
 		Instance.new("Frame")
 
-	Content.Name = "Content"
+	Content.Name =
+		"Content"
 
 	Content.Position =
 		UDim2.new(
@@ -1402,13 +1664,17 @@ function UI:Create()
 			FALLBACK_CONTENT
 		)
 
-	Content.BackgroundTransparency = 0.10
+	Content.BackgroundTransparency =
+		0.10
 
-	Content.BorderSizePixel = 0
+	Content.BorderSizePixel =
+		0
 
-	Content.ZIndex = 502
+	Content.ZIndex =
+		502
 
-	Content.Parent = Main
+	Content.Parent =
+		Main
 
 	local ContentCorner =
 		Instance.new("UICorner")
@@ -1419,7 +1685,8 @@ function UI:Create()
 			11
 		)
 
-	ContentCorner.Parent = Content
+	ContentCorner.Parent =
+		Content
 
 	local ContentStroke =
 		Instance.new("UIStroke")
@@ -1427,14 +1694,20 @@ function UI:Create()
 	ContentStroke.Color =
 		self:GetAccent()
 
-	ContentStroke.Thickness = 1
+	ContentStroke.Thickness =
+		1
 
-	ContentStroke.Transparency = 0.65
+	ContentStroke.Transparency =
+		0.65
 
-	ContentStroke.Parent = Content
+	ContentStroke.Parent =
+		Content
 
-	self.Content = Content
-	self.ContentStroke = ContentStroke
+	self.Content =
+		Content
+
+	self.ContentStroke =
+		ContentStroke
 
 	--==================================================
 	-- CONTENT TITLE
@@ -1462,9 +1735,11 @@ function UI:Create()
 			25
 		)
 
-	ContentTitle.BackgroundTransparency = 1
+	ContentTitle.BackgroundTransparency =
+		1
 
-	ContentTitle.Text = "Principal"
+	ContentTitle.Text =
+		"Principal"
 
 	ContentTitle.TextColor3 =
 		SafeColor(
@@ -1472,7 +1747,8 @@ function UI:Create()
 			FALLBACK_TEXT
 		)
 
-	ContentTitle.TextSize = 15
+	ContentTitle.TextSize =
+		15
 
 	ContentTitle.Font =
 		Enum.Font.GothamBold
@@ -1480,11 +1756,14 @@ function UI:Create()
 	ContentTitle.TextXAlignment =
 		Enum.TextXAlignment.Left
 
-	ContentTitle.ZIndex = 503
+	ContentTitle.ZIndex =
+		503
 
-	ContentTitle.Parent = Content
+	ContentTitle.Parent =
+		Content
 
-	self.ContentTitle = ContentTitle
+	self.ContentTitle =
+		ContentTitle
 
 	--==================================================
 	-- CONTENT SCROLL
@@ -1515,11 +1794,14 @@ function UI:Create()
 			-52
 		)
 
-	Scroll.BackgroundTransparency = 1
+	Scroll.BackgroundTransparency =
+		1
 
-	Scroll.BorderSizePixel = 0
+	Scroll.BorderSizePixel =
+		0
 
-	Scroll.ScrollBarThickness = 5
+	Scroll.ScrollBarThickness =
+		5
 
 	Scroll.ScrollBarImageColor3 =
 		self:GetAccent()
@@ -1530,9 +1812,11 @@ function UI:Create()
 	Scroll.ScrollingDirection =
 		Enum.ScrollingDirection.Y
 
-	Scroll.ZIndex = 503
+	Scroll.ZIndex =
+		503
 
-	Scroll.Parent = Content
+	Scroll.Parent =
+		Content
 
 	local ScrollPadding =
 		Instance.new("UIPadding")
@@ -1543,7 +1827,8 @@ function UI:Create()
 			6
 		)
 
-	ScrollPadding.Parent = Scroll
+	ScrollPadding.Parent =
+		Scroll
 
 	local ScrollLayout =
 		Instance.new("UIListLayout")
@@ -1557,9 +1842,11 @@ function UI:Create()
 	ScrollLayout.SortOrder =
 		Enum.SortOrder.LayoutOrder
 
-	ScrollLayout.Parent = Scroll
+	ScrollLayout.Parent =
+		Scroll
 
-	self.Scroll = Scroll
+	self.Scroll =
+		Scroll
 
 	--==================================================
 	-- CLOSE EVENT
@@ -1595,8 +1882,11 @@ end
 
 function UI:UpdateShadow()
 
-	if not self.Shadow or not self.Main then
+	if not self.Shadow
+		or not self.Main then
+
 		return
+
 	end
 
 	local Enabled =
@@ -1644,8 +1934,8 @@ function UI:UpdateShadow()
 
 	Pulse =
 		Pulse
-			* Pulse
-			* (3 - 2 * Pulse)
+		* Pulse
+		* (3 - 2 * Pulse)
 
 	self.Shadow.BackgroundTransparency =
 		SHADOW_MAX_TRANSPARENCY
@@ -1672,11 +1962,13 @@ function UI:StartNeonAnimation()
 
 		self.NeonConnection:Disconnect()
 
-		self.NeonConnection = nil
+		self.NeonConnection =
+			nil
 
 	end
 
-	self.NeonTime = 0
+	self.NeonTime =
+		0
 
 	self.NeonConnection =
 		RunService.RenderStepped:Connect(
@@ -1686,6 +1978,7 @@ function UI:StartNeonAnimation()
 					or not self.Main.Parent then
 
 					return
+
 				end
 
 				self.NeonTime +=
@@ -1739,7 +2032,9 @@ function UI:StartNeonAnimation()
 								0,
 								1
 							)
+
 					end
+
 				end
 
 				--==================================================
@@ -1788,6 +2083,7 @@ function UI:StartNeonAnimation()
 							BORDER_THICKNESS
 
 					end
+
 				end
 
 				--==================================================
@@ -1823,9 +2119,11 @@ function UI:StartNeonAnimation()
 
 					else
 
-						self.GlowStroke.Transparency = 1
+						self.GlowStroke.Transparency =
+							1
 
 					end
+
 				end
 
 				--==================================================
@@ -1932,9 +2230,11 @@ function UI:IsAnimationEnabled()
 		or not self.Config.UI then
 
 		return true
+
 	end
 
 	return self.Config.UI.Animation ~= false
+
 end
 
 --==================================================
@@ -1943,9 +2243,11 @@ end
 
 function UI:CancelAnimation()
 
-	self.AnimationToken += 1
+	self.AnimationToken +=
+		1
 
-	self.AnimationBusy = false
+	self.AnimationBusy =
+		false
 
 end
 
@@ -1961,7 +2263,8 @@ function UI:SetVisible(Value)
 
 	self:CancelAnimation()
 
-	self.Main.Visible = Value
+	self.Main.Visible =
+		Value
 
 	if self.Shadow then
 
@@ -1973,7 +2276,8 @@ function UI:SetVisible(Value)
 
 	if Value then
 
-		self.MainScale.Scale = 1
+		self.MainScale.Scale =
+			1
 
 		self.Main.Position =
 			self.OriginalPosition
@@ -1990,12 +2294,17 @@ end
 
 function UI:SetVisibleAnimated(Value)
 
-	local Main = self.Main
+	local Main =
+		self.Main
 
-	local Scale = self.MainScale
+	local Scale =
+		self.MainScale
 
-	if not Main or not Scale then
+	if not Main
+		or not Scale then
+
 		return
+
 	end
 
 	if not self:IsAnimationEnabled() then
@@ -2003,6 +2312,7 @@ function UI:SetVisibleAnimated(Value)
 		self:SetVisible(Value)
 
 		return
+
 	end
 
 	self:CancelAnimation()
@@ -2016,7 +2326,8 @@ function UI:SetVisibleAnimated(Value)
 
 	if Value then
 
-		Main.Visible = true
+		Main.Visible =
+			true
 
 		if self.Shadow then
 
@@ -2066,9 +2377,11 @@ function UI:SetVisibleAnimated(Value)
 				}
 			)
 
-		self.AnimationBusy = true
+		self.AnimationBusy =
+			true
 
 		ScaleTween:Play()
+
 		PositionTween:Play()
 
 		task.spawn(function()
@@ -2088,6 +2401,7 @@ function UI:SetVisibleAnimated(Value)
 		end)
 
 		return
+
 	end
 
 	--==================================================
@@ -2110,7 +2424,8 @@ function UI:SetVisibleAnimated(Value)
 			Scale,
 			Info,
 			{
-				Scale = CLOSE_SCALE
+				Scale =
+					CLOSE_SCALE
 			}
 		)
 
@@ -2131,9 +2446,11 @@ function UI:SetVisibleAnimated(Value)
 			}
 		)
 
-	self.AnimationBusy = true
+	self.AnimationBusy =
+		true
 
 	ScaleTween:Play()
+
 	PositionTween:Play()
 
 	task.spawn(function()
@@ -2144,20 +2461,27 @@ function UI:SetVisibleAnimated(Value)
 			~= Token then
 
 			return
+
 		end
 
-		Main.Visible = false
+		Main.Visible =
+			false
 
 		if self.Shadow then
-			self.Shadow.Visible = false
+
+			self.Shadow.Visible =
+				false
+
 		end
 
-		Scale.Scale = 1
+		Scale.Scale =
+			1
 
 		Main.Position =
 			self.OriginalPosition
 
-		self.AnimationBusy = false
+		self.AnimationBusy =
+			false
 
 	end)
 
@@ -2185,13 +2509,15 @@ end
 
 function UI:SetupDrag()
 
-	local Main = self.Main
+	local Main =
+		self.Main
 
 	if not Main then
 		return
 	end
 
-	local Dragging = false
+	local Dragging =
+		false
 
 	local DragStart
 	local StartPosition
@@ -2205,6 +2531,7 @@ function UI:SetupDrag()
 				== false then
 
 				return
+
 			end
 
 			if Input.UserInputType
@@ -2213,7 +2540,8 @@ function UI:SetupDrag()
 				or Input.UserInputType
 				== Enum.UserInputType.Touch then
 
-				Dragging = true
+				Dragging =
+					true
 
 				DragStart =
 					Input.Position
@@ -2270,7 +2598,8 @@ function UI:SetupDrag()
 				or Input.UserInputType
 				== Enum.UserInputType.Touch then
 
-				Dragging = false
+				Dragging =
+					false
 
 			end
 
@@ -2295,12 +2624,17 @@ function UI:ApplyBackground()
 	local Image =
 		CurrentTheme.BackgroundImage
 
-	self.Background.Visible = false
+	self.Background.Visible =
+		false
 
-	self.Background.Image = ""
+	self.Background.Image =
+		""
 
-	if not Image or Image == "" then
+	if not Image
+		or Image == "" then
+
 		return
+
 	end
 
 	self.Background.Image =
@@ -2316,7 +2650,8 @@ function UI:ApplyBackground()
 			1
 		)
 
-	self.Background.Visible = true
+	self.Background.Visible =
+		true
 
 end
 
@@ -2387,6 +2722,7 @@ function UI:ApplyTheme()
 	end
 
 	self:ApplyShadow()
+
 	self:ApplyBackground()
 
 	--==================================================
@@ -2537,6 +2873,13 @@ function UI:ApplyTheme()
 	-- LOGO
 	--==================================================
 
+	if self.HeaderLogo then
+
+		self.HeaderLogo.Image =
+			HEADER_LOGO_IMAGE
+
+	end
+
 	if self.LogoStroke then
 
 		self.LogoStroke.Color =
@@ -2564,7 +2907,8 @@ function UI:Destroy()
 
 		self.NeonConnection:Disconnect()
 
-		self.NeonConnection = nil
+		self.NeonConnection =
+			nil
 
 	end
 
@@ -2572,23 +2916,40 @@ function UI:Destroy()
 
 		self.Gui:Destroy()
 
-		self.Gui = nil
+		self.Gui =
+			nil
 
 	end
 
-	self.Main = nil
+	self.Main =
+		nil
 
-	self.Shadow = nil
+	self.Shadow =
+		nil
 
-	self.Background = nil
+	self.Background =
+		nil
 
-	self.Sidebar = nil
+	self.Header =
+		nil
 
-	self.Content = nil
+	self.HeaderLogo =
+		nil
 
-	self.ContentTitle = nil
+	self.LogoStroke =
+		nil
 
-	self.Scroll = nil
+	self.Sidebar =
+		nil
+
+	self.Content =
+		nil
+
+	self.ContentTitle =
+		nil
+
+	self.Scroll =
+		nil
 
 end
 
