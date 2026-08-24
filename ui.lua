@@ -1,7 +1,7 @@
 --// 💥 RIMURU HUB
 --// UI SYSTEM
 --// PREMIUM NEON UI
---// GITHUB LOGO INTEGRATED
+--// GITHUB HEADER LOGO
 --// SEARCH REMOVED FROM UI
 --// SEARCH SYSTEM COMPATIBLE
 --// SAFE THEME COMPATIBILITY
@@ -31,6 +31,159 @@ local RunService = game:GetService("RunService")
 --==================================================
 
 local UI = {}
+
+--==================================================
+-- HEADER LOGO
+--==================================================
+
+local HEADER_LOGO_URL =
+	"https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000086171-removebg-preview.png"
+
+local HEADER_LOGO_PATH =
+	"RimuruHubHeaderLogo.png"
+
+--==================================================
+-- LOAD HEADER LOGO
+--==================================================
+
+local function LoadHeaderLogo()
+
+	--==================================================
+	-- GETCUSTOMASSET
+	--==================================================
+
+	if not getcustomasset then
+
+		warn(
+			"⚠️ Rimuru Hub UI: getcustomasset() não está disponível."
+		)
+
+		return nil
+
+	end
+
+	--==================================================
+	-- CHECK EXISTING FILE
+	--==================================================
+
+	if isfile then
+
+		local Success, Exists =
+			pcall(function()
+
+				return isfile(
+					HEADER_LOGO_PATH
+				)
+
+			end)
+
+		if Success and Exists then
+
+			local AssetSuccess, Asset =
+				pcall(function()
+
+					return getcustomasset(
+						HEADER_LOGO_PATH
+					)
+
+				end)
+
+			if AssetSuccess and Asset then
+
+				return Asset
+
+			end
+
+		end
+
+	end
+
+	--==================================================
+	-- DOWNLOAD FROM GITHUB
+	--==================================================
+
+	local Success, Data =
+		pcall(function()
+
+			return game:HttpGet(
+				HEADER_LOGO_URL
+			)
+
+		end)
+
+	if not Success
+		or not Data
+		or Data == "" then
+
+		warn(
+			"⚠️ Rimuru Hub UI: não foi possível baixar a imagem do GitHub."
+		)
+
+		return nil
+
+	end
+
+	--==================================================
+	-- SAVE IMAGE
+	--==================================================
+
+	if not writefile then
+
+		warn(
+			"⚠️ Rimuru Hub UI: writefile() não está disponível."
+		)
+
+		return nil
+
+	end
+
+	local WriteSuccess =
+		pcall(function()
+
+			writefile(
+				HEADER_LOGO_PATH,
+				Data
+			)
+
+		end)
+
+	if not WriteSuccess then
+
+		warn(
+			"⚠️ Rimuru Hub UI: não foi possível salvar a imagem."
+		)
+
+		return nil
+
+	end
+
+	--==================================================
+	-- CREATE CUSTOM ASSET
+	--==================================================
+
+	local AssetSuccess, Asset =
+		pcall(function()
+
+			return getcustomasset(
+				HEADER_LOGO_PATH
+			)
+
+		end)
+
+	if not AssetSuccess
+		or not Asset then
+
+		warn(
+			"⚠️ Rimuru Hub UI: getcustomasset() falhou ao carregar a imagem."
+		)
+
+		return nil
+
+	end
+
+	return Asset
+
+end
 
 --==================================================
 -- ANIMATION
@@ -92,13 +245,6 @@ local SHADOW_MIN_TRANSPARENCY = 0.915
 local SHADOW_MAX_TRANSPARENCY = 0.94
 
 local SHADOW_PULSE_SPEED = 0.77
-
---==================================================
--- GITHUB LOGO
---==================================================
-
-local HEADER_LOGO_IMAGE =
-	"https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/main/1000086171-removebg-preview.png"
 
 --==================================================
 -- FALLBACK COLORS
@@ -163,6 +309,7 @@ local function SafeColor(Value, Fallback)
 	end
 
 	return Fallback
+
 end
 
 local function SafeNumber(Value, Fallback)
@@ -172,6 +319,7 @@ local function SafeNumber(Value, Fallback)
 	end
 
 	return Fallback
+
 end
 
 --==================================================
@@ -239,72 +387,94 @@ local function GetCurrentTheme(Theme)
 
 	if type(Theme.GetCurrent) == "function" then
 
-		local Success, Result = pcall(function()
+		local Success, Result =
+			pcall(function()
 
-			return Theme:GetCurrent()
+				return Theme:GetCurrent()
 
-		end)
+			end)
 
-		if Success and type(Result) == "table" then
+		if Success
+			and type(Result) == "table" then
+
 			Current = Result
+
 		end
 
 	end
 
-	if not Current and type(Theme.CurrentTheme) == "table" then
-		Current = Theme.CurrentTheme
+	if not Current
+		and type(Theme.CurrentTheme) == "table" then
+
+		Current =
+			Theme.CurrentTheme
+
 	end
 
 	if type(Current) ~= "table" then
-		Current = BuildFallbackTheme()
+
+		Current =
+			BuildFallbackTheme()
+
 	end
 
-	Current.Card = SafeColor(
-		Current.Card,
-		FALLBACK_CARD
-	)
+	Current.Card =
+		SafeColor(
+			Current.Card,
+			FALLBACK_CARD
+		)
 
-	Current.Button = SafeColor(
-		Current.Button,
-		Current.Card
-	)
+	Current.Button =
+		SafeColor(
+			Current.Button,
+			Current.Card
+		)
 
-	Current.Close = SafeColor(
-		Current.Close,
-		Current.Button
-	)
+	Current.Close =
+		SafeColor(
+			Current.Close,
+			Current.Button
+		)
 
-	Current.Background = SafeColor(
-		Current.Background or Current.Main,
-		FALLBACK_BACKGROUND
-	)
+	Current.Background =
+		SafeColor(
+			Current.Background
+				or Current.Main,
+			FALLBACK_BACKGROUND
+		)
 
-	Current.Main = Current.Background
+	Current.Main =
+		Current.Background
 
-	Current.Sidebar = SafeColor(
-		Current.Sidebar,
-		FALLBACK_CONTENT
-	)
+	Current.Sidebar =
+		SafeColor(
+			Current.Sidebar,
+			FALLBACK_CONTENT
+		)
 
-	Current.Content = SafeColor(
-		Current.Content,
-		FALLBACK_CONTENT
-	)
+	Current.Content =
+		SafeColor(
+			Current.Content,
+			FALLBACK_CONTENT
+		)
 
-	Current.Accent = SafeColor(
-		Current.Accent,
-		FALLBACK_ACCENT
-	)
+	Current.Accent =
+		SafeColor(
+			Current.Accent,
+			FALLBACK_ACCENT
+		)
 
-	Current.Text = SafeColor(
-		Current.Text,
-		FALLBACK_TEXT
-	)
+	Current.Text =
+		SafeColor(
+			Current.Text,
+			FALLBACK_TEXT
+		)
 
-	Current.SubText = SafeColor(
-		Current.SubText,
-		FALLBACK_SUBTEXT
-	)
+	Current.SubText =
+		SafeColor(
+			Current.SubText,
+			FALLBACK_SUBTEXT
+		)
 
 	return Current
 
@@ -322,13 +492,15 @@ local function GetThemeName(Theme)
 
 	if type(Theme.GetName) == "function" then
 
-		local Success, Result = pcall(function()
+		local Success, Result =
+			pcall(function()
 
-			return Theme:GetName()
+				return Theme:GetName()
 
-		end)
+			end)
 
-		if Success and Result ~= nil then
+		if Success
+			and Result ~= nil then
 
 			return tostring(Result)
 
@@ -338,13 +510,15 @@ local function GetThemeName(Theme)
 
 	if type(Theme.GetCurrentName) == "function" then
 
-		local Success, Result = pcall(function()
+		local Success, Result =
+			pcall(function()
 
-			return Theme:GetCurrentName()
+				return Theme:GetCurrentName()
 
-		end)
+			end)
 
-		if Success and Result ~= nil then
+		if Success
+			and Result ~= nil then
 
 			return tostring(Result)
 
@@ -360,11 +534,14 @@ local function GetThemeName(Theme)
 
 	end
 
-	local Current = GetCurrentTheme(Theme)
+	local Current =
+		GetCurrentTheme(Theme)
 
 	if Current.Name then
 
-		return tostring(Current.Name)
+		return tostring(
+			Current.Name
+		)
 
 	end
 
@@ -378,7 +555,8 @@ end
 
 function UI:EnsureThemeCompatibility()
 
-	local Theme = self.Theme
+	local Theme =
+		self.Theme
 
 	if not Theme then
 		return
@@ -390,41 +568,42 @@ function UI:EnsureThemeCompatibility()
 
 	if type(Theme.GetNormalColor) ~= "function" then
 
-		Theme.GetNormalColor = function(Self)
+		Theme.GetNormalColor =
+			function(Self)
 
-			local Current =
-				GetCurrentTheme(Self)
+				local Current =
+					GetCurrentTheme(Self)
 
-			local Name =
-				string.lower(
-					tostring(
-						Current.Name
-							or GetThemeName(Self)
+				local Name =
+					string.lower(
+						tostring(
+							Current.Name
+								or GetThemeName(Self)
+						)
 					)
-				)
 
-			if string.find(
-				Name,
-				"blackout",
-				1,
-				true
-			) then
+				if string.find(
+					Name,
+					"blackout",
+					1,
+					true
+				) then
 
-				return Color3.fromRGB(
-					8,
-					8,
-					8
+					return Color3.fromRGB(
+						8,
+						8,
+						8
+					)
+
+				end
+
+				return SafeColor(
+					Current.Button
+						or Current.Card,
+					FALLBACK_CARD
 				)
 
 			end
-
-			return SafeColor(
-				Current.Button
-					or Current.Card,
-				FALLBACK_CARD
-			)
-
-		end
 
 	end
 
@@ -434,36 +613,37 @@ function UI:EnsureThemeCompatibility()
 
 	if type(Theme.GetNormalTextColor) ~= "function" then
 
-		Theme.GetNormalTextColor = function(Self)
+		Theme.GetNormalTextColor =
+			function(Self)
 
-			local Current =
-				GetCurrentTheme(Self)
+				local Current =
+					GetCurrentTheme(Self)
 
-			local Name =
-				string.lower(
-					tostring(
-						Current.Name
-							or GetThemeName(Self)
+				local Name =
+					string.lower(
+						tostring(
+							Current.Name
+								or GetThemeName(Self)
+						)
 					)
+
+				if string.find(
+					Name,
+					"blackout",
+					1,
+					true
+				) then
+
+					return FALLBACK_WHITE
+
+				end
+
+				return SafeColor(
+					Current.Text,
+					FALLBACK_TEXT
 				)
 
-			if string.find(
-				Name,
-				"blackout",
-				1,
-				true
-			) then
-
-				return FALLBACK_WHITE
-
 			end
-
-			return SafeColor(
-				Current.Text,
-				FALLBACK_TEXT
-			)
-
-		end
 
 	end
 
@@ -473,54 +653,55 @@ function UI:EnsureThemeCompatibility()
 
 	if type(Theme.GetSelectedColor) ~= "function" then
 
-		Theme.GetSelectedColor = function(Self)
+		Theme.GetSelectedColor =
+			function(Self)
 
-			local Current =
-				GetCurrentTheme(Self)
+				local Current =
+					GetCurrentTheme(Self)
 
-			local Name =
-				string.lower(
-					tostring(
-						Current.Name
-							or GetThemeName(Self)
+				local Name =
+					string.lower(
+						tostring(
+							Current.Name
+								or GetThemeName(Self)
+						)
 					)
-				)
 
-			if string.find(
-				Name,
-				"blackout",
-				1,
-				true
-			) then
+				if string.find(
+					Name,
+					"blackout",
+					1,
+					true
+				) then
 
-				return FALLBACK_WHITE
-
-			end
-
-			if type(Self.GetAccent) == "function" then
-
-				local Success, Result =
-					pcall(function()
-
-						return Self:GetAccent()
-
-					end)
-
-				if Success
-					and typeof(Result) == "Color3" then
-
-					return Result
+					return FALLBACK_WHITE
 
 				end
 
+				if type(Self.GetAccent) == "function" then
+
+					local Success, Result =
+						pcall(function()
+
+							return Self:GetAccent()
+
+						end)
+
+					if Success
+						and typeof(Result) == "Color3" then
+
+						return Result
+
+					end
+
+				end
+
+				return SafeColor(
+					Current.Accent,
+					FALLBACK_ACCENT
+				)
+
 			end
-
-			return SafeColor(
-				Current.Accent,
-				FALLBACK_ACCENT
-			)
-
-		end
 
 	end
 
@@ -530,36 +711,37 @@ function UI:EnsureThemeCompatibility()
 
 	if type(Theme.GetSelectedTextColor) ~= "function" then
 
-		Theme.GetSelectedTextColor = function(Self)
+		Theme.GetSelectedTextColor =
+			function(Self)
 
-			local Current =
-				GetCurrentTheme(Self)
+				local Current =
+					GetCurrentTheme(Self)
 
-			local Name =
-				string.lower(
-					tostring(
-						Current.Name
-							or GetThemeName(Self)
+				local Name =
+					string.lower(
+						tostring(
+							Current.Name
+								or GetThemeName(Self)
+						)
 					)
+
+				if string.find(
+					Name,
+					"blackout",
+					1,
+					true
+				) then
+
+					return FALLBACK_BLACK
+
+				end
+
+				return SafeColor(
+					Current.Text,
+					FALLBACK_TEXT
 				)
 
-			if string.find(
-				Name,
-				"blackout",
-				1,
-				true
-			) then
-
-				return FALLBACK_BLACK
-
 			end
-
-			return SafeColor(
-				Current.Text,
-				FALLBACK_TEXT
-			)
-
-		end
 
 	end
 
@@ -571,7 +753,8 @@ end
 
 function UI:GetAccent()
 
-	local Theme = self.Theme
+	local Theme =
+		self.Theme
 
 	if Theme
 		and type(Theme.GetAccent) == "function" then
@@ -608,7 +791,8 @@ end
 
 function UI:GetGlowColor()
 
-	local Theme = self.Theme
+	local Theme =
+		self.Theme
 
 	if Theme
 		and type(Theme.GetGlowColor) == "function" then
@@ -639,7 +823,8 @@ end
 
 function UI:GetLogoBorderColor()
 
-	local Theme = self.Theme
+	local Theme =
+		self.Theme
 
 	if Theme
 		and type(Theme.GetLogoBorder) == "function" then
@@ -677,7 +862,8 @@ end
 
 function UI:GetBackgroundTransparency()
 
-	local Theme = self.Theme
+	local Theme =
+		self.Theme
 
 	if Theme
 		and type(
@@ -725,7 +911,9 @@ end
 function UI:ShouldUseGlow()
 
 	local Current =
-		GetCurrentTheme(self.Theme)
+		GetCurrentTheme(
+			self.Theme
+		)
 
 	if Current.GlowEnabled ~= nil then
 
@@ -744,7 +932,9 @@ end
 function UI:ShouldUseShadow()
 
 	local Current =
-		GetCurrentTheme(self.Theme)
+		GetCurrentTheme(
+			self.Theme
+		)
 
 	if Current.ShadowEnabled ~= nil then
 
@@ -791,13 +981,24 @@ function UI:Init(Context)
 	self.Theme =
 		self.Context.Theme
 
-	self.AnimationBusy = false
+	self.AnimationBusy =
+		false
 
-	self.AnimationToken = 0
+	self.AnimationToken =
+		0
 
-	self.NeonConnection = nil
+	self.NeonConnection =
+		nil
 
-	self.NeonTime = 0
+	self.NeonTime =
+		0
+
+	--==================================================
+	-- LOAD HEADER IMAGE
+	--==================================================
+
+	self.HeaderLogoAsset =
+		LoadHeaderLogo()
 
 	self:EnsureThemeCompatibility()
 
@@ -862,7 +1063,9 @@ function UI:Create()
 	self:RemoveOld()
 
 	local CurrentTheme =
-		GetCurrentTheme(self.Theme)
+		GetCurrentTheme(
+			self.Theme
+		)
 
 	--==================================================
 	-- SCREEN GUI
@@ -1240,7 +1443,7 @@ function UI:Create()
 		Header
 
 	--==================================================
-	-- LOGO
+	-- HEADER LOGO
 	--==================================================
 
 	local HeaderLogo =
@@ -1268,12 +1471,8 @@ function UI:Create()
 	HeaderLogo.BackgroundTransparency =
 		1
 
-	--==================================================
-	-- GITHUB IMAGE
-	--==================================================
-
-	HeaderLogo.Image =
-		HEADER_LOGO_IMAGE
+	HeaderLogo.BorderSizePixel =
+		0
 
 	HeaderLogo.ScaleType =
 		Enum.ScaleType.Fit
@@ -1283,6 +1482,25 @@ function UI:Create()
 
 	HeaderLogo.Parent =
 		Header
+
+	--==================================================
+	-- APPLY GITHUB IMAGE
+	--==================================================
+
+	if self.HeaderLogoAsset then
+
+		HeaderLogo.Image =
+			self.HeaderLogoAsset
+
+	else
+
+		-- fallback somente se o executor
+		-- não conseguir carregar o arquivo
+
+		HeaderLogo.Image =
+			"rbxassetid://6691708227"
+
+	end
 
 	self.HeaderLogo =
 		HeaderLogo
@@ -1388,11 +1606,11 @@ function UI:Create()
 
 	Subtitle.Size =
 		UDim2.new(
-		1,
-		-75,
-		0,
-		18
-	)
+			1,
+			-75,
+			0,
+			18
+		)
 
 	Subtitle.BackgroundTransparency =
 		1
@@ -1768,9 +1986,6 @@ function UI:Create()
 	--==================================================
 	-- CONTENT SCROLL
 	--==================================================
-	-- NÃO existe SearchBar aqui.
-	-- A barra de pesquisa pertence ao Search.lua.
-	-- O Scroll começa diretamente abaixo do título.
 
 	local Scroll =
 		Instance.new("ScrollingFrame")
@@ -2194,7 +2409,7 @@ function UI:StartNeonAnimation()
 				end
 
 				--==================================================
-				-- LOGO
+				-- HEADER LOGO
 				--==================================================
 
 				if self.LogoStroke then
@@ -2309,7 +2524,9 @@ function UI:SetVisibleAnimated(Value)
 
 	if not self:IsAnimationEnabled() then
 
-		self:SetVisible(Value)
+		self:SetVisible(
+			Value
+		)
 
 		return
 
@@ -2381,7 +2598,6 @@ function UI:SetVisibleAnimated(Value)
 			true
 
 		ScaleTween:Play()
-
 		PositionTween:Play()
 
 		task.spawn(function()
@@ -2450,7 +2666,6 @@ function UI:SetVisibleAnimated(Value)
 		true
 
 	ScaleTween:Play()
-
 	PositionTween:Play()
 
 	task.spawn(function()
@@ -2619,7 +2834,9 @@ function UI:ApplyBackground()
 	end
 
 	local CurrentTheme =
-		GetCurrentTheme(self.Theme)
+		GetCurrentTheme(
+			self.Theme
+		)
 
 	local Image =
 		CurrentTheme.BackgroundImage
@@ -2666,7 +2883,9 @@ function UI:ApplyShadow()
 	end
 
 	local CurrentTheme =
-		GetCurrentTheme(self.Theme)
+		GetCurrentTheme(
+			self.Theme
+		)
 
 	local Enabled =
 		self:ShouldUseShadow()
@@ -2705,7 +2924,9 @@ end
 function UI:ApplyTheme()
 
 	local CurrentTheme =
-		GetCurrentTheme(self.Theme)
+		GetCurrentTheme(
+			self.Theme
+		)
 
 	--==================================================
 	-- MAIN
@@ -2722,7 +2943,6 @@ function UI:ApplyTheme()
 	end
 
 	self:ApplyShadow()
-
 	self:ApplyBackground()
 
 	--==================================================
@@ -2870,15 +3090,28 @@ function UI:ApplyTheme()
 	end
 
 	--==================================================
-	-- LOGO
+	-- HEADER LOGO
 	--==================================================
 
 	if self.HeaderLogo then
 
-		self.HeaderLogo.Image =
-			HEADER_LOGO_IMAGE
+		-- Mantém a imagem do GitHub.
+		-- Não troca para ImageId ao mudar de tema.
+
+		if self.HeaderLogoAsset
+			and self.HeaderLogo.Image
+				~= self.HeaderLogoAsset then
+
+			self.HeaderLogo.Image =
+				self.HeaderLogoAsset
+
+		end
 
 	end
+
+	--==================================================
+	-- LOGO BORDER
+	--==================================================
 
 	if self.LogoStroke then
 
@@ -2930,15 +3163,6 @@ function UI:Destroy()
 	self.Background =
 		nil
 
-	self.Header =
-		nil
-
-	self.HeaderLogo =
-		nil
-
-	self.LogoStroke =
-		nil
-
 	self.Sidebar =
 		nil
 
@@ -2949,6 +3173,15 @@ function UI:Destroy()
 		nil
 
 	self.Scroll =
+		nil
+
+	self.Header =
+		nil
+
+	self.HeaderLogo =
+		nil
+
+	self.HeaderLogoAsset =
 		nil
 
 end
