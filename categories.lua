@@ -38,6 +38,8 @@
 --// MEGUMI IMAGE
 --// CHOSO IMAGE
 --// GOJO IMAGE
+--// CATEGORY SIZE INCREASE
+--// GOJO IMAGE 10% SMALLER
 
 local TweenService = game:GetService("TweenService")
 
@@ -104,12 +106,6 @@ local CategoryIcons = {
 --==================================================
 -- CATEGORY IMAGES
 --==================================================
--- Imagens personalizadas das categorias.
---
--- IMPORTANTE:
--- A imagem e o nome agora são objetos separados.
--- Isso evita a logo ficar misturada com o texto.
---==================================================
 
 local CategoryImages = {
 
@@ -123,7 +119,11 @@ local CategoryImages = {
             "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087286-removebg-preview.png",
 
         PATH =
-            "MegumiLogo.png"
+            "MegumiLogo.png",
+
+        -- Tamanho normal
+        Scale =
+            1
 
     },
 
@@ -137,7 +137,11 @@ local CategoryImages = {
             "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087282-removebg-preview.png",
 
         PATH =
-            "ChosoLogo.png"
+            "ChosoLogo.png",
+
+        -- Tamanho normal
+        Scale =
+            1
 
     },
 
@@ -151,7 +155,11 @@ local CategoryImages = {
             "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087038-removebg-preview%20(1).png",
 
         PATH =
-            "GojoLogo.png"
+            "GojoLogo.png",
+
+        -- GOJO 10% MENOR
+        Scale =
+            0.90
 
     }
 
@@ -225,6 +233,18 @@ function Categories:Init(Context)
     self.CategoryClickExpandTime = 0.07
 
     self.CategoryClickReturnTime = 0.10
+
+    --==================================================
+    -- CATEGORY SIZE
+    --==================================================
+
+    self.CategoryHeight = 40
+
+    self.CategoryImageSize = 30
+
+    self.CategoryImageLeft = 7
+
+    self.CategoryTextLeft = 44
 
     --==================================================
     -- FILTER RESOLVERS
@@ -575,10 +595,6 @@ function Categories:LoadCategoryImage(CategoryName)
 
     end
 
-    --==================================================
-    -- CHECK REQUIRED FUNCTIONS
-    --==================================================
-
     if type(isfile) ~= "function"
     or type(writefile) ~= "function"
     or type(getcustomasset) ~= "function" then
@@ -586,10 +602,6 @@ function Categories:LoadCategoryImage(CategoryName)
         return nil
 
     end
-
-    --==================================================
-    -- DOWNLOAD IMAGE
-    --==================================================
 
     local Success, Result =
         pcall(function()
@@ -2227,19 +2239,11 @@ function Categories:ShowCategory(CategoryName)
         return
     end
 
-    --==================================================
-    -- REMOVE LEGACY CATEGORY
-    --==================================================
-
     if CategoryName == "Outro" then
 
         CategoryName = "Outros"
 
     end
-
-    --==================================================
-    -- CONFIGURATION
-    --==================================================
 
     if CategoryName ==
         "Configuração" then
@@ -2250,10 +2254,6 @@ function Categories:ShowCategory(CategoryName)
 
     end
 
-    --==================================================
-    -- LEAVE CONFIGURATION
-    --==================================================
-
     self:LeaveConfiguration()
 
     self:InvalidateContext()
@@ -2261,15 +2261,7 @@ function Categories:ShowCategory(CategoryName)
     self.CurrentContext =
         "NORMAL"
 
-    --==================================================
-    -- CLEAR SEARCH
-    --==================================================
-
     self:ClearSearchContext()
-
-    --==================================================
-    -- ALL
-    --==================================================
 
     if CategoryName == "ALL" then
 
@@ -2286,10 +2278,6 @@ function Categories:ShowCategory(CategoryName)
         return
 
     end
-
-    --==================================================
-    -- NORMAL CATEGORY
-    --==================================================
 
     self.CurrentCategory =
         CategoryName
@@ -2380,21 +2368,6 @@ end
 --==================================================
 -- CREATE CATEGORY BUTTON
 --==================================================
--- CORREÇÃO PRINCIPAL:
---
--- Antes:
--- Button.Text = "logo + nome"
--- + ImageLabel
---
--- Isso podia causar sobreposição/mistura.
---
--- Agora:
--- Button
---   ├── CategoryImage
---   └── CategoryText
---
--- A imagem e o texto são totalmente independentes.
---==================================================
 
 function Categories:CreateCategoryButton(
     CategoryName,
@@ -2429,18 +2402,24 @@ function Categories:CreateCategoryButton(
         return nil
     end
 
+    --==================================================
+    -- BUTTON
+    --==================================================
+
     local Button =
         Instance.new("TextButton")
 
     Button.Name =
         CategoryName
 
+    -- AUMENTADO:
+    -- 38 -> 40
     Button.Size =
         UDim2.new(
             1,
             0,
             0,
-            38
+            self.CategoryHeight or 40
         )
 
     self:SetNormalStyle(
@@ -2451,8 +2430,7 @@ function Categories:CreateCategoryButton(
         0
 
     --==================================================
-    -- IMPORTANT:
-    -- BUTTON NÃO USA MAIS TEXTO PRÓPRIO
+    -- BUTTON SEM TEXTO
     --==================================================
 
     Button.Text =
@@ -2515,20 +2493,51 @@ function Categories:CreateCategoryButton(
         Image.Name =
             "CategoryImage"
 
+        --==================================================
+        -- DEFAULT = 30x30
+        -- GOJO = 27x27
+        --==================================================
+
+        local BaseImageSize =
+            self.CategoryImageSize or 30
+
+        local ImageScale =
+            1
+
+        local ImageData =
+            self:GetCategoryImage(
+                CategoryName
+            )
+
+        if ImageData
+        and type(ImageData) == "table"
+        and type(ImageData.Scale) == "number" then
+
+            ImageScale =
+                ImageData.Scale
+
+        end
+
+        local FinalImageSize =
+            math.floor(
+                BaseImageSize *
+                ImageScale
+            )
+
         Image.Size =
             UDim2.new(
                 0,
-                27,
+                FinalImageSize,
                 0,
-                27
+                FinalImageSize
             )
 
         Image.Position =
             UDim2.new(
                 0,
-                7,
+                self.CategoryImageLeft or 7,
                 0.5,
-                -13
+                -(FinalImageSize / 2)
             )
 
         Image.BackgroundTransparency =
@@ -2562,7 +2571,7 @@ function Categories:CreateCategoryButton(
         TextLabel.Size =
             UDim2.new(
                 1,
-                -45,
+                -(self.CategoryTextLeft or 44) - 8,
                 1,
                 0
             )
@@ -2570,7 +2579,7 @@ function Categories:CreateCategoryButton(
         TextLabel.Position =
             UDim2.new(
                 0,
-                42,
+                self.CategoryTextLeft or 44,
                 0,
                 0
             )
@@ -2740,10 +2749,6 @@ end
 
 function Categories:CreateCategories()
 
-    --==================================================
-    -- ENSURE SCROLL
-    --==================================================
-
     self:SetupCategoryScroll()
 
     local Parent =
@@ -2772,7 +2777,7 @@ function Categories:CreateCategories()
     end
 
     --==================================================
-    -- ALSO CLEAN LEGACY BUTTONS
+    -- CLEAN LEGACY BUTTONS
     --==================================================
 
     for _, Object in ipairs(
@@ -2818,11 +2823,6 @@ function Categories:CreateCategories()
             self.Sounds
         ) do
 
-            --==================================================
-            -- IMPORTANT:
-            -- NEVER CREATE LEGACY "OUTRO"
-            --==================================================
-
             if CategoryName ~= "ALL"
             and CategoryName ~= "Configuração"
             and CategoryName ~= "Outro"
@@ -2847,10 +2847,6 @@ function Categories:CreateCategories()
         SoundCategoryNames,
         function(A, B)
 
-            --==================================================
-            -- OUTROS FIRST
-            --==================================================
-
             if A == "Outros"
             and B ~= "Outros" then
 
@@ -2864,10 +2860,6 @@ function Categories:CreateCategories()
                 return false
 
             end
-
-            --==================================================
-            -- HEIAN SUKUNA SECOND
-            --==================================================
 
             if A == "Heian Sukuna Sounds"
             and B ~= "Heian Sukuna Sounds" then
