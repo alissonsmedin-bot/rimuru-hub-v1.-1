@@ -123,7 +123,7 @@ local CategoryImages = {
 
         -- Tamanho normal
         Scale =
-            1
+            1.15
 
     },
 
@@ -141,7 +141,7 @@ local CategoryImages = {
 
         -- Tamanho normal
         Scale =
-            1
+            1.30
 
     },
 
@@ -159,7 +159,7 @@ local CategoryImages = {
 
         -- GOJO 10% MENOR
         Scale =
-            0.90
+            0.70
 
     }
 
