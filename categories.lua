@@ -33,6 +33,9 @@
 --// CHARACTER CATEGORY ICONS
 --// CATEGORY IMAGE SYSTEM
 --// CATEGORY IMAGE FALLBACK
+--// SEPARATED CATEGORY IMAGE + TEXT
+--// GOJO CATEGORY IMAGE
+--// MEGUMI CATEGORY IMAGE
 --// FUTURE CATEGORY IMAGE READY
 
 local TweenService = game:GetService("TweenService")
@@ -100,22 +103,13 @@ local CategoryIcons = {
 --==================================================
 -- CATEGORY IMAGES
 --==================================================
--- Adicione aqui imagens personalizadas para categorias.
+-- Categorias que possuem imagem personalizada.
 --
--- Exemplo:
+-- Se não existir imagem para a categoria,
+-- o sistema usa automaticamente o emoji.
 --
--- ["Gojo"] = {
---
---     URL =
---         "https://raw.githubusercontent.com/USUARIO/REPO/main/gojo.png",
---
---     PATH =
---         "GojoLogo.png"
---
--- },
---
--- Se a categoria NÃO estiver aqui,
--- o sistema automaticamente usa o emoji.
+-- A imagem e o nome agora são objetos SEPARADOS,
+-- evitando que a logo fique misturada com o texto.
 --==================================================
 
 local CategoryImages = {
@@ -135,42 +129,18 @@ local CategoryImages = {
     },
 
     --==================================================
-    -- CHOSO
+    -- GOJO
     --==================================================
 
-    ["Choso"] = {
+    ["Gojo"] = {
 
         URL =
-            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087282-removebg-preview.png",
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087038-removebg-preview%20(1).png",
 
         PATH =
-            "ChosoLogo.png"
+            "GojoLogo.png"
 
     }
-
-    --==================================================
-    -- FUTURAS CATEGORIAS
-    --==================================================
-
-    -- ["Gojo"] = {
-    --
-    --     URL =
-    --         "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/gojo.png",
-    --
-    --     PATH =
-    --         "GojoLogo.png"
-    --
-    -- },
-
-    -- ["Sukuna"] = {
-    --
-    --     URL =
-    --         "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/sukuna.png",
-    --
-    --     PATH =
-    --         "SukunaLogo.png"
-    --
-    -- },
 
 }
 
@@ -293,19 +263,11 @@ function Categories:SetupCategoryScroll()
         return
     end
 
-    --==================================================
-    -- IF SIDEBAR IS ALREADY A SCROLLING FRAME
-    --==================================================
-
     if self.Sidebar:IsA("ScrollingFrame") then
 
         self.CategoryScroll = self.Sidebar
 
     else
-
-        --==================================================
-        -- CHECK FOR EXISTING CATEGORY SCROLL
-        --==================================================
 
         local ExistingScroll =
             self.Sidebar:FindFirstChild(
@@ -319,10 +281,6 @@ function Categories:SetupCategoryScroll()
                 ExistingScroll
 
         else
-
-            --==================================================
-            -- CREATE CATEGORY SCROLL
-            --==================================================
 
             local ScrollFrame =
                 Instance.new("ScrollingFrame")
@@ -385,10 +343,6 @@ function Categories:SetupCategoryScroll()
 
     end
 
-    --==================================================
-    -- SCROLL SETTINGS
-    --==================================================
-
     self.CategoryScroll.BackgroundTransparency =
         1
 
@@ -414,10 +368,6 @@ function Categories:SetupCategoryScroll()
 
     self.CategoryScroll.ClipsDescendants =
         true
-
-    --==================================================
-    -- FIND EXISTING LAYOUT
-    --==================================================
 
     local Layout =
         self.CategoryScroll:FindFirstChild(
@@ -463,10 +413,6 @@ function Categories:SetupCategoryScroll()
     self.CategoryScrollLayout =
         Layout
 
-    --==================================================
-    -- PADDING
-    --==================================================
-
     local Padding =
         self.CategoryScroll:FindFirstChild(
             "CategoryPadding"
@@ -511,10 +457,6 @@ function Categories:SetupCategoryScroll()
 
     self.CategoryScrollPadding =
         Padding
-
-    --==================================================
-    -- THEME SCROLLBAR
-    --==================================================
 
     if self.Theme
     and type(self.Theme.GetAccent) == "function" then
@@ -592,10 +534,6 @@ function Categories:LoadCategoryImage(CategoryName)
 
     end
 
-    --==================================================
-    -- CHECK REQUIRED FUNCTIONS
-    --==================================================
-
     if type(isfile) ~= "function"
     or type(writefile) ~= "function"
     or type(getcustomasset) ~= "function" then
@@ -603,10 +541,6 @@ function Categories:LoadCategoryImage(CategoryName)
         return nil
 
     end
-
-    --==================================================
-    -- DOWNLOAD IMAGE
-    --==================================================
 
     local Success, Result =
         pcall(function()
@@ -696,6 +630,23 @@ function Categories:SetNormalStyle(Button)
 
     end
 
+    --==================================================
+    -- UPDATE SEPARATED CATEGORY LABEL
+    --==================================================
+
+    local Label =
+        Button:FindFirstChild(
+            "CategoryName"
+        )
+
+    if Label
+    and Label:IsA("TextLabel") then
+
+        Label.TextColor3 =
+            Button.TextColor3
+
+    end
+
 end
 
 --==================================================
@@ -747,6 +698,23 @@ function Categories:SetSelectedStyle(Button)
                 TextColor
 
         end
+
+    end
+
+    --==================================================
+    -- UPDATE SEPARATED CATEGORY LABEL
+    --==================================================
+
+    local Label =
+        Button:FindFirstChild(
+            "CategoryName"
+        )
+
+    if Label
+    and Label:IsA("TextLabel") then
+
+        Label.TextColor3 =
+            Button.TextColor3
 
     end
 
@@ -2209,19 +2177,11 @@ function Categories:ShowCategory(CategoryName)
         return
     end
 
-    --==================================================
-    -- REMOVE LEGACY CATEGORY
-    --==================================================
-
     if CategoryName == "Outro" then
 
         CategoryName = "Outros"
 
     end
-
-    --==================================================
-    -- CONFIGURATION
-    --==================================================
 
     if CategoryName ==
         "Configuração" then
@@ -2232,10 +2192,6 @@ function Categories:ShowCategory(CategoryName)
 
     end
 
-    --==================================================
-    -- LEAVE CONFIGURATION
-    --==================================================
-
     self:LeaveConfiguration()
 
     self:InvalidateContext()
@@ -2243,15 +2199,7 @@ function Categories:ShowCategory(CategoryName)
     self.CurrentContext =
         "NORMAL"
 
-    --==================================================
-    -- CLEAR SEARCH
-    --==================================================
-
     self:ClearSearchContext()
-
-    --==================================================
-    -- ALL
-    --==================================================
 
     if CategoryName == "ALL" then
 
@@ -2268,10 +2216,6 @@ function Categories:ShowCategory(CategoryName)
         return
 
     end
-
-    --==================================================
-    -- NORMAL CATEGORY
-    --==================================================
 
     self.CurrentCategory =
         CategoryName
@@ -2376,10 +2320,6 @@ function Categories:CreateCategoryButton(
 
     end
 
-    --==================================================
-    -- ENSURE CATEGORY SCROLL
-    --==================================================
-
     self:SetupCategoryScroll()
 
     local Parent =
@@ -2450,11 +2390,15 @@ function Categories:CreateCategoryButton(
     if CategoryImage then
 
         --==================================================
-        -- IMAGE MODE
+        -- BUTTON TEXT REMOVED
         --==================================================
 
         Button.Text =
-            CategoryName
+            ""
+
+        --==================================================
+        -- IMAGE
+        --==================================================
 
         local Image =
             Instance.new("ImageLabel")
@@ -2497,19 +2441,59 @@ function Categories:CreateCategoryButton(
             Button
 
         --==================================================
-        -- TEXT PADDING
+        -- CATEGORY NAME
         --==================================================
 
-        local ImagePadding =
-            Instance.new("UIPadding")
+        local Label =
+            Instance.new("TextLabel")
 
-        ImagePadding.PaddingLeft =
-            UDim.new(
-                0,
-                42
+        Label.Name =
+            "CategoryName"
+
+        Label.Size =
+            UDim2.new(
+                1,
+                -48,
+                1,
+                0
             )
 
-        ImagePadding.Parent =
+        Label.Position =
+            UDim2.new(
+                0,
+                42,
+                0,
+                0
+            )
+
+        Label.BackgroundTransparency =
+            1
+
+        Label.BorderSizePixel =
+            0
+
+        Label.Text =
+            CategoryName
+
+        Label.TextSize =
+            11
+
+        Label.Font =
+            Enum.Font.GothamMedium
+
+        Label.TextXAlignment =
+            Enum.TextXAlignment.Left
+
+        Label.TextYAlignment =
+            Enum.TextYAlignment.Center
+
+        Label.TextColor3 =
+            Button.TextColor3
+
+        Label.ZIndex =
+            Button.ZIndex + 1
+
+        Label.Parent =
             Button
 
     else
@@ -2620,10 +2604,6 @@ end
 
 function Categories:CreateCategories()
 
-    --==================================================
-    -- ENSURE SCROLL
-    --==================================================
-
     self:SetupCategoryScroll()
 
     local Parent =
@@ -2633,10 +2613,6 @@ function Categories:CreateCategories()
     if not Parent then
         return 0
     end
-
-    --==================================================
-    -- CLEAN OLD BUTTONS
-    --==================================================
 
     for _, Button in pairs(
         self.CategoryButtons
@@ -2650,10 +2626,6 @@ function Categories:CreateCategories()
         end
 
     end
-
-    --==================================================
-    -- ALSO CLEAN LEGACY BUTTONS
-    --==================================================
 
     for _, Object in ipairs(
         Parent:GetChildren()
@@ -2698,11 +2670,6 @@ function Categories:CreateCategories()
             self.Sounds
         ) do
 
-            --==================================================
-            -- IMPORTANT:
-            -- NEVER CREATE LEGACY "OUTRO"
-            --==================================================
-
             if CategoryName ~= "ALL"
             and CategoryName ~= "Configuração"
             and CategoryName ~= "Outro"
@@ -2727,10 +2694,6 @@ function Categories:CreateCategories()
         SoundCategoryNames,
         function(A, B)
 
-            --==================================================
-            -- OUTROS FIRST
-            --==================================================
-
             if A == "Outros"
             and B ~= "Outros" then
 
@@ -2744,10 +2707,6 @@ function Categories:CreateCategories()
                 return false
 
             end
-
-            --==================================================
-            -- HEIAN SUKUNA SECOND
-            --==================================================
 
             if A == "Heian Sukuna Sounds"
             and B ~= "Heian Sukuna Sounds" then
@@ -3161,6 +3120,23 @@ function Categories:ApplyTheme()
                 self:SetNormalStyle(
                     Button
                 )
+
+            end
+
+            --==================================================
+            -- SEPARATED CATEGORY LABEL
+            --==================================================
+
+            local CategoryLabel =
+                Button:FindFirstChild(
+                    "CategoryName"
+                )
+
+            if CategoryLabel
+            and CategoryLabel:IsA("TextLabel") then
+
+                CategoryLabel.TextColor3 =
+                    Button.TextColor3
 
             end
 
