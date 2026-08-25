@@ -31,6 +31,9 @@
 --// OUTRO CATEGORY REMOVED
 --// OUTROS CATEGORY FIX
 --// CHARACTER CATEGORY ICONS
+--// CATEGORY IMAGE SYSTEM
+--// CATEGORY IMAGE FALLBACK
+--// FUTURE CATEGORY IMAGE READY
 
 local TweenService = game:GetService("TweenService")
 
@@ -61,7 +64,7 @@ local CategoryIcons = {
     ["Power"] = "⚡",
 
     ["Megumi"] = "🐺",
-    
+
     ["Choso"] = "🩸",
 
     ["Gojo"] = "🔵",
@@ -91,6 +94,83 @@ local CategoryIcons = {
     --==================================================
 
     ["Configuração"] = "⚙️"
+
+}
+
+--==================================================
+-- CATEGORY IMAGES
+--==================================================
+-- Adicione aqui imagens personalizadas para categorias.
+--
+-- Exemplo:
+--
+-- ["Gojo"] = {
+--
+--     URL =
+--         "https://raw.githubusercontent.com/USUARIO/REPO/main/gojo.png",
+--
+--     PATH =
+--         "GojoLogo.png"
+--
+-- },
+--
+-- Se a categoria NÃO estiver aqui,
+-- o sistema automaticamente usa o emoji.
+--==================================================
+
+local CategoryImages = {
+
+    --==================================================
+    -- MEGUMI
+    --==================================================
+
+    ["Megumi"] = {
+
+        URL =
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087286-removebg-preview.png",
+
+        PATH =
+            "MegumiLogo.png"
+
+    },
+
+    --==================================================
+    -- CHOSO
+    --==================================================
+
+    ["Choso"] = {
+
+        URL =
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087282-removebg-preview.png",
+
+        PATH =
+            "ChosoLogo.png"
+
+    }
+
+    --==================================================
+    -- FUTURAS CATEGORIAS
+    --==================================================
+
+    -- ["Gojo"] = {
+    --
+    --     URL =
+    --         "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/gojo.png",
+    --
+    --     PATH =
+    --         "GojoLogo.png"
+    --
+    -- },
+
+    -- ["Sukuna"] = {
+    --
+    --     URL =
+    --         "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/sukuna.png",
+    --
+    --     PATH =
+    --         "SukunaLogo.png"
+    --
+    -- },
 
 }
 
@@ -466,6 +546,101 @@ function Categories:GetIcon(CategoryName)
 
     return CategoryIcons[CategoryName]
         or "📁"
+
+end
+
+--==================================================
+-- GET CATEGORY IMAGE
+--==================================================
+
+function Categories:GetCategoryImage(CategoryName)
+
+    return CategoryImages[CategoryName]
+
+end
+
+--==================================================
+-- LOAD CATEGORY IMAGE
+--==================================================
+
+function Categories:LoadCategoryImage(CategoryName)
+
+    local ImageData =
+        self:GetCategoryImage(
+            CategoryName
+        )
+
+    if not ImageData then
+        return nil
+    end
+
+    if type(ImageData) ~= "table" then
+        return nil
+    end
+
+    if type(ImageData.URL) ~= "string"
+    or ImageData.URL == "" then
+
+        return nil
+
+    end
+
+    if type(ImageData.PATH) ~= "string"
+    or ImageData.PATH == "" then
+
+        return nil
+
+    end
+
+    --==================================================
+    -- CHECK REQUIRED FUNCTIONS
+    --==================================================
+
+    if type(isfile) ~= "function"
+    or type(writefile) ~= "function"
+    or type(getcustomasset) ~= "function" then
+
+        return nil
+
+    end
+
+    --==================================================
+    -- DOWNLOAD IMAGE
+    --==================================================
+
+    local Success, Result =
+        pcall(function()
+
+            if not isfile(
+                ImageData.PATH
+            ) then
+
+                local Data =
+                    game:HttpGet(
+                        ImageData.URL
+                    )
+
+                writefile(
+                    ImageData.PATH,
+                    Data
+                )
+
+            end
+
+            return getcustomasset(
+                ImageData.PATH
+            )
+
+        end)
+
+    if Success
+    and Result then
+
+        return Result
+
+    end
+
+    return nil
 
 end
 
@@ -2242,13 +2417,6 @@ function Categories:CreateCategoryButton(
     Button.BorderSizePixel =
         0
 
-    Button.Text =
-        self:GetIcon(
-            CategoryName
-        )
-        .. "  "
-        .. CategoryName
-
     Button.TextSize =
         11
 
@@ -2270,17 +2438,110 @@ function Categories:CreateCategoryButton(
     Button.Parent =
         Parent
 
-    local ButtonPadding =
-        Instance.new("UIPadding")
+    --==================================================
+    -- CATEGORY IMAGE
+    --==================================================
 
-    ButtonPadding.PaddingLeft =
-        UDim.new(
-            0,
-            10
+    local CategoryImage =
+        self:LoadCategoryImage(
+            CategoryName
         )
 
-    ButtonPadding.Parent =
-        Button
+    if CategoryImage then
+
+        --==================================================
+        -- IMAGE MODE
+        --==================================================
+
+        Button.Text =
+            CategoryName
+
+        local Image =
+            Instance.new("ImageLabel")
+
+        Image.Name =
+            "CategoryImage"
+
+        Image.Size =
+            UDim2.new(
+                0,
+                27,
+                0,
+                27
+            )
+
+        Image.Position =
+            UDim2.new(
+                0,
+                7,
+                0.5,
+                -13
+            )
+
+        Image.BackgroundTransparency =
+            1
+
+        Image.BorderSizePixel =
+            0
+
+        Image.Image =
+            CategoryImage
+
+        Image.ScaleType =
+            Enum.ScaleType.Fit
+
+        Image.ZIndex =
+            Button.ZIndex + 1
+
+        Image.Parent =
+            Button
+
+        --==================================================
+        -- TEXT PADDING
+        --==================================================
+
+        local ImagePadding =
+            Instance.new("UIPadding")
+
+        ImagePadding.PaddingLeft =
+            UDim.new(
+                0,
+                42
+            )
+
+        ImagePadding.Parent =
+            Button
+
+    else
+
+        --==================================================
+        -- EMOJI FALLBACK
+        --==================================================
+
+        Button.Text =
+            self:GetIcon(
+                CategoryName
+            )
+            .. "  "
+            .. CategoryName
+
+        local ButtonPadding =
+            Instance.new("UIPadding")
+
+        ButtonPadding.PaddingLeft =
+            UDim.new(
+                0,
+                10
+            )
+
+        ButtonPadding.Parent =
+            Button
+
+    end
+
+    --==================================================
+    -- CORNER
+    --==================================================
 
     local ButtonCorner =
         Instance.new("UICorner")
@@ -2293,6 +2554,10 @@ function Categories:CreateCategoryButton(
 
     ButtonCorner.Parent =
         Button
+
+    --==================================================
+    -- CLICK
+    --==================================================
 
     Button.MouseButton1Click:Connect(
         function()
