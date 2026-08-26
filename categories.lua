@@ -38,6 +38,7 @@
 --// MEGUMI IMAGE
 --// CHOSO IMAGE
 --// GOJO IMAGE
+--// MAHORAGA IMAGE
 --// CATEGORY SIZE INCREASE
 --// GOJO IMAGE 10% SMALLER
 
@@ -141,7 +142,7 @@ local CategoryImages = {
 
         -- Tamanho normal
         Scale =
-            1.7
+            1.6
 
     },
 
@@ -161,9 +162,7 @@ local CategoryImages = {
         Scale =
             0.45
 
-    }
-
-}
+    },
 
     --==================================================
     -- MAHORAGA
@@ -177,9 +176,11 @@ local CategoryImages = {
         PATH =
             "MahoragaLogo.png",
 
-        -- Tamanho normal
+        -- TAMANHO NORMAL = 30x30
         Scale =
             1
+
+    }
 
 }
 
@@ -2513,7 +2514,10 @@ function Categories:CreateCategoryButton(
 
         --==================================================
         -- DEFAULT = 30x30
-        -- GOJO = 27x27
+        -- GOJO = 13.5x13.5
+        -- MEGUMI = 36x36
+        -- CHOSO = 48x48
+        -- MAHORAGA = 30x30
         --==================================================
 
         local BaseImageSize =
