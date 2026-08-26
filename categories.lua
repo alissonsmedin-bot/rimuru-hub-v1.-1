@@ -124,7 +124,7 @@ local CategoryImages = {
 
         -- Tamanho normal
         Scale =
-            1.2
+            1.25
 
     },
 
@@ -142,7 +142,7 @@ local CategoryImages = {
 
         -- Tamanho normal
         Scale =
-            1.6
+            1.68
 
     },
 
@@ -178,7 +178,7 @@ local CategoryImages = {
 
         -- TAMANHO NORMAL = 30x30
         Scale =
-            1
+            1.1
 
     }
 
