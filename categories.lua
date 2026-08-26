@@ -141,7 +141,7 @@ local CategoryImages = {
 
         -- Tamanho normal
         Scale =
-            1.6
+            1.7
 
     },
 
@@ -162,6 +162,24 @@ local CategoryImages = {
             0.45
 
     }
+
+}
+
+    --==================================================
+    -- MAHORAGA
+    --==================================================
+
+    ["Mahoraga"] = {
+
+        URL =
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087390-removebg-preview.png",
+
+        PATH =
+            "MahoragaLogo.png",
+
+        -- Tamanho normal
+        Scale =
+            1
 
 }
 
