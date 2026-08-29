@@ -269,7 +269,7 @@ local Categories = {
 
         {"Rabbit Escape Spawn", "17206057016"},
         {"Nue Spawn", "17269358415"},
-        {"Nue Hit 1", "117269354824"},
+        {"Nue Hit 1", "17269354824"},
         {"Toad Spawn", "17269355559"},
         {"Totality Spawn", "17392238439"},
         {"Totality Slash", "17392240969"},
