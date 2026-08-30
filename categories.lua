@@ -144,7 +144,7 @@ local CategoryImages = {
             "ChosoLogo.png",
 
         Scale =
-            1.69
+            1.7
 
     },
 
@@ -162,7 +162,7 @@ local CategoryImages = {
 
         -- GOJO 10% MENOR
         Scale =
-            0.84
+            0.82
 
     },
 
@@ -197,7 +197,7 @@ local CategoryImages = {
             "GokuLogo.png",
 
         Scale =
-            1.4
+            1.33
 
     },
 
@@ -214,7 +214,7 @@ local CategoryImages = {
             "HakariLogo.png",
 
         Scale =
-            1.6
+            1.7
 
     },
 
@@ -231,7 +231,7 @@ local CategoryImages = {
             "SukunaLogo.png",
 
         Scale =
-            1.19
+            1.2
 
     },
 
@@ -248,7 +248,7 @@ local CategoryImages = {
             "HanamiLogo.png",
 
         Scale =
-            1.2
+            1.62
 
     }
 
