@@ -39,6 +39,10 @@
 --// CHOSO IMAGE
 --// GOJO IMAGE
 --// MAHORAGA IMAGE
+--// GOKU IMAGE
+--// HAKARI IMAGE
+--// HEIAN SUKUNA IMAGE
+--// HANAMI IMAGE
 --// CATEGORY SIZE INCREASE
 --// GOJO IMAGE 10% SMALLER
 
@@ -122,7 +126,6 @@ local CategoryImages = {
         PATH =
             "MegumiLogo.png",
 
-        -- Tamanho normal
         Scale =
             1.3
 
@@ -140,7 +143,6 @@ local CategoryImages = {
         PATH =
             "ChosoLogo.png",
 
-        -- Tamanho normal
         Scale =
             1.69
 
@@ -176,9 +178,77 @@ local CategoryImages = {
         PATH =
             "MahoragaLogo.png",
 
-        -- TAMANHO NORMAL = 30x30
+        -- TAMANHO NORMAL
         Scale =
-            1.13
+            1.14
+
+    },
+
+    --==================================================
+    -- GOKU
+    --==================================================
+
+    ["Goku"] = {
+
+        URL =
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087933-removebg-preview.png",
+
+        PATH =
+            "GokuLogo.png",
+
+        Scale =
+            1.46
+
+    },
+
+    --==================================================
+    -- HAKARI
+    --==================================================
+
+    ["Hakari"] = {
+
+        URL =
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087925-removebg-preview.png",
+
+        PATH =
+            "HakariLogo.png",
+
+        Scale =
+            1.2
+
+    },
+
+    --==================================================
+    -- HEIAN SUKUNA
+    --==================================================
+
+    ["Heian Sukuna Sounds"] = {
+
+        URL =
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087927-removebg-preview.png",
+
+        PATH =
+            "SukunaLogo.png",
+
+        Scale =
+            1.2
+
+    },
+
+    --==================================================
+    -- HANAMI
+    --==================================================
+
+    ["Hanami"] = {
+
+        URL =
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087929-removebg-preview.png",
+
+        PATH =
+            "HanamiLogo.png",
+
+        Scale =
+            0.85
 
     }
 
@@ -2431,8 +2501,6 @@ function Categories:CreateCategoryButton(
     Button.Name =
         CategoryName
 
-    -- AUMENTADO:
-    -- 38 -> 40
     Button.Size =
         UDim2.new(
             1,
@@ -2514,10 +2582,14 @@ function Categories:CreateCategoryButton(
 
         --==================================================
         -- DEFAULT = 30x30
-        -- GOJO = 13.5x13.5
-        -- MEGUMI = 36x36
-        -- CHOSO = 48x48
-        -- MAHORAGA = 30x30
+        -- MEGUMI = 39x39
+        -- CHOSO = 50x50
+        -- GOJO = 25.5x25.5
+        -- MAHORAGA = 33.9x33.9
+        -- GOKU = 30x30
+        -- HAKARI = 30x30
+        -- SUKUNA = 30x30
+        -- HANAMI = 30x30
         --==================================================
 
         local BaseImageSize =
