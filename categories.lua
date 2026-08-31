@@ -138,13 +138,13 @@ local CategoryImages = {
     ["Choso"] = {
 
         URL =
-            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087282-removebg-preview.png",
+            "https://github.com/alissonsmedin-bot/rimuru-hub-v1.-1/blob/main/1000087998-removebg-preview.png",
 
         PATH =
             "ChosoLogo.png",
 
         Scale =
-            1.7
+            1.23
 
     },
 
@@ -162,7 +162,7 @@ local CategoryImages = {
 
         -- GOJO 10% MENOR
         Scale =
-            0.92
+            1
 
     },
 
