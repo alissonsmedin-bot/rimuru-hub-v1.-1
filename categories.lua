@@ -162,7 +162,7 @@ local CategoryImages = {
 
         -- GOJO 10% MENOR
         Scale =
-            0.82
+            0.92
 
     },
 
@@ -242,7 +242,7 @@ local CategoryImages = {
     ["Hanami"] = {
 
         URL =
-            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087929-removebg-preview.png",
+            "https://github.com/alissonsmedin-bot/rimuru-hub-v1.-1/blob/main/1000087980-removebg-preview.png",
 
         PATH =
             "HanamiLogo.png",
