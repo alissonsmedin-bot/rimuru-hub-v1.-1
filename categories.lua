@@ -131,22 +131,22 @@ local CategoryImages = {
 
     },
 
-    --==================================================
-    -- CHOSO
-    --==================================================
+ --==================================================
+ -- CHOSO
+ --==================================================
 
-    ["Choso"] = {
+["Choso"] = {
 
-        URL =
-            "https://github.com/alissonsmedin-bot/rimuru-hub-v1.-1/blob/main/1000087998-removebg-preview.png",
+    URL =
+        "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087998-removebg-preview.png",
 
-        PATH =
-            "ChosoLogo2.png",
+    PATH =
+        "ChosoLogo2.png",
 
-        Scale =
-            1.23
+    Scale =
+        1.2
 
-    },
+},
 
     --==================================================
     -- GOJO
