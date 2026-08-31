@@ -113,7 +113,7 @@ local CategoryImages = {
             "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087992-removebg-preview.png",
 
         PATH =
-            "GojoLogo2.png",
+            "GojoLogo3.png",
 
         -- GOJO 10% MENOR
         Scale =
@@ -200,7 +200,7 @@ local CategoryImages = {
             "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087980-removebg-preview.png",
 
         PATH =
-            "HanamiLogo3.png",
+            "HanamiLogo4.png",
 
         Scale =
             1.68
@@ -217,7 +217,7 @@ local CategoryImages = {
             "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000088014-removebg-preview.png",
 
         PATH =
-            "HarutaLogo.png",
+            "HarutaLogo2.png",
 
         Scale =
             1.3
