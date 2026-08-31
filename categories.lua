@@ -141,7 +141,7 @@ local CategoryImages = {
             "https://github.com/alissonsmedin-bot/rimuru-hub-v1.-1/blob/main/1000087998-removebg-preview.png",
 
         PATH =
-            "ChosoLogo.png",
+            "ChosoLogo2.png",
 
         Scale =
             1.23
@@ -245,7 +245,7 @@ local CategoryImages = {
             "https://github.com/alissonsmedin-bot/rimuru-hub-v1.-1/blob/main/1000087980-removebg-preview.png",
 
         PATH =
-            "HanamiLogo.png",
+            "HanamiLogo2.png",
 
         Scale =
             1.68
