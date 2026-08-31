@@ -86,22 +86,22 @@ local CategoryImages = {
 
     },
 
- --==================================================
- -- CHOSO
- --==================================================
+    --==================================================
+    -- CHOSO
+    --==================================================
 
-["Choso"] = {
+    ["Choso"] = {
 
-    URL =
-        "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087998-removebg-preview.png",
+        URL =
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087998-removebg-preview.png",
 
-    PATH =
-        "ChosoLogo2.png",
+        PATH =
+            "ChosoLogo2.png",
 
-    Scale =
-        1.2
+        Scale =
+            1.2
 
-},
+    },
 
     --==================================================
     -- GOJO
@@ -109,16 +109,17 @@ local CategoryImages = {
 
     ["Gojo"] = {
 
-    URL =
-        "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087992-removebg-preview.png",
+        URL =
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087992-removebg-preview.png",
 
-    PATH =
-        "GojoLogo2.png",
+        PATH =
+            "GojoLogo2.png",
 
-    Scale =
-        1
+        -- GOJO 10% MENOR
+        Scale =
+            1
 
-},
+    },
 
     --==================================================
     -- MAHORAGA
@@ -196,7 +197,7 @@ local CategoryImages = {
     ["Hanami"] = {
 
         URL =
-    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087980-removebg-preview.png",
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087980-removebg-preview.png",
 
         PATH =
             "HanamiLogo3.png",
@@ -204,8 +205,8 @@ local CategoryImages = {
         Scale =
             1.68
 
-     },
-    
+    },
+
     --==================================================
     -- HARUTA
     --==================================================
@@ -2555,12 +2556,13 @@ function Categories:CreateCategoryButton(
         -- DEFAULT = 30x30
         -- MEGUMI = 39x39
         -- CHOSO = 50x50
-        -- GOJO = 25.5x25.5
+        -- GOJO = 30x30
         -- MAHORAGA = 33.9x33.9
         -- GOKU = 30x30
         -- HAKARI = 30x30
         -- SUKUNA = 30x30
         -- HANAMI = 30x30
+        -- HARUTA = 39x39
         --==================================================
 
         local BaseImageSize =
