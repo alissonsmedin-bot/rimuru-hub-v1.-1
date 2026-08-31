@@ -248,7 +248,7 @@ local CategoryImages = {
             "HanamiLogo.png",
 
         Scale =
-            2
+            1.68
 
     }
 
