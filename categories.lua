@@ -197,7 +197,7 @@ local CategoryImages = {
             "GokuLogo.png",
 
         Scale =
-            1.33
+            1.32
 
     },
 
@@ -214,7 +214,7 @@ local CategoryImages = {
             "HakariLogo.png",
 
         Scale =
-            1.7
+            1.64
 
     },
 
@@ -248,7 +248,7 @@ local CategoryImages = {
             "HanamiLogo.png",
 
         Scale =
-            1.62
+            2
 
     }
 
