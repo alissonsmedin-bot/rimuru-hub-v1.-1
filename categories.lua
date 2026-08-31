@@ -1,50 +1,5 @@
 --// 💥 RIMURU HUB
 --// Categories System
---// ALL CATEGORY SYSTEM
---// FAVORITE FILTER
---// M1 FILTER
---// HIT FILTER
---// Dynamic All Sounds
---// ALL Always First
---// No Sound Duplication
---// Favorite Filter Compatible
---// Scrollable Filter Menu
---// SCROLLABLE CATEGORY LIST
---// SEARCH CONTEXT COMPATIBLE
---// FUTURE FILTER READY
---// CATEGORY CLICK SIZE ANIMATION
---// CLICK = +4 PIXELS
---// RETURN TO ORIGINAL AFTER 0.34s
---// CATEGORY CONTRAST SYSTEM
---// THEME AWARE
---// BLACKOUT = BLACK/WHITE INVERSION
---// CONFIGURATION CONTEXT FIX
---// CONFIGURATION CLEANUP FIX
---// CONFIGURATION EXIT FIX
---// SEARCH CLEAR ON CATEGORY CHANGE
---// SAFE CONTEXT SWITCHING
---// SOUND DATABASE COMPATIBILITY FIX
---// ALL SOUND COLLECTION FIX
---// PREVENT CONFIGURATION MIXING
---// SAFE RAPID CATEGORY SWITCHING
---// SAFE CATEGORY SCROLL SYSTEM
---// OUTRO CATEGORY REMOVED
---// OUTROS CATEGORY FIX
---// CHARACTER CATEGORY ICONS
---// CATEGORY IMAGE SYSTEM
---// CATEGORY IMAGE FALLBACK
---// FUTURE CATEGORY IMAGE READY
---// IMAGE / TEXT SEPARATION FIX
---// MEGUMI IMAGE
---// CHOSO IMAGE
---// GOJO IMAGE
---// MAHORAGA IMAGE
---// GOKU IMAGE
---// HAKARI IMAGE
---// HEIAN SUKUNA IMAGE
---// HANAMI IMAGE
---// CATEGORY SIZE INCREASE
---// GOJO IMAGE 10% SMALLER
 
 local TweenService = game:GetService("TweenService")
 
@@ -154,17 +109,16 @@ local CategoryImages = {
 
     ["Gojo"] = {
 
-        URL =
-            "https://github.com/alissonsmedin-bot/rimuru-hub-v1.-1/blob/main/1000087992-removebg-preview.png",
+    URL =
+        "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087992-removebg-preview.png",
 
-        PATH =
-            "GojoLogo2.png",
+    PATH =
+        "GojoLogo2.png",
 
-        -- GOJO 10% MENOR
-        Scale =
-            1
+    Scale =
+        1
 
-    },
+},
 
     --==================================================
     -- MAHORAGA
@@ -242,7 +196,7 @@ local CategoryImages = {
     ["Hanami"] = {
 
         URL =
-            "https://github.com/alissonsmedin-bot/rimuru-hub-v1.-1/blob/main/1000087980-removebg-preview.png",
+    "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087980-removebg-preview.png",
 
         PATH =
             "HanamiLogo3.png",
@@ -259,7 +213,7 @@ local CategoryImages = {
     ["Haruta"] = {
 
         URL =
-            "https://github.com/alissonsmedin-bot/rimuru-hub-v1.-1/blob/main/1000088014-removebg-preview.png",
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000088014-removebg-preview.png",
 
         PATH =
             "HarutaLogo.png",
