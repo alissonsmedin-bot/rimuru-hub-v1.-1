@@ -197,13 +197,13 @@ local CategoryImages = {
     ["Hanami"] = {
 
         URL =
-            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000087980-removebg-preview.png",
+            "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000088743-removebg-preview.png",
 
         PATH =
             "HanamiLogo4.png",
 
         Scale =
-            1
+            1.2
 
     },
 
