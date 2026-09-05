@@ -203,7 +203,7 @@ local CategoryImages = {
             "HanamiLogo5.png",
 
         Scale =
-            1.2
+            1
 
     },
 
@@ -220,7 +220,7 @@ local CategoryImages = {
             "HarutaLogo2.png",
 
         Scale =
-            1
+            0.97
 
     }
 
