@@ -220,7 +220,7 @@ local CategoryImages = {
             "HarutaLogo2.png",
 
         Scale =
-            1.23
+            1
 
     }
 
