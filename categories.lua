@@ -200,7 +200,7 @@ local CategoryImages = {
             "https://raw.githubusercontent.com/alissonsmedin-bot/rimuru-hub-v1.-1/refs/heads/main/1000088743-removebg-preview.png",
 
         PATH =
-            "HanamiLogo4.png",
+            "HanamiLogo5.png",
 
         Scale =
             1.2
